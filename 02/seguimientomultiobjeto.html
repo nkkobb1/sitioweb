@@ -1,0 +1,3761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento Multi-Objeto | Juego Interactivo</title>
+    
+    <!-- Bibliotecas CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #c0392b;
+            --gray-dark: #343a40;
+            --gray: #6c757d;
+            --gray-light: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at center, #1a2980 0%, #26d0ce 100%);
+            color: var(--light-color);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container-fluid {
+            padding: 0;
+        }
+
+        /* Estilos de la barra de navegación */
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--light-color);
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--light-color);
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-nav .nav-link:before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover:before {
+            width: 100%;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        /* Estilos de la sección principal */
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .game-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-description {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Estilos del área de juego */
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: var(--dark-color);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-object {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--primary-color), var(--accent-color));
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+            cursor: pointer;
+            transform: scale(1);
+            transition: transform 0.2s ease;
+        }
+
+        .game-object:hover {
+            transform: scale(1.1);
+        }
+
+        .game-object.marked {
+            border: 3px solid white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            }
+        }
+
+        /* Estilos del panel de control */
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            margin-bottom: 1rem;
+        }
+
+        .control-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--light-color);
+        }
+
+        .btn-custom {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+        }
+
+        .btn-custom:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, var(--success-color), var(--secondary-color));
+        }
+
+        .btn-reset {
+            background: linear-gradient(45deg, var(--danger-color), var(--accent-color));
+        }
+
+        /* Estilos de la HUD y estadísticas */
+        .game-hud {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .hud-item {
+            text-align: center;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .hud-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.2rem;
+        }
+
+        .hud-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Efectos de partículas y animaciones */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .game-title {
+                font-size: 2.5rem;
+            }
+            
+            .game-area {
+                height: 400px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .game-area {
+                height: 350px;
+            }
+            
+            .game-hud {
+                flex-wrap: wrap;
+            }
+            
+            .hud-item {
+                width: 48%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .game-area {
+                height: 300px;
+            }
+            
+            .hud-item {
+                width: 100%;
+            }
+        }
+
+        /* Estilos para modal de niveles */
+        .level-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .level-item {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.7), rgba(46, 204, 113, 0.7));
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .level-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .level-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .level-item.locked {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.7), rgba(52, 58, 64, 0.7));
+            cursor: not-allowed;
+        }
+
+        .level-item.locked .level-number:after {
+            content: '\f023';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            margin-left: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* Estilos adicionales para minijuego */
+        .minigame-area {
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sequence-container {
+            display: flex;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sequence-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .color-button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .color-button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.7), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .color-button:hover:before {
+            opacity: 0.4;
+        }
+
+        .color-button:active:before {
+            opacity: 0.6;
+        }
+
+        /* Animaciones adicionales */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px var(--primary-color); }
+            50% { box-shadow: 0 0 20px var(--primary-color); }
+            100% { box-shadow: 0 0 5px var(--primary-color); }
+        }
+
+        .btn-custom {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .game-title {
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        /* Efecto de shimmer en botones */
+        .btn-custom:after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-custom:hover:after {
+            opacity: 1;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        /* Tooltip personalizado */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        [data-tooltip]:hover:before {
+            opacity: 1;
+            visibility: visible;
+            bottom: calc(100% + 5px);
+        }
+
+        /* Efecto de confeti para celebraciones */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-color);
+            opacity: 0.8;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100%) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Estado de carga */
+        .game-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .game-loading.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mensaje flotante */
+        .game-message {
+            z-index: 1010;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            border-radius: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 12px 25px;
+            max-width: 80%;
+            text-align: center;
+        }
+
+        /* Estilos para vista de objetos en 3D cuando están marcados */
+        .game-object.marked {
+            transform: perspective(500px) rotateY(0deg);
+            transition: transform 0.5s ease;
+            animation: pulse 1.5s infinite, rotate3d 5s infinite linear;
+        }
+
+        @keyframes rotate3d {
+            0% { transform: perspective(500px) rotateY(0deg) scale(1.1); }
+            50% { transform: perspective(500px) rotateY(180deg) scale(1.1); }
+            100% { transform: perspective(500px) rotateY(360deg) scale(1.1); }
+        }
+
+        /* Pantalla de presentación */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a2980 0%, #26d0ce 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .splash-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-logo {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, var(--light-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 2s infinite, float 6s ease-in-out infinite;
+        }
+
+        .splash-progress {
+            width: 300px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-top: 2rem;
+            overflow: hidden;
+        }
+
+        .splash-progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.5s ease;
+        }
+
+        .splash-tip {
+            margin-top: 2rem;
+            font-style: italic;
+            opacity: 0.8;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        /* Tutorial interactivo */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .tutorial-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tutorial-content {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 800px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .tutorial-step {
+            display: none;
+        }
+
+        .tutorial-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tutorial-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin: 1rem 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .tutorial-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .tutorial-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tutorial-dot.active {
+            background-color: var(--primary-color);
+            transform: scale(1.2);
+        }
+
+        /* Botón de accesibilidad */
+        .accessibility-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 900;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .accessibility-button:hover {
+            transform: scale(1.1);
+        }
+
+        .accessibility-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 1rem;
+            width: 250px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 899;
+            transform: translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .accessibility-panel.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .accessibility-option {
+            margin-bottom: 0.8rem;
+        }
+
+        .accessibility-option label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        /* Pantalla de ayuda flotante */
+        .help-tooltip {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            background-color: rgba(52, 152, 219, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 800;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .help-tooltip:hover {
+            background-color: rgba(52, 152, 219, 0.4);
+            transform: scale(1.1);
+        }
+
+        .help-panel {
+            position: fixed;
+            left: 20px;
+            bottom: 70px;
+            width: 300px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 799;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .help-panel.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .help-panel h4 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .help-panel ul {
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-panel li {
+            margin-bottom: 0.2rem;
+        }
+
+        /* Efectos de desenfoque para modo de accesibilidad */
+        .reduced-motion * {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        .high-contrast {
+            filter: contrast(1.5);
+        }
+
+        .large-text {
+            font-size: 1.15em !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de presentación -->
+    <div class="splash-screen" id="splash-screen">
+        <div class="splash-logo">
+            <i class="fas fa-brain"></i> NeuroTracker
+        </div>
+        <h2>Entrena tu capacidad de seguimiento visual</h2>
+        <div class="splash-progress">
+            <div class="splash-progress-bar" id="splash-progress-bar"></div>
+        </div>
+        <div class="splash-tip" id="splash-tip">
+            Cargando recursos del juego...
+        </div>
+    </div>
+    
+    <!-- Overlay de tutorial interactivo -->
+    <div class="tutorial-overlay" id="tutorial-overlay">
+        <div class="tutorial-content">
+            <h3><i class="fas fa-graduation-cap"></i> Tutorial</h3>
+            
+            <div class="tutorial-step active" data-step="1">
+                <h4>¡Bienvenido a NeuroTracker!</h4>
+                <p>Este juego está diseñado para mejorar tu capacidad de atención visual y seguimiento de objetos múltiples.</p>
+                <img src="https://www.sharpbrains.com/wp-content/uploads/2017/11/MOT.gif" alt="Demostración de seguimiento multi-objeto" class="tutorial-image">
+                <p>Los estudios muestran que esta habilidad puede mejorar con práctica regular.</p>
+            </div>
+            
+            <div class="tutorial-step" data-step="2">
+                <h4>1. Fase de memorización</h4>
+                <p>Al inicio, algunos objetos estarán resaltados brevemente. Tu tarea es memorizar cuáles son.</p>
+                <div class="d-flex justify-content-center my-3">
+                    <div style="position: relative; width: 400px; height: 200px; background-color: #2c3e50; border-radius: 10px; overflow: hidden;">
+                        <div style="position: absolute; top: 30px; left: 50px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9); border: 3px solid white;"></div>
+                        <div style="position: absolute; top: 120px; left: 200px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9); border: 3px solid white;"></div>
+                        <div style="position: absolute; top: 80px; left: 300px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                        <div style="position: absolute; top: 150px; left: 100px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                    </div>
+                </div>
+                <p>Tienes unos segundos para memorizar los objetos resaltados con borde blanco.</p>
+            </div>
+            
+            <div class="tutorial-step" data-step="3">
+                <h4>2. Fase de seguimiento</h4>
+                <p>Después, los objetos perderán su marca y comenzarán a moverse y chocar entre sí.</p>
+                <div class="d-flex justify-content-center my-3">
+                    <div style="position: relative; width: 400px; height: 200px; background-color: #2c3e50; border-radius: 10px; overflow: hidden;">
+                        <div style="position: absolute; top: 80px; left: 120px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);">
+                            <div style="position:absolute; top:0; left:0; right:0; bottom:0; border-radius:50%; background:rgba(255,255,255,0.1); animation: pulse 2s infinite;"></div>
+                        </div>
+                        <div style="position: absolute; top: 50px; left: 220px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                        <div style="position: absolute; top: 130px; left: 270px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                        <div style="position: absolute; top: 100px; left: 60px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                        <div style="position: absolute; font-size: 24px; color: white; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                            <i class="fas fa-random fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+                <p>¡Mantén tu atención en los objetos que estaban inicialmente marcados!</p>
+            </div>
+            
+            <div class="tutorial-step" data-step="4">
+                <h4>3. Fase de selección</h4>
+                <p>Cuando los objetos se detengan, deberás hacer clic en los que crees que fueron marcados inicialmente.</p>
+                <div class="d-flex justify-content-center my-3">
+                    <div style="position: relative; width: 400px; height: 200px; background-color: #2c3e50; border-radius: 10px; overflow: hidden;">
+                        <div style="position: absolute; top: 30px; left: 150px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9); border: 3px solid white;"></div>
+                        <div style="position: absolute; top: 120px; left: 250px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                        <div style="position: absolute; top: 80px; left: 70px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9); border: 3px solid white;"></div>
+                        <div style="position: absolute; top: 150px; left: 180px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                        <div style="position: absolute; top: 90px; left: 330px; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3498db, #2980b9);"></div>
+                    </div>
+                </div>
+                <p>Los objetos que selecciones se marcarán con un borde blanco.</p>
+            </div>
+            
+            <div class="tutorial-step" data-step="5">
+                <h4>4. Resultados y progreso</h4>
+                <p>Recibirás puntos basados en tu precisión, velocidad y dificultad.</p>
+                <p>A medida que juegas, desbloquearás nuevos niveles y logros.</p>
+                <p>La dificultad aumenta con:</p>
+                <ul class="text-start">
+                    <li>Mayor número de objetos</li>
+                    <li>Mayor velocidad de movimiento</li>
+                    <li>Objetos más similares entre sí</li>
+                    <li>Más colisiones</li>
+                </ul>
+                <p>¡Practica regularmente para mejorar tus habilidades de atención visual!</p>
+            </div>
+            
+            <div class="tutorial-navigation">
+                <button class="btn-custom" id="tutorial-prev">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </button>
+                
+                <div class="tutorial-dots">
+                    <span class="tutorial-dot active" data-step="1"></span>
+                    <span class="tutorial-dot" data-step="2"></span>
+                    <span class="tutorial-dot" data-step="3"></span>
+                    <span class="tutorial-dot" data-step="4"></span>
+                    <span class="tutorial-dot" data-step="5"></span>
+                </div>
+                
+                <button class="btn-custom" id="tutorial-next">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <button class="btn-custom mt-4" id="tutorial-close">
+                <i class="fas fa-check"></i> Entendido
+            </button>
+        </div>
+    </div>
+    
+    <!-- Botón de accesibilidad -->
+    <div class="accessibility-button" id="accessibility-button">
+        <i class="fas fa-universal-access"></i>
+    </div>
+    
+    <!-- Panel de accesibilidad -->
+    <div class="accessibility-panel" id="accessibility-panel">
+        <h5><i class="fas fa-universal-access"></i> Opciones de accesibilidad</h5>
+        
+        <div class="accessibility-option">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="high-contrast-toggle">
+                <label class="form-check-label" for="high-contrast-toggle">Alto contraste</label>
+            </div>
+        </div>
+        
+        <div class="accessibility-option">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="reduced-motion-toggle">
+                <label class="form-check-label" for="reduced-motion-toggle">Reducir animaciones</label>
+            </div>
+        </div>
+        
+        <div class="accessibility-option">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="large-text-toggle">
+                <label class="form-check-label" for="large-text-toggle">Texto grande</label>
+            </div>
+        </div>
+        
+        <div class="accessibility-option">
+            <label>Velocidad del juego</label>
+            <input type="range" class="form-range" min="50" max="100" value="100" id="game-speed-slider">
+        </div>
+    </div>
+    
+    <!-- Botón de ayuda flotante -->
+    <div class="help-tooltip" id="help-tooltip">
+        <i class="fas fa-question"></i>
+    </div>
+    
+    <!-- Panel de ayuda -->
+    <div class="help-panel" id="help-panel">
+        <h4>Atajos de teclado</h4>
+        <ul>
+            <li><strong>Espacio</strong> - Iniciar/Reiniciar juego</li>
+            <li><strong>P</strong> - Pausar/Reanudar</li>
+            <li><strong>Esc</strong> - Cancelar juego actual</li>
+            <li><strong>T</strong> - Mostrar tutorial</li>
+            <li><strong>M</strong> - Silenciar sonidos</li>
+        </ul>
+        <h4>Consejos rápidos</h4>
+        <ul>
+            <li>Mantén los ojos en el centro y usa tu visión periférica</li>
+            <li>Agrupa mentalmente los objetos a seguir</li>
+            <li>Practica diariamente para mejores resultados</li>
+        </ul>
+        <button class="btn-custom btn-sm mt-2" id="show-tutorial-btn">
+            <i class="fas fa-graduation-cap"></i> Mostrar tutorial completo
+        </button>
+    </div>
+    
+    <!-- Resto del contenido existente -->
+    <!-- Contenedor de partículas para efectos visuales -->
+    <div class="particles-container" id="particles-js"></div>
+    
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-brain"></i> NeuroTracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-home"></i> Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#levelsModal">
+                            <i class="fas fa-layer-group"></i> Niveles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#achievementsModal">
+                            <i class="fas fa-trophy"></i> Logros
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#statsModal">
+                            <i class="fas fa-chart-bar"></i> Estadísticas
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Contenedor principal del juego -->
+    <div class="container-fluid">
+        <div class="game-container">
+            <div class="game-header">
+                <h1 class="game-title animate__animated animate__fadeInDown">Seguimiento Multi-Objeto</h1>
+                <p class="game-description animate__animated animate__fadeIn animate__delay-1s">
+                    Entrena tu cerebro siguiendo varios objetos en movimiento. Observa con atención los objetos marcados, 
+                    síguelos mientras se mueven y chocan, y luego identifica los originales al final.
+                </p>
+            </div>
+            
+            <!-- Panel de estadísticas/HUD -->
+            <div class="game-hud">
+                <div class="hud-item">
+                    <div class="hud-label">Nivel</div>
+                    <div class="hud-value" id="level-display">1</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-label">Puntuación</div>
+                    <div class="hud-value" id="score-display">0</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-label">Precisión</div>
+                    <div class="hud-value" id="accuracy-display">0%</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-label">Tiempo</div>
+                    <div class="hud-value" id="time-display">0:00</div>
+                </div>
+            </div>
+            
+            <!-- Área de juego -->
+            <div class="game-area" id="game-area">
+                <!-- Los objetos se generarán dinámicamente con JavaScript -->
+            </div>
+            
+            <!-- Panel de control -->
+            <div class="control-panel">
+                <div class="control-group">
+                    <button class="btn-custom btn-start" id="btn-start">
+                        <i class="fas fa-play"></i> Iniciar Juego
+                    </button>
+                </div>
+                <div class="control-group">
+                    <button class="btn-custom" id="btn-instructions">
+                        <i class="fas fa-question-circle"></i> Instrucciones
+                    </button>
+                </div>
+                <div class="control-group">
+                    <button class="btn-custom btn-reset" id="btn-reset">
+                        <i class="fas fa-undo"></i> Reiniciar
+                    </button>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Dificultad</label>
+                    <select class="form-select" id="difficulty-select">
+                        <option value="easy">Fácil</option>
+                        <option value="medium" selected>Medio</option>
+                        <option value="hard">Difícil</option>
+                        <option value="expert">Experto</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Objetos a seguir</label>
+                    <select class="form-select" id="objects-select">
+                        <option value="3">3 Objetos</option>
+                        <option value="4" selected>4 Objetos</option>
+                        <option value="5">5 Objetos</option>
+                        <option value="6">6 Objetos</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de instrucciones -->
+    <div class="modal fade" id="instructionsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fas fa-question-circle"></i> Cómo Jugar</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4><i class="fas fa-1"></i> Observa</h4>
+                            <p>Al inicio, algunos objetos estarán resaltados. Memoriza cuáles son.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4><i class="fas fa-2"></i> Sigue</h4>
+                            <p>Los objetos comenzarán a moverse y chocar entre sí. ¡Mantén tu atención en los objetos resaltados!</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4><i class="fas fa-3"></i> Identifica</h4>
+                            <p>Cuando los objetos se detengan, haz clic en los que crees que fueron resaltados inicialmente.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4><i class="fas fa-trophy"></i> Progresa</h4>
+                            <p>Mejora tu puntuación, desbloquea niveles y logros mientras entrenas tu capacidad de atención visual.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn-custom" data-bs-dismiss="modal">¡Entendido!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de niveles -->
+    <div class="modal fade" id="levelsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fas fa-layer-group"></i> Niveles</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="level-selector">
+                        <!-- Los niveles se generarán dinámicamente con JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn-custom" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de logros -->
+    <div class="modal fade" id="achievementsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fas fa-trophy"></i> Logros</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="achievements-container">
+                        <!-- Los logros se generarán dinámicamente con JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn-custom" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de configuración -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fas fa-cog"></i> Configuración</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tema</label>
+                        <select class="form-select" id="theme-select">
+                            <option value="default" selected>Predeterminado</option>
+                            <option value="dark">Oscuro</option>
+                            <option value="light">Claro</option>
+                            <option value="neon">Neón</option>
+                            <option value="retro">Retro</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Efectos de sonido</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="sound-toggle" checked>
+                            <label class="form-check-label" for="sound-toggle">Activados</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Música de fondo</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="music-toggle" checked>
+                            <label class="form-check-label" for="music-toggle">Activada</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Volumen</label>
+                        <input type="range" class="form-range" min="0" max="100" value="50" id="volume-slider">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Forma de los objetos</label>
+                        <div class="d-flex justify-content-between">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="shape" id="shape-circle" checked>
+                                <label class="form-check-label" for="shape-circle">Círculos</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="shape" id="shape-square">
+                                <label class="form-check-label" for="shape-square">Cuadrados</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="shape" id="shape-triangle">
+                                <label class="form-check-label" for="shape-triangle">Triángulos</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Colores aleatorios</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="random-colors-toggle">
+                            <label class="form-check-label" for="random-colors-toggle">Activados</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn-custom" id="reset-settings">Restablecer</button>
+                    <button type="button" class="btn-custom" id="save-settings" data-bs-dismiss="modal">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de estadísticas -->
+    <div class="modal fade" id="statsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fas fa-chart-bar"></i> Estadísticas</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-dark border-primary mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-play"></i> Partidas jugadas</h5>
+                                    <p class="card-text fs-1 text-center" id="stats-games-played">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark border-success mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-trophy"></i> Victorias</h5>
+                                    <p class="card-text fs-1 text-center" id="stats-victories">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark border-warning mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-bullseye"></i> Precisión media</h5>
+                                    <p class="card-text fs-1 text-center" id="stats-avg-accuracy">0%</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-dark border-info mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-clock"></i> Tiempo jugado</h5>
+                                    <p class="card-text fs-1 text-center" id="stats-time-played">0h 0m</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h5><i class="fas fa-medal"></i> Historial de puntaje máximo</h5>
+                        <canvas id="score-chart" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn-custom" id="reset-stats">Restablecer estadísticas</button>
+                    <button type="button" class="btn-custom" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de fin de juego -->
+    <div class="modal fade" id="gameOverModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="game-over-title">¡Ronda completada!</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="game-over-icon" class="display-1 mb-4">
+                        <i class="fas fa-star text-warning"></i>
+                    </div>
+                    <h4 id="game-over-message">¡Bien hecho!</h4>
+                    <div class="my-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Puntuación:</span>
+                            <span id="game-over-score">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Precisión:</span>
+                            <span id="game-over-accuracy">0%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Tiempo:</span>
+                            <span id="game-over-time">0:00</span>
+                        </div>
+                    </div>
+                    <div id="new-achievement-alert" class="alert alert-success d-none">
+                        <i class="fas fa-unlock-alt"></i> ¡Nuevo logro desbloqueado!
+                    </div>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn-custom btn-reset me-2" data-bs-dismiss="modal">
+                        <i class="fas fa-redo"></i> Intentar de nuevo
+                    </button>
+                    <button type="button" class="btn-custom" id="next-level-btn" data-bs-dismiss="modal">
+                        <i class="fas fa-forward"></i> Siguiente nivel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de minijuego -->
+    <div class="modal fade" id="minigameModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title"><i class="fas fa-gamepad"></i> Minijuego</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="minigame-container">
+                        <div class="minigame-area" id="minigame-area">
+                            <!-- El minijuego se generará con JavaScript -->
+                        </div>
+                        <div class="minigame-controls mt-3 text-center">
+                            <button class="btn-custom" id="minigame-start">
+                                <i class="fas fa-play"></i> Iniciar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn-custom" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenedor para efectos de confeti -->
+    <div class="confetti-container" id="confetti-container"></div>
+    
+    <!-- Bibliotecas JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    
+    <!-- Inicializar partículas para efectos visuales -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof particlesJS !== 'undefined') {
+                particlesJS("particles-js", {
+                    particles: {
+                        number: { value: 80, density: { enable: true, value_area: 800 } },
+                        color: { value: "#ffffff" },
+                        shape: {
+                            type: "circle",
+                            stroke: { width: 0, color: "#000000" },
+                            polygon: { nb_sides: 5 }
+                        },
+                        opacity: {
+                            value: 0.5,
+                            random: false,
+                            anim: { enable: false, speed: 1, opacity_min: 0.1, sync: false }
+                        },
+                        size: {
+                            value: 3,
+                            random: true,
+                            anim: { enable: false, speed: 40, size_min: 0.1, sync: false }
+                        },
+                        line_linked: {
+                            enable: true,
+                            distance: 150,
+                            color: "#ffffff",
+                            opacity: 0.4,
+                            width: 1
+                        },
+                        move: {
+                            enable: true,
+                            speed: 2,
+                            direction: "none",
+                            random: false,
+                            straight: false,
+                            out_mode: "out",
+                            bounce: false,
+                            attract: { enable: false, rotateX: 600, rotateY: 1200 }
+                        }
+                    },
+                    interactivity: {
+                        detect_on: "canvas",
+                        events: {
+                            onhover: { enable: true, mode: "repulse" },
+                            onclick: { enable: true, mode: "push" },
+                            resize: true
+                        },
+                        modes: {
+                            grab: { distance: 400, line_linked: { opacity: 1 } },
+                            bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
+                            repulse: { distance: 200, duration: 0.4 },
+                            push: { particles_nb: 4 },
+                            remove: { particles_nb: 2 }
+                        }
+                    },
+                    retina_detect: true
+                });
+            }
+            
+            // Evento para abrir el modal de instrucciones al hacer clic en el botón
+            document.getElementById('btn-instructions').addEventListener('click', function() {
+                var instructionsModal = new bootstrap.Modal(document.getElementById('instructionsModal'));
+                instructionsModal.show();
+            });
+        });
+    </script>
+
+    <!-- Lógica principal del juego -->
+    <script>
+        // Configuración y variables globales
+        const gameConfig = {
+            difficulty: {
+                easy: { speed: 2, collisionIntensity: 0.7, transitionTime: 3000 },
+                medium: { speed: 3, collisionIntensity: 1, transitionTime: 2500 },
+                hard: { speed: 4, collisionIntensity: 1.3, transitionTime: 2000 },
+                expert: { speed: 5, collisionIntensity: 1.6, transitionTime: 1500 }
+            },
+            gameStates: {
+                IDLE: 'idle',
+                MEMORIZE: 'memorize',
+                TRACKING: 'tracking',
+                SELECTION: 'selection',
+                FEEDBACK: 'feedback',
+                COMPLETE: 'complete'
+            },
+            memorizeTime: 3000,
+            trackingTime: 10000,
+            selectionTime: 10000,
+            minObjectDistance: 100,
+            baseScore: 100,
+            baseScorePerLevel: 50,
+            bonusTimeMultiplier: 10,
+            accuracyMultiplier: 1.5,
+            maxLevels: 15
+        };
+
+        // Sonidos del juego
+        const gameSounds = {
+            init: function() {
+                this.click = new Howl({
+                    src: ['https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3'],
+                    volume: 0.5
+                });
+                
+                this.success = new Howl({
+                    src: ['https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3'],
+                    volume: 0.5
+                });
+                
+                this.fail = new Howl({
+                    src: ['https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'],
+                    volume: 0.5
+                });
+                
+                this.start = new Howl({
+                    src: ['https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3'],
+                    volume: 0.5
+                });
+                
+                this.collision = new Howl({
+                    src: ['https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3'],
+                    volume: 0.3
+                });
+                
+                this.achievement = new Howl({
+                    src: ['https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'],
+                    volume: 0.5
+                });
+                
+                this.background = new Howl({
+                    src: ['https://assets.mixkit.co/sfx/preview/mixkit-game-level-music-689.mp3'],
+                    volume: 0.2,
+                    loop: true
+                });
+            },
+            
+            play: function(sound) {
+                if (gameSettings.soundEnabled && this[sound]) {
+                    this[sound].play();
+                }
+            },
+            
+            setVolume: function(volume) {
+                const normalizedVolume = volume / 100;
+                for (const sound in this) {
+                    if (typeof this[sound] === 'object' && this[sound].volume) {
+                        this[sound].volume(normalizedVolume);
+                    }
+                }
+            },
+            
+            toggleBackground: function(play) {
+                if (play && gameSettings.musicEnabled) {
+                    if (!this.background.playing()) {
+                        this.background.play();
+                    }
+                } else {
+                    this.background.pause();
+                }
+            }
+        };
+
+        // Estado del juego actual
+        const gameState = {
+            currentState: gameConfig.gameStates.IDLE,
+            level: 1,
+            score: 0,
+            currentScore: 0,
+            totalCorrect: 0,
+            totalAttempted: 0,
+            gameTime: 0,
+            gameTimer: null,
+            objects: [],
+            targetObjects: [],
+            selectedObjects: [],
+            gameAreaBounds: null,
+            gameInitialized: false,
+            objectCount: 4,
+            difficulty: 'medium',
+            currentTheme: 'default',
+            timePlayed: 0,
+            gamesPlayed: 0,
+            victories: 0,
+            highScores: [0, 0, 0, 0, 0],
+            unlockedLevels: 1,
+            achievements: [],
+            currentShapeType: 'circle'
+        };
+
+        // Configuración del usuario
+        const gameSettings = {
+            soundEnabled: true,
+            musicEnabled: true,
+            volume: 50,
+            randomColors: false,
+            saveSettings: function() {
+                localStorage.setItem('neuroTracker_settings', JSON.stringify({
+                    soundEnabled: this.soundEnabled,
+                    musicEnabled: this.musicEnabled,
+                    volume: this.volume,
+                    randomColors: this.randomColors,
+                    currentTheme: gameState.currentTheme,
+                    currentShapeType: gameState.currentShapeType
+                }));
+            },
+            loadSettings: function() {
+                const savedSettings = localStorage.getItem('neuroTracker_settings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    this.soundEnabled = settings.soundEnabled;
+                    this.musicEnabled = settings.musicEnabled;
+                    this.volume = settings.volume;
+                    this.randomColors = settings.randomColors;
+                    gameState.currentTheme = settings.currentTheme || 'default';
+                    gameState.currentShapeType = settings.currentShapeType || 'circle';
+                    
+                    // Actualizar UI basado en configuraciones cargadas
+                    document.getElementById('sound-toggle').checked = this.soundEnabled;
+                    document.getElementById('music-toggle').checked = this.musicEnabled;
+                    document.getElementById('volume-slider').value = this.volume;
+                    document.getElementById('random-colors-toggle').checked = this.randomColors;
+                    document.getElementById('theme-select').value = gameState.currentTheme;
+                    
+                    // Actualizar forma
+                    if (gameState.currentShapeType === 'circle') {
+                        document.getElementById('shape-circle').checked = true;
+                    } else if (gameState.currentShapeType === 'square') {
+                        document.getElementById('shape-square').checked = true;
+                    } else if (gameState.currentShapeType === 'triangle') {
+                        document.getElementById('shape-triangle').checked = true;
+                    }
+                    
+                    // Aplicar tema
+                    applyTheme(gameState.currentTheme);
+                }
+            }
+        };
+
+        // Definir logros del juego
+        const achievementsList = [
+            { 
+                id: 'first_game', 
+                name: 'Primer Intento', 
+                description: 'Completa tu primera partida', 
+                icon: 'fas fa-check',
+                unlocked: false 
+            },
+            { 
+                id: 'perfect_round', 
+                name: 'Precisión Perfecta', 
+                description: 'Completa una ronda con 100% de precisión', 
+                icon: 'fas fa-bullseye',
+                unlocked: false 
+            },
+            { 
+                id: 'reach_level_5', 
+                name: 'Principiante', 
+                description: 'Alcanza el nivel 5', 
+                icon: 'fas fa-star',
+                unlocked: false 
+            },
+            { 
+                id: 'reach_level_10', 
+                name: 'Intermedio', 
+                description: 'Alcanza el nivel 10', 
+                icon: 'fas fa-star-half-alt',
+                unlocked: false 
+            },
+            { 
+                id: 'reach_level_15', 
+                name: 'Maestro', 
+                description: 'Alcanza el nivel máximo (15)', 
+                icon: 'fas fa-crown',
+                unlocked: false 
+            },
+            { 
+                id: 'score_1000', 
+                name: 'Buen Comienzo', 
+                description: 'Alcanza 1000 puntos en una partida', 
+                icon: 'fas fa-medal',
+                unlocked: false 
+            },
+            { 
+                id: 'score_5000', 
+                name: 'Cerebro Entrenado', 
+                description: 'Alcanza 5000 puntos en una partida', 
+                icon: 'fas fa-brain',
+                unlocked: false 
+            },
+            { 
+                id: 'play_10_games', 
+                name: 'Aficionado', 
+                description: 'Juega 10 partidas', 
+                icon: 'fas fa-gamepad',
+                unlocked: false 
+            },
+            { 
+                id: 'expert_difficulty', 
+                name: 'Sin Miedo', 
+                description: 'Completa una partida en dificultad experto', 
+                icon: 'fas fa-skull',
+                unlocked: false 
+            },
+            { 
+                id: 'track_6_objects', 
+                name: 'Multitasking', 
+                description: 'Sigue con éxito 6 objetos a la vez', 
+                icon: 'fas fa-th',
+                unlocked: false 
+            }
+        ];
+
+        // Inicialización del juego
+        function initGame() {
+            // Verificar si ya está inicializado para evitar múltiples inicializaciones
+            if (gameState && gameState.gameInitialized) {
+                console.log('El juego ya está inicializado');
+                return;
+            }
+            
+            console.log('Iniciando el juego...');
+            
+            // Verificar que los objetos necesarios existen
+            if (typeof gameState === 'undefined') {
+                console.error('Error: gameState no está definido');
+                return;
+            }
+            
+            try {
+                // Cargar configuraciones y datos guardados
+                loadGameData();
+                
+                if (typeof gameSettings !== 'undefined' && typeof gameSettings.loadSettings === 'function') {
+                    gameSettings.loadSettings();
+                }
+                
+                // Inicializar sonidos si existen
+                if (typeof gameSounds !== 'undefined' && typeof gameSounds.init === 'function') {
+                    gameSounds.init();
+                    
+                    if (typeof gameSettings !== 'undefined') {
+                        gameSounds.setVolume(gameSettings.volume || 50);
+                    }
+                }
+                
+                // Actualizar la UI con los datos cargados
+                updateHUD();
+                updateStats();
+                generateLevelSelector();
+                generateAchievements();
+                
+                // Configurar el área de juego
+                const gameArea = document.getElementById('game-area');
+                if (gameArea) {
+                    gameState.gameAreaBounds = gameArea.getBoundingClientRect();
+                    
+                    // Evento de redimensionamiento
+                    window.addEventListener('resize', function() {
+                        gameState.gameAreaBounds = gameArea.getBoundingClientRect();
+                        if (gameState.objects && gameState.objects.length > 0) {
+                            repositionObjectsAfterResize();
+                        }
+                    });
+                } else {
+                    console.error('Error: No se encontró el elemento game-area');
+                }
+                
+                // Configurar eventos
+                setupEventListeners();
+                
+                // IMPORTANTE: Inicializar botones de ayuda y accesibilidad
+                initAccessibilityAndHelpButtons();
+                
+                // Inicializar accesibilidad
+                setupAccessibility();
+                
+                // Optimizaciones para rendimiento
+                if (typeof optimizeForPerformance === 'function') {
+                    optimizeForPerformance();
+                }
+                
+                gameState.gameInitialized = true;
+                console.log('Juego inicializado correctamente');
+            } catch (error) {
+                console.error('Error al inicializar el juego:', error);
+            }
+        }
+
+        // Cargar datos del juego guardados
+        function loadGameData() {
+            const savedData = localStorage.getItem('neuroTracker_gameData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                gameState.level = data.level || 1;
+                gameState.score = data.score || 0;
+                gameState.timePlayed = data.timePlayed || 0;
+                gameState.gamesPlayed = data.gamesPlayed || 0;
+                gameState.victories = data.victories || 0;
+                gameState.highScores = data.highScores || [0, 0, 0, 0, 0];
+                gameState.unlockedLevels = data.unlockedLevels || 1;
+                
+                // Cargar logros
+                if (data.achievements && data.achievements.length > 0) {
+                    achievementsList.forEach(achievement => {
+                        const savedAchievement = data.achievements.find(a => a.id === achievement.id);
+                        if (savedAchievement) {
+                            achievement.unlocked = savedAchievement.unlocked;
+                        }
+                    });
+                }
+                gameState.achievements = [...achievementsList];
+            } else {
+                gameState.achievements = [...achievementsList];
+            }
+        }
+
+        // Guardar datos del juego
+        function saveGameData() {
+            const dataToSave = {
+                level: gameState.level,
+                score: gameState.score,
+                timePlayed: gameState.timePlayed,
+                gamesPlayed: gameState.gamesPlayed,
+                victories: gameState.victories,
+                highScores: gameState.highScores,
+                unlockedLevels: gameState.unlockedLevels,
+                achievements: gameState.achievements
+            };
+            localStorage.setItem('neuroTracker_gameData', JSON.stringify(dataToSave));
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Botones principales
+            document.getElementById('btn-start').addEventListener('click', startGame);
+            document.getElementById('btn-reset').addEventListener('click', resetGame);
+            document.getElementById('next-level-btn').addEventListener('click', nextLevel);
+            
+            // Selectores de dificultad y objetos
+            document.getElementById('difficulty-select').addEventListener('change', function() {
+                gameState.difficulty = this.value;
+            });
+            
+            document.getElementById('objects-select').addEventListener('change', function() {
+                gameState.objectCount = parseInt(this.value);
+            });
+            
+            // Configuraciones
+            document.getElementById('sound-toggle').addEventListener('change', function() {
+                gameSettings.soundEnabled = this.checked;
+                gameSettings.saveSettings();
+            });
+            
+            document.getElementById('music-toggle').addEventListener('change', function() {
+                gameSettings.musicEnabled = this.checked;
+                gameSettings.saveSettings();
+                gameSounds.toggleBackground(this.checked);
+            });
+            
+            document.getElementById('volume-slider').addEventListener('input', function() {
+                gameSettings.volume = parseInt(this.value);
+                gameSounds.setVolume(gameSettings.volume);
+                gameSettings.saveSettings();
+            });
+            
+            document.getElementById('random-colors-toggle').addEventListener('change', function() {
+                gameSettings.randomColors = this.checked;
+                gameSettings.saveSettings();
+            });
+            
+            document.getElementById('theme-select').addEventListener('change', function() {
+                gameState.currentTheme = this.value;
+                applyTheme(gameState.currentTheme);
+                gameSettings.saveSettings();
+            });
+            
+            // Formas
+            document.getElementById('shape-circle').addEventListener('change', function() {
+                if (this.checked) {
+                    gameState.currentShapeType = 'circle';
+                    gameSettings.saveSettings();
+                }
+            });
+            
+            document.getElementById('shape-square').addEventListener('change', function() {
+                if (this.checked) {
+                    gameState.currentShapeType = 'square';
+                    gameSettings.saveSettings();
+                }
+            });
+            
+            document.getElementById('shape-triangle').addEventListener('change', function() {
+                if (this.checked) {
+                    gameState.currentShapeType = 'triangle';
+                    gameSettings.saveSettings();
+                }
+            });
+            
+            // Botones de estadísticas
+            document.getElementById('reset-stats').addEventListener('click', function() {
+                if (confirm('¿Estás seguro que deseas restablecer todas tus estadísticas? Esta acción no se puede deshacer.')) {
+                    resetStats();
+                }
+            });
+            
+            document.getElementById('reset-settings').addEventListener('click', function() {
+                resetSettings();
+            });
+            
+            document.getElementById('save-settings').addEventListener('click', function() {
+                gameSettings.saveSettings();
+            });
+        }
+
+        // Inicializar el juego cuando el DOM esté cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Se llama después de que particlesJS se inicialice
+            initGame();
+        });
+
+        // Funciones principales del juego
+
+        // Iniciar el juego
+        function startGame() {
+            if (gameState.currentState !== gameConfig.gameStates.IDLE) return;
+            
+            // Reiniciar variables de la ronda actual
+            resetRound();
+            
+            // Sonido de inicio
+            gameSounds.play('start');
+            
+            // Iniciar música de fondo
+            gameSounds.toggleBackground(true);
+            
+            // Crear objetos
+            createObjects();
+            
+            // Iniciar temporizador del juego
+            startGameTimer();
+            
+            // Cambiar estado a memorización
+            changeGameState(gameConfig.gameStates.MEMORIZE);
+            
+            // Seleccionar objetos para seguimiento
+            selectTargetObjects();
+            
+            // Iniciar fase de memorización
+            setTimeout(function() {
+                startTrackingPhase();
+            }, gameConfig.memorizeTime);
+        }
+
+        // Crear objetos en el área de juego
+        function createObjects() {
+            const gameArea = document.getElementById('game-area');
+            const totalObjects = gameState.objectCount * 2; // Multiplicamos por 2 para tener suficientes objetos
+            
+            // Limpiar objetos anteriores
+            gameArea.innerHTML = '';
+            gameState.objects = [];
+            
+            // Crear nuevos objetos
+            for (let i = 0; i < totalObjects; i++) {
+                const obj = document.createElement('div');
+                obj.className = 'game-object';
+                obj.id = 'object-' + i;
+                
+                // Aplicar forma según configuración
+                applyObjectShape(obj, gameState.currentShapeType);
+                
+                // Posición aleatoria evitando superposiciones
+                const position = getRandomPosition(totalObjects);
+                
+                // Velocidad y dirección aleatorias
+                const speed = gameConfig.difficulty[gameState.difficulty].speed;
+                const angle = Math.random() * Math.PI * 2; // Ángulo aleatorio en radianes
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                
+                // Crear objeto con todas sus propiedades
+                const objData = {
+                    element: obj,
+                    id: i,
+                    x: position.x,
+                    y: position.y,
+                    vx: vx,
+                    vy: vy,
+                    width: 50,
+                    height: 50,
+                    isTarget: false,
+                    isSelected: false
+                };
+                
+                // Guardar objeto en el array
+                gameState.objects.push(objData);
+                
+                // Posicionar en el DOM
+                obj.style.left = position.x + 'px';
+                obj.style.top = position.y + 'px';
+                
+                // Colorear objeto
+                colorizeObject(obj);
+                
+                // Añadir al área de juego
+                gameArea.appendChild(obj);
+                
+                // Añadir evento de clic para la fase de selección
+                obj.addEventListener('click', function() {
+                    handleObjectClick(objData);
+                });
+            }
+        }
+
+        // Obtener posición aleatoria evitando superposiciones
+        function getRandomPosition(totalObjects) {
+            const bounds = gameState.gameAreaBounds;
+            const objectSize = 50;
+            const padding = 10;
+            
+            let x, y;
+            let validPosition = false;
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            while (!validPosition && attempts < maxAttempts) {
+                // Generar posición aleatoria dentro de los límites
+                x = padding + Math.random() * (bounds.width - objectSize - padding * 2);
+                y = padding + Math.random() * (bounds.height - objectSize - padding * 2);
+                
+                // Verificar si colisiona con otros objetos
+                validPosition = true;
+                for (let i = 0; i < gameState.objects.length; i++) {
+                    const obj = gameState.objects[i];
+                    const distance = Math.sqrt(Math.pow(x - obj.x, 2) + Math.pow(y - obj.y, 2));
+                    
+                    // Si la distancia es menor que la mínima, la posición no es válida
+                    if (distance < gameConfig.minObjectDistance) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                
+                attempts++;
+            }
+            
+            // Si no se pudo encontrar una posición válida después de varios intentos,
+            // simplemente devolver una posición con menos restricciones
+            if (!validPosition) {
+                x = padding + Math.random() * (bounds.width - objectSize - padding * 2);
+                y = padding + Math.random() * (bounds.height - objectSize - padding * 2);
+            }
+            
+            return { x, y };
+        }
+
+        // Seleccionar objetos objetivo para seguimiento
+        function selectTargetObjects() {
+            // Limpiar selección anterior
+            gameState.targetObjects = [];
+            
+            // Seleccionar objetos aleatorios como objetivos
+            const indices = [];
+            while (indices.length < gameState.objectCount) {
+                const randomIndex = Math.floor(Math.random() * gameState.objects.length);
+                if (!indices.includes(randomIndex)) {
+                    indices.push(randomIndex);
+                    const obj = gameState.objects[randomIndex];
+                    obj.isTarget = true;
+                    gameState.targetObjects.push(obj);
+                    
+                    // Marcar visualmente
+                    obj.element.classList.add('marked');
+                }
+            }
+        }
+
+        // Iniciar fase de seguimiento
+        function startTrackingPhase() {
+            // Quitar la marca visual de los objetos objetivo
+            gameState.targetObjects.forEach(obj => {
+                obj.element.classList.remove('marked');
+            });
+            
+            // Cambiar estado
+            changeGameState(gameConfig.gameStates.TRACKING);
+            
+            // Comenzar animación
+            startObjectAnimation();
+            
+            // Temporizador para finalizar fase de seguimiento
+            setTimeout(function() {
+                stopObjectAnimation();
+                startSelectionPhase();
+            }, gameConfig.trackingTime);
+        }
+
+        // Animación de movimiento de los objetos
+        function startObjectAnimation() {
+            // Detener animación anterior si existe
+            if (gameState.animationFrame) {
+                cancelAnimationFrame(gameState.animationFrame);
+            }
+            
+            const collisionIntensity = gameConfig.difficulty[gameState.difficulty].collisionIntensity;
+            
+            // Función de animación
+            function animate() {
+                if (gameState.currentState !== gameConfig.gameStates.TRACKING) return;
+                
+                const bounds = gameState.gameAreaBounds;
+                
+                // Mover cada objeto
+                for (let i = 0; i < gameState.objects.length; i++) {
+                    const obj = gameState.objects[i];
+                    
+                    // Actualizar posición
+                    obj.x += obj.vx;
+                    obj.y += obj.vy;
+                    
+                    // Verificar colisiones con bordes
+                    // Borde derecho e izquierdo
+                    if (obj.x <= 0 || obj.x + obj.width >= bounds.width) {
+                        obj.vx *= -1;
+                        if (obj.x <= 0) obj.x = 0;
+                        if (obj.x + obj.width >= bounds.width) obj.x = bounds.width - obj.width;
+                        handleCollisionEffect(obj);
+                    }
+                    
+                    // Borde superior e inferior
+                    if (obj.y <= 0 || obj.y + obj.height >= bounds.height) {
+                        obj.vy *= -1;
+                        if (obj.y <= 0) obj.y = 0;
+                        if (obj.y + obj.height >= bounds.height) obj.y = bounds.height - obj.height;
+                        handleCollisionEffect(obj);
+                    }
+                    
+                    // Verificar colisiones con otros objetos
+                    for (let j = i + 1; j < gameState.objects.length; j++) {
+                        const otherObj = gameState.objects[j];
+                        
+                        // Calcular distancia entre centros
+                        const dx = (obj.x + obj.width / 2) - (otherObj.x + otherObj.width / 2);
+                        const dy = (obj.y + obj.height / 2) - (otherObj.y + otherObj.height / 2);
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Si hay colisión
+                        if (distance < obj.width) {
+                            // Calcular ángulo de colisión
+                            const angle = Math.atan2(dy, dx);
+                            
+                            // Calcular nuevas velocidades
+                            const sin = Math.sin(angle);
+                            const cos = Math.cos(angle);
+                            
+                            // Rotar velocidades
+                            const vx1 = obj.vx * cos + obj.vy * sin;
+                            const vy1 = obj.vy * cos - obj.vx * sin;
+                            const vx2 = otherObj.vx * cos + otherObj.vy * sin;
+                            const vy2 = otherObj.vy * cos - otherObj.vx * sin;
+                            
+                            // Intercambiar velocidades
+                            const finalVx1 = vx2 * collisionIntensity;
+                            const finalVx2 = vx1 * collisionIntensity;
+                            
+                            // Rotar velocidades de vuelta
+                            obj.vx = finalVx1 * cos - vy1 * sin;
+                            obj.vy = vy1 * cos + finalVx1 * sin;
+                            otherObj.vx = finalVx2 * cos - vy2 * sin;
+                            otherObj.vy = vy2 * cos + finalVx2 * sin;
+                            
+                            // Separar objetos para evitar superposición
+                            const overlap = obj.width - distance;
+                            const moveX = overlap * Math.cos(angle) / 2;
+                            const moveY = overlap * Math.sin(angle) / 2;
+                            
+                            obj.x += moveX;
+                            obj.y += moveY;
+                            otherObj.x -= moveX;
+                            otherObj.y -= moveY;
+                            
+                            // Efecto de colisión
+                            handleCollisionEffect(obj, otherObj);
+                        }
+                    }
+                    
+                    // Actualizar posición en el DOM
+                    obj.element.style.left = obj.x + 'px';
+                    obj.element.style.top = obj.y + 'px';
+                }
+                
+                // Continuar animación
+                gameState.animationFrame = requestAnimationFrame(animate);
+            }
+            
+            // Iniciar animación
+            gameState.animationFrame = requestAnimationFrame(animate);
+        }
+
+        // Detener animación de objetos
+        function stopObjectAnimation() {
+            if (gameState.animationFrame) {
+                cancelAnimationFrame(gameState.animationFrame);
+                gameState.animationFrame = null;
+            }
+        }
+
+        // Efecto visual y sonoro de colisión
+        function handleCollisionEffect(obj1, obj2) {
+            // Efecto visual con GSAP
+            if (typeof gsap !== 'undefined') {
+                gsap.to(obj1.element, {
+                    scale: 1.1,
+                    duration: 0.1,
+                    yoyo: true,
+                    repeat: 1
+                });
+                
+                if (obj2) {
+                    gsap.to(obj2.element, {
+                        scale: 1.1,
+                        duration: 0.1,
+                        yoyo: true,
+                        repeat: 1
+                    });
+                }
+            }
+            
+            // Sonido de colisión (con límite para no saturar)
+            if (Math.random() < 0.3) { // Solo 30% de las colisiones hacen sonido
+                gameSounds.play('collision');
+            }
+        }
+
+        // Iniciar fase de selección
+        function startSelectionPhase() {
+            changeGameState(gameConfig.gameStates.SELECTION);
+            
+            // Instrucciones
+            showMessage('¡Selecciona los objetos que estaban marcados!', 'info', 3000);
+            
+            // Temporizador para finalizar la fase de selección
+            setTimeout(function() {
+                if (gameState.currentState === gameConfig.gameStates.SELECTION) {
+                    endSelectionPhase();
+                }
+            }, gameConfig.selectionTime);
+        }
+
+        // Manejar clic en un objeto
+        function handleObjectClick(obj) {
+            if (gameState.currentState !== gameConfig.gameStates.SELECTION) return;
+            
+            // Efecto de clic
+            gsap.to(obj.element, {
+                scale: 1.2,
+                duration: 0.2,
+                yoyo: true,
+                repeat: 1
+            });
+            
+            // Sonido de clic
+            gameSounds.play('click');
+            
+            // Si ya está seleccionado, quitar selección
+            if (obj.isSelected) {
+                obj.isSelected = false;
+                obj.element.classList.remove('marked');
+                
+                // Eliminar del array de seleccionados
+                const index = gameState.selectedObjects.findIndex(o => o.id === obj.id);
+                if (index !== -1) {
+                    gameState.selectedObjects.splice(index, 1);
+                }
+            } 
+            // Si no está seleccionado y no hemos alcanzado el límite
+            else if (gameState.selectedObjects.length < gameState.objectCount) {
+                obj.isSelected = true;
+                obj.element.classList.add('marked');
+                gameState.selectedObjects.push(obj);
+                
+                // Si hemos seleccionado todos los objetos necesarios, finalizar fase
+                if (gameState.selectedObjects.length === gameState.objectCount) {
+                    setTimeout(endSelectionPhase, 500);
+                }
+            }
+        }
+
+        // Finalizar fase de selección y evaluar resultados
+        function endSelectionPhase() {
+            changeGameState(gameConfig.gameStates.FEEDBACK);
+            
+            // Calcular puntuación
+            calculateScore();
+            
+            // Mostrar resultados
+            showResults();
+            
+            // Guardar datos del juego
+            saveGameData();
+        }
+
+        // Calcular puntuación basada en aciertos, tiempo y dificultad
+        function calculateScore() {
+            let correctCount = 0;
+            let incorrectCount = 0;
+            
+            // Verificar objetos seleccionados
+            gameState.selectedObjects.forEach(obj => {
+                if (obj.isTarget) {
+                    correctCount++;
+                } else {
+                    incorrectCount++;
+                }
+            });
+            
+            // Verificar objetos objetivo no seleccionados
+            gameState.targetObjects.forEach(obj => {
+                if (!gameState.selectedObjects.some(o => o.id === obj.id)) {
+                    incorrectCount++;
+                }
+            });
+            
+            // Calcular precisión
+            const totalSelected = gameState.selectedObjects.length;
+            const accuracy = totalSelected > 0 ? (correctCount / gameState.objectCount) * 100 : 0;
+            
+            // Actualizar estadísticas
+            gameState.totalCorrect += correctCount;
+            gameState.totalAttempted += gameState.objectCount;
+            
+            // Calcular puntuación base por dificultad y nivel
+            let baseScore = gameConfig.baseScore;
+            baseScore += (gameState.level - 1) * gameConfig.baseScorePerLevel;
+            
+            // Multiplicadores por dificultad
+            const difficultyMultipliers = {
+                easy: 0.7,
+                medium: 1,
+                hard: 1.5,
+                expert: 2
+            };
+            
+            // Calcular tiempo usado
+            const timeUsed = Math.min(gameConfig.selectionTime, gameState.gameTime);
+            const timeBonus = (gameConfig.selectionTime - timeUsed) / 1000 * gameConfig.bonusTimeMultiplier;
+            
+            // Calcular puntuación final
+            const roundScore = Math.round(
+                baseScore * (accuracy / 100) * difficultyMultipliers[gameState.difficulty] + timeBonus
+            );
+            
+            // Actualizar estado
+            gameState.currentScore = roundScore;
+            gameState.score += roundScore;
+            
+            // Actualizar HUD
+            updateHUD();
+            
+            // Comprobar logros
+            checkAchievements();
+            
+            // Comprobar ranking de puntuaciones
+            updateHighScores();
+        }
+
+        // Mostrar resultados al finalizar
+        function showResults() {
+            // Mostrar modal de resultados
+            const gameOverModal = new bootstrap.Modal(document.getElementById('gameOverModal'));
+            
+            // Calcular precisión
+            const accuracy = calculateAccuracy();
+            
+            // Actualizar datos en el modal
+            document.getElementById('game-over-score').textContent = gameState.currentScore;
+            document.getElementById('game-over-accuracy').textContent = accuracy + '%';
+            document.getElementById('game-over-time').textContent = formatTime(gameState.gameTime / 1000);
+            
+            // Mensaje según precisión
+            let message, icon;
+            if (accuracy === 100) {
+                message = '¡Perfecto! ¡Identificaste todos los objetos correctamente!';
+                icon = '<i class="fas fa-star text-warning"></i>';
+                gameSounds.play('success');
+                
+                // Crear confeti para celebrar un resultado perfecto
+                setTimeout(() => createConfetti(150), 500);
+            } else if (accuracy >= 75) {
+                message = '¡Buen trabajo! ¡Tu memoria visual es impresionante!';
+                icon = '<i class="fas fa-medal text-primary"></i>';
+                gameSounds.play('success');
+            } else if (accuracy >= 50) {
+                message = 'No está mal, pero puedes mejorar. ¡Sigue practicando!';
+                icon = '<i class="fas fa-thumbs-up text-info"></i>';
+                gameSounds.play('success');
+            } else {
+                message = 'Necesitas practicar más. ¡No te rindas!';
+                icon = '<i class="fas fa-heart text-danger"></i>';
+                gameSounds.play('fail');
+            }
+            
+            document.getElementById('game-over-message').textContent = message;
+            document.getElementById('game-over-icon').innerHTML = icon;
+            
+            // Mostrar alerta de logro si se ha desbloqueado alguno
+            const newAchievementAlert = document.getElementById('new-achievement-alert');
+            if (gameState.newAchievementUnlocked) {
+                newAchievementAlert.classList.remove('d-none');
+                gameState.newAchievementUnlocked = false;
+            } else {
+                newAchievementAlert.classList.add('d-none');
+            }
+            
+            // Mostrar u ocultar botón de siguiente nivel
+            const nextLevelBtn = document.getElementById('next-level-btn');
+            if (accuracy >= 50 && gameState.level < gameConfig.maxLevels) {
+                nextLevelBtn.style.display = 'inline-block';
+                
+                // Desbloquear siguiente nivel si es necesario
+                if (gameState.level >= gameState.unlockedLevels) {
+                    gameState.unlockedLevels = Math.min(gameState.level + 1, gameConfig.maxLevels);
+                    saveGameData();
+                    generateLevelSelector(); // Actualizar selector de niveles
+                    
+                    // Celebrar desbloqueo de nivel
+                    if (gameState.unlockedLevels % 5 === 0) {
+                        showCelebration(`¡Nivel ${gameState.unlockedLevels} desbloqueado!`);
+                    }
+                }
+            } else {
+                nextLevelBtn.style.display = 'none';
+            }
+            
+            // Mostrar modal
+            gameOverModal.show();
+            
+            // Reiniciar estado del juego para próxima partida
+            changeGameState(gameConfig.gameStates.IDLE);
+            
+            // Detener temporizador del juego
+            stopGameTimer();
+            
+            // Actualizar estadísticas
+            updateStats();
+            
+            // Incrementar contador de partidas jugadas
+            gameState.gamesPlayed++;
+            
+            // Si se ganó (precisión >= 50%)
+            if (accuracy >= 50) {
+                gameState.victories++;
+            }
+            
+            // Guardar datos
+            saveGameData();
+        }
+
+        // Pasar al siguiente nivel
+        function nextLevel() {
+            if (gameState.level < gameConfig.maxLevels) {
+                gameState.level++;
+                updateHUD();
+                saveGameData();
+            }
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            // Detener animaciones y temporizadores
+            stopObjectAnimation();
+            stopGameTimer();
+            
+            // Limpiar objetos
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = '';
+            
+            // Reiniciar variables
+            resetRound();
+            
+            // Cambiar estado
+            changeGameState(gameConfig.gameStates.IDLE);
+            
+            // Actualizar HUD
+            updateHUD();
+        }
+
+        // Reiniciar variables de ronda
+        function resetRound() {
+            gameState.objects = [];
+            gameState.targetObjects = [];
+            gameState.selectedObjects = [];
+            gameState.currentScore = 0;
+            gameState.gameTime = 0;
+            gameState.animationFrame = null;
+        }
+
+        // Reiniciar estadísticas
+        function resetStats() {
+            gameState.score = 0;
+            gameState.level = 1;
+            gameState.timePlayed = 0;
+            gameState.gamesPlayed = 0;
+            gameState.victories = 0;
+            gameState.highScores = [0, 0, 0, 0, 0];
+            gameState.unlockedLevels = 1;
+            
+            // Reiniciar logros
+            gameState.achievements.forEach(achievement => {
+                achievement.unlocked = false;
+            });
+            
+            // Guardar datos
+            saveGameData();
+            
+            // Actualizar interfaces
+            updateHUD();
+            updateStats();
+            generateLevelSelector();
+            generateAchievements();
+            
+            // Mostrar mensaje
+            showMessage('Estadísticas restablecidas correctamente', 'success', 3000);
+        }
+
+        // Reiniciar configuraciones
+        function resetSettings() {
+            gameSettings.soundEnabled = true;
+            gameSettings.musicEnabled = true;
+            gameSettings.volume = 50;
+            gameSettings.randomColors = false;
+            gameState.currentTheme = 'default';
+            gameState.currentShapeType = 'circle';
+            
+            // Actualizar UI
+            document.getElementById('sound-toggle').checked = true;
+            document.getElementById('music-toggle').checked = true;
+            document.getElementById('volume-slider').value = 50;
+            document.getElementById('random-colors-toggle').checked = false;
+            document.getElementById('theme-select').value = 'default';
+            document.getElementById('shape-circle').checked = true;
+            
+            // Aplicar cambios
+            gameSounds.setVolume(50);
+            applyTheme('default');
+            
+            // Guardar configuración
+            gameSettings.saveSettings();
+            
+            // Mostrar mensaje
+            showMessage('Configuración restablecida correctamente', 'success', 3000);
+        }
+
+        // Mostrar mensaje temporal
+        function showMessage(message, type, duration) {
+            // Crear elemento de mensaje si no existe
+            let messageElement = document.getElementById('game-message');
+            if (!messageElement) {
+                messageElement = document.createElement('div');
+                messageElement.id = 'game-message';
+                messageElement.className = 'game-message';
+                
+                // Estilos
+                messageElement.style.position = 'fixed';
+                messageElement.style.top = '20px';
+                messageElement.style.left = '50%';
+                messageElement.style.transform = 'translateX(-50%)';
+                messageElement.style.padding = '10px 20px';
+                messageElement.style.borderRadius = '5px';
+                messageElement.style.zIndex = '1000';
+                messageElement.style.opacity = '0';
+                messageElement.style.transition = 'opacity 0.3s ease';
+                
+                document.body.appendChild(messageElement);
+            }
+            
+            // Aplicar estilo según tipo
+            switch (type) {
+                case 'success':
+                    messageElement.style.backgroundColor = 'rgba(40, 167, 69, 0.9)';
+                    messageElement.style.color = 'white';
+                    break;
+                case 'error':
+                    messageElement.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+                    messageElement.style.color = 'white';
+                    break;
+                case 'info':
+                default:
+                    messageElement.style.backgroundColor = 'rgba(0, 123, 255, 0.9)';
+                    messageElement.style.color = 'white';
+                    break;
+            }
+            
+            // Actualizar texto
+            messageElement.textContent = message;
+            
+            // Mostrar mensaje
+            messageElement.style.opacity = '1';
+            
+            // Ocultar después de la duración
+            setTimeout(() => {
+                messageElement.style.opacity = '0';
+            }, duration);
+        }
+
+        // Funciones de utilidad y manejo de UI
+
+        // Actualizar HUD con datos actuales
+        function updateHUD() {
+            document.getElementById('level-display').textContent = gameState.level;
+            document.getElementById('score-display').textContent = gameState.score;
+            
+            const accuracy = calculateAccuracy();
+            document.getElementById('accuracy-display').textContent = accuracy + '%';
+            
+            document.getElementById('time-display').textContent = formatTime(gameState.gameTime / 1000);
+        }
+
+        // Actualizar el temporizador
+        function updateTimer() {
+            gameState.gameTime += 100; // Actualizar cada 100ms
+            document.getElementById('time-display').textContent = formatTime(gameState.gameTime / 1000);
+        }
+
+        // Iniciar temporizador del juego
+        function startGameTimer() {
+            if (gameState.gameTimer) {
+                clearInterval(gameState.gameTimer);
+            }
+            gameState.gameTime = 0;
+            gameState.gameTimer = setInterval(updateTimer, 100);
+        }
+
+        // Detener temporizador del juego
+        function stopGameTimer() {
+            if (gameState.gameTimer) {
+                clearInterval(gameState.gameTimer);
+                gameState.gameTimer = null;
+                
+                // Acumular tiempo de juego en estadísticas
+                gameState.timePlayed += gameState.gameTime / 1000;
+            }
+        }
+
+        // Cambiar estado del juego
+        function changeGameState(newState) {
+            gameState.currentState = newState;
+            console.log('Cambio de estado a:', newState);
+        }
+
+        // Calcular precisión actual
+        function calculateAccuracy() {
+            if (gameState.totalAttempted === 0) return 0;
+            return Math.round((gameState.totalCorrect / gameState.totalAttempted) * 100);
+        }
+
+        // Formatear tiempo en formato mm:ss
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Actualizar estadísticas en la ventana modal
+        function updateStats() {
+            document.getElementById('stats-games-played').textContent = gameState.gamesPlayed;
+            document.getElementById('stats-victories').textContent = gameState.victories;
+            
+            const accuracy = calculateAccuracy();
+            document.getElementById('stats-avg-accuracy').textContent = accuracy + '%';
+            
+            // Formatear tiempo jugado
+            const hours = Math.floor(gameState.timePlayed / 3600);
+            const minutes = Math.floor((gameState.timePlayed % 3600) / 60);
+            document.getElementById('stats-time-played').textContent = `${hours}h ${minutes}m`;
+            
+            // Actualizar gráfico si Chart.js está disponible
+            updateScoreChart();
+        }
+
+        // Actualizar gráfico de puntuaciones
+        function updateScoreChart() {
+            if (typeof Chart !== 'undefined') {
+                // Obtener contexto del canvas
+                const ctx = document.getElementById('score-chart').getContext('2d');
+                
+                // Destruir gráfico anterior si existe
+                if (gameState.scoreChart) {
+                    gameState.scoreChart.destroy();
+                }
+                
+                // Crear nuevo gráfico
+                gameState.scoreChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1', '2', '3', '4', '5'],
+                        datasets: [{
+                            label: 'Puntuación máxima',
+                            data: gameState.highScores,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Actualizar ranking de puntuaciones
+        function updateHighScores() {
+            // Añadir puntuación actual al array
+            gameState.highScores.push(gameState.score);
+            
+            // Ordenar de mayor a menor
+            gameState.highScores.sort((a, b) => b - a);
+            
+            // Mantener solo las 5 mejores
+            gameState.highScores = gameState.highScores.slice(0, 5);
+        }
+
+        // Generar selectores de nivel en el modal
+        function generateLevelSelector() {
+            const container = document.querySelector('.level-selector');
+            container.innerHTML = '';
+            
+            // Crear elementos para cada nivel
+            for (let i = 1; i <= gameConfig.maxLevels; i++) {
+                const levelItem = document.createElement('div');
+                levelItem.className = 'level-item';
+                
+                // Verificar si el nivel está desbloqueado
+                if (i > gameState.unlockedLevels) {
+                    levelItem.className += ' locked';
+                } else {
+                    // Solo niveles desbloqueados pueden ser seleccionados
+                    levelItem.addEventListener('click', function() {
+                        gameState.level = i;
+                        updateHUD();
+                        saveGameData();
+                        
+                        // Cerrar modal
+                        const levelModal = bootstrap.Modal.getInstance(document.getElementById('levelsModal'));
+                        if (levelModal) {
+                            levelModal.hide();
+                        }
+                        
+                        showMessage(`Nivel ${i} seleccionado`, 'success', 2000);
+                    });
+                }
+                
+                // Añadir contenido
+                levelItem.innerHTML = `
+                    <div class="level-number">${i}</div>
+                    <div class="level-info">
+                        ${i <= gameState.unlockedLevels ? 'Desbloqueado' : 'Bloqueado'}
+                    </div>
+                `;
+                
+                container.appendChild(levelItem);
+            }
+        }
+
+        // Generar lista de logros
+        function generateAchievements() {
+            const container = document.getElementById('achievements-container');
+            container.innerHTML = '';
+            
+            // Crear tarjeta para cada logro
+            gameState.achievements.forEach(achievement => {
+                const achievementCard = document.createElement('div');
+                achievementCard.className = 'col-md-4 mb-3';
+                
+                achievementCard.innerHTML = `
+                    <div class="card bg-dark ${achievement.unlocked ? 'border-success' : 'border-secondary'}">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="achievement-icon me-2 ${achievement.unlocked ? 'text-success' : 'text-secondary'}">
+                                    <i class="${achievement.icon} fa-2x"></i>
+                                </div>
+                                <h5 class="card-title mb-0">${achievement.name}</h5>
+                            </div>
+                            <p class="card-text small">${achievement.description}</p>
+                            <div class="achievement-status text-end">
+                                ${achievement.unlocked 
+                                  ? '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Desbloqueado</span>' 
+                                  : '<span class="badge bg-secondary"><i class="fas fa-lock"></i> Bloqueado</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(achievementCard);
+            });
+        }
+
+        // Verificar logros
+        function checkAchievements() {
+            let unlocked = false;
+            let unlockedAchievements = [];
+            
+            // Buscar el logro por ID
+            function findAchievement(id) {
+                return gameState.achievements.find(a => a.id === id);
+            }
+            
+            // Desbloquear un logro si no está desbloqueado
+            function unlockAchievement(id) {
+                const achievement = findAchievement(id);
+                if (achievement && !achievement.unlocked) {
+                    achievement.unlocked = true;
+                    unlocked = true;
+                    gameState.newAchievementUnlocked = true;
+                    unlockedAchievements.push(achievement);
+                    
+                    console.log(`Logro desbloqueado: ${achievement.name}`);
+                }
+            }
+            
+            // Verificar cada logro
+            
+            // Primera partida
+            if (gameState.gamesPlayed === 0) {
+                unlockAchievement('first_game');
+            }
+            
+            // Precisión perfecta
+            const accuracy = calculateAccuracy();
+            if (accuracy === 100) {
+                unlockAchievement('perfect_round');
+            }
+            
+            // Niveles alcanzados
+            if (gameState.level >= 5) {
+                unlockAchievement('reach_level_5');
+            }
+            
+            if (gameState.level >= 10) {
+                unlockAchievement('reach_level_10');
+            }
+            
+            if (gameState.level >= 15) {
+                unlockAchievement('reach_level_15');
+            }
+            
+            // Puntuación
+            if (gameState.score >= 1000) {
+                unlockAchievement('score_1000');
+            }
+            
+            if (gameState.score >= 5000) {
+                unlockAchievement('score_5000');
+            }
+            
+            // Partidas jugadas
+            if (gameState.gamesPlayed >= 10) {
+                unlockAchievement('play_10_games');
+            }
+            
+            // Dificultad experto
+            if (gameState.difficulty === 'expert') {
+                unlockAchievement('expert_difficulty');
+            }
+            
+            // Seguir 6 objetos
+            if (gameState.objectCount >= 6) {
+                unlockAchievement('track_6_objects');
+            }
+            
+            // Si se desbloqueó algún logro, actualizar la interfaz
+            if (unlocked) {
+                generateAchievements();
+                saveGameData();
+                
+                // Mostrar celebración por logro desbloqueado si solo hay uno
+                if (unlockedAchievements.length === 1) {
+                    showCelebration(`¡Logro desbloqueado: ${unlockedAchievements[0].name}!`);
+                } 
+                // Si hay varios, mostrar una celebración general
+                else if (unlockedAchievements.length > 1) {
+                    showCelebration(`¡${unlockedAchievements.length} logros desbloqueados!`);
+                }
+            }
+        }
+
+        // Reposicionar objetos después de redimensionar la ventana
+        function repositionObjectsAfterResize() {
+            const bounds = gameState.gameAreaBounds;
+            
+            // Ajustar posición de cada objeto para mantenerlo dentro de los límites
+            gameState.objects.forEach(obj => {
+                // Asegurar que el objeto esté dentro de los nuevos límites
+                obj.x = Math.min(Math.max(0, obj.x), bounds.width - obj.width);
+                obj.y = Math.min(Math.max(0, obj.y), bounds.height - obj.height);
+                
+                // Actualizar posición en el DOM
+                obj.element.style.left = obj.x + 'px';
+                obj.element.style.top = obj.y + 'px';
+            });
+        }
+
+        // Aplicar forma a un objeto
+        function applyObjectShape(element, shape) {
+            // Restablecer estilos primero
+            element.style.borderRadius = '';
+            element.style.clipPath = '';
+            
+            switch (shape) {
+                case 'square':
+                    element.style.borderRadius = '8px';
+                    break;
+                case 'triangle':
+                    element.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+                    break;
+                case 'circle':
+                default:
+                    element.style.borderRadius = '50%';
+                    break;
+            }
+        }
+
+        // Aplicar color aleatorio a un objeto
+        function colorizeObject(element) {
+            if (gameSettings.randomColors) {
+                // Generar color aleatorio
+                const hue = Math.floor(Math.random() * 360);
+                const saturation = 70 + Math.floor(Math.random() * 30);
+                const lightness = 40 + Math.floor(Math.random() * 20);
+                
+                const color1 = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                const color2 = `hsl(${(hue + 20) % 360}, ${saturation}%, ${lightness - 10}%)`;
+                
+                element.style.background = `radial-gradient(circle at 30% 30%, ${color1}, ${color2})`;
+            } else {
+                // Usar colores predeterminados del tema
+                element.style.background = `radial-gradient(circle at 30% 30%, var(--primary-color), var(--accent-color))`;
+            }
+        }
+
+        // Aplicar tema
+        function applyTheme(theme) {
+            // Obtener elemento raíz para variables CSS
+            const root = document.documentElement;
+            
+            // Configurar colores según el tema
+            switch (theme) {
+                case 'dark':
+                    root.style.setProperty('--primary-color', '#2c3e50');
+                    root.style.setProperty('--secondary-color', '#34495e');
+                    root.style.setProperty('--accent-color', '#9b59b6');
+                    root.style.setProperty('--light-color', '#ecf0f1');
+                    root.style.setProperty('--dark-color', '#1a1a1a');
+                    root.style.setProperty('--success-color', '#27ae60');
+                    root.style.setProperty('--warning-color', '#f39c12');
+                    root.style.setProperty('--danger-color', '#c0392b');
+                    document.body.style.background = 'radial-gradient(ellipse at center, #1a1a1a 0%, #2c3e50 100%)';
+                    break;
+                    
+                case 'light':
+                    root.style.setProperty('--primary-color', '#3498db');
+                    root.style.setProperty('--secondary-color', '#2980b9');
+                    root.style.setProperty('--accent-color', '#e67e22');
+                    root.style.setProperty('--light-color', '#f8f9fa');
+                    root.style.setProperty('--dark-color', '#343a40');
+                    root.style.setProperty('--success-color', '#27ae60');
+                    root.style.setProperty('--warning-color', '#f39c12');
+                    root.style.setProperty('--danger-color', '#c0392b');
+                    document.body.style.background = 'radial-gradient(ellipse at center, #f5f7fa 0%, #c3cfe2 100%)';
+                    break;
+                    
+                case 'neon':
+                    root.style.setProperty('--primary-color', '#ff00ff');
+                    root.style.setProperty('--secondary-color', '#00ffff');
+                    root.style.setProperty('--accent-color', '#ffff00');
+                    root.style.setProperty('--light-color', '#ffffff');
+                    root.style.setProperty('--dark-color', '#000000');
+                    root.style.setProperty('--success-color', '#00ff00');
+                    root.style.setProperty('--warning-color', '#ff9900');
+                    root.style.setProperty('--danger-color', '#ff0000');
+                    document.body.style.background = 'radial-gradient(ellipse at center, #000000 0%, #3d0066 100%)';
+                    break;
+                    
+                case 'retro':
+                    root.style.setProperty('--primary-color', '#ff6b6b');
+                    root.style.setProperty('--secondary-color', '#4ecdc4');
+                    root.style.setProperty('--accent-color', '#ff9f1c');
+                    root.style.setProperty('--light-color', '#f7fff7');
+                    root.style.setProperty('--dark-color', '#2d3047');
+                    root.style.setProperty('--success-color', '#2ec4b6');
+                    root.style.setProperty('--warning-color', '#ff9f1c');
+                    root.style.setProperty('--danger-color', '#ff6b6b');
+                    document.body.style.background = 'radial-gradient(ellipse at center, #2d3047 0%, #1b1b2f 100%)';
+                    break;
+                    
+                case 'default':
+                default:
+                    root.style.setProperty('--primary-color', '#3498db');
+                    root.style.setProperty('--secondary-color', '#2ecc71');
+                    root.style.setProperty('--accent-color', '#e74c3c');
+                    root.style.setProperty('--light-color', '#ecf0f1');
+                    root.style.setProperty('--dark-color', '#2c3e50');
+                    root.style.setProperty('--success-color', '#27ae60');
+                    root.style.setProperty('--warning-color', '#f39c12');
+                    root.style.setProperty('--danger-color', '#c0392b');
+                    document.body.style.background = 'radial-gradient(ellipse at center, #1a2980 0%, #26d0ce 100%)';
+                    break;
+            }
+        }
+
+        // Minijuego adicional: Memorización de secuencia
+        function initSequenceMinigame() {
+            const minigameArea = document.getElementById('minigame-area');
+            minigameArea.innerHTML = '';
+            
+            // Crear el contenedor de secuencia
+            const sequenceContainer = document.createElement('div');
+            sequenceContainer.className = 'sequence-container';
+            sequenceContainer.style.display = 'flex';
+            sequenceContainer.style.justifyContent = 'center';
+            sequenceContainer.style.marginBottom = '20px';
+            minigameArea.appendChild(sequenceContainer);
+            
+            // Crear los botones de colores
+            const colors = ['red', 'green', 'blue', 'yellow'];
+            const colorButtons = document.createElement('div');
+            colorButtons.className = 'color-buttons';
+            colorButtons.style.display = 'flex';
+            colorButtons.style.justifyContent = 'center';
+            colorButtons.style.gap = '10px';
+            
+            colors.forEach((color, index) => {
+                const button = document.createElement('div');
+                button.className = 'color-button';
+                button.dataset.color = color;
+                button.style.width = '80px';
+                button.style.height = '80px';
+                button.style.backgroundColor = color;
+                button.style.borderRadius = '10px';
+                button.style.cursor = 'pointer';
+                button.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+                button.style.transition = 'all 0.2s ease';
+                
+                button.addEventListener('click', () => {
+                    if (gameState.minigameState === 'playing') {
+                        playerSequence.push(index);
+                        flashButton(button);
+                        
+                        // Verificar secuencia
+                        checkSequence();
+                    }
+                });
+                
+                colorButtons.appendChild(button);
+            });
+            
+            minigameArea.appendChild(colorButtons);
+            
+            // Crear display de nivel
+            const levelDisplay = document.createElement('div');
+            levelDisplay.className = 'level-display';
+            levelDisplay.style.textAlign = 'center';
+            levelDisplay.style.marginTop = '20px';
+            levelDisplay.style.fontSize = '1.5rem';
+            levelDisplay.textContent = 'Nivel: 1';
+            minigameArea.appendChild(levelDisplay);
+            
+            // Variables del minijuego
+            let sequence = [];
+            let playerSequence = [];
+            let level = 1;
+            let playing = false;
+            
+            gameState.minigameState = 'ready';
+            
+            // Controles del minijuego
+            document.getElementById('minigame-start').addEventListener('click', function() {
+                if (gameState.minigameState !== 'playing') {
+                    startSequenceGame();
+                }
+            });
+            
+            // Iniciar juego de secuencia
+            function startSequenceGame() {
+                gameState.minigameState = 'playing';
+                sequence = [];
+                playerSequence = [];
+                level = 1;
+                levelDisplay.textContent = 'Nivel: ' + level;
+                
+                // Generar primera secuencia
+                addToSequence();
+                
+                // Mostrar secuencia
+                setTimeout(playSequence, 1000);
+            }
+            
+            // Añadir a la secuencia
+            function addToSequence() {
+                const random = Math.floor(Math.random() * 4);
+                sequence.push(random);
+            }
+            
+            // Reproducir secuencia
+            function playSequence() {
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i >= sequence.length) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    
+                    const colorIndex = sequence[i];
+                    const button = colorButtons.children[colorIndex];
+                    flashButton(button);
+                    
+                    i++;
+                }, 800);
+            }
+            
+            // Efecto visual al presionar botón
+            function flashButton(button) {
+                button.style.transform = 'scale(1.1)';
+                button.style.opacity = '1';
+                button.style.boxShadow = '0 0 20px ' + button.dataset.color;
+                
+                // Sonido
+                gameSounds.play('click');
+                
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                    button.style.opacity = '0.9';
+                    button.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+                }, 300);
+            }
+            
+            // Verificar secuencia del jugador
+            function checkSequence() {
+                const currentIndex = playerSequence.length - 1;
+                
+                // Si el jugador presionó el botón incorrecto
+                if (playerSequence[currentIndex] !== sequence[currentIndex]) {
+                    // Efecto de error
+                    colorButtons.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                    setTimeout(() => {
+                        colorButtons.style.backgroundColor = 'transparent';
+                    }, 300);
+                    
+                    // Sonido de fallo
+                    gameSounds.play('fail');
+                    
+                    // Mostrar resultado
+                    levelDisplay.textContent = 'Fallaste. Nivel alcanzado: ' + level;
+                    gameState.minigameState = 'failed';
+                    
+                    return;
+                }
+                
+                // Si el jugador completó la secuencia correctamente
+                if (playerSequence.length === sequence.length) {
+                    // Sonido de éxito
+                    gameSounds.play('success');
+                    
+                    // Actualizar nivel
+                    level++;
+                    levelDisplay.textContent = 'Nivel: ' + level;
+                    playerSequence = [];
+                    
+                    // Si se alcanza un nivel alto, dar recompensa en el juego principal
+                    if (level >= 5) {
+                        // Dar recompensa (puntos extra)
+                        gameState.score += level * 50;
+                        updateHUD();
+                        saveGameData();
+                        
+                        showMessage(`¡Recompensa! +${level * 50} puntos`, 'success', 3000);
+                    }
+                    
+                    // Añadir nuevo elemento a la secuencia
+                    setTimeout(() => {
+                        addToSequence();
+                        playSequence();
+                    }, 1000);
+                }
+            }
+        }
+
+        // Inicializar minijuego cuando se abre el modal
+        document.getElementById('minigameModal').addEventListener('show.bs.modal', function () {
+            initSequenceMinigame();
+        });
+
+        // Funciones adicionales para efectos visuales
+
+        // Crear efecto de confeti
+        function createConfetti(count = 100) {
+            const container = document.getElementById('confetti-container');
+            container.innerHTML = '';
+            
+            const colors = [
+                'var(--primary-color)',
+                'var(--secondary-color)',
+                'var(--accent-color)',
+                'var(--success-color)',
+                'var(--warning-color)'
+            ];
+            
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Propiedades aleatorias
+                const size = Math.random() * 10 + 5;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const left = Math.random() * 100;
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 2;
+                
+                // Aplicar estilos
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                confetti.style.backgroundColor = color;
+                confetti.style.left = left + '%';
+                confetti.style.animationDuration = duration + 's';
+                confetti.style.animationDelay = delay + 's';
+                
+                // Forma aleatoria
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                } else if (Math.random() > 0.5) {
+                    confetti.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+                }
+                
+                container.appendChild(confetti);
+            }
+            
+            // Limpiar confeti después de unos segundos
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Mostrar celebración al desbloquear logro o nivel importante
+        function showCelebration(message) {
+            // Crear confeti
+            createConfetti();
+            
+            // Mostrar mensaje
+            showMessage(message, 'success', 4000);
+            
+            // Sonido de celebración
+            gameSounds.play('achievement');
+        }
+
+        // Funcionalidad de pantalla de presentación (ARREGLADO)
+        document.addEventListener('DOMContentLoaded', function() {
+            const splashScreen = document.getElementById('splash-screen');
+            const progressBar = document.getElementById('splash-progress-bar');
+            const splashTip = document.getElementById('splash-tip');
+            
+            if (!splashScreen || !progressBar || !splashTip) {
+                console.error("No se encontraron elementos de la pantalla de carga");
+                initGame(); // Iniciar el juego directamente si faltan elementos
+                return;
+            }
+            
+            // Tips para mostrar durante la carga
+            const tips = [
+                "Mantén la vista en el centro de la pantalla y usa tu visión periférica para seguir los objetos.",
+                "Practica regularmente para mejorar tus habilidades de atención visual y cognitivas.",
+                "Intenta agrupar mentalmente los objetos que debes seguir como si formaran una sola figura.",
+                "Esfuérzate por eliminar distracciones externas cuando practiques para obtener mejores resultados.",
+                "El seguimiento de objetos múltiples mejora con la práctica, ¡no te rindas si te resulta difícil!",
+                "Esta habilidad es utilizada por atletas profesionales para mejorar su rendimiento en deportes.",
+                "Diversos estudios científicos han demostrado los beneficios del entrenamiento de atención visual.",
+                "Los ejercicios de seguimiento visual pueden ser útiles para personas de todas las edades."
+            ];
+            
+            // Cambiar tips aleatoriamente
+            let tipIndex = 0;
+            const tipInterval = setInterval(() => {
+                tipIndex = (tipIndex + 1) % tips.length;
+                splashTip.textContent = tips[tipIndex];
+            }, 3000);
+            
+            // Simular carga progresiva - CORREGIDO
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                    clearInterval(tipInterval);
+                    
+                    // Mensaje final
+                    splashTip.textContent = "¡Carga completa! Iniciando juego...";
+                    
+                    // Ocultar pantalla de presentación después de completar
+                    setTimeout(() => {
+                        hideSplashScreen();
+                    }, 1000);
+                }
+                progressBar.style.width = progress + '%';
+            }, 200);
+            
+            // Función explícita para ocultar la pantalla de carga
+            function hideSplashScreen() {
+                splashScreen.classList.add('hidden');
+                
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    
+                    // Iniciar el juego una vez que la pantalla de carga se ha ocultado
+                    initGame();
+                    
+                    // Verificar si debemos mostrar el tutorial
+                    if (!localStorage.getItem('neuroTracker_tutorialShown')) {
+                        setTimeout(() => {
+                            if (typeof showTutorial === 'function') {
+                                showTutorial();
+                                localStorage.setItem('neuroTracker_tutorialShown', 'true');
+                            }
+                        }, 1000);
+                    }
+                }, 800);
+            }
+            
+            // Agregar un failsafe: si después de 10 segundos no se ha cerrado la pantalla, cerrarla
+            setTimeout(() => {
+                if (splashScreen.style.display !== 'none') {
+                    console.warn("Tiempo de carga excedido, cerrando pantalla de carga forzosamente");
+                    hideSplashScreen();
+                }
+            }, 10000);
+        });
+        
+        // Tutorial interactivo
+        function showTutorial() {
+            const tutorialOverlay = document.getElementById('tutorial-overlay');
+            if (!tutorialOverlay) {
+                console.error("No se encontró el elemento del tutorial");
+                return;
+            }
+            
+            tutorialOverlay.classList.add('active');
+            
+            // Configurar navegación
+            let currentStep = 1;
+            const totalSteps = document.querySelectorAll('.tutorial-step').length;
+            
+            // Función para actualizar paso visible
+            function updateStep() {
+                // Ocultar todos los pasos
+                document.querySelectorAll('.tutorial-step').forEach(step => {
+                    step.classList.remove('active');
+                });
+                
+                // Mostrar paso actual
+                const currentStepElement = document.querySelector(`.tutorial-step[data-step="${currentStep}"]`);
+                if (currentStepElement) {
+                    currentStepElement.classList.add('active');
+                }
+                
+                // Actualizar indicadores de paso
+                document.querySelectorAll('.tutorial-dot').forEach(dot => {
+                    dot.classList.remove('active');
+                });
+                const currentDot = document.querySelector(`.tutorial-dot[data-step="${currentStep}"]`);
+                if (currentDot) {
+                    currentDot.classList.add('active');
+                }
+                
+                // Actualizar estado de botones
+                const prevButton = document.getElementById('tutorial-prev');
+                const nextButton = document.getElementById('tutorial-next');
+                
+                if (prevButton) prevButton.disabled = currentStep === 1;
+                if (nextButton) nextButton.disabled = currentStep === totalSteps;
+            }
+            
+            // Eventos de navegación
+            const nextButton = document.getElementById('tutorial-next');
+            if (nextButton) {
+                nextButton.addEventListener('click', () => {
+                    if (currentStep < totalSteps) {
+                        currentStep++;
+                        updateStep();
+                    }
+                });
+            }
+            
+            const prevButton = document.getElementById('tutorial-prev');
+            if (prevButton) {
+                prevButton.addEventListener('click', () => {
+                    if (currentStep > 1) {
+                        currentStep--;
+                        updateStep();
+                    }
+                });
+            }
+            
+            // Evento para los puntos de navegación
+            document.querySelectorAll('.tutorial-dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    currentStep = parseInt(dot.dataset.step);
+                    updateStep();
+                });
+            });
+            
+            // Cerrar tutorial
+            const closeButton = document.getElementById('tutorial-close');
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    tutorialOverlay.classList.remove('active');
+                });
+            }
+        }
+        
+        // Inicialización del juego (MODIFICADO)
+        function initGame() {
+            // Verificar si ya está inicializado para evitar múltiples inicializaciones
+            if (gameState && gameState.gameInitialized) {
+                console.log('El juego ya está inicializado');
+                return;
+            }
+            
+            console.log('Iniciando el juego...');
+            
+            // Verificar que los objetos necesarios existen
+            if (typeof gameState === 'undefined') {
+                console.error('Error: gameState no está definido');
+                return;
+            }
+            
+            try {
+                // Cargar configuraciones y datos guardados
+                loadGameData();
+                
+                if (typeof gameSettings !== 'undefined' && typeof gameSettings.loadSettings === 'function') {
+                    gameSettings.loadSettings();
+                }
+                
+                // Inicializar sonidos si existen
+                if (typeof gameSounds !== 'undefined' && typeof gameSounds.init === 'function') {
+                    gameSounds.init();
+                    
+                    if (typeof gameSettings !== 'undefined') {
+                        gameSounds.setVolume(gameSettings.volume || 50);
+                    }
+                }
+                
+                // Actualizar la UI con los datos cargados
+                updateHUD();
+                updateStats();
+                generateLevelSelector();
+                generateAchievements();
+                
+                // Configurar el área de juego
+                const gameArea = document.getElementById('game-area');
+                if (gameArea) {
+                    gameState.gameAreaBounds = gameArea.getBoundingClientRect();
+                    
+                    // Evento de redimensionamiento
+                    window.addEventListener('resize', function() {
+                        gameState.gameAreaBounds = gameArea.getBoundingClientRect();
+                        if (gameState.objects && gameState.objects.length > 0) {
+                            repositionObjectsAfterResize();
+                        }
+                    });
+                } else {
+                    console.error('Error: No se encontró el elemento game-area');
+                }
+                
+                // Configurar eventos
+                setupEventListeners();
+                
+                // IMPORTANTE: Inicializar botones de ayuda y accesibilidad
+                initAccessibilityAndHelpButtons();
+                
+                // Inicializar accesibilidad
+                setupAccessibility();
+                
+                // Optimizaciones para rendimiento
+                if (typeof optimizeForPerformance === 'function') {
+                    optimizeForPerformance();
+                }
+                
+                gameState.gameInitialized = true;
+                console.log('Juego inicializado correctamente');
+            } catch (error) {
+                console.error('Error al inicializar el juego:', error);
+            }
+        }
+        
+        // Configurar opciones de accesibilidad
+        function setupAccessibility() {
+            // Inicializar variables de accesibilidad
+            if (typeof gameConfig !== 'undefined') {
+                gameConfig.gameSpeedModifier = 1;
+                
+                // Obtener slider si existe
+                const gameSpeedSlider = document.getElementById('game-speed-slider');
+                if (gameSpeedSlider) {
+                    gameConfig.gameSpeedModifier = parseInt(gameSpeedSlider.value) / 100 || 1;
+                }
+                
+                // Aplicar configuración guardada de accesibilidad
+                const accessibilitySettings = JSON.parse(localStorage.getItem('neuroTracker_accessibility') || '{}');
+                if (accessibilitySettings.gameSpeed) {
+                    gameConfig.gameSpeedModifier = accessibilitySettings.gameSpeed / 100;
+                }
+            }
+        }
+
+        // Inicialización específica para botones de ayuda y accesibilidad
+        function initAccessibilityAndHelpButtons() {
+            console.log('Inicializando botones de interfaz especiales...');
+            
+            // Inicializar botón de accesibilidad
+            const accessibilityButton = document.getElementById('accessibility-button');
+            const accessibilityPanel = document.getElementById('accessibility-panel');
+            
+            if (accessibilityButton && accessibilityPanel) {
+                console.log('Configurando botón de accesibilidad');
+                
+                // Limpiar event listeners previos (por si acaso)
+                const newAccessibilityButton = accessibilityButton.cloneNode(true);
+                accessibilityButton.parentNode.replaceChild(newAccessibilityButton, accessibilityButton);
+                
+                // Alternar panel de accesibilidad con manejo de errores
+                newAccessibilityButton.addEventListener('click', function(e) {
+                    try {
+                        console.log('Clic en botón de accesibilidad');
+                        e.stopPropagation(); // Evitar propagación del evento
+                        accessibilityPanel.classList.toggle('active');
+                    } catch (error) {
+                        console.error('Error al activar panel de accesibilidad:', error);
+                    }
+                });
+                
+                // Cerrar panel al hacer clic fuera con manejo de errores
+                document.addEventListener('click', function(e) {
+                    try {
+                        if (!accessibilityPanel.contains(e.target) && e.target !== newAccessibilityButton) {
+                            accessibilityPanel.classList.remove('active');
+                        }
+                    } catch (error) {
+                        console.error('Error en el handler de cierre de panel de accesibilidad:', error);
+                    }
+                });
+                
+                // Manejar opciones de accesibilidad
+                setupAccessibilityOptions();
+            } else {
+                console.warn('Elementos de accesibilidad no encontrados en el DOM');
+            }
+            
+            // Inicializar botón de ayuda
+            const helpTooltip = document.getElementById('help-tooltip');
+            const helpPanel = document.getElementById('help-panel');
+            
+            if (helpTooltip && helpPanel) {
+                console.log('Configurando botón de ayuda');
+                
+                // Limpiar event listeners previos (por si acaso)
+                const newHelpTooltip = helpTooltip.cloneNode(true);
+                helpTooltip.parentNode.replaceChild(newHelpTooltip, helpTooltip);
+                
+                // Alternar panel de ayuda con manejo de errores
+                newHelpTooltip.addEventListener('click', function(e) {
+                    try {
+                        console.log('Clic en botón de ayuda');
+                        e.stopPropagation(); // Evitar propagación del evento
+                        helpPanel.classList.toggle('active');
+                    } catch (error) {
+                        console.error('Error al activar panel de ayuda:', error);
+                    }
+                });
+                
+                // Cerrar panel al hacer clic fuera
+                document.addEventListener('click', function(e) {
+                    try {
+                        if (!helpPanel.contains(e.target) && e.target !== newHelpTooltip) {
+                            helpPanel.classList.remove('active');
+                        }
+                    } catch (error) {
+                        console.error('Error en el handler de cierre de panel de ayuda:', error);
+                    }
+                });
+                
+                // Configurar botón de tutorial
+                const showTutorialBtn = document.getElementById('show-tutorial-btn');
+                if (showTutorialBtn) {
+                    showTutorialBtn.addEventListener('click', function() {
+                        try {
+                            helpPanel.classList.remove('active');
+                            showTutorial();
+                        } catch (error) {
+                            console.error('Error al mostrar tutorial desde botón de ayuda:', error);
+                        }
+                    });
+                }
+            } else {
+                console.warn('Elementos de ayuda no encontrados en el DOM');
+            }
+        }
+
+        // Configurar opciones de accesibilidad
+        function setupAccessibilityOptions() {
+            // Obtener elementos de opciones
+            const highContrastToggle = document.getElementById('high-contrast-toggle');
+            const reducedMotionToggle = document.getElementById('reduced-motion-toggle');
+            const largeTextToggle = document.getElementById('large-text-toggle');
+            const gameSpeedSlider = document.getElementById('game-speed-slider');
+            
+            if (!highContrastToggle || !reducedMotionToggle || !largeTextToggle || !gameSpeedSlider) {
+                console.warn('Algunos elementos de opciones de accesibilidad no encontrados');
+                return;
+            }
+            
+            // Cargar configuración guardada
+            try {
+                const accessibilitySettings = JSON.parse(localStorage.getItem('neuroTracker_accessibility') || '{}');
+                
+                // Aplicar configuración
+                highContrastToggle.checked = accessibilitySettings.highContrast || false;
+                reducedMotionToggle.checked = accessibilitySettings.reducedMotion || false;
+                largeTextToggle.checked = accessibilitySettings.largeText || false;
+                gameSpeedSlider.value = accessibilitySettings.gameSpeed || 100;
+                
+                // Aplicar estilos
+                if (accessibilitySettings.highContrast) document.body.classList.add('high-contrast');
+                if (accessibilitySettings.reducedMotion) document.body.classList.add('reduced-motion');
+                if (accessibilitySettings.largeText) document.body.classList.add('large-text');
+                
+                // Inicializar gameConfig si existe
+                if (typeof gameConfig !== 'undefined') {
+                    gameConfig.gameSpeedModifier = (accessibilitySettings.gameSpeed || 100) / 100;
+                }
+            } catch (error) {
+                console.error('Error al cargar configuración de accesibilidad:', error);
+            }
+            
+            // Eventos de cambio con manejo de errores
+            highContrastToggle.addEventListener('change', function() {
+                try {
+                    document.body.classList.toggle('high-contrast', highContrastToggle.checked);
+                    saveAccessibilitySettings();
+                } catch (error) {
+                    console.error('Error al cambiar modo de alto contraste:', error);
+                }
+            });
+            
+            reducedMotionToggle.addEventListener('change', function() {
+                try {
+                    document.body.classList.toggle('reduced-motion', reducedMotionToggle.checked);
+                    saveAccessibilitySettings();
+                } catch (error) {
+                    console.error('Error al cambiar reducción de movimiento:', error);
+                }
+            });
+            
+            largeTextToggle.addEventListener('change', function() {
+                try {
+                    document.body.classList.toggle('large-text', largeTextToggle.checked);
+                    saveAccessibilitySettings();
+                } catch (error) {
+                    console.error('Error al cambiar tamaño de texto:', error);
+                }
+            });
+            
+            gameSpeedSlider.addEventListener('input', function() {
+                try {
+                    if (typeof gameConfig !== 'undefined') {
+                        gameConfig.gameSpeedModifier = parseInt(gameSpeedSlider.value) / 100;
+                    }
+                    saveAccessibilitySettings();
+                } catch (error) {
+                    console.error('Error al cambiar velocidad del juego:', error);
+                }
+            });
+        }
+        
+        // Guardar configuración de accesibilidad
+        function saveAccessibilitySettings() {
+            try {
+                const highContrastToggle = document.getElementById('high-contrast-toggle');
+                const reducedMotionToggle = document.getElementById('reduced-motion-toggle');
+                const largeTextToggle = document.getElementById('large-text-toggle');
+                const gameSpeedSlider = document.getElementById('game-speed-slider');
+                
+                if (!highContrastToggle || !reducedMotionToggle || !largeTextToggle || !gameSpeedSlider) {
+                    console.warn('No se pueden guardar las configuraciones de accesibilidad: faltan elementos');
+                    return;
+                }
+                
+                const settings = {
+                    highContrast: highContrastToggle.checked,
+                    reducedMotion: reducedMotionToggle.checked,
+                    largeText: largeTextToggle.checked,
+                    gameSpeed: parseInt(gameSpeedSlider.value)
+                };
+                
+                localStorage.setItem('neuroTracker_accessibility', JSON.stringify(settings));
+                console.log('Configuración de accesibilidad guardada:', settings);
+            } catch (error) {
+                console.error('Error al guardar configuración de accesibilidad:', error);
+            }
+        }
+    </script>
+</body>
+</html>

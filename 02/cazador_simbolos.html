@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cazador de Símbolos Únicos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--light-color);
+            overflow-x: hidden;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-container {
+            width: 90%;
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .grid-container {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .symbol {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--light-color);
+        }
+        
+        .symbol:hover {
+            transform: scale(1.05);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .symbol.correct {
+            background-color: var(--secondary-color);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        .symbol.wrong {
+            background-color: var(--accent-color);
+            animation: shake 0.5s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .achievements {
+            margin-top: 30px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .achievement {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .achievement-icon {
+            background-color: var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .achievement-info {
+            flex: 1;
+        }
+        
+        .achievement-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .achievement-progress {
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .achievement-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .achievement.unlocked .achievement-icon {
+            background-color: var(--secondary-color);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--dark-color);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            color: var(--light-color);
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .tab-container {
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .game-info {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .info-item {
+                flex: 1;
+                min-width: 30%;
+            }
+            
+            .symbol {
+                font-size: 1.5rem;
+            }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: confetti-fall 5s ease-in-out forwards;
+            z-index: 1;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .difficulty-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .difficulty-btn.active {
+            background-color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .timer-bar {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .timer-progress {
+            height: 100%;
+            background-color: var(--accent-color);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+        
+        .power-ups {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .power-up {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .power-up:hover {
+            transform: scale(1.1);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .power-up-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--accent-color);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .streak-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .streak-indicator.active {
+            transform: scale(1);
+        }
+        
+        .streak-fire {
+            color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cazador de Símbolos Únicos</h1>
+        <p>Encuentra el símbolo diferente lo más rápido posible</p>
+    </header>
+    
+    <div class="game-container">
+        <div class="difficulty-selector">
+            <button class="difficulty-btn" data-difficulty="easy">Fácil</button>
+            <button class="difficulty-btn active" data-difficulty="medium">Medio</button>
+            <button class="difficulty-btn" data-difficulty="hard">Difícil</button>
+            <button class="difficulty-btn" data-difficulty="expert">Experto</button>
+        </div>
+        
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">Nivel</div>
+                <div class="info-value" id="level">1</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Puntuación</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Tiempo</div>
+                <div class="info-value" id="time">15</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mejor</div>
+                <div class="info-value" id="best-score">0</div>
+            </div>
+        </div>
+        
+        <div class="timer-bar">
+            <div class="timer-progress"></div>
+        </div>
+        
+        <div class="grid-container" id="grid"></div>
+        
+        <div class="power-ups">
+            <div class="power-up" id="hint-powerup" title="Pista: Resalta la fila o columna del símbolo único">
+                <i class="fas fa-lightbulb"></i>
+                <div class="power-up-count">3</div>
+            </div>
+            <div class="power-up" id="time-powerup" title="Tiempo Extra: Añade 5 segundos al contador">
+                <i class="fas fa-clock"></i>
+                <div class="power-up-count">2</div>
+            </div>
+            <div class="power-up" id="skip-powerup" title="Saltar: Pasa al siguiente nivel">
+                <i class="fas fa-forward"></i>
+                <div class="power-up-count">1</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-secondary" id="start-btn">
+                <i class="fas fa-play"></i> Iniciar
+            </button>
+            <button class="btn" id="achievements-btn">
+                <i class="fas fa-trophy"></i> Logros
+            </button>
+            <button class="btn" id="settings-btn">
+                <i class="fas fa-cog"></i> Ajustes
+            </button>
+            <button class="btn btn-accent" id="minigames-btn">
+                <i class="fas fa-gamepad"></i> Minijuegos
+            </button>
+        </div>
+    </div>
+    
+    <div class="streak-indicator" id="streak-indicator">
+        <i class="fas fa-fire streak-fire"></i>
+        <span id="streak-count">3</span> aciertos seguidos!
+    </div>
+    
+    <div class="modal" id="achievements-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Logros</h2>
+            <div class="achievements" id="achievements-list">
+                <div class="achievement" data-id="beginner">
+                    <div class="achievement-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">Principiante</div>
+                        <div class="achievement-desc">Completa 5 niveles</div>
+                        <div class="achievement-progress">
+                            <div class="achievement-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="achievement" data-id="speed">
+                    <div class="achievement-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">Velocista</div>
+                        <div class="achievement-desc">Encuentra el símbolo en menos de 2 segundos</div>
+                        <div class="achievement-progress">
+                            <div class="achievement-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="achievement" data-id="perfectionist">
+                    <div class="achievement-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">Perfeccionista</div>
+                        <div class="achievement-desc">Completa 3 niveles sin errores</div>
+                        <div class="achievement-progress">
+                            <div class="achievement-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="achievement" data-id="master">
+                    <div class="achievement-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">Maestro</div>
+                        <div class="achievement-desc">Alcanza el nivel 10</div>
+                        <div class="achievement-progress">
+                            <div class="achievement-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="achievement" data-id="streak">
+                    <div class="achievement-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">En Racha</div>
+                        <div class="achievement-desc">Consigue 5 aciertos consecutivos</div>
+                        <div class="achievement-progress">
+                            <div class="achievement-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn" id="close-achievements">Cerrar</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Ajustes</h2>
+            <div class="tab-container">
+                <div class="tabs">
+                    <div class="tab active" data-tab="general">General</div>
+                    <div class="tab" data-tab="theme">Tema</div>
+                    <div class="tab" data-tab="sound">Sonido</div>
+                </div>
+                
+                <div class="tab-content active" data-tab="general">
+                    <div style="margin: 15px 0;">
+                        <label for="animation-toggle">Animaciones</label>
+                        <input type="checkbox" id="animation-toggle" checked>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label for="difficulty-setting">Dificultad automática</label>
+                        <input type="checkbox" id="difficulty-setting" checked>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label for="timer-toggle">Mostrar temporizador</label>
+                        <input type="checkbox" id="timer-toggle" checked>
+                    </div>
+                </div>
+                
+                <div class="tab-content" data-tab="theme">
+                    <div style="margin: 15px 0;">
+                        <label for="theme-select">Tema:</label>
+                        <select id="theme-select">
+                            <option value="default">Por defecto</option>
+                            <option value="dark">Oscuro</option>
+                            <option value="neon">Neón</option>
+                            <option value="pastel">Pastel</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label for="symbol-style">Estilo de símbolos:</label>
+                        <select id="symbol-style">
+                            <option value="default">Por defecto</option>
+                            <option value="emoji">Emojis</option>
+                            <option value="shapes">Formas</option>
+                            <option value="animals">Animales</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="tab-content" data-tab="sound">
+                    <div style="margin: 15px 0;">
+                        <label for="sound-toggle">Efectos de sonido</label>
+                        <input type="checkbox" id="sound-toggle" checked>
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label for="music-toggle">Música de fondo</label>
+                        <input type="checkbox" id="music-toggle">
+                    </div>
+                    
+                    <div style="margin: 15px 0;">
+                        <label for="volume-slider">Volumen:</label>
+                        <input type="range" id="volume-slider" min="0" max="100" value="70">
+                    </div>
+                </div>
+            </div>
+            <button class="btn" id="close-settings">Guardar</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="minigames-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Minijuegos</h2>
+            <p>Selecciona un minijuego para jugar y ganar recompensas adicionales.</p>
+            
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; cursor: pointer;" id="memory-game">
+                    <h3>Memoria Visual</h3>
+                    <p>Memoriza la secuencia de símbolos y repítela en el orden correcto.</p>
+                    <div style="font-size: 0.8rem; margin-top: 5px;">Recompensa: 2 Pistas</div>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; cursor: pointer;" id="reaction-game">
+                    <h3>Reflejos Rápidos</h3>
+                    <p>Haz clic en el símbolo lo más rápido posible cuando cambie de color.</p>
+                    <div style="font-size: 0.8rem; margin-top: 5px;">Recompensa: 1 Tiempo extra</div>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; cursor: pointer;" id="pattern-game">
+                    <h3>Patrones Ocultos</h3>
+                    <p>Descubre el patrón oculto entre un conjunto de símbolos.</p>
+                    <div style="font-size: 0.8rem; margin-top: 5px;">Recompensa: 200 puntos</div>
+                </div>
+            </div>
+            
+            <button class="btn" id="close-minigames" style="margin-top: 20px;">Volver al juego</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let level = 1;
+        let score = 0;
+        let bestScore = localStorage.getItem('symbolHunterBestScore') || 0;
+        let timeLeft = 15;
+        let gameActive = false;
+        let timer;
+        let currentDifficulty = 'medium';
+        let currentSymbols = [];
+        let uniqueSymbolPos = null;
+        let streak = 0;
+        let noErrorStreak = 0;
+        let levelStartTime = 0;
+        let achievements = {
+            beginner: {progress: 0, max: 5, unlocked: false},
+            speed: {progress: 0, max: 1, unlocked: false},
+            perfectionist: {progress: 0, max: 3, unlocked: false},
+            master: {progress: 0, max: 10, unlocked: false},
+            streak: {progress: 0, max: 5, unlocked: false}
+        };
+        
+        // Cargar logros guardados
+        if (localStorage.getItem('symbolHunterAchievements')) {
+            achievements = JSON.parse(localStorage.getItem('symbolHunterAchievements'));
+            updateAchievementsUI();
+        }
+        
+        // Definir colecciones de símbolos
+        const symbolSets = {
+            default: ['★', '☆', '◆', '◇', '△', '▲', '□', '■', '○', '●', '♠', '♣', '♥', '♦', '⚡', '✿', '❄', '☀', '☁'],
+            emoji: ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😇', '😉', '😊', '😋', '😌', '😍', '😎', '😏', '😐', '😑', '😒'],
+            shapes: ['■', '□', '▢', '▣', '▤', '▥', '▦', '▧', '▨', '▩', '◆', '◇', '◈', '◉', '◊', '○', '◌', '◍', '◎', '●'],
+            animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧']
+        };
+        
+        // Elementos del DOM
+        const gridElement = document.getElementById('grid');
+        const levelElement = document.getElementById('level');
+        const scoreElement = document.getElementById('score');
+        const timeElement = document.getElementById('time');
+        const bestScoreElement = document.getElementById('best-score');
+        const startButton = document.getElementById('start-btn');
+        const timerBar = document.querySelector('.timer-progress');
+        const streakIndicator = document.getElementById('streak-indicator');
+        const streakCountElement = document.getElementById('streak-count');
+        
+        // Power-ups
+        const hintPowerup = document.getElementById('hint-powerup');
+        const timePowerup = document.getElementById('time-powerup');
+        const skipPowerup = document.getElementById('skip-powerup');
+        let hintCount = 3;
+        let timeCount = 2;
+        let skipCount = 1;
+        
+        // Inicializar interfaz
+        document.getElementById('best-score').textContent = bestScore;
+        
+        // Configurar eventos
+        startButton.addEventListener('click', startGame);
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelector('.difficulty-btn.active').classList.remove('active');
+                this.classList.add('active');
+                currentDifficulty = this.dataset.difficulty;
+            });
+        });
+        
+        // Event listeners para modales
+        document.getElementById('achievements-btn').addEventListener('click', () => toggleModal('achievements-modal', true));
+        document.getElementById('close-achievements').addEventListener('click', () => toggleModal('achievements-modal', false));
+        document.getElementById('settings-btn').addEventListener('click', () => toggleModal('settings-modal', true));
+        document.getElementById('close-settings').addEventListener('click', () => toggleModal('settings-modal', false));
+        document.getElementById('minigames-btn').addEventListener('click', () => toggleModal('minigames-modal', true));
+        document.getElementById('close-minigames').addEventListener('click', () => toggleModal('minigames-modal', false));
+        
+        // Configuración de pestañas
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.dataset.tab;
+                document.querySelector('.tab.active').classList.remove('active');
+                this.classList.add('active');
+                
+                document.querySelector('.tab-content.active').classList.remove('active');
+                document.querySelector(`.tab-content[data-tab="${tabId}"]`).classList.add('active');
+            });
+        });
+        
+        // Power-ups
+        hintPowerup.addEventListener('click', useHintPowerup);
+        timePowerup.addEventListener('click', useTimePowerup);
+        skipPowerup.addEventListener('click', useSkipPowerup);
+        
+        // Función para mostrar/ocultar modales
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if (show) {
+                modal.style.display = 'flex';
+            } else {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Iniciar juego
+        function startGame() {
+            if (gameActive) return;
+            
+            level = 1;
+            score = 0;
+            timeLeft = 15;
+            gameActive = true;
+            streak = 0;
+            noErrorStreak = 0;
+            
+            updateUI();
+            generateLevel();
+            startTimer();
+            
+            startButton.innerHTML = '<i class="fas fa-redo"></i> Reiniciar';
+        }
+        
+        // Generar nivel
+        function generateLevel() {
+            // Detener timer actual si existe
+            if (timer) clearInterval(timer);
+            
+            // Configurar tamaño de la cuadrícula basado en el nivel y dificultad
+            let gridSize;
+            switch(currentDifficulty) {
+                case 'easy':
+                    gridSize = Math.min(3 + Math.floor(level / 3), 6);
+                    timeLeft = 20;
+                    break;
+                case 'medium':
+                    gridSize = Math.min(4 + Math.floor(level / 2), 8);
+                    timeLeft = 15;
+                    break;
+                case 'hard':
+                    gridSize = Math.min(5 + Math.floor(level / 2), 10);
+                    timeLeft = 12;
+                    break;
+                case 'expert':
+                    gridSize = Math.min(6 + Math.floor(level / 2), 12);
+                    timeLeft = 10;
+                    break;
+            }
+            
+            const symbolStyle = document.getElementById('symbol-style')?.value || 'default';
+            const symbolSet = symbolSets[symbolStyle] || symbolSets.default;
+            
+            // Crear símbolos
+            const mainSymbol = symbolSet[Math.floor(Math.random() * symbolSet.length)];
+            let uniqueSymbol;
+            
+            // Asegurarse de que el símbolo único sea visualmente similar pero diferente
+            do {
+                uniqueSymbol = symbolSet[Math.floor(Math.random() * symbolSet.length)];
+            } while (uniqueSymbol === mainSymbol);
+            
+            // Crear la cuadrícula
+            currentSymbols = [];
+            for (let i = 0; i < gridSize * gridSize; i++) {
+                currentSymbols.push(mainSymbol);
+            }
+            
+            // Colocar el símbolo único
+            uniqueSymbolPos = Math.floor(Math.random() * (gridSize * gridSize));
+            currentSymbols[uniqueSymbolPos] = uniqueSymbol;
+            
+            // Configurar el CSS Grid
+            gridElement.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            
+            // Limpiar y rellenar la cuadrícula
+            gridElement.innerHTML = '';
+            currentSymbols.forEach((symbol, index) => {
+                const symbolElement = document.createElement('div');
+                symbolElement.className = 'symbol';
+                symbolElement.textContent = symbol;
+                symbolElement.dataset.index = index;
+                symbolElement.addEventListener('click', checkSymbol);
+                gridElement.appendChild(symbolElement);
+            });
+            
+            // Actualizar temporarizador
+            timeElement.textContent = timeLeft;
+            timerBar.style.width = '100%';
+            
+            // Registrar tiempo de inicio
+            levelStartTime = Date.now();
+            
+            // Comenzar temporizador
+            startTimer();
+        }
+        
+        // Verificar símbolo seleccionado
+        function checkSymbol() {
+            if (!gameActive) return;
+            
+            const index = parseInt(this.dataset.index);
+            if (index === uniqueSymbolPos) {
+                // Correcto
+                this.classList.add('correct');
+                
+                // Calcular puntos basados en tiempo restante y nivel
+                const timeTaken = (Date.now() - levelStartTime) / 1000;
+                const timeBonus = Math.max(0, Math.floor(timeLeft * 10));
+                const levelBonus = level * 5;
+                const points = 50 + timeBonus + levelBonus;
+                
+                score += points;
+                
+                // Aumentar racha
+                streak++;
+                noErrorStreak++;
+                
+                // Mostrar indicador de racha
+                if (streak >= 3) {
+                    streakCountElement.textContent = streak;
+                    streakIndicator.classList.add('active');
+                    setTimeout(() => {
+                        streakIndicator.classList.remove('active');
+                    }, 2000);
+                }
+                
+                // Verificar logros
+                checkAchievements(timeTaken);
+                
+                // Mostrar mensaje de éxito
+                Swal.fire({
+                    title: '¡Correcto!',
+                    text: `+${points} puntos`,
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    backdrop: false,
+                    customClass: {
+                        popup: 'swal-small'
+                    }
+                });
+                
+                // Crear efecto de confeti
+                createConfetti(20);
+                
+                // Pasar al siguiente nivel
+                setTimeout(() => {
+                    level++;
+                    generateLevel();
+                    updateUI();
+                }, 1000);
+            } else {
+                // Incorrecto
+                this.classList.add('wrong');
+                
+                // Reiniciar rachas
+                streak = 0;
+                noErrorStreak = 0;
+                
+                // Reducir tiempo
+                timeLeft = Math.max(1, timeLeft - 3);
+                timeElement.textContent = timeLeft;
+                
+                // Penalizar con sonido y vibración
+                if (document.getElementById('sound-toggle')?.checked !== false) {
+                    const wrongSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLHOw3PSudSgEIG6n1+mseCwFGmSdz9yqejAHE1mNxdCofTYJC02Aw8uoggDyU87d+NtqJTwsWI2vzOmLTDEOImWs3vfWfiwHF3GqzOG1iEAsCxltn8bcpoZnW1xpY1ZYYHacscWRdmZtdIeGc2ZdY3aTmIRjR0xmkrW6oXpKMAcdV5a/zKeAUjkZIUh1kZyUg3x6fYaLioJ0XmBxjKF5XDMpNWOYtracaUUnGzFPg7jVuFktJUFnjaSnqJRTMCUzTG6FpLKnlHlTMiYtP1p3k5ygnY9nSzEcLVaEqbeulWpFJws3etno/+VKHQxMl+P4/N5fNRUfWJvY7vbmaEshBy9nl8PZ3716VzooNVJui6OxqYtnVEQUHj5jg5ywq5J7Y0oGF0+HsM3Gp3JRNwEfXqbc+vvcaTUHH1qe3vblaTMEHF2o4vTgZTIDHFyb1+fWejmPtqdAHAQyeMfq9dFmIwMfW5nR5OJ3QgAZTYK00uKocCsLIEmDqsfHro9cPw4IIUWAnbvFr6YdBbK0hjUSDx5Yi87h0mInMt7s5kgPDBpTcYSOkpOQWDEVLEZwg4+NlIFpUDsTIkp0h5GUhGhSKiVAa4mepZFqTy3Q2tZ7QXGfs7DQwdHUfD0fMUhcY1NQYH+ZrJpsRkBci7fKvJJoOTBOcZSxrZNpRipDa4ymsrOkg10QN14BfXM8WgmXr6B2TRgWREgUcnl1qL2FFA0wRCxKajgVG3yj9Pj/');
+                    wrongSound.play();
+                }
+                
+                // Hacer vibrar el dispositivo si está disponible
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(200);
+                }
+            }
+        }
+        
+        // Iniciar temporizador
+        function startTimer() {
+            if (timer) clearInterval(timer);
+            
+            const timerInterval = 100; // Actualizar cada 100ms para una animación más suave
+            const totalTime = timeLeft * 1000;
+            let timeElapsed = 0;
+            
+            timer = setInterval(() => {
+                timeElapsed += timerInterval;
+                const remainingPercent = Math.max(0, (totalTime - timeElapsed) / totalTime * 100);
+                
+                timerBar.style.width = remainingPercent + '%';
+                
+                if (timeElapsed % 1000 === 0) {
+                    timeLeft = Math.max(0, timeLeft - 1);
+                    timeElement.textContent = timeLeft;
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    gameOver();
+                }
+            }, timerInterval);
+        }
+        
+        // Finalizar juego
+        function gameOver() {
+            gameActive = false;
+            clearInterval(timer);
+            
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('symbolHunterBestScore', bestScore);
+                bestScoreElement.textContent = bestScore;
+                
+                Swal.fire({
+                    title: '¡Nuevo récord!',
+                    text: `Has conseguido ${score} puntos.`,
+                    icon: 'success',
+                    confirmButtonText: 'Genial'
+                });
+            } else {
+                Swal.fire({
+                    title: 'Fin del juego',
+                    text: `Has conseguido ${score} puntos.`,
+                    icon: 'info',
+                    confirmButtonText: 'Intentar de nuevo'
+                });
+            }
+            
+            startButton.innerHTML = '<i class="fas fa-play"></i> Iniciar';
+        }
+        
+        // Actualizar UI
+        function updateUI() {
+            levelElement.textContent = level;
+            scoreElement.textContent = score;
+            timeElement.textContent = timeLeft;
+            
+            document.querySelector('#hint-powerup .power-up-count').textContent = hintCount;
+            document.querySelector('#time-powerup .power-up-count').textContent = timeCount;
+            document.querySelector('#skip-powerup .power-up-count').textContent = skipCount;
+        }
+        
+        // Power-ups
+        function useHintPowerup() {
+            if (!gameActive || hintCount <= 0) return;
+            
+            hintCount--;
+            updateUI();
+            
+            const gridSize = Math.sqrt(currentSymbols.length);
+            const row = Math.floor(uniqueSymbolPos / gridSize);
+            const col = uniqueSymbolPos % gridSize;
+            
+            // Resaltar la fila y columna
+            const symbols = document.querySelectorAll('.symbol');
+            
+            symbols.forEach((symbol, index) => {
+                const symbolRow = Math.floor(index / gridSize);
+                const symbolCol = index % gridSize;
+                
+                if (symbolRow === row || symbolCol === col) {
+                    gsap.to(symbol, {
+                        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                        duration: 0.5,
+                        repeat: 3,
+                        yoyo: true
+                    });
+                }
+            });
+        }
+        
+        function useTimePowerup() {
+            if (!gameActive || timeCount <= 0) return;
+            
+            timeCount--;
+            updateUI();
+            
+            timeLeft += 5;
+            timeElement.textContent = timeLeft;
+            
+            // Efecto visual
+            gsap.to(timeElement, {
+                scale: 1.5,
+                color: '#2ecc71',
+                duration: 0.3,
+                yoyo: true,
+                repeat: 1
+            });
+        }
+        
+        function useSkipPowerup() {
+            if (!gameActive || skipCount <= 0) return;
+            
+            skipCount--;
+            updateUI();
+            
+            // Pasar al siguiente nivel
+            level++;
+            generateLevel();
+            updateUI();
+            
+            // Efecto visual
+            gsap.to(levelElement, {
+                scale: 1.5,
+                color: '#3498db',
+                duration: 0.3,
+                yoyo: true,
+                repeat: 1
+            });
+        }
+        
+        // Verificar logros
+        function checkAchievements(timeTaken) {
+            // Logro: Principiante
+            achievements.beginner.progress = Math.min(achievements.beginner.max, level);
+            
+            // Logro: Velocista
+            if (timeTaken < 2) {
+                achievements.speed.progress = 1;
+            }
+            
+            // Logro: Perfeccionista
+            achievements.perfectionist.progress = Math.min(achievements.perfectionist.max, noErrorStreak);
+            
+            // Logro: Maestro
+            achievements.master.progress = Math.min(achievements.master.max, level);
+            
+            // Logro: Racha
+            achievements.streak.progress = Math.min(achievements.streak.max, streak);
+            
+            // Actualizar UI de logros
+            updateAchievementsUI();
+            
+            // Guardar logros
+            localStorage.setItem('symbolHunterAchievements', JSON.stringify(achievements));
+        }
+        
+        // Actualizar UI de logros
+        function updateAchievementsUI() {
+            document.querySelectorAll('.achievement').forEach(achievementElement => {
+                const id = achievementElement.dataset.id;
+                const achievement = achievements[id];
+                
+                if (!achievement) return;
+                
+                const progressBar = achievementElement.querySelector('.achievement-bar');
+                const progressPercent = (achievement.progress / achievement.max) * 100;
+                
+                progressBar.style.width = progressPercent + '%';
+                
+                if (achievement.progress >= achievement.max && !achievement.unlocked) {
+                    achievement.unlocked = true;
+                    
+                    // Mostrar notificación de logro desbloqueado
+                    if (gameActive) {
+                        const achievementName = achievementElement.querySelector('.achievement-name').textContent;
+                        
+                        Swal.fire({
+                            title: '¡Logro desbloqueado!',
+                            text: achievementName,
+                            icon: 'success',
+                            timer: 2000,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false
+                        });
+                    }
+                    
+                    achievementElement.classList.add('unlocked');
+                }
+            });
+        }
+        
+        // Crear confeti
+        function createConfetti(count) {
+            if (document.getElementById('animation-toggle')?.checked === false) return;
+            
+            const colors = ['#f39c12', '#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
+            
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                
+                document.body.appendChild(confetti);
+                
+                // Eliminar el confeti después de la animación
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Mini-juegos
+        document.getElementById('memory-game').addEventListener('click', startMemoryGame);
+        document.getElementById('reaction-game').addEventListener('click', startReactionGame);
+        document.getElementById('pattern-game').addEventListener('click', startPatternGame);
+        
+        function startMemoryGame() {
+            toggleModal('minigames-modal', false);
+            
+            Swal.fire({
+                title: 'Memoria Visual',
+                html: `
+                    <div style="margin: 20px 0;">
+                        <p>Memoriza esta secuencia:</p>
+                        <div id="memory-sequence" style="display: flex; gap: 10px; justify-content: center; margin: 20px 0;"></div>
+                        <p id="memory-message">Preparándose...</p>
+                    </div>
+                `,
+                showConfirmButton: false,
+                didOpen: () => {
+                    const memorySequence = document.getElementById('memory-sequence');
+                    const memoryMessage = document.getElementById('memory-message');
+                    
+                    // Generar secuencia
+                    const sequence = [];
+                    const symbols = ['★', '☆', '◆', '◇', '□', '■', '○', '●'];
+                    
+                    for (let i = 0; i < 5; i++) {
+                        sequence.push(symbols[Math.floor(Math.random() * symbols.length)]);
+                    }
+                    
+                    // Mostrar secuencia
+                    memorySequence.innerHTML = sequence.map(s => `<div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; background-color: rgba(255,255,255,0.1); border-radius: 8px;">${s}</div>`).join('');
+                    
+                    // Countdown
+                    let countdown = 5;
+                    memoryMessage.textContent = `Memoriza en ${countdown} segundos...`;
+                    
+                    const countdownTimer = setInterval(() => {
+                        countdown--;
+                        memoryMessage.textContent = `Memoriza en ${countdown} segundos...`;
+                        
+                        if (countdown <= 0) {
+                            clearInterval(countdownTimer);
+                            memorySequence.innerHTML = '';
+                            memoryMessage.textContent = 'Ahora reproduce la secuencia:';
+                            
+                            // Mostrar opciones para seleccionar
+                            const memoryOptions = document.createElement('div');
+                            memoryOptions.style.display = 'flex';
+                            memoryOptions.style.flexWrap = 'wrap';
+                            memoryOptions.style.gap = '10px';
+                            memoryOptions.style.justifyContent = 'center';
+                            memoryOptions.style.marginTop = '20px';
+                            
+                            const shuffledSymbols = [...symbols].sort(() => Math.random() - 0.5);
+                            
+                            shuffledSymbols.forEach(symbol => {
+                                const option = document.createElement('div');
+                                option.style.width = '40px';
+                                option.style.height = '40px';
+                                option.style.display = 'flex';
+                                option.style.alignItems = 'center';
+                                option.style.justifyContent = 'center';
+                                option.style.fontSize = '24px';
+                                option.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                option.style.borderRadius = '8px';
+                                option.style.cursor = 'pointer';
+                                option.textContent = symbol;
+                                
+                                option.addEventListener('click', () => {
+                                    const selectedSymbol = document.createElement('div');
+                                    selectedSymbol.style.width = '40px';
+                                    selectedSymbol.style.height = '40px';
+                                    selectedSymbol.style.display = 'flex';
+                                    selectedSymbol.style.alignItems = 'center';
+                                    selectedSymbol.style.justifyContent = 'center';
+                                    selectedSymbol.style.fontSize = '24px';
+                                    selectedSymbol.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    selectedSymbol.style.borderRadius = '8px';
+                                    selectedSymbol.textContent = symbol;
+                                    
+                                    memorySequence.appendChild(selectedSymbol);
+                                    
+                                    if (memorySequence.children.length === sequence.length) {
+                                        // Verificar secuencia
+                                        let correct = true;
+                                        
+                                        for (let i = 0; i < sequence.length; i++) {
+                                            if (memorySequence.children[i].textContent !== sequence[i]) {
+                                                correct = false;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if (correct) {
+                                            // Éxito
+                                            memoryMessage.textContent = '¡Correcto! Has ganado 2 pistas.';
+                                            memoryMessage.style.color = '#2ecc71';
+                                            
+                                            hintCount += 2;
+                                            updateUI();
+                                            
+                                            setTimeout(() => {
+                                                Swal.close();
+                                            }, 2000);
+                                        } else {
+                                            // Fracaso
+                                            memoryMessage.textContent = 'Incorrecto. Inténtalo de nuevo.';
+                                            memoryMessage.style.color = '#e74c3c';
+                                            
+                                            setTimeout(() => {
+                                                memorySequence.innerHTML = '';
+                                            }, 1000);
+                                        }
+                                    }
+                                });
+                                
+                                memoryOptions.appendChild(option);
+                            });
+                            
+                            Swal.getHtmlContainer().appendChild(memoryOptions);
+                        }
+                    }, 1000);
+                }
+            });
+        }
+        
+        function startReactionGame() {
+            toggleModal('minigames-modal', false);
+            
+            let timeoutId; // Declarar la variable dentro de la función
+            
+            Swal.fire({
+                title: 'Reflejos Rápidos',
+                html: `
+                    <div style="margin: 20px 0;">
+                        <p id="reaction-message">Prepárate... Haz clic en el símbolo cuando cambie de color.</p>
+                        <div id="reaction-target" style="width: 100px; height: 100px; margin: 30px auto; display: flex; align-items: center; justify-content: center; font-size: 40px; background-color: rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer;">★</div>
+                        <div id="reaction-result" style="min-height: 20px;"></div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    const reactionTarget = document.getElementById('reaction-target');
+                    const reactionMessage = document.getElementById('reaction-message');
+                    const reactionResult = document.getElementById('reaction-result');
+                    
+                    let ready = false;
+                    let reactionStartTime;
+                    
+                    // Esperar un tiempo aleatorio antes de cambiar el color
+                    const waitTime = 1000 + Math.random() * 3000;
+                    
+                    reactionTarget.addEventListener('click', () => {
+                        if (!ready) {
+                            reactionResult.textContent = '¡Demasiado pronto! Espera a que cambie de color.';
+                            reactionResult.style.color = '#e74c3c';
+                            return;
+                        }
+                        
+                        // Medir tiempo de reacción
+                        const reactionTime = Date.now() - reactionStartTime;
+                        
+                        reactionTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                        
+                        if (reactionTime < 800) {
+                            reactionResult.textContent = `¡Excelente! Tiempo: ${reactionTime} ms`;
+                            reactionResult.style.color = '#2ecc71';
+                            
+                            // Recompensa
+                            timeCount += 1;
+                            updateUI();
+                            
+                            // Limpiar el temporizador antes de cerrar
+                            clearTimeout(timeoutId);
+                            
+                            setTimeout(() => {
+                                Swal.close();
+                            }, 2000);
+                        } else {
+                            reactionResult.textContent = `Tiempo: ${reactionTime} ms. ¡Puedes hacerlo mejor!`;
+                            reactionResult.style.color = '#f39c12';
+                            
+                            // Nueva oportunidad
+                            ready = false;
+                            
+                            // Limpiar el temporizador anterior antes de iniciar uno nuevo
+                            clearTimeout(timeoutId);
+                            
+                            setTimeout(() => {
+                                reactionResult.textContent = '';
+                                startReactionTest();
+                            }, 1500);
+                        }
+                    });
+                    
+                    function startReactionTest() {
+                        // Limpiar el temporizador anterior si existe
+                        if (timeoutId) {
+                            clearTimeout(timeoutId);
+                        }
+                        
+                        reactionMessage.textContent = 'Prepárate... Haz clic en el símbolo cuando cambie de color.';
+                        
+                        timeoutId = setTimeout(() => {
+                            reactionTarget.style.backgroundColor = '#e74c3c';
+                            reactionStartTime = Date.now();
+                            ready = true;
+                            reactionMessage.textContent = '¡AHORA!';
+                        }, waitTime);
+                    }
+                    
+                    startReactionTest();
+                },
+                willClose: () => {
+                    // Limpiar cualquier timeout pendiente al cerrar
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                }
+            });
+        }
+        
+        function startPatternGame() {
+            toggleModal('minigames-modal', false);
+            
+            const patterns = [
+                { sequence: ['★', '□', '★', '□', '★'], answer: '□' }, // Alternancia
+                { sequence: ['□', '◆', '○', '★', '◇'], answer: '☆' }, // Forma similar siguiente
+                { sequence: ['◆', '◆', '◇', '◇', '◆'], answer: '◆' }  // Repetición AABBA
+            ];
+            
+            const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
+            
+            Swal.fire({
+                title: 'Patrones Ocultos',
+                html: `
+                    <div style="margin: 20px 0;">
+                        <p>¿Qué símbolo debería seguir en esta secuencia?</p>
+                        <div id="pattern-sequence" style="display: flex; gap: 10px; justify-content: center; margin: 20px 0;"></div>
+                        <p id="pattern-message">Selecciona el símbolo que continúa la secuencia:</p>
+                        <div id="pattern-options" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;"></div>
+                    </div>
+                `,
+                showConfirmButton: false,
+                didOpen: () => {
+                    const patternSequence = document.getElementById('pattern-sequence');
+                    const patternOptions = document.getElementById('pattern-options');
+                    const patternMessage = document.getElementById('pattern-message');
+                    
+                    // Mostrar secuencia
+                    patternSequence.innerHTML = selectedPattern.sequence.map(s => `
+                        <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; background-color: rgba(255,255,255,0.1); border-radius: 8px;">${s}</div>
+                    `).join('') + `
+                        <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; background-color: rgba(255,255,255,0.05); border-radius: 8px; border: 2px dashed rgba(255,255,255,0.3);">?</div>
+                    `;
+                    
+                    // Generar opciones (incluir la correcta y otras aleatorias)
+                    const allSymbols = ['★', '☆', '◆', '◇', '△', '▲', '□', '■', '○', '●'];
+                    const options = [selectedPattern.answer];
+                    
+                    while (options.length < 4) {
+                        const randomSymbol = allSymbols[Math.floor(Math.random() * allSymbols.length)];
+                        if (!options.includes(randomSymbol)) {
+                            options.push(randomSymbol);
+                        }
+                    }
+                    
+                    // Mezclar opciones
+                    const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+                    
+                    // Mostrar opciones
+                    patternOptions.innerHTML = shuffledOptions.map(symbol => `
+                        <div class="pattern-option" data-symbol="${symbol}" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 30px; background-color: rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer;">${symbol}</div>
+                    `).join('');
+                    
+                    // Agregar eventos de clic a las opciones
+                    document.querySelectorAll('.pattern-option').forEach(option => {
+                        option.addEventListener('click', () => {
+                            const selectedSymbol = option.dataset.symbol;
+                            
+                            if (selectedSymbol === selectedPattern.answer) {
+                                // Correcto
+                                patternMessage.textContent = '¡Correcto! Has ganado 200 puntos.';
+                                patternMessage.style.color = '#2ecc71';
+                                option.style.backgroundColor = '#2ecc71';
+                                
+                                score += 200;
+                                updateUI();
+                                
+                                setTimeout(() => {
+                                    Swal.close();
+                                }, 2000);
+                            } else {
+                                // Incorrecto
+                                patternMessage.textContent = 'Incorrecto. Inténtalo de nuevo.';
+                                patternMessage.style.color = '#e74c3c';
+                                option.style.backgroundColor = '#e74c3c';
+                                
+                                setTimeout(() => {
+                                    option.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    patternMessage.textContent = 'Selecciona el símbolo que continúa la secuencia:';
+                                    patternMessage.style.color = '';
+                                }, 1000);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
