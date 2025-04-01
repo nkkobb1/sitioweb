@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juegos PSVITA VPK - papitasfritas.com</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Reset y Estilos Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-color: #1a182e; --neon-cyan: #00f4d1; --neon-cyan-darker: #00c1a8;
+            --text-color: #e0e0e0; --card-bg: #2a2841; --glow-color: rgba(0, 244, 209, 0.7);
+        }
+        body {
+            background-color: var(--bg-color); color: var(--text-color); font-family: 'Roboto', sans-serif;
+            line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden;
+        }
+        a { color: var(--neon-cyan); text-decoration: none; transition: color 0.3s ease, text-shadow 0.3s ease; }
+        a:hover, a:focus { color: #fff; text-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color), 0 0 15px var(--glow-color); }
+        ul { list-style: none; }
+        /* --- Header y Título --- */
+        .site-header { text-align: center; padding: 40px 20px 20px 20px; animation: fadeInDown 1s ease-out; }
+        .main-title {
+            font-family: 'Orbitron', sans-serif; font-size: 3rem; color: var(--neon-cyan); text-transform: uppercase;
+            position: relative; margin-bottom: 10px; text-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color),
+            0 0 20px var(--glow-color), 0 0 40px var(--neon-cyan), 0 0 60px var(--neon-cyan);
+            animation: neonFlicker 4s infinite alternate ease-in-out;
+        }
+        .subtitle { font-size: 1.1rem; color: var(--text-color); opacity: 0.8; animation: fadeInUp 1s ease-out 0.3s; animation-fill-mode: backwards; }
+        /* --- Lista de Juegos --- */
+        .game-list-container {
+            width: 90%; max-width: 800px; margin: 20px auto; background-color: var(--card-bg); border-radius: 8px;
+            padding: 25px; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3); flex-grow: 1; animation: zoomIn 0.8s ease-out;
+        }
+        .game-list { padding: 0; }
+        .game-list li {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 15px 10px;
+            /* Apply animation by default, JS will manage delay and potentially override opacity/transform for non-delayed items */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: listItemFadeIn 0.5s ease-out forwards;
+            transition: background-color 0.3s ease;
+        }
+        .game-list li:last-child { border-bottom: none; }
+        .game-list li:hover { background-color: rgba(0, 244, 209, 0.08); }
+        .game-list li a { display: block; font-size: 1.1rem; font-weight: 500; }
+        .loading-message { text-align: center; padding: 30px; font-style: italic; color: var(--neon-cyan-darker); animation: none; opacity: 1; transform: none;}
+        /* --- Footer --- */
+        .site-footer { text-align: center; padding: 20px; margin-top: 30px; font-size: 0.9rem; color: var(--text-color); opacity: 0.7; animation: fadeInUp 1s ease-out 0.6s; animation-fill-mode: backwards; }
+        /* --- Animaciones --- */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes listItemFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes neonFlicker { 0%, 18%, 22%, 25%, 53%, 57%, 100% { text-shadow: 0 0 4px var(--glow-color), 0 0 10px var(--glow-color), 0 0 18px var(--glow-color), 0 0 38px var(--neon-cyan), 0 0 58px var(--neon-cyan); } 20%, 24%, 55% { text-shadow: none; } }
+        /* --- Responsividad --- */
+        @media (max-width: 768px) { .main-title { font-size: 2.5rem; } .subtitle { font-size: 1rem; } .game-list-container { width: 95%; padding: 20px; } .game-list li a { font-size: 1rem; } }
+        @media (max-width: 480px) { .main-title { font-size: 2rem; text-shadow: 0 0 3px var(--glow-color), 0 0 7px var(--glow-color), 0 0 12px var(--glow-color); animation: none; } .subtitle { font-size: 0.9rem; } .game-list li { padding: 12px 5px; } }
+    </style>
+
+</head>
+<body>
+
+    <header class="site-header">
+        <h1 class="main-title" data-text="Juegos PSVITA VPK">Juegos PSVITA VPK (linkvertise)</h1>
+        <p class="subtitle">Descarga tus juegos VPK favoritos para PS Vita</p>
+    </header>
+
+    <main class="game-list-container">
+        <ul id="game-list" class="game-list">
+            <!-- El script de abajo llenará esto. Mantenemos el mensaje por si JS falla -->
+            <li class="loading-message">Cargando lista de juegos...</li>
+        </ul>
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2025 papitasfritas.com - Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- === TU SCRIPT DE GENERACIÓN DE LISTA VA AQUÍ (CON OPTIMIZACIONES) === -->
+    <script>
+        const gameUrls = [
+            // === INICIO DE TU LISTA DE ENLACES ===
+            "https://archive.org/download/PSVITA_VPK/1001%20Spikes%20%5BPCSE00349%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/2013%20Infected%20Wars%20%5BPCSE00634%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/A%20Virus%20Named%20TOM%20%5BPCSE00501%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/A.W%20Phoenix%20Festa%20%28EU-EN%29.rar",
+            "https://archive.org/download/PSVITA_VPK/A.W.%20%20Phoenix%20Festa%20%5BPCSB00960%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/AC%20Chronicles%20%5BPCSE00700%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/ARMY%20CORPS%20OF%20HELL%20%5BPCSE00006%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/Aabs%20Animals%20%5BPCSB00384%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/AeternoBlade%20%5BPCSB00324%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/Age%20of%20Zombies%20%5BPCSB00412%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/Airship%20Q%20%5BPCSG00461%5D%20%28v01.00%29%20.rar",
+            "https://archive.org/download/PSVITA_VPK/Alien%20Breed%20%5BPCSB00231%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Amnesia%20Memories%20%5BPCSE00647%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Anagami%20%5BPCSG00291%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Another%20World%20-%2020th%20Anniversary%20Edition%20%5BPCSE00472%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ar%20nosurge%20Plus%20Ode%20to%20an%20Unborn%20Star%20%5BPCSE00707%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Arcana%20Heart%203%20LOVE%20MAX%21%21%21%21%21%20%5BPCSE00427%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Asphalt%20Injection%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Asphalt%20Injection%20%5BPCSE00007%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Atelier%20Ayesha%20Plus%20~The%20Alchemist%20of%20Dusk~%20%5BPCSE00584%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Atelier%20Escha%20%26%20Logy%20Plus%20~Alchemists%20of%20the%20Dusk%20Sky~%20%5BPCSB00906%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Atelier%20Meruru%20Plus%20The%20Apprentice%20of%20Arland%20%5BPCSE00296%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Atelier%20Rorona%20Plus%20~The%20Alchemist%20of%20Arland~%20%5BPCSE00466%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Atelier%20Sophie%20The%20Alchemist%20of%20the%20Mysterious%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Atelier%20Totori%20Plus%20The%20Adventurer%20of%20Arland%20%5BPCSE00231%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Atomic%20Ninjas%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Atomic%20Ninjas%20%5BPCSB00274%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Azkend%202%20%5BPCSE00861%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/BADLAND%20Game%20of%20the%20Year%20Edition%20%5BPCSE00573%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/BIT.TRIP%20Presents...%20Runner2Future%20Legend%20of%20Rhythm%20Alien%20%5BPCSB00491%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/BLAZBLUE%20CHRONOPHANTASMAEXTEND%20%5BPCSE00677%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Bastion%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Bastion%20%5BPCSE00790%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Batman%20Arkham%20Origins%20Blackgate%20%5BPCSE00269%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Best%20of%20Board%20Games%20%5BPCSE00378%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Borderlands%202%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Broken%20Sword%205%20-%20the%20Serpent%27s%20Curse%20%5BPCSB00483%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Bullet%20Girls%20%5BPCSG00361%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/CONCEPTION%20II%20Children%20of%20the%20Seven%20Stars%20%5BPCSE00376%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Call%20of%20Duty%20Black%20Ops%20Declassified%20%5BPCSB00213%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Cel%20Damage%20HD%20%5BPCSE00422%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Child%20of%20Light%20%5BPCSB00598%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Child%20of%20Light%20%5BPCSE00480%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Citizens%20of%20Earth%20%5BPCSE00468%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Cliff%20Diving%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Cliff%20Diving%20%5BPCSF00033%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Coconut%20Dodge%20Revitalised%20%5BPCSE00267%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Code%20Realize%20~Guardian%20of%20Rebirth~%20%5BPCSE00763%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Collar%20x%20Malice%20%5BPCSG00866%5D%20FULLGAME_01.00_C0_V2.0%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Crazy%20Market%20%5BPCSE00291%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Criminal%20Girls%202%20Party%20Favors%20%5BPCSE00916%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Criminal%20Girls%202%20Party%20Favors%20%5BPCSG00681%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Criminal%20Girls%20Invite%20Only%20%5BPCSE00516%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Croixleur%20Sigma%20%5BPCSB00767%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Cross%20Angel%20Tenshi%20to%20Ryuu%20no%20Rondo%20tr.%20%5BPCSG00597%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Crypt%20of%20the%20NecroDancer%20%5BPCSE00806%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/DEAD%20OR%20ALIVE%205%20PLUS%20%5BPCSE00235%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/DIGIMON%20STORY%20CYBER%20SLEUTH%20%5BPCSE00755%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/DJMAX%20TECHNIKA%20TUNE%20%5BPCSE00208%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/DRAMAtical%20Murder%20recode%20%5BPCSG00420%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/DREAM%20C%20CLUB%20ZERO%20PORTABLE%20%5BPCSG00026%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/DYNASTY%20WARRIORS%208%20Xtreme%20Legends%20Complete%20Edition%20%5BPCSB00509%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/DYNASTY%20WARRIORS%20NEXT%20%5BPCSB00089%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dai-3-Ji%20Super%20Robot%20Taisen%20Z%20Jigoku-hen%20%5BPCSG00264%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dai-3-Ji%20Super%20Robot%20Taisen%20Z%20Tengoku-hen%20%5BPCSG00494%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Damascus%20Gear%20Operation%20Tokyo%20%5BPCSE00518%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dangan-Ronpa%201-2%20Reload%20%5BPCSG00202%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Danganronpa%20Trigger%20Happy%20Havoc%20%5BPCSE00261%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Danganronpa2%20Goodbye%20Despair%20%5BPCSE00399%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Date-A-Live%20Twin%20Edition%20Rio%20Reincarnation%20%5BPCSG00599%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dead%20Nation%20%5BPCSA00151%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Deception%20IV%20Blood%20Ties%20%5BPCSE00401%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Demon%20Gaze%20%5BPCSE00358%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Disgaea%203%20Absence%20of%20Detention%20%5BPCSB00098%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Disgaea%204%20A%20Promise%20Revisited%20%5BPCSE00360%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Disney%20Epic%20Mickey%202%20The%20Power%20of%20Two%20%28PCSA-00110%29%20%5BPCSA00110%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Disney%20Infinity%202.0%20Play%20Without%20Limits%20%5BPCSB00698%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Divekick%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Divekick%20%5BPCSE00281%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Doctor%20Who%20The%20Eternity%20Clock%20%5BPCSB00045%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Doctor%20Who%20and%20the%20Eternity%20Clock%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Dokuro%20%5BPCSB00215%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Don%27t%20Starve%20Giant%20Edition%20%5BPCSE00450%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Doodle%20God%20%5BPCSE00133%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dragon%20Ball%20Z%20Battle%20of%20Z%20%5BPCSE00305%5D%20%28v01.00%29%20%28USA%29.rar",
+"https://archive.org/download/PSVITA_VPK/Dragon%20Fin%20Soup%20%5BPCSB00621%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dragon%20Fin%20Soup%20%5BPCSE00447%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dragon%20Quest%20Builders%20%28JP%29.rar",
+"https://archive.org/download/PSVITA_VPK/Dragon%27s%20Crown%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Dragon%27s%20Crown%20%5BPCSE00019%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Duke%20Nukem%203D%20Megaton%20Edition%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Dungeon%20Hunter%20Alliance%20%5BPCSB00041%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dungeon%20Travelers%202The%20Royal%20Library%20%26%20the%20Monster%20Seal%20%5BPCSE00693%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Dustforce%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Dustforce%20%5BPCSE00332%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/EA%20SPORTS%20FIFA%20Football%20%5BPCSB00051%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Earth%20Defense%20Force%202%20Invaders%20from%20Planet%20Space%20%5BPCSE00710%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Earth%20Defense%20Force%202017%20Portable%20%5BPCSB00239%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Earth%20Defense%20Force%203%20PORTABLE%20%5BPCSG00103%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Eiyuu%20Densetsu%20Ao%20no%20Kiseki%20Evolution%20PCSG00246.rar",
+"https://archive.org/download/PSVITA_VPK/Eiyuu%20Densetsu%20Sora%20no%20Kiseki%20PCSG00488%20%28v01.00%29.rar",
+"https://archive.org/download/PSVITA_VPK/Eiyuu%20Densetsu%20Sora%20no%20Kiseki%20SC%20Evolution%20PCSG00489%20%28v01.00%29.rar",
+"https://archive.org/download/PSVITA_VPK/Eiyuu%20Densetsu%20Sora%20no%20Kiseki%20the%203rd%20Evolution%20PCSG00490%20%28v01.00%29.rar",
+"https://archive.org/download/PSVITA_VPK/Eiyuu%20Senki%20The%20World%20Conquest%20%5BPCSG00316%5D.rar",
+"https://archive.org/download/PSVITA_VPK/Escape%20Plan%20%5BPCSF00023%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Everybody%27s%20Golf%20%5BPCSF00006%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Everybody%E2%80%99s%20Golf%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Exist%20Archive%20%5BPCSG00679%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Exstetra%20%5BPCSG00196%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/F1%202011%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/F1%202011%20%5BPCSB00027%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/FEZ%20%5BPCSE00404%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/FIFA%2014%20%5BPCSB00339%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/FIFA%2015%20%5BPCSB00603%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/FREEDOM%20WARS%20%5BPCSA00147%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/FREEDOM%20WARS%20%5BPCSF00446%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Farming%20Simulator%2014%20%5BPCSE00419%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Fatestay%20night%20%5BRealta%20Nua%5D%20%5BPCSG00122%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Fifa%2014%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Flower%20%5BPCSA00114%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Flower%20%5BPCSF00349%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Flying%20Hamster%20HD%20%5BPCSE00257%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Football%20Manager%20Classic%202014%20%5BPCSB00357%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Freedom%20Wars%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Frozen%20Synapse%20Prime%20%5BPCSB00323%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Fruit%20Ninja%20%5BPCSB00273%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Fushigi%20no%20Dungeon%20Fuurai%20no%20Shiren%205%20Plus%20-%20Fortune%20Tower%20to%20Unmei%20no%20Dice%20%5BPCSG00479%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/GRAVITY%20RUSH%20%5BPCSA00011%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/GRAVITY%20RUSH%20%5BPCSF00024%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/GUILTY%20GEAR%20XX%20CORE%20PLUS%20R%20%5BPCSE00137%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Gal%20Gunvolt%20%5BPCSG00704%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/GalGunDouble%20Peace%20%5BPCSE00881%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Genkai%20Tokki%20Seven%20Pirates%20%5BPCSG00882%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Geometry%20Wars3%20Dimensions%20%5BPCSE00655%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Geten%20no%20Hana%20with%20Yume%20Akari%20%5BPCSG00921%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Girls%20und%20Panzer%20PCSG00339.rar",
+"https://archive.org/download/PSVITA_VPK/Gochuumon%20wa%20Usagi%20Desu%20ka%20Wonderful%20party%21%20%5BPCSG00786%5D%20FULLGAME_01.00_C9_V2.0%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Golden%20Time%20Vivid%20Memories%20%5BPCSG00218%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Grand%20Kingdom%20%5BPCSB00959%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Grand%20Kingdom%20%5BPCSG00474%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Guacamelee%21%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Guacamelee%21%20%5BPCSB00189%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Gundam%20Breaker%20%5BPCSG00126%5D%20%28v01.00%29%20%28JPN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Gunslugs%20%5BPCSB00409%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/HELLDIVERS%20%5BPCSC00078%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/HYPERDIMENSION%20NEPTUNIA%20U%20Action%20Unleashed%20%5BPCSE00588%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Hatsune%20Miku%20PJ%20DIVA%20F%202nd%20%5BPCSE00434%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Hatsune%20Miku%20Project%20DIVA%20f%20%5BPCSE00326%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Heroes%20of%20Loot%20%5BPCSE00666%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Higurashi%20no%20Naku%20Koro%20Ni%20Sui%20%5BPCSG00517%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Hotline%20Miami%202%20Wrong%20Number%20%5BPCSE00402%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Hotline%20Miami%20%5BPCSE00249%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Hustle%20Kings%20%5BPCSF00010%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Hyperdimension%20Neptunia%20PP%20Producing%20Perfection%20%5BPCSG00181%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Hyperdimension%20NeptuniaRe%3BBirth3V%20GENERATION%20%5BPCSE00661%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/HyperdimensionNeptunia%20Re%3BBirth1%20%5BPCSE00443%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/HyperdimensionNeptunia%20Re%3BBirth2SISTERS%20GENERATION%20%5BPCSE00508%5D%20%28v01.00%29%20%28USA%29.rar",
+"https://archive.org/download/PSVITA_VPK/IAVT%20-COLORFUL-%20%5BPCSG00355%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Imasugu%20Oniichan%20ni%20Imouto%20Datte%20Iitai%21%20%5BPCSG00337%5D%20%28v01.00%29%20%28JPN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Injustice%20Gods%20Among%20Us%20Ultimate%20Edition%20%5BPCSB00356%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/J-STARS%20Victory%20VS%20%20%5BPCSE00595%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Jet%20Car%20Stunts%20%5BPCSE00393%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Jet%20Set%20Radio%20%5BPCSE00088%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Jetpack%20Joyride%20%5BPCSE00213%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Joe%20Danger%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Joe%20Danger%20%5BPCSE00478%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Kaihou%20Shoujo%20SIN%20%5BPCSG00360%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Kamen%20Rider%20Battride%20War%20Sousei%5B%20%5BPCSG00675%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Kick%20and%20Fennick%20%5BPCSE00485%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/KickBeat%20%5BPCSE00113%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Kidou%20Senshi%20Gundam%20Seed%20Battle%20Destiny%20DESTINY%20%5BPCSG00040%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Killzone%20Mercenary%20%5BPCSA00107%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/King%20Oddball%20%5BPCSE00315%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Knytt%20Underground%20%5BPCSE00092%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Kung%20Fu%20Rabbit%20%5BPCSE00256%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LA-MULANA%20EX%20%5BPCSE00567%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Batman%202%20DC%20Super%20Heroes%20%5BPCSB00133%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Batman%203%20Beyond%20Gotham%20%5BPCSB00563%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Harry%20Potter%20Years%205-7%20%5BPCSB00103%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Jurassic%20World%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Jurassic%20World%20%5BPCSE00587%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Marvel%27s%20Avengers%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Ninjago%20Nindroids%20%5BPCSB00500%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20Ninjago%20Shadow%20of%20Ronin%20%5BPCSE00534%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20The%20Hobbit%20%5BPCSB00503%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LEGO%20The%20Lord%20of%20the%20Rings%20%5BPCSB00125%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LORD%20of%20APOCALYPSE%20%5BPCSG00008%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LUFTRAUSERS%20%5BPCSE00247%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Let%27s%20Fish%20%21%20%20Hooked%20On%20%5BPCSB00230%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Limbo%20%5BPCSB00336%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Little%20Deviants%20%5BPCSA00010%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LittleBigPlanet%20PlayStationVita%20%5BPCSF00021%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/LittleBigPlanet%E2%84%A2%20PlayStation%C2%AEVita%20Marvel%20Super%20Hero%20Edition%20%5BPCSF00516%5D%20%28v1.00%29.rar",
+"https://archive.org/download/PSVITA_VPK/Llamasoft%20TxK%20%5BPCSB00494%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Lone%20Survivor%20%5BPCSB00361%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Lost%20Dimension%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Lost%20Dimension%20%5BPCSB00814%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Lost%20Dimension%20%5BPCSE00673%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Luftrausers%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Lumines%20Electronic%20Symphony%20%5BPCSB00061%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Lumines%20Electronic%20Symphony%20%5BPCSE00009%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MAGICAL%20BEAT%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/METAL%20SLUG%203%20%5BPCSE00665%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MIND%200%20%5BPCSE00359%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MLB%2012%20The%20Show%20%5BPCSA00002%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MLB%2013%20The%20Show%20%5BPCSA00065%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MLB%2014%20The%20Show%20%5BPCSA00115%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MLB%2015%20The%20Show%20%5BPCSA00511%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MOTORSTORM%20RC%20%5BPCSA00027%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MUD%20-%20FIM%20Motocross%20World%20Championship%20%5BPCSB00182%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MXGP%20-%20The%20Official%20Motocross%20Videogame%20%5BPCSB00470%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Machinarium%20%5BPCSB00237%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Magical%20Beat%20%5BPCSE00457%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Mahouka%20Koukou%20no%20Rettousei%20Out%20of%20Order%20%5BPCSG00456%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MegaTagmension%20Blanc%20%20%20Neptune%20VS%20Zombies%20%5BPCSE00832%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Men%27s%20Room%20Mayhem%20%5BPCSE00252%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Metal%20Gear%20Solid%202%20HD%20Edition%20%5BPCSB00177%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Metal%20Gear%20Solid%203%20HD%20Edition%20%5BPCSB00176%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Michael%20Jackson%20The%20Experience%20HD%20%5BPCSE00010%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Minecraft%20PlayStationVita%20Edition%20%5BPCSB00560%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/ModNation%20Racers%20Road%20Trip%20%5BPCSA00001%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Moe%20Chronicles%20%5BPCSH00148%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Monobeno%20Pure%20Smile%20%5BPCSG00378%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Monster%20Hunter%20Frontier%20G6%20%5BPCSG00350%5D%20%28v01.00%29%20%28JPN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Monster%20Monpiece%20%5BPCSE00373%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/MonsterBag%20%5BPCSA00149%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Mortal%20Kombat%20%5BPCSB00106%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Mortal%20Kombat%20%5BPCSE00023%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Motto%20Ane%2C%20Chan%20to%20Shiyouyo%21%20%20Plus%20%5BPCSG00247%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Muramasa%20Rebirth%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Muramasa%20Rebirth%20%5BPCSB00404%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Muramasa%20Rebirth%20%5BPCSE00240%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Mutant%20Mudds%20Deluxe%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/My%20Singing%20Monsters%20%5BPCSE00459%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Mystery%20Chronicle%20One%20Way%20Heroics%20%5BPCSE00830%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/NINJA%20GAIDEN%20Sigma%20PLUS%20%5BPCSB00097%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/NORN9%20VAR%20COMMONS%20%5BPCSE00762%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Need%20For%20Speed%20Most%20Wanted%20%5BPCSB00183%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/NekoBuro%20%E2%80%93%20Cats%20Block%20%5BPCSB00771%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Neptunia%20ReBirth%203%20V%20Generation%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Neptunia%20U%20Action%20Unleashed%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/New%20Little%20King%27s%20Story%20%5BPCSB00109%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Nidhogg%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Nidhogg%20%5BPCSB00679%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Nova-111%20%5BPCSE00686%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Nun%20Attack%20%5BPCSB00264%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/ONE%20PIECE%20BURNING%20BLOOD%20%5BPCSB00893%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/ONE%20PIECE%20PIRATE%20WARRIORS%203%20%5BPCSE00638%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/ONE%20PIECE%20Unlimited%20World%20Red%20%5BPCSB00557%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Oddworld%20Munch%27s%20Oddysee%20HD%20%5BPCSE00369%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Oddworld%20Stranger%27s%20Wrath%20HD%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Odin%20Sphere%20Leifthrasir%20%5BPCSE00899%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/OlliOlli%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/OlliOlli2%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/OlliOlli2%20Welcome%20to%20Olliwood%20%5BPCSE00479%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Operation%20Abyss%20New%20Tokyo%20Legacy%20%5BPCSB00683%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ore%20ni%20Hatarakette%20Iwaretemo%20Tori%20%5BPCSG00623%5D%20FULLGAME_01.00_C5_V2.0%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Orgarhythm%20%5BPCSE00116%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Owari%20no%20Seraph%20Unmei%20no%20Hajimari%20%5BPCSG00728%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Paint%20Park%20%5BPCSA00059%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Persona%204%20Dancing%20All%20Night%20%5BPCSE00764%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Persona%204%20GOLDEN%20%5BPCSE00120%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Phantasy%20Star%20Nova%20%5BPCSG00351%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Phantom%20Breaker%20%20Battlegrounds%20%5BPCSE00458%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/PhotoKano%20Kiss%20%5BPCSG00139%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Pinball%20Arcade%20%5BPCSB00116%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/PixelJunk%20Monsters%20Ultimate%20HD%20%5BPCSE00307%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/PixelJunk%20Shooter%20Ultimate%20%5BPCSE00451%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Plants%20VS%20Zombies%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/PlayStation%20All-Stars%20Battle%20Royale%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/PlayStationVita%20Pets%20%28PCSF00517%29%20%5BPCSF00517%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Princess%20Arthur%20%5BPCSG00271%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Project%20Root%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Project%20Root%20%5BPCSB00650%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Proteus%20%5BPCSB00358%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/PulzAR%20%5BPCSF00036%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Puyo%20Puyo%20Tetris%20%28JP%29.rar",
+"https://archive.org/download/PSVITA_VPK/Quell%20Memento%20%5BPCSE00143%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/RIDGE%20RACER%20%5BPCSB00048%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/RIDGE%20RACER%20%5BPCSG00001%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/ROBOTICS%3BNOTES%20ELITE%20%5BPCSG00352%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ragnarok%20Odyssey%20ACE%20%5BPCSE00300%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ragnarok%20Odyssey%20%5BPCSE00119%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Rainbow%20Moon%20%5BPCSE00273%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ratchet%20%26%20Clank%20Full%20Frontal%20Assault%20%5BPCSA00086%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Rayman%20Legends%20%5BPCSB00360%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Rayman%20Origins%20%5BPCSB00079%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Resistance%20Burning%20Skies%20%5BPCSA00008%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Resogun%20%5BPCSA00103%5D.rar",
+"https://archive.org/download/PSVITA_VPK/Retro%20City%20Rampage%20DX%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Ridge%20Racer%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Risk%20of%20Rain%20%5BPCSE00850%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ro-Kyu-Bu%21%20Naisho%20no%20Shutter%20Chance%20%5BPCSG00287%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Rock%20Boshers%20DX%20Director%27s%20Cut%20%5BPCSB00652%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Rogue%20Legacy%20%5BPCSE00449%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Rogue%20Legacy%20%5BPCSG00622%5D%20FULLGAME_01.00_C9%5BVitamin_v2.0%5D%20%28zh%29%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Rose%20to%20Tasogare%20no%20Kojou%20%5BPCSG00851%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Rugby%20Challenge%20%5BPCSB00058%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Run%20Like%20Hell%21%20%5BPCSE00446%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/SENRAN%20KAGURA%20Bon%20Appetit%21%20%28Hanzo%20x%20Crimson%20Squad%29%20%5BPCSE00471%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/SENRAN%20KAGURA%20SHINOVI%20VERSUS%20%5BPCSE00398%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Saenai%20Heroine%20no%20Sodatekata%20Blessing%20Flowers%20%5BPCSG00543%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Saki%20Zenkoku%20Hen%20%5BPCSG00646%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Samurai%20Warriors%204%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Samurai%20Warriors%204-II%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Sayonara%20UmiharaKawase%20%20%20%5BPCSG00554%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Sayonara%20UmiharaKawase%20%5BPCSE00683%5D.rar",
+"https://archive.org/download/PSVITA_VPK/Severed%20%5BPCSE00589%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Shin%20Kamaitachi%20no%20Yoru%2011%20Hitome%20no%20Suspect%20%5BPCSG00010%5D%2001.00_C9_V2.0%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Shinobido%202%20Revenge%20of%20Zen%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Shinobido%202%20Revenge%20of%20Zen%20%5BPCSE00015%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Shiren%20The%20Wanderer%20The%20Tower%20of%20Fortune%20and%20the%20Dice%20of%20Fate%20%5BPCSE00845%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Shovel%20Knight%20%5BPCSE00640%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Sine%20Mora%20%5BPCSB00161%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Sly%201%20%26%202%20%5BPCSA00095%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Sly%203%20-%20Honor%20Among%20Theives%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Sly%20Cooper%20and%20the%20Thievius%20Raccoonus%20%5BPCSA00096%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Smart%20As%20%5BPCSA00079%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Soldner-X%202%20Final%20Prototype%20%5BPCSE00463%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Sorcery%20SagaCurse%20of%20the%20Great%20Curry%20God%20%5BPCSB00429%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Soul%20Sacrifice%20Delta%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Sound%20Shapes%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Soushuu%20Senshinkan%20Gakuen%20Hachimyoujin%20-%20Ten%20no%20Koku%20%5BPCSG00396%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Sparkle%20Unleashed%20%5BPCSE00680%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Spelunky%20%5BPCSB00359%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Spy%20Hunter%20%5BPCSE00068%5D%20%28v01.00%29%20%28USA%29.rar",
+"https://archive.org/download/PSVITA_VPK/StarDrone%20Extreme%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/StarDrone%20Extreme%20%5BPCSB00037%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Stealth%20Inc%202%20A%20Game%20of%20Clones%20%5BPCSE00575%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/SteamWorld%20Heist%20%5BPCSB00693%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Stranger%20of%20Sword%20City%20%28PCSE00818%29%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/SunFlowers%20%5BPCSE00047%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Super%20Exploding%20Zoo%20%5BPCSE00734%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Super%20Meat%20Boy%21%20%5BPCSE00769%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Super%20Monkey%20BallBanana%20Splitz%20%5BPCSB00065%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Super%20Stardust%20Delta%20%5BPCSA00006%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Supremacy%20MMA%20Unrestricted%20%5BPCSE00012%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Sweet%20Clown%20Gozen%20Sanji%20no%20Okashi%20na%20Doukeshi%20%5BPCSG00528%5D%20FULLGAME_01.00_C5_V2.0%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Switch%20Galaxy%20Ultra%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Switch%20Galaxy%20Ultra%20%5BPCSE00493%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Sword%20Art%20Online%20Lost%20Song%20%5BPCSB00830%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/TALES%20OFHEARTS%20R%20%5BPCSE00429%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/THE%20BIT.TRIP%20%5BPCSE00735%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/THE%20LAST%20BLADE%202%20%5BPCSE00848%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/TOP%20DARTS%20%5BPCSF00011%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Table%20Top%20Racing%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Table%20Top%20Racing%20%5BPCSB00416%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Taiko%20no%20Tatsujin%20V%20%5BPCSG00551%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Tales%20from%20Space%20Mutant%20Blobs%20Attack%21%21%21%20%5BPCSB00096%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Tennis%20in%20the%20Face%20%5BPCSE00312%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Terraria%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Terraria%20%5BPCSB00405%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/The%20IdolM%40ster%20Must%20Songs%20-%20Ao-Ban%20%5BPCSG00678%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/The%20Legend%20of%20Heroes%20Trails%20of%20Cold%20Steel%20%5BPCSG00195%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/The%20Sly%20Cooper%20Collection%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/The%20Swapper%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/The%20Swapper%20%5BPCSE00387%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/The%20Walking%20Dead%20Season%20Two%20%5BPCSB00469%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/The%20Walking%20Dead%20%5BPCSE00316%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Thomas%20Was%20Alone%20%5BPCSE00258%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Titan%20Attacks%20%5BPCSE00388%5D%20%28v01.00%29.rar",
+"https://archive.org/download/PSVITA_VPK/Titan%20Souls%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Tokyo%20Twilight%20Ghost%20Hunters%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Tokyo%20Twilight%20Ghost%20Hunters%20%5BPCSE00509%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Tottemo%20E%20Mahjong%20%5BPCSG00113%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Toukiden%20Kiwami%20%5BPCSB00574%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Toukiden%20The%20Age%20of%20Demons%20%5BPCSE00381%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Tsuki%20ni%20Yori%20Sou%20Otome%20no%20Sahou%20Hidamari%20no%20Hibi%20%5BPCSG00648%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/TuneIn%20%5BPCSB00407%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ultratron%20%28US-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Ultratron%20%5BPCSE00414%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Uncharted%20Fight%20for%20Fortune%20%5BPCSA00088%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Uncharted%20Golden%20Abyss%20%5BPCSA00029%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Unepic%20%5BPCSB00841%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Unit%2013%20%5BPCSF00034%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Uta%20Kumi%20575%20%5BPCSG00199%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Utawarerumono%20Itsuwari%20no%20Kamen%20%5BPCSG00617%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/VALHALLA%20KNIGHTS%203%20%5BPCSE00244%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/VALKYRIE%20DRIVE-BHIKKHUNI-%20%5BPCSG00632%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/VVVVVV%20%5BPCSE00492%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Velocity%202X%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Velocity%20Ultra%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Velocity2X%20%5BPCSB00410%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/VelocityUltra%20%5BPCSB00302%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Virtua%20Tennis%204%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/Virtua%20Tennis%204%20%5BPCSB00031%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/WARRIORS%20OROCHI%203%20Ultimate%20%5BPCSE00448%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/WORMS%20REVOLUTION%20EXTREME%20%5BPCSB00332%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/WRC%204%20FIA%20WORLD%20RALLY%20CHAMPIONSHIP%20%5BPCSB00345%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Wand%20of%20Fortune%20R%20%5BPCSG00790%5D%20FULLGAME_01.00_C5_V2.0%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/When%20Vikings%20Attack%20%5BPCSA00075%5D.rar",
+"https://archive.org/download/PSVITA_VPK/White%20Album%202%20Shiawase%20no%20Mukougawa%20%5BPCSG00249%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Winning%20Post%208%202015%20%5BPCSG00545%5D%20%28v01.00%29%20%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/WipEout%202048%20%5BPCSF00007%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Woah%20Dave%21%20%5BPCSE00519%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Wolf%20Among%20Us%20%28EU-EN%29.rar",
+"https://archive.org/download/PSVITA_VPK/XBLAZE%20CODE%20%20EMBRYO%20%5BPCSG00136%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Xeodrifter%20%5BPCSE00694%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Yahari%20Game%20Demo%20Ore%20no%20Seishun%20Love-Kome%20wa%20Machigatteiru%20%20%5BPCSG00215%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Yomawari%20Night%20Alone%20%5BPCSG00669%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Ys%20-%20Memories%20of%20Celceta%20%28U%29%20UNDUB.rar",
+"https://archive.org/download/PSVITA_VPK/Ys%20Memories%20of%20Celceta%20%5BPCSE00245%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Yuusha%20Shisu%20%5BPCSG00693%5D%20FULLGAME_01.00_C0_V2.0%20-%20Vitamin%202.0.rar",
+"https://archive.org/download/PSVITA_VPK/Zero%20Escape%20Virtue%27s%20Last%20Reward%20%5BPCSE00085%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/Zero%20EscapeZero%20Time%20Dilemma%20%5BPCSE00781%5D%20%28v01.00%29%20.rar",
+"https://archive.org/download/PSVITA_VPK/htoL%23NiQ%20The%20Firefly%20Diary%20%5BPCSE00527%5D%20%28v01.00%29%20.rar"
+            // --- AGREGA TODOS TUS ENLACES AQUÍ ---
+            // Asegúrate de que cada enlace esté entre comillas "" y separado por una coma ,
+            // El último enlace NO debe llevar coma al final.
+            // === FIN DE TU LISTA DE ENLACES ===
+        ];
+
+        const gameListElement = document.getElementById('game-list');
+
+        function extractGameTitle(url) {
+            try {
+                const filenameEncoded = url.substring(url.lastIndexOf('/') + 1);
+                const filename = decodeURIComponent(filenameEncoded);
+                let title = filename
+                    .replace(/ \[[A-Z0-9]{8,10}\]/gi, '')
+                    .replace(/ \(v\d{1,2}\.\d{1,2}\)/gi, '')
+                    .replace(/ \((EU-EN|USA|JP)\)/gi, '')
+                    .replace(/\.(rar|zip|vpk)$/i, '')
+                    .replace(/[ .]+$/,'')
+                    .replace(/\s{2,}/g, ' ')
+                    .trim();
+                // Manejar caso específico de doble espacio que puede quedar
+                title = title.replace('A.W.  Phoenix Festa', 'A.W. Phoenix Festa');
+                return title;
+            } catch (error) {
+                console.error("Error procesando URL:", url, error);
+                return "Error al procesar nombre";
+            }
+        }
+
+        // --- VERSIÓN OPTIMIZADA DE renderGameList ---
+        function renderGameList() {
+            if (!gameListElement) {
+                 console.error("Error: Elemento #game-list no encontrado.");
+                 return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            const MAX_ANIMATED_ITEMS = 30; // Ajusta este número si quieres animar más/menos items
+
+            if (gameUrls.length === 0) {
+                gameListElement.innerHTML = '<li>No hay juegos para mostrar.</li>';
+                return;
+            }
+
+            gameUrls.forEach((url, index) => {
+                const title = extractGameTitle(url);
+                const listItem = document.createElement('li');
+
+                if (index < MAX_ANIMATED_ITEMS) {
+                    // Aplicar delay solo a los primeros items para efecto escalonado
+                    listItem.style.animationDelay = `${index * 0.05}s`;
+                    // La animación base ya se encarga de la opacidad y transform
+                } else {
+                    // Para los elementos restantes, anular la opacidad inicial de la animación
+                    // para que aparezcan más rápido (sin esperar el escalonado)
+                    // y asegurarse de que no estén desplazados.
+                    // La animación 'listItemFadeIn' aún podría correr pero sin delay significativo.
+                    listItem.style.opacity = '1';
+                    listItem.style.transform = 'translateY(0)';
+                    // Importante: No establecemos animationDelay aquí, así que usarán 0s o un valor muy pequeño.
+                }
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.textContent = title;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+
+                listItem.appendChild(link);
+                fragment.appendChild(listItem); // Añadir al fragmento
+            });
+
+            // Limpiar el mensaje de "Cargando..." justo antes de añadir la lista real
+            gameListElement.innerHTML = '';
+            // Añadir todos los elementos del fragmento al DOM de una sola vez
+            gameListElement.appendChild(fragment);
+        }
+
+        // Ejecutar la función directamente al cargar el script
+        renderGameList();
+
+    </script>
+
+    <!-- === SCRIPTS DE EXE.IO VAN DESPUÉS === -->
+    <script src="https://publisher.linkvertise.com/cdn/linkvertise.js"></script><script>linkvertise(685940, {whitelist: [], blacklist: [""]});</script>
+
+</body>
+</html>
