@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaFlow AI v3 (Replay & Descarga) - papitasfritas.com</title>
+    <style>
+        /* --- Reset & Base Styles --- */
+        :root {
+            --bg-color: #121826;
+            --primary-color: #00aaff;
+            --secondary-color: #2a3447;
+            --text-color: #e0e0e0;
+            --accent-color: #ff00ff;
+            --user-bubble-bg: #005580;
+            --ai-bubble-bg: #3d485f;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --button-disabled-bg: #4a5568;
+            --button-disabled-color: #a0aec0;
+            --error-bg: rgba(255, 0, 0, 0.2);
+            --error-border: #ff5555;
+            --error-text: #ffaaaa;
+            --button-icon-color: #b0c4de; /* Light steel blue for icons */
+            --button-icon-hover-color: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--bg-color) 0%, #1a2233 100%);
+        }
+
+        .container {
+            background-color: var(--secondary-color);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 170, 255, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 750px;
+            height: 95vh;
+            border: 1px solid var(--primary-color);
+        }
+
+        header {
+            background-color: rgba(0, 170, 255, 0.1);
+            padding: 12px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--primary-color);
+            flex-shrink: 0;
+        }
+        header h1 { color: var(--primary-color); font-size: 1.4em; text-shadow: 0 0 5px var(--primary-color); }
+        header p { font-size: 0.85em; color: var(--text-color); opacity: 0.8; }
+
+        .settings-area {
+            padding: 15px 20px;
+            background-color: rgba(42, 52, 71, 0.8);
+            border-bottom: 1px solid var(--primary-color);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 15px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .settings-area label { font-weight: bold; color: var(--primary-color); grid-column: 1 / 2; text-align: right; }
+        .settings-area select,
+        .settings-area input[type="text"] {
+            padding: 8px 12px; border: 1px solid var(--primary-color); background-color: var(--bg-color);
+            color: var(--text-color); border-radius: 5px; font-size: 0.9em; width: 100%; grid-column: 2 / 3;
+        }
+        /* Removed global download button */
+
+        .chat-area {
+            flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column;
+            gap: 15px; scrollbar-width: thin; scrollbar-color: var(--primary-color) var(--secondary-color);
+        }
+        .chat-area::-webkit-scrollbar { width: 8px; }
+        .chat-area::-webkit-scrollbar-track { background: var(--secondary-color); }
+        .chat-area::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 10px; border: 2px solid var(--secondary-color); }
+
+        .message {
+            padding: 10px 15px; border-radius: 10px; max-width: 85%; word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in-out; line-height: 1.4; position: relative; /* Needed for absolute positioning of buttons if desired */
+        }
+        .message.user { background-color: var(--user-bubble-bg); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .message.ai { background-color: var(--ai-bubble-bg); align-self: flex-start; border-bottom-left-radius: 2px; padding-bottom: 35px; /* Space for buttons */ }
+
+        .ai-controls {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+            margin-top: 5px; /* Add some space above buttons */
+        }
+
+        .ai-controls button {
+            background: none; border: none; padding: 5px; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%; /* Make them circular */
+            background-color: rgba(0,0,0, 0.2); /* Slight background */
+            transition: background-color 0.2s ease, fill 0.2s ease;
+        }
+        .ai-controls button svg {
+            width: 18px; height: 18px;
+            fill: var(--button-icon-color);
+        }
+        .ai-controls button:hover {
+            background-color: rgba(0,0,0, 0.4);
+        }
+         .ai-controls button:hover svg {
+             fill: var(--button-icon-hover-color);
+         }
+
+        /* Hide controls initially, show when audio is ready */
+         .message.ai:not([data-audio-ready="true"]) .ai-controls {
+            display: none;
+         }
+
+        .message.loading { color: var(--primary-color); font-style: italic; align-self: flex-start; background: transparent; padding: 5px 0; }
+        .message.error { background-color: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); align-self: flex-start; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .input-area {
+            display: flex; padding: 15px 20px; border-top: 1px solid var(--primary-color);
+            background-color: rgba(42, 52, 71, 0.8); flex-shrink: 0;
+        }
+        #message-input {
+            flex-grow: 1; padding: 12px 15px; border: 1px solid var(--primary-color); background-color: var(--bg-color);
+            color: var(--text-color); border-radius: 20px 0 0 20px; font-size: 1em; outline: none; transition: border-color 0.2s ease;
+        }
+        #message-input:focus { border-color: var(--accent-color); }
+        #send-button {
+            padding: 12px 20px; border: none; background-color: var(--primary-color); color: var(--bg-color);
+            font-weight: bold; cursor: pointer; border-radius: 0 20px 20px 0; font-size: 1em;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #send-button:hover:not(:disabled) { background-color: #0088cc; box-shadow: 0 0 10px var(--primary-color); }
+        #send-button:disabled { background-color: var(--button-disabled-bg); color: var(--button-disabled-color); cursor: not-allowed; box-shadow: none; }
+
+        #audio-player { display: none; }
+
+         /* Responsive adjustments */
+        @media (max-width: 650px) {
+            body { padding: 0; }
+            .container { height: 100vh; border-radius: 0; border: none; max-width: 100%; }
+            header h1 { font-size: 1.2em; } header p { font-size: 0.8em; }
+            .settings-area { grid-template-columns: 1fr; gap: 5px; padding: 10px 15px; }
+            .settings-area label { grid-column: 1 / -1; text-align: left; margin-bottom: -5px; }
+            .settings-area select, .settings-area input[type="text"] { grid-column: 1 / -1; }
+            .chat-area { padding: 15px; }
+            .input-area { padding: 10px 15px; }
+            #message-input, #send-button { font-size: 0.95em; }
+            .message { max-width: 90%; }
+            .message.ai { padding-bottom: 40px; } /* Ensure space on mobile too */
+             .ai-controls button svg { width: 16px; height: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>LinguaFlow AI v3</h1>
+            <p>Practica idiomas con Replay y Descarga - papitasfritas.com</p>
+        </header>
+
+        <div class="settings-area">
+             <label for="context-template-select">Plantilla Contexto:</label>
+             <select id="context-template-select">
+                 <option value="">-- Elige una plantilla --</option>
+                 <!-- 20 Plantillas -->
+                 <option value="Eres un tutor de inglés paciente y amigable. Corrígeme si cometo errores.">Tutor de Inglés Paciente</option>
+                 <option value="Habla conmigo en francés como si estuviéramos en un café en París.">Conversación Francés Café</option>
+                 <option value="Soy un principiante en alemán. Explícame gramática básica con ejemplos simples.">Alemán Principiante Gramática</option>
+                 <option value="Actúa como un entrevistador para un puesto de desarrollador de software (inglés). Hazme preguntas técnicas.">Entrevistador Inglés (Dev)</option>
+                 <option value="Vamos a practicar español para viajar. Pregúntame sobre cómo pedir direcciones o comida.">Español para Viajar</option>
+                 <option value="Simula ser un agente de atención al cliente en italiano. Tengo un problema con mi pedido.">Atención Cliente Italiano</option>
+                 <option value="Conversemos en japonés sobre hobbies y tiempo libre (nivel intermedio).">Japonés Hobbies (Intermedio)</option>
+                 <option value="Eres un profesor de historia explicando la Revolución Francesa en inglés.">Profesor Historia Inglés</option>
+                 <option value="Practiquemos portugués de Brasil. Háblame sobre música brasileña.">Portugués (BR) Música</option>
+                 <option value="Actúa como un amigo alemán dándome consejos sobre qué visitar en Berlín.">Amigo Alemán (Berlín)</option>
+                 <option value="Quiero mejorar mi vocabulario de negocios en inglés. Usa términos empresariales.">Inglés de Negocios</option>
+                 <option value="Conversemos en español sobre películas y series recientes.">Español Películas/Series</option>
+                 <option value="Eres un guía turístico en Roma hablando italiano. Describe el Coliseo.">Guía Italiano (Roma)</option>
+                 <option value="Practiquemos francés para pedir en un restaurante formal.">Francés Restaurante Formal</option>
+                 <option value="Enséñame frases útiles en mandarín para saludar y presentarme.">Mandarín Básico Saludos</option>
+                 <option value="Actúa como un personaje histórico (ej: Cleopatra) hablando en inglés sobre su vida.">Personaje Histórico Inglés</option>
+                 <option value="Conversemos en alemán sobre planes para el fin de semana.">Alemán Planes Finde</option>
+                 <option value="Eres un experto en vinos hablando en francés. Recomiéndame un vino.">Experto Vinos Francés</option>
+                 <option value="Practiquemos la conjugación de verbos irregulares en español. Dame ejemplos.">Español Verbos Irregulares</option>
+                 <option value="Habla inglés con acento británico. Conversemos sobre el clima.">Inglés Acento Británico</option>
+             </select>
+
+            <label for="language-context">Contexto Personalizado:</label>
+            <input type="text" id="language-context" placeholder="O escribe tu propio contexto aquí...">
+
+            <label for="voice-select">Voz IA:</label>
+            <select id="voice-select">
+                <option value="alloy">Alloy (Estándar)</option>
+                <option value="echo">Echo</option>
+                <option value="fable">Fable</option>
+                <option value="onyx">Onyx</option>
+                <option value="nova">Nova</option>
+                <option value="shimmer">Shimmer</option>
+            </select>
+            <!-- Global download button removed -->
+        </div>
+
+        <div class="chat-area" id="chat-area">
+             <!-- Mensaje inicial -->
+             <div class="message ai">
+                 <span>¡Hola! Elige o escribe un contexto, selecciona voz y envía tu mensaje. Podrás reproducir y descargar mis respuestas de audio desde cada burbuja.</span>
+                 <!-- No controls needed for initial message -->
+            </div>
+        </div>
+
+        <form class="input-area" id="message-form">
+            <input type="text" id="message-input" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
+            <button type="submit" id="send-button">Enviar</button>
+        </form>
+
+        <audio id="audio-player"></audio>
+    </div>
+
+    <script>
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const chatArea = document.getElementById('chat-area');
+        const audioPlayer = document.getElementById('audio-player');
+        const voiceSelect = document.getElementById('voice-select');
+        const languageContextInput = document.getElementById('language-context');
+        const contextTemplateSelect = document.getElementById('context-template-select');
+
+        // Storage for audio data associated with message IDs
+        const audioBlobs = {};
+        const audioUrls = {}; // Store Object URLs for playback
+
+        // --- Event Listeners ---
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+
+        contextTemplateSelect.addEventListener('change', (e) => {
+            // If a template is chosen, put it in the custom input for clarity/editing
+            languageContextInput.value = e.target.value || ''; // Use empty string if "-- Elegir --" is selected
+        });
+
+        // Event Delegation for Play/Download buttons
+        chatArea.addEventListener('click', (e) => {
+            const playButton = e.target.closest('.play-audio-btn');
+            const downloadButton = e.target.closest('.download-audio-btn');
+
+            if (playButton) {
+                const messageElement = playButton.closest('.message.ai');
+                const audioUrl = messageElement?.dataset.audioUrl;
+                if (audioUrl) {
+                    playAudio(audioUrl);
+                } else {
+                    console.error("No se encontró URL de audio para este mensaje.");
+                    addMessageToChat("Error: No se encontró audio para reproducir.", "error", chatArea); // Add error to chat
+                }
+            } else if (downloadButton) {
+                const messageElement = downloadButton.closest('.message.ai');
+                const messageId = messageElement?.dataset.messageId;
+                if (messageId) {
+                    downloadAudio(messageId);
+                } else {
+                     console.error("No se encontró ID de mensaje para descargar.");
+                     addMessageToChat("Error: No se encontró audio para descargar.", "error", chatArea); // Add error to chat
+                }
+            }
+        });
+
+        // --- Audio Playback Function ---
+        function playAudio(audioUrl) {
+            console.log("Intentando reproducir:", audioUrl);
+            // Pause current playback before starting new one
+            if (!audioPlayer.paused) {
+                audioPlayer.pause();
+            }
+            audioPlayer.src = audioUrl;
+            audioPlayer.play().catch(err => {
+                console.error("Error al reproducir audio:", err);
+                addMessageToChat(`Error al reproducir: ${err.message}`, "error", chatArea);
+            });
+        }
+
+        // --- Chat Functions ---
+        function addMessageToChat(content, type, targetElement = chatArea, messageId = null) { // type: 'user', 'ai', 'loading', 'error'
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', type);
+            messageElement.dataset.timestamp = Date.now(); // Add timestamp for potential future use
+
+             // Assign ID only to AI messages that will have audio
+             if (type === 'ai' && messageId) {
+                 messageElement.dataset.messageId = messageId;
+                 // Prepare structure for content and controls
+                 const contentSpan = document.createElement('span');
+                 contentSpan.textContent = content; // Start with text content
+                 messageElement.appendChild(contentSpan);
+
+                 // Add controls container (initially hidden)
+                 const controlsDiv = document.createElement('div');
+                 controlsDiv.classList.add('ai-controls');
+                 controlsDiv.innerHTML = `
+                     <button class="play-audio-btn" title="Reproducir Audio">
+                         <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                     </button>
+                     <button class="download-audio-btn" title="Descargar Audio">
+                         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                     </button>
+                 `;
+                 messageElement.appendChild(controlsDiv);
+
+             } else {
+                 messageElement.textContent = content; // For user, loading, error messages
+             }
+
+
+            targetElement.appendChild(messageElement);
+            scrollToBottom();
+            return messageElement; // Return element for potential modifications (like adding audio URL later)
+        }
+
+
+        function scrollToBottom() {
+             setTimeout(() => { chatArea.scrollTop = chatArea.scrollHeight; }, 100);
+        }
+
+        function setLoadingState(isLoading) {
+             sendButton.disabled = isLoading;
+             messageInput.disabled = isLoading;
+             sendButton.textContent = isLoading ? '...' : 'Enviar';
+        }
+
+        // Function to generate unique IDs
+        function generateId() {
+            return `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+        }
+
+
+        // --- Core Logic (Fetch-Blob-Store-Play) ---
+        async function sendMessage() {
+            const userText = messageInput.value.trim();
+            const selectedVoice = voiceSelect.value;
+            // Get context ONLY from the input field now, as template select populates it
+            const languageContext = languageContextInput.value.trim();
+
+            if (!userText) {
+                 addMessageToChat("Por favor, escribe un mensaje.", "error");
+                 return;
+            }
+
+            // *** VALIDATION: Ensure context + user text is not empty ***
+             // We need *some* text for the API. Context is optional IF userText is enough.
+             // But the prompt structure seems to rely on context. Let's require *some* context OR substantial user text.
+             // A simple check: require context if user text is short? Or just require context always for this app's purpose?
+             // Let's enforce *some* context for this language tutor app.
+             if (!languageContext) {
+                 addMessageToChat("Por favor, elige una plantilla o escribe un contexto personalizado.", "error");
+                 return;
+             }
+
+
+            addMessageToChat(userText, 'user');
+            messageInput.value = '';
+            const loadingMessage = addMessageToChat('Contactando IA y preparando audio...', 'loading');
+            setLoadingState(true);
+
+            const textForApi = `${languageContext} ${userText}`;
+            const encodedText = encodeURIComponent(textForApi);
+            const apiUrl = `https://text.pollinations.ai/${encodedText}?model=openai-audio&voice=${selectedVoice}`;
+            const messageId = generateId(); // Generate ID for this potential AI message
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    let errorDetail = `${response.status}: ${response.statusText}`;
+                     try { const errorBody = await response.text(); errorDetail += ` - ${errorBody.substring(0, 100)}`; } catch (e) {}
+                     throw new Error(`Error API (${errorDetail}). Verifica contexto/API.`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                 // *** MORE ROBUST CHECK FOR AUDIO ***
+                 if (!contentType || !contentType.startsWith('audio/')) {
+                     console.warn("Respuesta no es audio:", contentType);
+                     // Attempt to read as text/json to show the actual error from API
+                      let responseText = await response.text();
+                      throw new Error(`La API no devolvió audio. Respuesta: ${responseText.substring(0,150)}`); // Show part of the response
+                 }
+
+                loadingMessage.textContent = 'Procesando audio...';
+                const blob = await response.blob();
+
+                 if (blob.size === 0) { throw new Error("La API devolvió audio vacío."); }
+
+                // Store the blob for download
+                audioBlobs[messageId] = blob;
+
+                // Create and store the Object URL for playback
+                const objectUrl = URL.createObjectURL(blob);
+                audioUrls[messageId] = objectUrl; // Keep track if needed, but store on element is main way
+
+                 // Remove loading message
+                 loadingMessage.remove();
+
+                 // Add the AI message bubble *with* the ID and store the URL on it
+                 const aiMessageElement = addMessageToChat("Respuesta de audio recibida.", 'ai', chatArea, messageId);
+                 aiMessageElement.dataset.audioUrl = objectUrl; // Set URL for the play button
+                 aiMessageElement.setAttribute('data-audio-ready', 'true'); // Show controls
+                 // Optionally, update the text content if API provided transcript (not in this API's spec)
+                 // aiMessageElement.querySelector('span').textContent = "Transcripción si estuviera disponible...";
+
+
+            } catch (error) {
+                console.error("Error en sendMessage:", error);
+                if (loadingMessage) loadingMessage.remove();
+                addMessageToChat(`Error: ${error.message}`, 'error');
+                // Clean up potential partial data if error occurred after ID generation
+                delete audioBlobs[messageId];
+                 delete audioUrls[messageId];
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        // --- Download Function (Uses stored Blob) ---
+        function downloadAudio(messageId) {
+            const blobToDownload = audioBlobs[messageId];
+
+            if (!blobToDownload) {
+                addMessageToChat("No se encontró el audio para descargar (ID: " + messageId + ").", "error");
+                console.error("Blob no encontrado para messageId:", messageId, audioBlobs);
+                return;
+            }
+
+            // Temporarily show feedback near the button? Or just log?
+            console.log("Preparando descarga para:", messageId);
+
+            try {
+                const downloadUrl = URL.createObjectURL(blobToDownload);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                const timestamp = messageId.split('-')[1] || Date.now(); // Use timestamp from ID if possible
+                const extension = blobToDownload.type.split('/')[1] || 'mp3';
+                a.download = `lingua_flow_${timestamp}.${extension}`;
+
+                document.body.appendChild(a);
+                a.click();
+
+                // Clean up the temporary download URL after a short delay
+                setTimeout(() => {
+                     URL.revokeObjectURL(downloadUrl);
+                     a.remove();
+                     console.log("Download link cleaned up for:", messageId);
+                }, 500);
+
+            } catch (error) {
+                console.error("Error downloading audio:", error);
+                 addMessageToChat(`Error al preparar descarga: ${error.message}`, 'error');
+            }
+        }
+
+        // --- Initial Setup ---
+        scrollToBottom();
+
+    </script>
+
+</body>
+</html>

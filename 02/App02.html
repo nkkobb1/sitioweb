@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Weaver AI v1.2 (Play/Pausa/Descarga)</title>
+    <style>
+        /* --- Estilos Base (igual que v1.1) --- */
+        :root {
+            --bg-color: #1a1a2d; --primary-color: #9d4edd; --secondary-color: #3c3c5a;
+            --text-color: #e0e0e0; --accent-color: #f7b801; --user-bubble-bg: #5a189a;
+            --ai-bubble-bg: #4a4a6a; --font-family: 'Georgia', 'Times New Roman', serif;
+            --button-disabled-bg: #4a5568; --button-disabled-color: #a0aec0;
+            --error-bg: rgba(255, 50, 50, 0.2); --error-border: #ff6666; --error-text: #ffaaaa;
+            --button-icon-color: #d8b4fe; --button-icon-hover-color: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px;
+            background: radial-gradient(circle, var(--secondary-color) 0%, var(--bg-color) 100%);
+        }
+        .container {
+            background-color: rgba(42, 42, 71, 0.8); backdrop-filter: blur(5px); border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(157, 78, 221, 0.3); overflow: hidden; display: flex;
+            flex-direction: column; width: 100%; max-width: 800px; height: 95vh;
+            border: 1px solid var(--primary-color);
+        }
+        header {
+            background-color: rgba(157, 78, 221, 0.1); padding: 15px 25px; text-align: center;
+            border-bottom: 1px solid var(--primary-color); flex-shrink: 0;
+        }
+        header h1 { color: var(--primary-color); font-size: 1.8em; font-weight: normal; text-shadow: 0 0 8px var(--primary-color); }
+        header p { font-size: 0.9em; color: var(--text-color); opacity: 0.8; margin-top: 5px; font-family: sans-serif; }
+        .controls-area {
+            padding: 15px 25px; background-color: rgba(60, 60, 90, 0.7); border-bottom: 1px solid var(--primary-color);
+            display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; flex-shrink: 0;
+        }
+        .controls-area .setting { display: flex; align-items: center; gap: 8px; }
+        .controls-area label { font-weight: bold; color: var(--primary-color); font-family: sans-serif; font-size: 0.9em; }
+        .controls-area select { padding: 6px 10px; border: 1px solid var(--primary-color); background-color: var(--bg-color); color: var(--text-color); border-radius: 5px; font-size: 0.9em; font-family: sans-serif; }
+        #reset-button { padding: 6px 15px; border: 1px solid var(--accent-color); background-color: transparent; color: var(--accent-color); border-radius: 5px; cursor: pointer; font-family: sans-serif; font-weight: bold; transition: background-color 0.2s, color 0.2s; }
+        #reset-button:hover { background-color: var(--accent-color); color: var(--bg-color); }
+        .story-area {
+            flex-grow: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column;
+            gap: 20px; scrollbar-width: thin; scrollbar-color: var(--primary-color) var(--secondary-color); line-height: 1.6;
+        }
+        .story-area::-webkit-scrollbar { width: 8px; }
+        .story-area::-webkit-scrollbar-track { background: var(--secondary-color); }
+        .story-area::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 10px; border: 2px solid var(--secondary-color); }
+        .turn {
+            padding: 12px 18px; border-radius: 8px; max-width: 90%; word-wrap: break-word;
+            animation: fadeIn 0.5s ease-in-out; position: relative; border: 1px solid transparent;
+        }
+        .turn.user {
+            background-color: var(--user-bubble-bg); color: #fff; align-self: flex-end;
+            border-color: rgba(255, 255, 255, 0.2); font-style: italic;
+        }
+        .turn.user::before { content: "Tu Aporte:"; display: block; font-size: 0.8em; font-weight: bold; margin-bottom: 5px; opacity: 0.7; font-style: normal; font-family: sans-serif; }
+        .turn.ai { background-color: var(--ai-bubble-bg); align-self: flex-start; border-color: rgba(157, 78, 221, 0.3); padding-bottom: 45px; /* Increased padding */ }
+        .turn.ai .ai-content { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; /* More space */ }
+        .turn.ai .speaker-icon { width: 22px; height: 22px; fill: var(--primary-color); flex-shrink: 0; }
+        .turn.ai .ai-text { font-style: italic; opacity: 0.9; }
+        .ai-controls { position: absolute; bottom: 8px; left: 15px; display: flex; gap: 12px; /* Increased gap */ }
+        .ai-controls button {
+            background: none; border: none; padding: 6px; /* Slightly larger tap area */ cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 50%; background-color: rgba(0,0,0, 0.2);
+            transition: background-color 0.2s ease, fill 0.2s ease;
+        }
+        .ai-controls button svg { width: 20px; height: 20px; fill: var(--button-icon-color); } /* Slightly larger icons */
+        .ai-controls button:hover { background-color: rgba(0,0,0, 0.4); }
+        .ai-controls button:hover svg { fill: var(--button-icon-hover-color); }
+        .turn.ai:not([data-audio-ready="true"]) .ai-controls { display: none; }
+        .turn.loading { color: var(--accent-color); font-style: italic; align-self: center; background: transparent; padding: 10px 0; font-size: 1.1em; border: none; }
+        .turn.error { background-color: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); align-self: center; width: 80%; text-align: center; font-family: sans-serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .input-area { display: flex; padding: 20px 25px; border-top: 1px solid var(--primary-color); background-color: rgba(60, 60, 90, 0.7); flex-shrink: 0; }
+        #story-input { flex-grow: 1; padding: 12px 15px; border: 1px solid var(--primary-color); background-color: var(--bg-color); color: var(--text-color); border-radius: 20px 0 0 20px; font-size: 1em; outline: none; transition: border-color 0.2s ease; font-family: var(--font-family); }
+        #story-input:focus { border-color: var(--accent-color); }
+        #send-button { padding: 12px 25px; border: none; background-color: var(--primary-color); color: var(--bg-color); font-weight: bold; cursor: pointer; border-radius: 0 20px 20px 0; font-size: 1em; transition: background-color 0.2s ease, box-shadow 0.2s ease; font-family: sans-serif; }
+        #send-button:hover:not(:disabled) { background-color: #7b2cbf; box-shadow: 0 0 10px var(--primary-color); }
+        #send-button:disabled { background-color: var(--button-disabled-bg); color: var(--button-disabled-color); cursor: not-allowed; box-shadow: none; }
+        #audio-player { display: none; }
+        /* Responsive */
+        @media (max-width: 700px) {
+            body { padding: 0; }
+            .container { height: 100vh; border-radius: 0; border: none; max-width: 100%; }
+            header h1 { font-size: 1.5em; }
+            .controls-area { padding: 10px 15px; flex-direction: column; align-items: stretch; gap: 10px; }
+            #reset-button { width: 100%; }
+            .story-area { padding: 15px; gap: 15px; }
+            .input-area { padding: 15px; }
+            #story-input, #send-button { font-size: 0.95em; }
+            .turn { max-width: 95%; }
+             .turn.user::before { font-size: 0.75em; }
+             .turn.ai { padding-bottom: 50px; } /* Adjust padding */
+             .turn.ai .speaker-icon { width: 20px; height: 20px; }
+             .ai-controls button svg { width: 18px; height: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Icons Definitions (hidden) -->
+    <svg width="0" height="0" style="position:absolute">
+      <defs>
+        <symbol id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+        <symbol id="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+        <symbol id="icon-speaker" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></symbol>
+      </defs>
+    </svg>
+
+    <div class="container">
+        <header>
+            <h1>Story Weaver AI</h1>
+            <p>Crea historias con Narración, Play/Pausa y Descarga</p>
+        </header>
+
+        <div class="controls-area">
+             <div class="setting">
+                <label for="voice-select">Voz del Narrador:</label>
+                <select id="voice-select">
+                    <option value="onyx">Onyx (Profunda)</option>
+                    <option value="fable">Fable (Narrador)</option>
+                    <option value="alloy">Alloy</option>
+                    <option value="echo">Echo</option>
+                    <option value="nova">Nova</option>
+                    <option value="shimmer">Shimmer</option>
+                </select>
+             </div>
+             <button id="reset-button">Reiniciar Historia</button>
+        </div>
+
+        <div class="story-area" id="story-area">
+             <!-- Initial message -->
+             <div class="turn ai">
+                 <div class="ai-content">
+                    <svg class="speaker-icon" width="24" height="24"><use xlink:href="#icon-speaker"></use></svg>
+                    <span class="ai-text">Comienza la aventura... Escribe la primera línea.</span>
+                 </div>
+                 <!-- No controls for initial message -->
+             </div>
+        </div>
+
+        <form class="input-area" id="input-form">
+            <input type="text" id="story-input" placeholder="Escribe aquí tu parte de la historia..." autocomplete="off">
+            <button type="submit" id="send-button">Continuar Historia</button>
+        </form>
+
+        <audio id="audio-player"></audio>
+    </div>
+
+    <script>
+        const inputForm = document.getElementById('input-form');
+        const storyInput = document.getElementById('story-input');
+        const sendButton = document.getElementById('send-button');
+        const storyArea = document.getElementById('story-area');
+        const audioPlayer = document.getElementById('audio-player');
+        const voiceSelect = document.getElementById('voice-select');
+        const resetButton = document.getElementById('reset-button');
+
+        let storyHistory = [];
+        const audioBlobs = {}; // Stores { turnId: Blob }
+        const audioUrls = {};  // Stores { turnId: ObjectURL }
+        let currentlyPlayingTurnId = null; // Track which turn's audio is active
+
+        // --- Event Listeners ---
+        inputForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            addTurnAndNarrate();
+        });
+
+        resetButton.addEventListener('click', resetStory);
+
+        // Event Delegation for Play/Pause/Download buttons
+        storyArea.addEventListener('click', (e) => {
+            const playPauseButton = e.target.closest('.play-pause-audio-btn');
+            const downloadButton = e.target.closest('.download-audio-btn');
+
+            if (playPauseButton) {
+                const turnElement = playPauseButton.closest('.turn.ai');
+                const turnId = turnElement?.dataset.turnId;
+                const audioUrl = turnElement?.dataset.audioUrl;
+                if (turnId && audioUrl) {
+                    handlePlayPauseClick(turnId, audioUrl);
+                } else {
+                    console.error("Missing turnId or audioUrl for play/pause.");
+                    addTurnToDisplay("Error: No se pudo iniciar la reproducción.", "error");
+                }
+            } else if (downloadButton) {
+                const turnElement = downloadButton.closest('.turn.ai');
+                const turnId = turnElement?.dataset.turnId;
+                if (turnId) {
+                    downloadAudio(turnId);
+                } else {
+                     console.error("Missing turnId for download.");
+                     addTurnToDisplay("Error: No se pudo iniciar la descarga.", "error");
+                }
+            }
+        });
+
+        // Audio Player Event Listeners to update button states
+        audioPlayer.addEventListener('play', () => {
+            if (currentlyPlayingTurnId) {
+                updatePlayButtonIcon(currentlyPlayingTurnId, 'pause');
+            }
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            // We check currentlyPlayingTurnId because pause might be triggered by loading new src
+            if (currentlyPlayingTurnId) {
+                 updatePlayButtonIcon(currentlyPlayingTurnId, 'play');
+            }
+             // Note: Don't reset currentlyPlayingTurnId here, allows resuming
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+            if (currentlyPlayingTurnId) {
+                updatePlayButtonIcon(currentlyPlayingTurnId, 'play');
+            }
+            currentlyPlayingTurnId = null; // Playback finished
+        });
+
+        audioPlayer.addEventListener('error', () => {
+             console.error("Audio Player Error:", audioPlayer.error);
+             if (currentlyPlayingTurnId) {
+                updatePlayButtonIcon(currentlyPlayingTurnId, 'play'); // Reset icon on error
+                 addTurnToDisplay(`Error al reproducir audio (Turno: ${currentlyPlayingTurnId})`, "error");
+             }
+              currentlyPlayingTurnId = null;
+        });
+
+
+        // --- Audio Playback & UI Update Functions ---
+        function handlePlayPauseClick(turnId, audioUrl) {
+            if (currentlyPlayingTurnId === turnId) {
+                // Clicked on the button of the currently playing/paused audio
+                if (audioPlayer.paused) {
+                    audioPlayer.play().catch(err => console.error("Play error:", err));
+                    // Icon update handled by 'play' event listener
+                } else {
+                    audioPlayer.pause();
+                    // Icon update handled by 'pause' event listener
+                }
+            } else {
+                // Clicked on a different turn's button (or nothing was playing)
+                // Reset the icon of the previously playing button (if any)
+                if (currentlyPlayingTurnId) {
+                    updatePlayButtonIcon(currentlyPlayingTurnId, 'play');
+                }
+
+                // Load and play the new audio
+                console.log("Loading new audio:", turnId, audioUrl);
+                audioPlayer.src = audioUrl;
+                 // Set this *before* calling play, so 'play' event listener knows the context
+                currentlyPlayingTurnId = turnId;
+                audioPlayer.play().catch(err => {
+                     console.error("Play error:", err);
+                     addTurnToDisplay(`Error al iniciar reproducción: ${err.message}`, "error");
+                     updatePlayButtonIcon(turnId, 'play'); // Reset icon on immediate error
+                     currentlyPlayingTurnId = null;
+                 });
+                 // Icon update to 'pause' handled by the 'play' event listener
+            }
+        }
+
+        function updatePlayButtonIcon(turnId, state) { // state = 'play' or 'pause'
+            const turnElement = storyArea.querySelector(`.turn.ai[data-turn-id="${turnId}"]`);
+            const button = turnElement?.querySelector('.play-pause-audio-btn');
+            if (button) {
+                const icon = state === 'play' ? '#icon-play' : '#icon-pause';
+                button.innerHTML = `<svg width="20" height="20"><use xlink:href="${icon}"></use></svg>`;
+                button.setAttribute('title', state === 'play' ? 'Reproducir Narración' : 'Pausar Narración');
+            } else {
+                 // console.warn(`Button not found for turnId: ${turnId} to update icon.`);
+             }
+        }
+
+        function resetAllPlayButtonIcons() {
+            const allPlayButtons = storyArea.querySelectorAll('.play-pause-audio-btn');
+            allPlayButtons.forEach(button => {
+                 const turnElement = button.closest('.turn.ai');
+                 if (turnElement && turnElement.dataset.turnId) { // Ensure it's a valid turn button
+                    updatePlayButtonIcon(turnElement.dataset.turnId, 'play');
+                 }
+            });
+        }
+
+
+        // --- Core Functions ---
+        function addTurnToDisplay(content, type, turnId = null) {
+            const turnElement = document.createElement('div');
+            turnElement.classList.add('turn', type);
+
+            if (type === 'user') {
+                turnElement.textContent = content;
+            } else if (type === 'ai') {
+                 turnElement.dataset.turnId = turnId;
+                 turnElement.setAttribute('data-audio-ready', 'false');
+
+                 turnElement.innerHTML = `
+                     <div class="ai-content">
+                         <svg class="speaker-icon" width="22" height="22"><use xlink:href="#icon-speaker"></use></svg>
+                         <span class="ai-text">${content}</span>
+                     </div>
+                     <div class="ai-controls">
+                         <button class="play-pause-audio-btn" title="Reproducir Narración">
+                             <svg width="20" height="20"><use xlink:href="#icon-play"></use></svg>
+                         </button>
+                         <button class="download-audio-btn" title="Descargar Narración">
+                             <svg width="20" height="20"><use xlink:href="#icon-download"></use></svg>
+                         </button>
+                     </div>
+                 `;
+            } else { // loading or error
+                turnElement.textContent = content;
+            }
+
+            storyArea.appendChild(turnElement);
+            scrollToBottom();
+            return turnElement;
+        }
+
+        function scrollToBottom() {
+             setTimeout(() => { storyArea.scrollTop = storyArea.scrollHeight; }, 100);
+        }
+
+        function setLoadingState(isLoading) {
+             sendButton.disabled = isLoading;
+             storyInput.disabled = isLoading;
+             sendButton.textContent = isLoading ? 'Narrando...' : 'Continuar Historia';
+        }
+
+        function generateId() {
+            return `turn-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+        }
+
+        function resetStory() {
+            console.log("Revoking audio URLs...");
+            for (const turnId in audioUrls) {
+                 if (audioUrls.hasOwnProperty(turnId) && audioUrls[turnId]) {
+                     URL.revokeObjectURL(audioUrls[turnId]);
+                     // console.log("Revoked:", turnId);
+                 }
+            }
+
+            storyHistory = [];
+             Object.keys(audioBlobs).forEach(key => delete audioBlobs[key]);
+             Object.keys(audioUrls).forEach(key => delete audioUrls[key]);
+            currentlyPlayingTurnId = null;
+
+            storyArea.innerHTML = '';
+            addTurnToDisplay("Comienza la aventura... Escribe la primera línea.", "ai"); // Initial prompt
+            storyInput.value = '';
+
+            audioPlayer.pause();
+            audioPlayer.src = '';
+
+            console.log("Historia reiniciada.");
+        }
+
+
+        function buildApiPrompt() {
+            const baseInstruction = "Eres un narrador de historias de fantasía épica. Continúa la siguiente historia de forma creativa, inmersiva y descriptiva, basándote en el último fragmento escrito por el usuario. Responde solo con la continuación de la historia, sin comentarios adicionales.";
+             const historyString = storyHistory.map(turn => {
+                 if (turn.type === 'user') { return `Usuario: ${turn.text}`; }
+                 else { return `Narrador (Voz): [El narrador continuó la historia...]`; }
+             }).join('\n\n');
+             return `${baseInstruction}\n\n--- HISTORIA HASTA AHORA ---\n${historyString}\n\nNarrador (Voz):`;
+        }
+
+
+        async function addTurnAndNarrate() {
+            const userText = storyInput.value.trim();
+            const selectedVoice = voiceSelect.value;
+            if (!userText) return;
+
+            addTurnToDisplay(userText, 'user');
+            storyHistory.push({ type: 'user', text: userText });
+            storyInput.value = '';
+
+            const loadingMessage = addTurnToDisplay('AI está tejiendo la historia...', 'loading');
+            setLoadingState(true);
+
+            const promptForApi = buildApiPrompt();
+            const encodedText = encodeURIComponent(promptForApi);
+            const apiUrl = `https://text.pollinations.ai/${encodedText}?model=openai-audio&voice=${selectedVoice}`;
+            const turnId = generateId();
+
+            const aiTurnElement = addTurnToDisplay("🎤 Narración (procesando...)", 'ai', turnId);
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    let errorDetail = `${response.status}: ${response.statusText}`;
+                    try { const errorBody = await response.text(); errorDetail += ` - ${errorBody.substring(0, 100)}`; } catch (e) {}
+                    throw new Error(`Error API (${errorDetail}).`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.startsWith('audio/')) {
+                    let responseText = await response.text();
+                    throw new Error(`La API no devolvió audio. Respuesta: ${responseText.substring(0,150)}`);
+                }
+
+                 if (loadingMessage) loadingMessage.remove(); // Remove loading message sooner
+
+                const blob = await response.blob();
+                if (blob.size === 0) { throw new Error("La API devolvió audio vacío."); }
+
+                audioBlobs[turnId] = blob;
+                const objectUrl = URL.createObjectURL(blob);
+                audioUrls[turnId] = objectUrl;
+
+                aiTurnElement.dataset.audioUrl = objectUrl;
+                aiTurnElement.querySelector('.ai-text').textContent = "🎤 Narración (¡Lista!)";
+                aiTurnElement.setAttribute('data-audio-ready', 'true'); // Show controls
+
+                storyHistory.push({ type: 'ai', text: '[Audio Narration]' });
+
+                 // Decide if you want to autoplay the newest segment
+                 const autoPlayNew = true; // Set to false if you don't want autoplay
+                 if (autoPlayNew) {
+                     handlePlayPauseClick(turnId, objectUrl); // This will load and play
+                 }
+
+
+            } catch (error) {
+                console.error("Error en addTurnAndNarrate:", error);
+                if (loadingMessage) loadingMessage.remove();
+                if (aiTurnElement) {
+                     aiTurnElement.innerHTML = `<span class="error-text">Error al generar: ${error.message}</span>`;
+                     aiTurnElement.classList.add('error');
+                     aiTurnElement.removeAttribute('data-turn-id');
+                     aiTurnElement.removeAttribute('data-audio-ready'); // Ensure controls don't show on error
+                 } else {
+                     addTurnToDisplay(`Error: ${error.message}`, 'error');
+                 }
+                delete audioBlobs[turnId];
+                delete audioUrls[turnId];
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+         // --- Download Function ---
+        function downloadAudio(turnId) {
+            const blobToDownload = audioBlobs[turnId];
+            const turnElement = storyArea.querySelector(`.turn.ai[data-turn-id="${turnId}"]`);
+            const downloadButton = turnElement?.querySelector('.download-audio-btn');
+
+            if (!blobToDownload) {
+                addTurnToDisplay("No se encontró el audio para descargar (ID: " + turnId + ").", "error");
+                console.error("Blob no encontrado para turnId:", turnId, audioBlobs);
+                return;
+            }
+
+            // Disable button temporarily to prevent multiple clicks
+            if(downloadButton) downloadButton.disabled = true;
+            console.log("Preparando descarga para:", turnId);
+
+            try {
+                const downloadUrl = URL.createObjectURL(blobToDownload);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                // Attempt to get timestamp from turn ID for filename
+                 let timestamp = turnId.split('-')[1];
+                 if (!timestamp || isNaN(timestamp)) timestamp = Date.now(); // Fallback
+                 const extension = blobToDownload.type.split('/')[1] || 'mp3'; // Guess extension
+                 a.download = `story_weaver_${timestamp}.${extension}`;
+
+                document.body.appendChild(a);
+                a.click();
+
+                // Clean up the temporary download URL after a delay
+                setTimeout(() => {
+                     URL.revokeObjectURL(downloadUrl);
+                     a.remove();
+                     console.log("Download link cleaned up for:", turnId);
+                     if(downloadButton) downloadButton.disabled = false; // Re-enable button
+                }, 1000); // Longer delay for safety
+
+            } catch (error) {
+                console.error("Error downloading audio:", error);
+                 addTurnToDisplay(`Error al preparar descarga: ${error.message}`, 'error');
+                 if(downloadButton) downloadButton.disabled = false; // Re-enable button on error
+            }
+        }
+
+        // --- Initial Setup ---
+        scrollToBottom();
+
+    </script>
+
+</body>
+</html>

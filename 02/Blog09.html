@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Moderno: ¡Upgrade ES6+ Obligatorio! | papitasfritas.com</title>
+    <style>
+        /* --- Base & Reset --- */
+        :root {
+            --bg-primary: #101214;
+            --bg-secondary: #1a1d21;
+            --bg-tertiary: #25282e;
+            --text-primary: #e1e1e6;
+            --text-secondary: #c4c4cc;
+            --text-muted: #8d8d99;
+            --accent-neon: #00ffcc; /* Teal */
+            --accent-pink: #ff79c6; /* Pink */
+            --accent-blue: #61dafb; /* React Blue (for fun) */
+            --accent-yellow: #f1fa8c; /* Yellow */
+            --accent-orange: #ffb86c; /* Orange */
+            --accent-purple: #bd93f9; /* Purple */
+            --danger: #ff5555;
+            --code-font: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+            --body-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        @font-face { /* Optional: Add Fira Code if available */
+            font-family: 'Fira Code';
+            src: url('https://cdn.jsdelivr.net/gh/tonsky/FiraCode@6.2/distr/woff2/FiraCode-Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap; /* Load font without blocking */
+        }
+        @font-face {
+            font-family: 'Fira Code';
+            src: url('https://cdn.jsdelivr.net/gh/tonsky/FiraCode@6.2/distr/woff2/FiraCode-Bold.woff2') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--body-font);
+            line-height: 1.7;
+            font-size: 16px; /* Base size */
+            overflow-x: hidden;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Container & Layout --- */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px 40px;
+            background: linear-gradient(145deg, var(--bg-secondary) 0%, rgba(26, 29, 33, 0.9) 100%);
+            border: 1px solid #333;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 204, 0.1); /* Added subtle glow border */
+            backdrop-filter: blur(3px);
+            animation: fadeIn 1s ease-out forwards;
+            opacity: 0; /* Start hidden for fade-in */
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        body .container { /* Initial state for animation */
+           transform: translateY(20px);
+        }
+
+
+        /* --- Typography & Headings --- */
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.3;
+            margin-bottom: 0.8em;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: clamp(2.2rem, 5vw, 3rem); /* Responsive font size */
+            color: var(--accent-neon);
+            text-align: center;
+            margin-bottom: 1em;
+            font-weight: 800;
+            letter-spacing: -1px;
+            animation: pulseGlow 4s infinite ease-in-out;
+            position: relative; /* For pseudo-elements */
+        }
+        h1::before, h1::after { /* Glitchy lines effect */
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: inherit; /* Match container background */
+            overflow: hidden;
+            color: var(--accent-neon);
+        }
+        h1::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--accent-pink);
+            animation: glitch-1 2s infinite linear alternate-reverse;
+        }
+        h1::after {
+            left: -2px;
+            text-shadow: -2px 0 var(--accent-blue), 2px 2px var(--accent-yellow);
+            animation: glitch-2 3s infinite linear alternate-reverse;
+        }
+
+        /* Glitch animations */
+        @keyframes glitch-1 { 0%, 100% { clip-path: inset(50% 0 30% 0); } 25% { clip-path: inset(10% 0 85% 0); } 50% { clip-path: inset(80% 0 5% 0); } 75% { clip-path: inset(30% 0 60% 0); } }
+        @keyframes glitch-2 { 0%, 100% { clip-path: inset(70% 0 10% 0); } 25% { clip-path: inset(20% 0 75% 0); } 50% { clip-path: inset(90% 0 2% 0); } 75% { clip-path: inset(40% 0 50% 0); } }
+        @keyframes pulseGlow { 0%, 100% { text-shadow: 0 0 5px var(--accent-neon), 0 0 10px var(--accent-neon); } 50% { text-shadow: 0 0 10px var(--accent-neon), 0 0 20px var(--accent-neon), 0 0 5px rgba(0,0,0,0.3); } }
+
+
+        h2 {
+            font-size: clamp(1.8rem, 4vw, 2.2rem);
+            color: var(--accent-pink);
+            border-bottom: 3px solid rgba(255, 121, 198, 0.3);
+            padding-bottom: 10px;
+            margin-top: 2.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before { /* Terminal prompt style */
+            content: '➜';
+            color: var(--accent-neon);
+            font-size: 1.2em;
+            font-weight: bold;
+            animation: blinkCursor 1s infinite;
+        }
+        @keyframes blinkCursor { 50% { opacity: 0; } }
+
+        h3 {
+            font-size: clamp(1.3rem, 3vw, 1.5rem);
+            color: var(--accent-yellow);
+            margin-top: 2em;
+            border-left: 5px solid var(--accent-yellow);
+            padding-left: 12px;
+            font-weight: 600;
+        }
+
+        p, li {
+            font-size: clamp(1rem, 1.8vw, 1.1rem);
+            color: var(--text-secondary);
+            margin-bottom: 1em;
+            max-width: 75ch; /* Improve readability */
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            position: relative;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        a::after { /* Underline effect */
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--accent-neon);
+            transition: width 0.3s ease;
+        }
+        a:hover {
+            color: var(--accent-neon);
+            text-shadow: 0 0 5px var(--accent-neon);
+        }
+        a:hover::after {
+            width: 100%;
+        }
+
+        strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        em {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+
+        /* --- Code Styling --- */
+        code { /* Inline code */
+            font-family: var(--code-font);
+            background-color: rgba(40, 42, 54, 0.8); /* Dracula bg-ish */
+            color: var(--accent-pink);
+            padding: 0.2em 0.5em;
+            border-radius: 5px;
+            font-size: 0.9em;
+            border: 1px solid #44475a; /* Dracula selection-ish */
+            vertical-align: middle;
+        }
+
+        /* Keyword highlighting */
+        .kw { color: var(--accent-pink); font-weight: bold; } /* Keywords like const, let, function */
+        .op { color: var(--accent-neon); } /* Operators => ... ?. ?? */
+        .num { color: var(--accent-purple); } /* Numbers */
+        .str { color: var(--accent-yellow); } /* Strings */
+        .bool { color: var(--accent-purple); } /* Booleans */
+        .fn { color: var(--accent-blue); } /* Function names */
+        .arg { color: var(--accent-orange); } /* Function arguments */
+        .cmt { color: #6272a4; font-style: italic; } /* Comments (Dracula comment color) */
+        .obj-prop { color: var(--accent-blue); } /* Object properties */
+        .class-name { color: var(--accent-neon); font-style: italic; } /* Class names */
+
+
+        pre { /* Code blocks */
+            font-family: var(--code-font);
+            background-color: #282a36; /* Dracula bg */
+            color: #f8f8f2; /* Dracula fg */
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: clamp(0.85rem, 1.6vw, 0.95rem);
+            line-height: 1.6;
+            margin: 1.5em 0;
+            border: 1px solid #44475a;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            position: relative; /* For copy button, etc. */
+        }
+        /* Add line numbers (optional, CSS only) */
+        pre {
+            counter-reset: line;
+        }
+        pre code::before {
+            counter-increment: line;
+            content: counter(line);
+            display: inline-block;
+            width: 2.5em; /* Adjust width as needed */
+            padding-right: 1em;
+            margin-right: 1em;
+            text-align: right;
+            color: var(--text-muted);
+            border-right: 1px solid #44475a;
+            user-select: none; /* Don't select line numbers */
+        }
+        pre code { /* Reset inline styles for block */
+             background: none;
+             color: inherit;
+             padding: 0;
+             border-radius: 0;
+             border: none;
+             font-size: inherit;
+             vertical-align: baseline;
+             display: block; /* Important for line numbers */
+             white-space: pre; /* Preserve whitespace */
+        }
+
+        /* --- Components & Utilities --- */
+        .header {
+            text-align: center;
+            margin-bottom: 3em;
+        }
+        .logo {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            cursor: default; /* Not a link */
+        }
+        .logo span {
+            color: var(--accent-orange);
+            display: inline-block;
+            transition: transform 0.2s ease-in-out;
+        }
+        .logo:hover span {
+            transform: scale(1.1) rotate(-3deg);
+        }
+
+        .feature-box {
+            background: rgba(40, 42, 54, 0.5); /* Dracula bg slightly transparent */
+            border: 1px solid #44475a;
+            border-left: 5px solid var(--accent-pink);
+            padding: 20px 25px;
+            margin: 2em 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .feature-box h3 {
+            margin-top: 0;
+            border-left: none;
+            padding-left: 0;
+            color: var(--accent-pink); /* Match border */
+        }
+
+        .warning-box, .info-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 1.5em 0;
+            border-style: solid;
+            border-width: 1px;
+        }
+        .warning-box {
+            background-color: rgba(255, 85, 85, 0.1);
+            color: #ffb3b3;
+            border-color: var(--danger);
+            border-left: 5px solid var(--danger);
+        }
+        .warning-box::before {
+            content: '☢️ CUIDADO: ';
+            font-weight: bold;
+            color: var(--danger);
+        }
+        .info-box {
+            background-color: rgba(97, 218, 251, 0.1);
+            color: #c0f0ff;
+            border-color: var(--accent-blue);
+            border-left: 5px solid var(--accent-blue);
+        }
+        .info-box::before {
+            content: '💡 TIP PRO: ';
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+
+        hr.section-divider {
+            border: 0;
+            height: 2px;
+            background-image: linear-gradient(to right, rgba(0, 255, 204, 0), var(--accent-neon), rgba(0, 255, 204, 0));
+            margin: 3.5em 0;
+            opacity: 0.5;
+        }
+
+        .tldr {
+            border: 2px dashed #6272a4; /* Dracula comment color dashed */
+            padding: 25px;
+            margin-top: 3em;
+            background: linear-gradient(135deg, rgba(40, 42, 54, 0.8) 0%, rgba(40, 42, 54, 0.6) 100%);
+            border-radius: 10px;
+        }
+        .tldr h3 {
+            color: var(--accent-orange);
+            margin-top: 0;
+            font-size: 1.8em;
+            border: none;
+            padding: 0;
+            text-align: center;
+            margin-bottom: 0.8em;
+        }
+        .tldr ul { list-style: none; padding: 0; }
+        .tldr li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 0.6em;
+            font-size: 1.05em;
+        }
+        .tldr li::before {
+             content: '⚡';
+             position: absolute;
+             left: 0;
+             top: 1px;
+             color: var(--accent-yellow);
+             font-size: 1.2em;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4em;
+            padding-top: 2em;
+            border-top: 1px solid #333;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+        .footer a {
+             color: var(--accent-blue);
+        }
+        .footer a:hover {
+             color: var(--accent-neon);
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+                padding: 20px 25px;
+            }
+            h1 { font-size: clamp(1.8rem, 6vw, 2.5rem); }
+            h2 { font-size: clamp(1.5rem, 5vw, 1.9rem); }
+            h3 { font-size: clamp(1.2rem, 4vw, 1.4rem); }
+            p, li { font-size: clamp(0.95rem, 2.5vw, 1rem); }
+            pre { padding: 15px; }
+            pre code::before { width: 2em; padding-right: 0.8em; margin-right: 0.8em; }
+            .tldr { padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            .container { margin: 10px; padding: 15px; border-radius: 10px; }
+            h1 { /* Disable glitch on small screens if distracting */
+                 /* animation: pulseGlow 4s infinite ease-in-out; */
+            }
+             h1::before, h1::after { display: none; }
+             pre { font-size: clamp(0.8rem, 2.8vw, 0.9rem); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">papitas<span>fritas</span>.com ::: JS CORE DUMP</div>
+            <h1 data-text="JS Moderno: ¡El Upgrade ES6+ que tu Código Pide a Gritos!">JS Moderno: ¡El Upgrade ES6+ que tu Código Pide a Gritos!</h1>
+        </header>
+
+        <!-- Intro -->
+        <p>A ver, equipo. Si tu código JavaScript todavía parece sacado de un Geocities de 1999, tenemos que hablar. <code class="kw">var</code> por todos lados, funciones anidadas hasta el infinito (¡hola, <span class="keyword-danger">Callback Hell</span>!), y manipulación del DOM que parece magia negra...</p>
+        <p>¡BASTA! Es hora de ponerse al día. ECMAScript (el estándar detrás de JS) ha evolucionado a velocidad de crucero. ES6 (o ES2015) fue el Big Bang, y desde entonces, cada año trae nuevas herramientas para escribir código más <strong>limpio, legible y potente</strong>. Hoy, hacemos un deep dive en las features que DEBES conocer. ¡Abróchate el cinturón!</p>
+
+        <hr class="section-divider">
+
+        <h2>Adiós <code class="kw">var</code>, Hola Bloques: <code class="kw">let</code> y <code class="kw">const</code></h2>
+        <p>¿El mayor dolor de cabeza del JS clásico? El <span class="keyword-danger">scope</span> (ámbito) de <code class="kw">var</code>. Se "hoisteaba" (elevaba) al inicio de la función, creando comportamientos... *inesperados*. Y podías redeclarar variables como si nada. ¡Caos!</p>
+
+        <pre><code class="language-javascript"><span class="cmt">// El viejo oeste con var... ¡peligro!</span>
+<span class="kw">function</span> <span class="fn">oldSchool</span>(<span class="arg">condicion</span>) {
+  <span class="kw">if</span> (condicion) {
+    <span class="kw">var</span> <span class="arg">x</span> = <span class="num">10</span>;
+    console.<span class="fn">log</span>(<span class="str">'Dentro del if:'</span>, x); <span class="cmt">// 10</span>
+  }
+  console.<span class="fn">log</span>(<span class="str">'Fuera del if:'</span>, x); <span class="cmt">// ¡¿QUÉ?! Sigue siendo 10 (o undefined si condicion es false)</span>
+  <span class="kw">var</span> <span class="arg">x</span> = <span class="num">20</span>; <span class="cmt">// ¡Redeclaración permitida! WTF.</span>
+  console.<span class="fn">log</span>(<span class="str">'Redeclarada:'</span>, x); <span class="cmt">// 20</span>
+}</code></pre>
+
+        <p>ES6 trajo la paz con <code class="kw">let</code> y <code class="kw">const</code>:</p>
+        <ul>
+            <li><code class="kw">let</code>: Para variables que <strong>necesitan cambiar</strong> su valor. Tienen <strong>scope de bloque</strong> (<code>{}</code>). No puedes redeclararlas en el mismo ámbito.</li>
+            <li><code class="kw">const</code>: Para constantes, variables cuyo valor <strong>NO debería cambiar</strong> (inmutabilidad... más o menos). También tiene scope de bloque. ¡Úsala por defecto!</li>
+        </ul>
+
+        <pre><code class="language-javascript"><span class="kw">function</span> <span class="fn">modernWay</span>(<span class="arg">condicion</span>) {
+  <span class="kw">let</span> <span class="arg">y</span> = <span class="num">5</span>; <span class="cmt">// Variable que puede cambiar</span>
+  <span class="kw">const</span> <span class="arg">Z</span> = <span class="num">100</span>; <span class="cmt">// Constante, ¡no la toques!</span>
+
+  <span class="kw">if</span> (condicion) {
+    <span class="kw">let</span> <span class="arg">y</span> = <span class="num">10</span>; <span class="cmt">// Sombra a la 'y' exterior DENTRO del bloque</span>
+    <span class="kw">const</span> <span class="arg">X</span> = <span class="num">20</span>;
+    console.<span class="fn">log</span>(<span class="str">'Dentro del if (y):'</span>, y); <span class="cmt">// 10</span>
+    console.<span class="fn">log</span>(<span class="str">'Dentro del if (X):'</span>, X); <span class="cmt">// 20</span>
+    <span class="cmt">// let y = 30; // Error! Ya está declarada en este bloque</span>
+    <span class="cmt">// Z = 50; // Error! No puedes reasignar una constante</span>
+  }
+
+  console.<span class="fn">log</span>(<span class="str">'Fuera del if (y):'</span>, y); <span class="cmt">// 5 (la 'y' del if ya no existe)</span>
+  <span class="cmt">// console.log('Fuera del if (X):', X); // Error! X solo existe dentro del if</span>
+  console.<span class="fn">log</span>(<span class="str">'Constante Z:'</span>, Z); <span class="cmt">// 100</span>
+}</code></pre>
+        <div class="info-box">Prioriza <code class="kw">const</code> siempre que puedas. Fuerza a pensar si una variable *realmente* necesita cambiar. Menos estado mutable = menos bugs.</div>
+
+        <hr class="section-divider">
+
+        <h2>Funciones Flecha (<code class="op">=></code>): Menos Verbosidad, <code class="kw">this</code> Predecible</h2>
+        <p>Escribir <code class="kw">function</code> una y otra vez era tedioso. Las funciones flecha son la navaja suiza sintáctica:</p>
+
+        <pre><code class="language-javascript"><span class="cmt">// Antes:</span>
+<span class="kw">const</span> <span class="arg">sumaOld</span> = <span class="kw">function</span>(<span class="arg">a</span>, <span class="arg">b</span>) {
+  <span class="kw">return</span> a + b;
+};
+
+<span class="cmt">// Ahora: ¡Boom!</span>
+<span class="kw">const</span> <span class="arg">sumaNew</span> = (<span class="arg">a</span>, <span class="arg">b</span>) <span class="op">=></span> a + b; <span class="cmt">// Retorno implícito si es una sola expresión</span>
+
+<span class="cmt">// Con un solo argumento:</span>
+<span class="kw">const</span> <span class="arg">cuadrado</span> = <span class="arg">x</span> <span class="op">=></span> x * x; <span class="cmt">// Paréntesis opcionales</span>
+
+<span class="cmt">// Sin argumentos:</span>
+<span class="kw">const</span> <span class="arg">saludo</span> = () <span class="op">=></span> <span class="str">'Hola mundo!'</span>;
+
+<span class="cmt">// Con cuerpo de función (múltiples líneas):</span>
+<span class="kw">const</span> <span class="arg">procesar</span> = (<span class="arg">data</span>) <span class="op">=></span> {
+  console.<span class="fn">log</span>(<span class="str">'Procesando...'</span>, data);
+  <span class="kw">const</span> <span class="arg">resultado</span> = data.<span class="fn">map</span>(<span class="arg">n</span> <span class="op">=></span> n * <span class="num">2</span>); <span class="cmt">// ¡Flechas anidadas!</span>
+  <span class="kw">return</span> resultado;
+};</code></pre>
+
+        <p>Pero la *verdadera* magia está en cómo manejan <code class="kw">this</code>. Las funciones normales tienen su propio <code class="kw">this</code>, que cambia según cómo se llame (un clásico dolor de cabeza en JS). Las funciones flecha <strong>NO tienen su propio <code class="kw">this</code></strong>; heredan el <code class="kw">this</code> del contexto léxico donde fueron creadas. ¡Adiós a <code class="kw">var self = this;</code> o <code class="fn">.bind(this)</code> en muchos casos!</p>
+
+        <pre><code class="language-javascript"><span class="kw">function</span> <span class="fn">Contador</span>() {
+  <span class="kw">this</span>.<span class="arg">segundos</span> = <span class="num">0</span>;
+
+  <span class="cmt">// Antes (this se pierde dentro de setInterval):</span>
+  <span class="cmt">/*
+  setInterval(function() {
+    // ERROR: 'this' aquí es 'window' o 'undefined' en modo estricto
+    // this.segundos++;
+    // console.log(this.segundos);
+  }, 1000);
+  */</span>
+
+  <span class="cmt">// Ahora (la flecha hereda el 'this' de Contador):</span>
+  setInterval(() <span class="op">=></span> {
+    <span class="kw">this</span>.<span class="arg">segundos</span>++;
+    console.<span class="fn">log</span>(<span class="str">'Segundos:'</span>, <span class="kw">this</span>.<span class="arg">segundos</span>); <span class="cmt">// ¡Funciona! 'this' es la instancia de Contador</span>
+  }, <span class="num">1000</span>);
+}
+
+<span class="kw">const</span> <span class="arg">miContador</span> = <span class="kw">new</span> <span class="fn">Contador</span>();</code></pre>
+        <div class="warning-box">No uses funciones flecha como métodos en objetos si necesitas que <code class="kw">this</code> se refiera al objeto mismo, o como constructores (<code class="kw">new</code>). ¡Ahí sí necesitas el <code class="kw">this</code> dinámico!</div>
+
+        <hr class="section-divider">
+
+        <h2>Template Literals (Plantillas de Texto): Adiós Concatenación Infernal</h2>
+        <p>¿Cansado de unir strings con <code>+</code> y manejar comillas simples/dobles como un campeón de Tetris? Las plantillas literales (backticks `` ` ``) son tu salvación:</p>
+        <ul>
+            <li>Permiten <strong>interpolar expresiones</strong> fácilmente con <code>${...}</code>.</li>
+            <li>Permiten <strong>strings multilínea</strong> sin trucos raros.</li>
+            <li>Pueden usarse con "Tagged Templates" para procesamiento avanzado (piensa en Styled Components).</li>
+        </ul>
+        <pre><code class="language-javascript"><span class="kw">const</span> <span class="arg">nombre</span> = <span class="str">'Desarrollador Cansado'</span>;
+<span class="kw">const</span> <span class="arg">bugs</span> = <span class="num">99</span>;
+<span class="kw">const</span> <span class="arg">featureCompleta</span> = <span class="bool">false</span>;
+
+<span class="cmt">// Antes: ¡Qué dolor!</span>
+<span class="kw">var</span> <span class="arg">mensajeOld</span> = <span class="str">'Hola, '</span> + nombre + <span class="str">'.\n'</span> +
+                 <span class="str">'Tienes \'sólo\' '</span> + bugs + <span class="str">' bugs en tu código.\n'</span> +
+                 <span class="str">'Feature completa: '</span> + (featureCompleta ? <span class="str">'Sí'</span> : <span class="str">'Ni de coña'</span>) + <span class="str">'.'</span>;
+
+<span class="cmt">// Ahora: Elegancia pura</span>
+<span class="kw">const</span> <span class="arg">mensajeNew</span> = <span class="str">`Hola, <span class="num">${nombre}</span>.
+Tienes 'sólo' <span class="num">${bugs}</span> bugs en tu código (o <span class="num">${bugs + 1}</span> si cuentas este).
+Feature completa: <span class="num">${featureCompleta ? 'Sí' : 'Ni de coña'}</span>.`</span>;
+
+console.<span class="fn">log</span>(mensajeNew);</code></pre>
+
+        <hr class="section-divider">
+
+        <h2>Desestructuración (Destructuring): Sacando Valores con Estilo</h2>
+        <p>Acceder a propiedades de objetos o elementos de arrays podía ser repetitivo. La desestructuración te permite "desempaquetar" valores en variables distintas de forma concisa.</p>
+
+        <div class="feature-box">
+            <h3>Desestructuración de Objetos</h3>
+            <pre><code class="language-javascript"><span class="kw">const</span> <span class="arg">usuario</span> = {
+  <span class="obj-prop">id</span>: <span class="num">42</span>,
+  <span class="obj-prop">nombreCompleto</span>: {
+    <span class="obj-prop">nombre</span>: <span class="str">'Ada'</span>,
+    <span class="obj-prop">apellido</span>: <span class="str">'Lovelace'</span>
+  },
+  <span class="obj-prop">rol</span>: <span class="str">'Programadora Pionera'</span>,
+  <span class="obj-prop">activo</span>: <span class="bool">true</span>
+};
+
+<span class="cmt">// Antes:</span>
+<span class="cmt">// const id = usuario.id;</span>
+<span class="cmt">// const nombre = usuario.nombreCompleto.nombre;</span>
+<span class="cmt">// const rol = usuario.rol;</span>
+
+<span class="cmt">// Ahora:</span>
+<span class="kw">const</span> {
+  <span class="obj-prop">id</span>,
+  <span class="obj-prop">nombreCompleto</span>: { <span class="obj-prop">nombre</span>, <span class="obj-prop">apellido</span> }, <span class="cmt">// Anidado</span>
+  <span class="obj-prop">rol</span>: <span class="arg">puesto</span> = <span class="str">'Genio Anónimo'</span>, <span class="cmt">// Renombrar y valor por defecto</span>
+  <span class="obj-prop">activo</span>
+} = usuario;
+
+console.<span class="fn">log</span>(id); <span class="cmt">// 42</span>
+console.<span class="fn">log</span>(nombre); <span class="cmt">// Ada</span>
+console.<span class="fn">log</span>(apellido); <span class="cmt">// Lovelace</span>
+console.<span class="fn">log</span>(puesto); <span class="cmt">// Programadora Pionera</span>
+console.<span class="fn">log</span>(activo); <span class="cmt">// true</span></code></pre>
+        </div>
+
+        <div class="feature-box">
+            <h3>Desestructuración de Arrays</h3>
+            <pre><code class="language-javascript"><span class="kw">const</span> <span class="arg">colores</span> = [<span class="str">'Rojo'</span>, <span class="str">'Verde'</span>, <span class="str">'Azul'</span>, <span class="str">'Amarillo'</span>];
+
+<span class="cmt">// Sacar los primeros</span>
+<span class="kw">const</span> [<span class="arg">primero</span>, <span class="arg">segundo</span>] = colores;
+console.<span class="fn">log</span>(primero, segundo); <span class="cmt">// Rojo Verde</span>
+
+<span class="cmt">// Omitir elementos</span>
+<span class="kw">const</span> [<span class="cmt">/*ignorar*/</span>, , <span class="arg">tercero</span>] = colores;
+console.<span class="fn">log</span>(tercero); <span class="cmt">// Azul</span>
+
+<span class="cmt">// Resto de elementos con operador Rest (...)</span>
+<span class="kw">const</span> [<span class="arg">c1</span>, <span class="arg">c2</span>, <span class="op">...</span><span class="arg">restoColores</span>] = colores;
+console.<span class="fn">log</span>(restoColores); <span class="cmt">// ['Azul', 'Amarillo']</span>
+
+<span class="cmt">// Útil para intercambiar variables sin temporal</span>
+<span class="kw">let</span> <span class="arg">a</span> = <span class="num">1</span>, <span class="arg">b</span> = <span class="num">2</span>;
+[a, b] = [b, a];
+console.<span class="fn">log</span>(a, b); <span class="cmt">// 2 1</span></code></pre>
+        </div>
+        <p>¡La desestructuración es clave en frameworks como React para sacar props y estado!</p>
+
+        <hr class="section-divider">
+
+        <h2>Operadores Spread (<code class="op">...</code>) y Rest (<code class="op">...</code>): El Poder de los Tres Puntos</h2>
+        <p>Sí, usan la misma sintaxis, pero hacen cosas opuestas. ¡Confuso al principio, mega útil después!</p>
+        <ul>
+            <li><strong>Spread (<code class="op">...</code>):</strong> "Esparce" los elementos de un iterable (array, string, objeto) en otro sitio. Útil para clonar, fusionar, pasar argumentos.</li>
+            <li><strong>Rest (<code class="op">...</code>):</strong> "Reúne" múltiples elementos/argumentos en un solo array. Lo vimos en la desestructuración de arrays y es clave en funciones.</li>
+        </ul>
+
+        <pre><code class="language-javascript"><span class="cmt">// --- SPREAD ---</span>
+
+<span class="cmt">// Clonar array (superficial)</span>
+<span class="kw">const</span> <span class="arg">nums1</span> = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];
+<span class="kw">const</span> <span class="arg">nums2</span> = [<span class="op">...</span>nums1]; <span class="cmt">// nums2 es [1, 2, 3], pero es un array NUEVO</span>
+nums2.<span class="fn">push</span>(<span class="num">4</span>);
+console.<span class="fn">log</span>(nums1); <span class="cmt">// [1, 2, 3] (original intacto)</span>
+console.<span class="fn">log</span>(nums2); <span class="cmt">// [1, 2, 3, 4]</span>
+
+<span class="cmt">// Fusionar arrays</span>
+<span class="kw">const</span> <span class="arg">masNums</span> = [<span class="num">4</span>, <span class="num">5</span>];
+<span class="kw">const</span> <span class="arg">todosNums</span> = [<span class="op">...</span>nums1, <span class="op">...</span>masNums, <span class="num">6</span>]; <span class="cmt">// [1, 2, 3, 4, 5, 6]</span>
+
+<span class="cmt">// Esparcir en argumentos de función</span>
+<span class="kw">const</span> <span class="arg">numeros</span> = [<span class="num">10</span>, <span class="num">20</span>, <span class="num">5</span>];
+console.<span class="fn">log</span>(Math.<span class="fn">max</span>(<span class="op">...</span>numeros)); <span class="cmt">// Equivalente a Math.max(10, 20, 5) -> 20</span>
+
+<span class="cmt">// Fusionar objetos (ES2018+)</span>
+<span class="kw">const</span> <span class="arg">obj1</span> = { <span class="obj-prop">a</span>: <span class="num">1</span>, <span class="obj-prop">b</span>: <span class="num">2</span> };
+<span class="kw">const</span> <span class="arg">obj2</span> = { <span class="obj-prop">b</span>: <span class="num">3</span>, <span class="obj-prop">c</span>: <span class="num">4</span> };
+<span class="kw">const</span> <span class="arg">fusionado</span> = { <span class="op">...</span>obj1, <span class="op">...</span>obj2, <span class="obj-prop">d</span>: <span class="num">5</span> }; <span class="cmt">// { a: 1, b: 3, c: 4, d: 5 } (obj2 sobreescribe b)</span>
+
+
+<span class="cmt">// --- REST ---</span>
+
+<span class="cmt">// En funciones: agrupa argumentos restantes</span>
+<span class="kw">function</span> <span class="fn">sumarTodo</span>(<span class="arg">primerNum</span>, <span class="op">...</span><span class="arg">restoDeNumeros</span>) {
+  <span class="kw">let</span> <span class="arg">total</span> = primerNum;
+  <span class="kw">for</span> (<span class="kw">const</span> <span class="arg">num</span> <span class="kw">of</span> restoDeNumeros) {
+    total += num;
+  }
+  <span class="kw">return</span> total;
+}
+console.<span class="fn">log</span>(<span class="fn">sumarTodo</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>)); <span class="cmt">// 15 (primerNum=1, restoDeNumeros=[2, 3, 4, 5])</span>
+
+<span class="cmt">// Ya lo vimos en desestructuración de arrays</span>
+<span class="kw">const</span> [<span class="arg">head</span>, <span class="op">...</span><span class="arg">tail</span>] = [<span class="str">'a'</span>, <span class="str">'b'</span>, <span class="str">'c'</span>];
+<span class="cmt">// head = 'a', tail = ['b', 'c']</span></code></pre>
+
+        <hr class="section-divider">
+
+        <h2>Módulos ES (<code class="kw">import</code> / <code class="kw">export</code>): Organizando el Caos</h2>
+        <p>Antes de ES6, organizar código JS grande era... un desastre. Scripts globales, IIFEs, sistemas como CommonJS (Node.js) o AMD... ES Modules trajo un estándar nativo al navegador (y adoptado por Node):</p>
+        <ul>
+            <li><strong>Encapsulación:</strong> Cada archivo es un módulo. Variables y funciones son privadas por defecto.</li>
+            <li><strong>Export explícito:</strong> Usas <code class="kw">export</code> para exponer lo que quieras.</li>
+            <li><strong>Import explícito:</strong> Usas <code class="kw">import</code> para traer funcionalidades de otros módulos.</li>
+        </ul>
+
+        <div class="feature-box">
+            <h3>Ejemplo: `utils.js`</h3>
+            <pre><code class="language-javascript"><span class="cmt">// utils.js</span>
+<span class="kw">export</span> <span class="kw">const</span> <span class="arg">PI</span> = <span class="num">3.14159</span>;
+
+<span class="kw">export</span> <span class="kw">function</span> <span class="fn">doble</span>(<span class="arg">n</span>) {
+  <span class="kw">return</span> n * <span class="num">2</span>;
+}
+
+<span class="kw">function</span> <span class="fn">privada</span>() { <span class="cmt">// No exportada, sólo visible aquí</span>
+  console.<span class="fn">log</span>(<span class="str">'Función privada'</span>);
+}
+
+<span class="cmt">// Export por defecto (sólo uno por archivo)</span>
+<span class="kw">export</span> <span class="kw">default</span> <span class="kw">class</span> <span class="class-name">Calculadora</span> {
+  <span class="fn">sumar</span>(<span class="arg">a</span>, <span class="arg">b</span>) { <span class="kw">return</span> a + b; }
+}</code></pre>
+        </div>
+        <div class="feature-box">
+            <h3>Ejemplo: `main.js`</h3>
+            <pre><code class="language-javascript"><span class="cmt">// main.js</span>
+
+<span class="cmt">// Importar específicos por nombre</span>
+<span class="kw">import</span> { PI, doble } <span class="kw">from</span> <span class="str">'./utils.js'</span>;
+
+<span class="cmt">// Importar el default (puedes darle cualquier nombre)</span>
+<span class="kw">import</span> <span class="class-name">MiCalculadora</span> <span class="kw">from</span> <span class="str">'./utils.js'</span>;
+
+<span class="cmt">// Importar todo bajo un alias (namespace)</span>
+<span class="kw">import</span> * <span class="kw">as</span> <span class="arg">Utils</span> <span class="kw">from</span> <span class="str">'./utils.js'</span>;
+
+console.<span class="fn">log</span>(PI); <span class="cmt">// 3.14159</span>
+console.<span class="fn">log</span>(<span class="fn">doble</span>(<span class="num">5</span>)); <span class="cmt">// 10</span>
+
+<span class="kw">const</span> <span class="arg">calc</span> = <span class="kw">new</span> <span class="class-name">MiCalculadora</span>();
+console.<span class="fn">log</span>(calc.<span class="fn">sumar</span>(<span class="num">3</span>, <span class="num">4</span>)); <span class="cmt">// 7</span>
+
+console.<span class="fn">log</span>(Utils.PI); <span class="cmt">// 3.14159 (acceso vía namespace)</span>
+console.<span class="fn">log</span>(Utils.<span class="fn">doble</span>(<span class="num">10</span>)); <span class="cmt">// 20</span>
+<span class="cmt">// Utils.privada(); // Error! No fue exportada</span></code></pre>
+        </div>
+        <p>Para usar módulos en el navegador, necesitas añadir <code class="attr">type="module"</code> a tu etiqueta `<script>`. ¡Bundlers como Webpack o Vite hacen esto (y mucho más) por ti!</p>
+
+        <hr class="section-divider">
+
+        <h2>Asincronía Civilizada: Promesas y <code class="kw">async</code>/<code class="kw">await</code></h2>
+        <p>El "Infierno de Callbacks" era real. Código anidado difícil de leer y mantener. Las <strong>Promesas (Promises)</strong> fueron el primer gran paso:</p>
+        <ul>
+            <li>Representan un valor que estará disponible *eventualmente* (o un error).</li>
+            <li>Tienen estados: pendiente (pending), cumplida (fulfilled), rechazada (rejected).</li>
+            <li>Se encadenan con <code class="fn">.then()</code> para éxito y <code class="fn">.catch()</code> para errores. <code class="fn">.finally()</code> se ejecuta siempre.</li>
+        </ul>
+        <pre><code class="language-javascript"><span class="kw">function</span> <span class="fn">fetchData</span>(<span class="arg">url</span>) {
+  <span class="kw">return</span> <span class="kw">new</span> <span class="fn">Promise</span>((<span class="arg">resolve</span>, <span class="arg">reject</span>) <span class="op">=></span> {
+    setTimeout(() <span class="op">=></span> { <span class="cmt">// Simulando llamada de red</span>
+      <span class="kw">if</span> (Math.<span class="fn">random</span>() > <span class="num">0.2</span>) {
+        <span class="fn">resolve</span>({ <span class="obj-prop">data</span>: <span class="str">`Datos de <span class="num">${url}</span>`</span> });
+      } <span class="kw">else</span> {
+        <span class="fn">reject</span>(<span class="kw">new</span> <span class="fn">Error</span>(<span class="str">`Falló la carga de <span class="num">${url}</span>`</span>));
+      }
+    }, <span class="num">1000</span>);
+  });
+}
+
+<span class="fn">fetchData</span>(<span class="str">'/api/users'</span>)
+  .<span class="fn">then</span>(<span class="arg">response1</span> <span class="op">=></span> {
+    console.<span class="fn">log</span>(<span class="str">'Éxito 1:'</span>, response1.data);
+    <span class="kw">return</span> <span class="fn">fetchData</span>(<span class="str">'/api/posts'</span>); <span class="cmt">// Encadenando promesas</span>
+  })
+  .<span class="fn">then</span>(<span class="arg">response2</span> <span class="op">=></span> {
+    console.<span class="fn">log</span>(<span class="str">'Éxito 2:'</span>, response2.data);
+  })
+  .<span class="fn">catch</span>(<span class="arg">error</span> <span class="op">=></span> {
+    console.<span class="fn">error</span>(<span class="str">'¡ERROR!'</span>, error.message);
+  })
+  .<span class="fn">finally</span>(() <span class="op">=></span> {
+    console.<span class="fn">log</span>(<span class="str">'Operación completada (éxito o fallo)'</span>);
+  });</code></pre>
+
+        <p>Pero <code class="kw">async</code>/<code class="kw">await</code> (ES2017) es la guinda del pastel. Azúcar sintáctico sobre las promesas que hace que el código asíncrono parezca... síncrono. ¡Mucho más legible!</p>
+        <ul>
+            <li><code class="kw">async</code>: Marca una función que *siempre* devolverá una promesa.</li>
+            <li><code class="kw">await</code>: Pausa la ejecución de la función <code class="kw">async</code> hasta que la promesa se resuelva (o rechace). Solo funciona dentro de funciones <code class="kw">async</code>.</li>
+        </ul>
+
+        <pre><code class="language-javascript"><span class="kw">async</span> <span class="kw">function</span> <span class="fn">cargarTodo</span>() {
+  console.<span class="fn">log</span>(<span class="str">'Iniciando carga...'</span>);
+  <span class="kw">try</span> {
+    <span class="kw">const</span> <span class="arg">responseUsers</span> = <span class="kw">await</span> <span class="fn">fetchData</span>(<span class="str">'/api/users'</span>); <span class="cmt">// Pausa aquí</span>
+    console.<span class="fn">log</span>(<span class="str">'Usuarios:'</span>, responseUsers.data);
+
+    <span class="kw">const</span> <span class="arg">responsePosts</span> = <span class="kw">await</span> <span class="fn">fetchData</span>(<span class="str">'/api/posts'</span>); <span class="cmt">// Pausa aquí</span>
+    console.<span class="fn">log</span>(<span class="str">'Posts:'</span>, responsePosts.data);
+
+    console.<span class="fn">log</span>(<span class="str">'¡Todo cargado!'</span>);
+    <span class="kw">return</span> <span class="str">'Éxito total'</span>; <span class="cmt">// El valor resuelto de la promesa de cargarTodo</span>
+
+  } <span class="kw">catch</span> (error) {
+    console.<span class="fn">error</span>(<span class="str">'FALLO CATASTRÓFICO:'</span>, error.message);
+    <span class="kw">throw</span> error; <span class="cmt">// Re-lanza el error si quieres que la promesa de cargarTodo se rechace</span>
+  } <span class="kw">finally</span> {
+     console.<span class="fn">log</span>(<span class="str">'Finalizando carga (siempre)'</span>);
+  }
+}
+
+<span class="cmt">// Llamar a la función async y manejar su promesa resultante</span>
+<span class="fn">cargarTodo</span>()
+  .<span class="fn">then</span>(<span class="arg">resultadoFinal</span> <span class="op">=></span> console.<span class="fn">log</span>(<span class="str">'Resultado final:'</span>, resultadoFinal))
+  .<span class="fn">catch</span>(<span class="arg">e</span> <span class="op">=></span> console.<span class="fn">log</span>(<span class="str">'Error capturado fuera'</span>));</code></pre>
+        <div class="info-box">¡Usa <code class="kw">async</code>/<code class="kw">await</code> siempre que puedas! Es el estándar moderno para manejar asincronía. Pero recuerda: ¡debajo siguen siendo Promesas!</div>
+
+        <hr class="section-divider">
+
+         <h2>Y Mucho Más... (Bonus Round)</h2>
+         <p>La madriguera es profunda. Aquí un vistazo rápido a otras joyas modernas:</p>
+         <ul>
+            <li><strong>Clases (ES6):</strong> Azúcar sintáctico sobre la herencia prototípica. Más familiar para gente de OOP.
+                <pre><code class="language-javascript"><span class="kw">class</span> <span class="class-name">Animal</span> {
+  <span class="fn">constructor</span>(<span class="arg">nombre</span>) { <span class="kw">this</span>.<span class="arg">nombre</span> = nombre; }
+  <span class="fn">hablar</span>() { console.<span class="fn">log</span>(<span class="str">`<span class="num">${<span class="kw">this</span>.nombre}</span> hace ruido.`</span>); }
+}
+<span class="kw">class</span> <span class="class-name">Perro</span> <span class="kw">extends</span> <span class="class-name">Animal</span> {
+  <span class="fn">hablar</span>() { console.<span class="fn">log</span>(<span class="str">`<span class="num">${<span class="kw">this</span>.nombre}</span> ladra.`</span>); }
+}
+<span class="kw">const</span> <span class="arg">fido</span> = <span class="kw">new</span> <span class="class-name">Perro</span>(<span class="str">'Fido'</span>); fido.<span class="fn">hablar</span>(); <span class="cmt">// Fido ladra.</span></code></pre>
+            </li>
+            <li><strong>Parámetros por Defecto:</strong> ¡Se acabó el `opcion = opcion || 'default';`!
+                <pre><code class="language-javascript"><span class="kw">function</span> <span class="fn">saludar</span>(<span class="arg">nombre</span> = <span class="str">'Mundo'</span>) { console.<span class="fn">log</span>(<span class="str">`Hola, <span class="num">${nombre}</span>!`</span>); }
+<span class="fn">saludar</span>(); <span class="cmt">// Hola, Mundo!</span>
+<span class="fn">saludar</span>(<span class="str">'Dev'</span>); <span class="cmt">// Hola, Dev!</span></code></pre>
+            </li>
+            <li><strong>Optional Chaining (`?.`):</strong> Adiós errores `Cannot read property '...' of undefined`.
+                <pre><code class="language-javascript"><span class="kw">const</span> <span class="arg">user</span> = { <span class="obj-prop">profile</span>: { <span class="obj-prop">address</span>: { <span class="obj-prop">street</span>: <span class="str">'123 Main St'</span> } } };
+<span class="kw">const</span> <span class="arg">city</span> = user<span class="op">?.</span>profile<span class="op">?.</span>address<span class="op">?.</span>city; <span class="cmt">// undefined (sin error)</span>
+<span class="kw">const</span> <span class="arg">street</span> = user<span class="op">?.</span>profile<span class="op">?.</span>address<span class="op">?.</span>street; <span class="cmt">// '123 Main St'</span>
+<span class="cmt">// También funciona con llamadas a función: user.getName?.()</span></code></pre>
+            </li>
+            <li><strong>Nullish Coalescing Operator (`??`):</strong> Asigna un valor por defecto SOLO si la variable es `null` o `undefined` (ignora `0`, `''`, `false`).
+                <pre><code class="language-javascript"><span class="kw">const</span> <span class="arg">cantidad</span> = <span class="num">0</span>;
+<span class="kw">const</span> <span class="arg">cantidadAMostrar</span> = cantidad <span class="op">??</span> <span class="num">10</span>; <span class="cmt">// 0 (porque 0 no es null ni undefined)</span>
+<span class="kw">const</span> <span class="arg">configVacia</span> = <span class="kw">null</span>;
+<span class="kw">const</span> <span class="arg">configFinal</span> = configVacia <span class="op">??</span> { <span class="obj-prop">default</span>: <span class="bool">true</span> }; <span class="cmt">// { default: true }</span></code></pre>
+            </li>
+             <li><strong>Métodos de Array Mejorados:</strong> `find()`, `findIndex()`, `includes()`, `flatMap()`... ¡Explóralos!</li>
+        </ul>
+
+        <hr class="section-divider">
+
+        <div class="tldr">
+            <h3>⚡ TL;DR - JS Moderno para Impacientes ⚡</h3>
+            <ul>
+                <li>Usa <code class="kw">let</code> (mutable) y <code class="kw">const</code> (inmutable-ish) en vez de <code class="kw">var</code>. Scope de bloque FTW.</li>
+                <li>Funciones Flecha (<code class="op">=></code>): Sintaxis corta, <code class="kw">this</code> léxico (¡cuidado dónde las usas!).</li>
+                <li>Template Literals (`` ` ``): Strings multilínea e interpolación (${...}) fáciles.</li>
+                <li>Desestructuración: Saca valores de objetos <code>{ prop }</code> y arrays <code>[el1, el2]</code> como un pro.</li>
+                <li>Spread (<code class="op">...</code>): Esparce elementos (clonar/fusionar arrays/objetos, args func).</li>
+                <li>Rest (<code class="op">...</code>): Agrupa elementos (args func, desestructuración).</li>
+                <li>Módulos ES (<code class="kw">import</code>/<code class="kw">export</code>): Organiza tu código. ¡Adiós globales!</li>
+                <li>Promesas: Manejo de asincronía base (<code class="fn">.then</code>, <code class="fn">.catch</code>).</li>
+                <li><code class="kw">async</code>/<code class="kw">await</code>: La forma legible y moderna de trabajar con Promesas.</li>
+                <li>Bonus: Clases, Params por defecto, Optional Chaining (<code class="op">?.</code>), Nullish Coalescing (<code class="op">??</code>), métodos de array nuevos...</li>
+            </ul>
+            <p style="margin-top: 1em; font-style: italic; color: var(--text-muted);">¡Actualiza tu stack mental AHORA!</p>
+        </div>
+
+        <!-- Outro -->
+        <footer class="footer">
+            <p>¿Te explotó la cabeza? ¿Sigues usando jQuery para todo? ¿Tu `package.json` pesa más que un agujero negro? ¡Llora en los comentarios!</p>
+            <p>Esto fue una dosis de JS moderno cortesía de <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>. Ve y refactoriza algo. O echa un `console.log('wtf')` más.</p>
+            <p>&copy; 2024 papitasfritas.com - Escribe código limpio. O al menos inténtalo.</p>
+        </footer>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Moderno: Módulos y Patrones que NO te harán llorar (Quizás) | papitasfritas.com</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --accent-neon-teal: #00ffcc;
+            --accent-neon-pink: #ff00ff;
+            --accent-neon-yellow: #f0ff00;
+            --accent-bright-blue: #00aaff;
+            --accent-orange: #ffae00;
+            --accent-red: #ff3333;
+            --accent-green: #33ff99;
+            --font-primary: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            --font-code: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+            --transition-speed: 0.3s;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes subtlePulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(0, 255, 204, 0.3); }
+            50% { transform: scale(1.01); box-shadow: 0 0 15px rgba(0, 255, 204, 0.6); }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            20% { opacity: 0.95; }
+            40% { opacity: 1; }
+            60% { opacity: 0.98; }
+            80% { opacity: 1; }
+        }
+        
+        @keyframes backgroundGradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: linear-gradient(270deg, var(--bg-primary), var(--bg-secondary), var(--bg-primary));
+            background-size: 200% 200%;
+            color: var(--text-primary);
+            font-family: var(--font-primary);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            animation: backgroundGradientShift 20s ease infinite;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px 40px;
+            background-color: rgba(16, 16, 16, 0.85); /* Darker, more transparent */
+            backdrop-filter: blur(10px) saturate(1.2);
+            border: 1px solid #333;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+            animation: fadeInDown 1s ease-out;
+            position: relative;
+            z-index: 1; /* Ensure content is above potential background effects */
+        }
+        
+        /* Subtle grid background effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            z-index: 0;
+            pointer-events: none; /* Don't interfere with clicks */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3em;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+            padding-bottom: 1.5em;
+        }
+
+        .logo {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            font-family: var(--font-code);
+            transition: color var(--transition-speed) ease;
+        }
+        .logo:hover {
+            color: var(--accent-orange);
+        }
+        .logo span {
+            color: var(--accent-orange);
+            display: inline-block;
+            transition: transform var(--transition-speed) ease, text-shadow 0.2s ease;
+        }
+        .logo:hover span {
+            transform: translateY(-3px) rotate(3deg);
+            text-shadow: 0 0 5px var(--accent-orange);
+        }
+
+        h1 {
+            font-size: clamp(2.5em, 5vw, 3.5em); /* Responsive font size */
+            font-weight: 800;
+            color: var(--accent-neon-teal);
+            margin: 0.2em 0;
+            line-height: 1.1;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.6), 0 0 20px rgba(0, 255, 204, 0.3);
+            letter-spacing: -1px;
+            font-family: var(--font-primary); /* Keep title more readable */
+        }
+        h1 .highlight {
+            color: var(--accent-neon-pink);
+            text-shadow: 0 0 8px var(--accent-neon-pink);
+        }
+
+        h2 {
+            font-size: clamp(1.8em, 4vw, 2.4em);
+            font-weight: 700;
+            color: var(--accent-bright-blue);
+            border-bottom: 3px solid var(--accent-bright-blue);
+            padding-bottom: 10px;
+            margin: 2.5em 0 1.2em 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+            transform: skewX(-3deg); /* Subtle slant */
+             transition: color var(--transition-speed), border-color var(--transition-speed);
+        }
+        h2:hover {
+            color: var(--accent-neon-teal);
+            border-color: var(--accent-neon-teal);
+        }
+        h2::before { /* Glitchy/techy prefix */
+            content: '//_';
+            color: var(--accent-orange);
+            font-weight: bold;
+            font-family: var(--font-code);
+            font-size: 0.9em;
+            animation: flicker 3s infinite steps(1);
+        }
+
+        h3 {
+            font-size: clamp(1.4em, 3vw, 1.8em);
+            font-weight: 600;
+            color: var(--accent-neon-yellow);
+            margin: 2em 0 1em 0;
+            border-left: 5px solid var(--accent-neon-yellow);
+            padding-left: 15px;
+            text-shadow: 0 0 5px rgba(240, 255, 0, 0.3);
+            transition: padding-left var(--transition-speed) ease;
+        }
+        h3:hover {
+           padding-left: 20px;
+        }
+
+
+        p, li {
+            font-size: clamp(1em, 1.8vw, 1.15em);
+            margin-bottom: 1.2em;
+            color: var(--text-secondary); /* Softer text */
+            max-width: 75ch; /* Improve readability */
+        }
+        p strong, li strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Keyword Styling */
+        code, .keyword {
+            background: rgba(40, 40, 40, 0.8);
+            color: var(--accent-neon-pink);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: var(--font-code);
+            font-size: 0.9em;
+            border: 1px solid #444;
+            vertical-align: middle;
+        }
+        .keyword-js { color: var(--accent-neon-yellow); text-shadow: 0 0 3px var(--accent-neon-yellow); }
+        .keyword-pattern { color: var(--accent-bright-blue); text-shadow: 0 0 3px var(--accent-bright-blue); }
+        .keyword-concept { color: var(--accent-neon-teal); }
+        .keyword-term { color: var(--accent-green); }
+        .keyword-danger { color: var(--accent-red); font-weight: bold; }
+        .keyword-old { color: #888; text-decoration: line-through; } /* For old patterns */
+
+        a {
+            color: var(--accent-bright-blue);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--accent-bright-blue);
+            transition: color var(--transition-speed), border-bottom-color var(--transition-speed);
+        }
+        a:hover, a:focus {
+            color: var(--accent-neon-teal);
+            border-bottom-color: var(--accent-neon-teal);
+            outline: none;
+        }
+
+        blockquote {
+            border-left: 6px solid var(--accent-neon-pink);
+            margin: 2em 10px;
+            padding: 1em 20px;
+            background: linear-gradient(90deg, rgba(255, 0, 255, 0.05), rgba(37, 37, 37, 0.7));
+            color: var(--text-secondary);
+            border-radius: 0 10px 10px 0;
+            position: relative;
+            font-style: italic;
+            font-size: 1.05em;
+            overflow: hidden;
+        }
+         blockquote::before { /* Stylish quote mark */
+            content: '❝';
+            font-size: 4em;
+            color: rgba(255, 0, 255, 0.1);
+            position: absolute;
+            left: 10px;
+            top: -15px;
+            font-family: serif; /* More classic quote look */
+            line-height: 1;
+        }
+        blockquote footer {
+            margin-top: 1em;
+            font-style: normal;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+        blockquote footer::before {
+            content: "— ";
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 15px;
+        }
+        ul li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 1em;
+        }
+        ul li::before { /* Advanced custom bullet */
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5em; /* Vertically center better */
+            width: 10px;
+            height: 10px;
+            background-color: transparent;
+            border: 2px solid var(--accent-neon-teal);
+            border-radius: 2px; /* Square-ish */
+            transform: rotate(45deg); /* Diamond shape */
+            transition: all var(--transition-speed) ease;
+        }
+        ul li:hover::before {
+            background-color: var(--accent-neon-teal);
+            border-color: var(--accent-neon-yellow);
+            transform: rotate(0deg) scale(1.2);
+            box-shadow: 0 0 8px var(--accent-neon-teal);
+        }
+
+        hr.section-divider {
+            border: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-neon-teal), transparent);
+            margin: 3.5em 0;
+            opacity: 0.6;
+        }
+
+        .code-block {
+            background-color: rgba(10, 10, 10, 0.9); /* Even darker for code */
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: var(--font-code);
+            font-size: clamp(0.85em, 1.5vw, 1em);
+            overflow-x: auto;
+            border: 1px solid #444;
+            margin: 1.5em 0;
+            white-space: pre;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0, 0.5);
+            transition: box-shadow var(--transition-speed) ease;
+        }
+        .code-block:hover {
+            box-shadow: 0 6px 20px rgba(0, 255, 204, 0.2);
+        }
+        /* Simple Simulated Syntax Highlighting */
+        .code-block .comment { color: #6a9955; font-style: italic; }
+        .code-block .keyword { color: #569cd6; background: none; padding: 0; border: none; font-weight: bold; } /* JS keywords like import, export, const */
+        .code-block .function { color: #dcdcaa; } /* Function names */
+        .code-block .variable { color: #9cdcfe; } /* Variable names */
+        .code-block .string { color: #ce9178; } /* Strings */
+        .code-block .number { color: #b5cea8; } /* Numbers */
+        .code-block .operator { color: #d4d4d4; } /* Operators =, =>, ... */
+        .code-block .punctuation { color: #808080; } /* Braces, commas, etc */
+        .code-block .class-name { color: #4ec9b0; } /* Class names */
+        .code-block .method { color: #dcdcaa; font-style: italic; } /* Methods */
+
+
+        .alert-box {
+            padding: 20px 25px;
+            margin: 2em 0;
+            border-radius: 8px;
+            border-left-width: 6px;
+            border-left-style: solid;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+        }
+        .alert-box strong { display: block; margin-bottom: 0.5em; font-size: 1.1em; }
+
+        .warning-box {
+            background-color: rgba(77, 0, 0, 0.7);
+            color: #ffdddd;
+            border-color: var(--accent-red);
+        }
+        .warning-box strong { color: var(--accent-red); }
+        .warning-box::before { content: '☢️ PELIGRO NUCLEAR: '; font-weight: bold; color: var(--accent-orange);}
+
+
+        .info-box {
+            background-color: rgba(0, 77, 77, 0.7);
+            color: #ddffff;
+            border-color: var(--accent-neon-teal);
+        }
+        .info-box strong { color: var(--accent-neon-teal); }
+        .info-box::before { content: '💡 TRANSMISIÓN DE DATOS: '; font-weight: bold; color: var(--accent-orange);}
+
+        .tldr {
+            border: 2px dashed var(--accent-orange);
+            padding: 25px;
+            margin-top: 3em;
+            background: linear-gradient(135deg, rgba(42, 42, 42, 0.5), rgba(26, 26, 26, 0.8));
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        .tldr h3 {
+            color: var(--accent-orange);
+            margin-top: 0;
+            font-size: clamp(1.6em, 3.5vw, 2em);
+            border: none;
+            padding: 0;
+            text-shadow: 0 0 8px var(--accent-orange);
+        }
+        .tldr p {
+            font-size: clamp(1em, 1.8vw, 1.15em);
+            color: var(--text-primary);
+            margin-bottom: 0;
+            max-width: none; /* Override readability constraint */
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4em;
+            padding-top: 2em;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+            border-top: 1px solid #333;
+        }
+        .footer a {
+            color: var(--accent-bright-blue);
+            border-bottom: none;
+        }
+        .footer a:hover {
+            color: var(--accent-neon-teal);
+            text-decoration: underline;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px 10px;
+                padding: 20px;
+            }
+            h1 { font-size: 2.2em; }
+            h2 { font-size: 1.7em; transform: skewX(0); } /* Remove skew on small screens */
+            h3 { font-size: 1.3em; }
+            .code-block { padding: 15px; font-size: 0.8em; }
+            ul li { padding-left: 25px; }
+            ul li::before { width: 8px; height: 8px; }
+        }
+        @media (max-width: 480px) {
+             h1 { font-size: 1.8em; letter-spacing: 0; }
+             h2 { font-size: 1.5em; gap: 5px; }
+             h2::before { font-size: 0.8em; }
+             h3 { font-size: 1.2em; }
+             .logo { font-size: 1.3em; }
+             .tldr { padding: 15px; }
+        }
+
+        /* Accessibility: Focus states */
+        a:focus-visible, button:focus-visible {
+             outline: 2px solid var(--accent-neon-teal);
+             outline-offset: 2px;
+             background-color: rgba(0, 255, 204, 0.1);
+        }
+
+    </style>
+    <!-- Font Awesome for potential icons later (optional, keeping it pure CSS for now) -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.x.x/css/all.min.css"> -->
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">papitas<span>fritas</span>.com ::: DEV_OPS_UNIT :::</div>
+            <h1>Módulos <span class="highlight">JavaScript</span> Modernos: Patrones para No Perder la Cordura</h1>
+        </header>
+
+        <!-- Intro -->
+        <p>Ok, hablemos de <code class="keyword keyword-js">JavaScript</code>. Ese lenguaje que amas odiar. Antes de <strong>ES2015 (ES6)</strong>, organizar código era... digamos... <em>artesanal</em>. Scripts globales peleándose, <code class="keyword keyword-old">IIFEs</code> por todas partes como curitas en una herida abierta, y la gestión de dependencias era un ejercicio de pura fe (y copiar/pegar).</p>
+        <p>Luego llegaron <code class="keyword keyword-old">CommonJS (Node.js)</code> y <code class="keyword keyword-old">AMD (RequireJS)</code>. Intentos nobles, pero fragmentados. ¿Navegador? ¿Servidor? ¿Ambos? Un lío.</p>
+        <p>Pero entonces, ¡BAM! <span class="keyword keyword-concept">ES Modules (ESM)</span> aterrizaron. La forma <strong>nativa</strong> y <strong>estandarizada</strong> de hacer módulos en JavaScript. Y sí, ya deberías estar usándolos. Punto. Si no, estás viviendo en el pasado... probablemente junto a los que todavía usan `var`.</p>
+        <p>Pero no basta con `importar` y `exportar` a lo loco. Necesitamos <strong>estructura</strong>. Necesitamos <strong>patrones</strong>. Vamos a ver cómo aplicar algunos patrones de diseño clásicos en el brillante y (a veces) confuso mundo de ESM.</p>
+
+        <hr class="section-divider">
+
+        <h2>¿Por Qué Módulos? (Si Aún Vives Debajo de una Roca)</h2>
+        <p>Antes de los patrones, un recordatorio rápido de por qué los módulos son la base de TODO el desarrollo JS moderno:</p>
+        <ul>
+            <li><strong>Adiós al Scope Global Mugriento:</strong> Cada módulo tiene su propio scope. Se acabaron las colisiones de nombres accidentales que te hacen querer arrancarte el pelo. ¡<code class="keyword keyword-danger">window.miVariableSuperImportante</code> ya no es un peligro público!</li>
+            <li><strong>Organización Zen:</strong> Divide y vencerás. Separa tu código en piezas lógicas y reutilizables. Tu yo del futuro (y tus compañeros de equipo) te lo agradecerán.</li>
+            <li><strong>Dependencias Explícitas:</strong> Con `import`, sabes EXACTAMENTE qué necesita tu módulo para funcionar. No más "magia" ni dependencias ocultas.</li>
+            <li><strong>Reutilización Real:</strong> Escribe una función útil una vez, expórtala y úsala en 50 sitios distintos. DRY (Don't Repeat Yourself) en estado puro.</li>
+            <li><strong>Optimización (Tree Shaking):</strong> Los bundlers modernos (Webpack, Rollup, Vite) pueden analizar tus `import`/`export` y eliminar el código que NO usas en el build final. ¡Menos KBs para el usuario! 🌳✂️</li>
+        </ul>
+
+        <hr class="section-divider">
+
+        <h2>ES Modules: El ABC (Ultra-Rápido)</h2>
+        <p>Asumimos que no eres un neófito total. La sintaxis básica:</p>
+        <div class="code-block">
+            <span class="comment">// === helpers.js ===</span>
+            <span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">PI</span> <span class="operator">=</span> <span class="number">3.14159</span><span class="punctuation">;</span>
+
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">sumar</span><span class="punctuation">(</span><span class="variable">a</span><span class="punctuation">,</span> <span class="variable">b</span><span class="punctuation">) {</span>
+              <span class="keyword">return</span> <span class="variable">a</span> <span class="operator">+</span> <span class="variable">b</span><span class="punctuation">;</span>
+            <span class="punctuation">}</span>
+
+            <span class="keyword">function</span> <span class="function">restar</span><span class="punctuation">(</span><span class="variable">a</span><span class="punctuation">,</span> <span class="variable">b</span><span class="punctuation">) {</span> <span class="comment">// Función "privada" (no exportada)</span>
+              <span class="keyword">return</span> <span class="variable">a</span> <span class="operator">-</span> <span class="variable">b</span><span class="punctuation">;</span>
+            <span class="punctuation">}</span>
+
+            <span class="comment">// Exportación por defecto (solo una por módulo)</span>
+            <span class="keyword">export</span> <span class="keyword">default</span> <span class="keyword">function</span> <span class="function">saludar</span><span class="punctuation">() {</span>
+              <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">'¡Hola, módulo!'</span><span class="punctuation">);</span>
+            <span class="punctuation">}</span>
+
+            <span class="comment">// === main.js ===</span>
+            <span class="comment">// Importar todo como un objeto (namespace import)</span>
+            <span class="keyword">import</span> <span class="operator">*</span> <span class="keyword">as</span> <span class="variable">mate</span> <span class="keyword">from</span> <span class="string">'./helpers.js'</span><span class="punctuation">;</span>
+
+            <span class="comment">// Importar exports nombrados específicos</span>
+            <span class="keyword">import</span> <span class="punctuation">{</span> <span class="variable">PI</span><span class="punctuation">,</span> <span class="function">sumar</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./helpers.js'</span><span class="punctuation">;</span>
+
+            <span class="comment">// Importar el export por defecto (puedes darle cualquier nombre)</span>
+            <span class="keyword">import</span> <span class="variable">miSaludo</span> <span class="keyword">from</span> <span class="string">'./helpers.js'</span><span class="punctuation">;</span>
+
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="variable">mate</span><span class="punctuation">.</span><span class="variable">PI</span><span class="punctuation">);</span>         <span class="comment">// -> 3.14159</span>
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="variable">mate</span><span class="punctuation">.</span><span class="method">sumar</span><span class="punctuation">(</span><span class="number">2</span><span class="punctuation">,</span> <span class="number">3</span><span class="punctuation">));</span> <span class="comment">// -> 5</span>
+            <span class="comment">// console.log(mate.restar(5, 1)); // ERROR! restar no fue exportada</span>
+
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="variable">PI</span><span class="punctuation">);</span>              <span class="comment">// -> 3.14159 (importada directamente)</span>
+            <span class="function">miSaludo</span><span class="punctuation">();</span>               <span class="comment">// -> ¡Hola, módulo!</span>
+        </div>
+        <p>Simple, ¿verdad? Ahora, a complicarlo con patrones.</p>
+
+        <hr class="section-divider">
+
+        <h2>Patrones de Diseño en la Era ESM</h2>
+
+        <h3>1. El Patrón Módulo Revelador (Adaptado)</h3>
+        <p>El clásico <span class="keyword keyword-pattern">Revealing Module Pattern</span> buscaba encapsular lógica "privada" y exponer solo una API pública. Con ESM, esto es casi natural, ¡pero podemos ser explícitos!</p>
+        <p>La idea: Define todo dentro del módulo. Exporta <strong>SOLO</strong> lo que el mundo exterior necesita ver.</p>
+        <div class="code-block">
+            <span class="comment">// === contadorSeguro.js ===</span>
+            <span class="keyword">let</span> <span class="variable">_contador</span> <span class="operator">=</span> <span class="number">0</span><span class="punctuation">;</span> <span class="comment">// Variable "privada" por el scope del módulo</span>
+
+            <span class="keyword">function</span> <span class="function">_validarNumero</span><span class="punctuation">(</span><span class="variable">valor</span><span class="punctuation">) {</span> <span class="comment">// Función "privada"</span>
+              <span class="keyword">if</span> <span class="punctuation">(</span><span class="keyword">typeof</span> <span class="variable">valor</span> <span class="operator">!==</span> <span class="string">'number'</span><span class="punctuation">) {</span>
+                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="class-name">Error</span><span class="punctuation">(</span><span class="string">'El valor debe ser numérico'</span><span class="punctuation">);</span>
+              <span class="punctuation">}</span>
+            <span class="punctuation">}</span>
+
+            <span class="comment">// --- API Pública ---</span>
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">incrementar</span><span class="punctuation">(</span><span class="variable">valor</span> <span class="operator">=</span> <span class="number">1</span><span class="punctuation">) {</span>
+              <span class="function">_validarNumero</span><span class="punctuation">(</span><span class="variable">valor</span><span class="punctuation">);</span>
+              <span class="variable">_contador</span> <span class="operator">+=</span> <span class="variable">valor</span><span class="punctuation">;</span>
+            <span class="punctuation">}</span>
+
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">obtenerValor</span><span class="punctuation">() {</span>
+              <span class="keyword">return</span> <span class="variable">_contador</span><span class="punctuation">;</span>
+            <span class="punctuation">}</span>
+
+            <span class="comment">// NO exportamos _contador ni _validarNumero</span>
+
+            <span class="comment">// === main.js ===</span>
+            <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">incrementar</span><span class="punctuation">,</span> <span class="function">obtenerValor</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./contadorSeguro.js'</span><span class="punctuation">;</span>
+
+            <span class="comment">// incrementar = () => { console.log('Hackeado!'); }; // No puedes sobreescribir el import así fácilmente</span>
+            
+            <span class="function">incrementar</span><span class="punctuation">(</span><span class="number">5</span><span class="punctuation">);</span>
+            <span class="function">incrementar</span><span class="punctuation">();</span> <span class="comment">// Incrementa en 1 (valor por defecto)</span>
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="function">obtenerValor</span><span class="punctuation">());</span> <span class="comment">// -> 6</span>
+            <span class="comment">// console.log(_contador); // ERROR! No está en este scope</span>
+        </div>
+        <p>Boom. Encapsulación lograda. El estado interno (`_contador`) está protegido. Solo expones las acciones permitidas.</p>
+
+        <h3>2. El Patrón Singleton</h3>
+        <p>Un <span class="keyword keyword-pattern">Singleton</span> garantiza que solo exista <strong>UNA</strong> instancia de una "clase" o módulo en toda la aplicación. Ideal para configuraciones globales, gestores de estado, conexiones a bases de datos (con cuidado)...</p>
+        <p>¡Buenas noticias! <strong>Los ES Modules SON singletons por naturaleza.</strong> Cuando importas un módulo (`import './miModulo.js'`), el código a nivel raíz del módulo se ejecuta <strong>SOLO UNA VEZ</strong>, la primera vez que se importa. Las siguientes importaciones del mismo módulo en otras partes de tu app reutilizarán la instancia ya creada.</p>
+        <div class="code-block">
+            <span class="comment">// === configGlobal.js ===</span>
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">'*** Módulo configGlobal inicializado UNA SOLA VEZ ***'</span><span class="punctuation">);</span>
+
+            <span class="keyword">const</span> <span class="variable">configuracion</span> <span class="operator">=</span> <span class="punctuation">{</span>
+              <span class="variable">apiUrl</span><span class="punctuation">:</span> <span class="string">'https://api.papitasfritas.com/v1'</span><span class="punctuation">,</span>
+              <span class="variable">apiKey</span><span class="punctuation">:</span> <span class="string">'p4p1t4s_s3cr3t_k3y'</span><span class="punctuation">,</span> <span class="comment">// ¡No hardcodees esto en la vida real! Usa variables de entorno.</span>
+              <span class="variable">modoDebug</span><span class="punctuation">:</span> <span class="keyword">false</span>
+            <span class="punctuation">};</span>
+
+            <span class="comment">// Podríamos tener lógica aquí para cargar desde .env o similar</span>
+
+            <span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">Object</span><span class="punctuation">.</span><span class="method">freeze</span><span class="punctuation">(</span><span class="variable">configuracion</span><span class="punctuation">);</span> <span class="comment">// Congelamos para evitar modificaciones accidentales</span>
+
+            <span class="comment">// === servicioA.js ===</span>
+            <span class="keyword">import</span> <span class="variable">config</span> <span class="keyword">from</span> <span class="string">'./configGlobal.js'</span><span class="punctuation">;</span>
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">'Servicio A usa API:'</span><span class="punctuation">,</span> <span class="variable">config</span><span class="punctuation">.</span><span class="variable">apiUrl</span><span class="punctuation">);</span>
+
+            <span class="comment">// === servicioB.js ===</span>
+            <span class="keyword">import</span> <span class="variable">config</span> <span class="keyword">from</span> <span class="string">'./configGlobal.js'</span><span class="punctuation">;</span> <span class="comment">// NO se vuelve a ejecutar el console.log de inicialización</span>
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">'Servicio B usa API Key (shhh):'</span><span class="punctuation">,</span> <span class="variable">config</span><span class="punctuation">.</span><span class="variable">apiKey</span><span class="punctuation">);</span>
+
+            <span class="comment">// === main.js ===</span>
+            <span class="keyword">import</span> <span class="string">'./servicioA.js'</span><span class="punctuation">;</span>
+            <span class="keyword">import</span> <span class="string">'./servicioB.js'</span><span class="punctuation">;</span>
+        </div>
+        <p>El log `*** Módulo configGlobal inicializado... ***` aparecerá solo una vez. Magia de ESM. Úsalo para gestionar estado compartido o configuraciones sin miedo a múltiples instancias.</p>
+
+        <h3>3. El Patrón Fachada (Facade)</h3>
+        <p>¿Tienes un subsistema complejo con múltiples módulos internos? El patrón <span class="keyword keyword-pattern">Facade</span> te permite crear un módulo "fachada" que proporciona una <strong>interfaz simplificada</strong> a ese subsistema.</p>
+        <p>El mundo exterior solo habla con la fachada, que orquesta las llamadas a los módulos internos. Es como el recepcionista de un hotel: tú le pides algo simple, y él se encarga de coordinar con cocina, limpieza, etc.</p>
+        <div class="code-block">
+            <span class="comment">// === subsistema/autenticacion.js ===</span>
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">login</span><span class="punctuation">(</span><span class="variable">user</span><span class="punctuation">,</span> <span class="variable">pass</span><span class="punctuation">) {</span> <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">`Loggeando a ${</span><span class="variable">user</span><span class="string">}...`</span><span class="punctuation">);</span> <span class="keyword">return</span> <span class="keyword">true</span><span class="punctuation">;</span> <span class="punctuation">}</span>
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">logout</span><span class="punctuation">() {</span> <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">'Deslogueando...'</span><span class="punctuation">);</span> <span class="punctuation">}</span>
+
+            <span class="comment">// === subsistema/permisos.js ===</span>
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">verificarPermiso</span><span class="punctuation">(</span><span class="variable">user</span><span class="punctuation">,</span> <span class="variable">permiso</span><span class="punctuation">) {</span> <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">`Verificando ${</span><span class="variable">permiso</span><span class="string">} para ${</span><span class="variable">user</span><span class="string">}...`</span><span class="punctuation">);</span> <span class="keyword">return</span> <span class="keyword">true</span><span class="punctuation">;</span> <span class="punctuation">}</span>
+
+            <span class="comment">// === fachadaUsuario.js (La Fachada) ===</span>
+            <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">login</span> <span class="keyword">as</span> <span class="variable">authLogin</span><span class="punctuation">,</span> <span class="function">logout</span> <span class="keyword">as</span> <span class="variable">authLogout</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./subsistema/autenticacion.js'</span><span class="punctuation">;</span>
+            <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">verificarPermiso</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./subsistema/permisos.js'</span><span class="punctuation">;</span>
+
+            <span class="keyword">let</span> <span class="variable">usuarioActual</span> <span class="operator">=</span> <span class="keyword">null</span><span class="punctuation">;</span>
+
+            <span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">iniciarSesion</span><span class="punctuation">(</span><span class="variable">user</span><span class="punctuation">,</span> <span class="variable">pass</span><span class="punctuation">) {</span>
+              <span class="keyword">const</span> <span class="variable">exito</span> <span class="operator">=</span> <span class="keyword">await</span> <span class="function">authLogin</span><span class="punctuation">(</span><span class="variable">user</span><span class="punctuation">,</span> <span class="variable">pass</span><span class="punctuation">);</span>
+              <span class="keyword">if</span> <span class="punctuation">(</span><span class="variable">exito</span><span class="punctuation">) {</span>
+                <span class="variable">usuarioActual</span> <span class="operator">=</span> <span class="variable">user</span><span class="punctuation">;</span>
+                <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">`Bienvenido, ${</span><span class="variable">user</span><span class="string">}!`</span><span class="punctuation">);</span>
+              <span class="punctuation">}</span>
+              <span class="keyword">return</span> <span class="variable">exito</span><span class="punctuation">;</span>
+            <span class="punctuation">}</span>
+
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cerrarSesion</span><span class="punctuation">() {</span>
+              <span class="function">authLogout</span><span class="punctuation">();</span>
+              <span class="variable">usuarioActual</span> <span class="operator">=</span> <span class="keyword">null</span><span class="punctuation">;</span>
+            <span class="punctuation">}</span>
+
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">puedeHacer</span><span class="punctuation">(</span><span class="variable">accion</span><span class="punctuation">) {</span>
+              <span class="keyword">if</span> <span class="punctuation">(</span><span class="operator">!</span><span class="variable">usuarioActual</span><span class="punctuation">)</span> <span class="keyword">return</span> <span class="keyword">false</span><span class="punctuation">;</span>
+              <span class="keyword">return</span> <span class="function">verificarPermiso</span><span class="punctuation">(</span><span class="variable">usuarioActual</span><span class="punctuation">,</span> <span class="variable">accion</span><span class="punctuation">);</span>
+            <span class="punctuation">}</span>
+
+            <span class="comment">// === main.js ===</span>
+            <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">iniciarSesion</span><span class="punctuation">,</span> <span class="function">cerrarSesion</span><span class="punctuation">,</span> <span class="function">puedeHacer</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./fachadaUsuario.js'</span><span class="punctuation">;</span>
+            <span class="comment">// No necesitamos importar nada de './subsistema/*' directamente!</span>
+
+            <span class="keyword">await</span> <span class="function">iniciarSesion</span><span class="punctuation">(</span><span class="string">'AdminPapitas'</span><span class="punctuation">,</span> <span class="string">'pass123'</span><span class="punctuation">);</span>
+            <span class="keyword">if</span> <span class="punctuation">(</span><span class="function">puedeHacer</span><span class="punctuation">(</span><span class="string">'editar_usuarios'</span><span class="punctuation">)) {</span>
+              <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">'Acceso concedido para editar.'</span><span class="punctuation">);</span>
+            <span class="punctuation">}</span>
+            <span class="function">cerrarSesion</span><span class="punctuation">();</span>
+        </div>
+        <p>Beneficios: Desacoplamiento. Si cambias la implementación interna de `autenticacion.js`, `main.js` ni se entera mientras la fachada mantenga su contrato (su API pública).</p>
+
+        <h3>4. Inyección de Dependencias (Versión ESM)</h3>
+        <p>La <span class="keyword keyword-pattern">Inyección de Dependencias (DI)</span> es clave para código testeable y flexible. La idea es que un módulo/clase no cree sus propias dependencias, sino que se las "inyecten" desde fuera.</p>
+        <p>Con ESM, el simple acto de `importar` <strong>ES</strong> una forma básica de DI (el módulo "recibe" sus dependencias vía `import`). Pero a veces necesitas más flexibilidad, especialmente para testing o configuración dinámica.</p>
+        <p><strong>Forma 1: Importación directa (DI implícita de ESM)</strong></p>
+        <div class="code-block">
+             <span class="comment">// === logger.js ===</span>
+             <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">log</span><span class="punctuation">(</span><span class="variable">mensaje</span><span class="punctuation">) {</span> <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">`[LOG]: ${</span><span class="variable">mensaje</span><span class="string">}`</span><span class="punctuation">);</span> <span class="punctuation">}</span>
+             
+             <span class="comment">// === servicioX.js ===</span>
+             <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">log</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./logger.js'</span><span class="punctuation">;</span> <span class="comment">// Dependencia "inyectada" por el sistema de módulos</span>
+             
+             <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">hacerAlgoImportante</span><span class="punctuation">() {</span>
+               <span class="function">log</span><span class="punctuation">(</span><span class="string">'Realizando tarea crucial...'</span><span class="punctuation">);</span>
+               <span class="comment">// ... código ...</span>
+             <span class="punctuation">}</span>
+        </div>
+        <p>Simple, pero `servicioX.js` está <strong>acoplado</strong> a la implementación específica de `logger.js`. ¿Y si en tests quieres usar un logger falso? ¿O si quieres configurar el logger con un nivel distinto?</p>
+        <p><strong>Forma 2: Inyección explícita (Pasar dependencias a funciones/clases)</strong></p>
+        <div class="code-block">
+             <span class="comment">// === servicioY.js ===</span>
+             <span class="comment">// Ya no importa directamente el logger</span>
+             
+             <span class="comment">// La función AHORA recibe el logger como parámetro</span>
+             <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">hacerAlgoConfigurable</span><span class="punctuation">(</span><span class="variable">dependencias</span><span class="punctuation">) {</span>
+               <span class="keyword">const</span> <span class="punctuation">{</span> <span class="variable">logger</span> <span class="punctuation">}</span> <span class="operator">=</span> <span class="variable">dependencias</span><span class="punctuation">;</span> 
+               
+               <span class="variable">logger</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">'Realizando tarea configurable...'</span><span class="punctuation">);</span>
+               <span class="comment">// ... código ...</span>
+             <span class="punctuation">}</span>
+
+             <span class="comment">// === main.js ===</span>
+             <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">log</span> <span class="keyword">as</span> <span class="variable">loggerReal</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./logger.js'</span><span class="punctuation">;</span>
+             <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">hacerAlgoConfigurable</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./servicioY.js'</span><span class="punctuation">;</span>
+             
+             <span class="comment">// Inyectamos el logger real</span>
+             <span class="function">hacerAlgoConfigurable</span><span class="punctuation">({</span> <span class="variable">logger</span><span class="punctuation">:</span> <span class="variable">loggerReal</span> <span class="punctuation">});</span>
+
+             <span class="comment">// === test.js (ejemplo conceptual) ===</span>
+             <span class="comment">// import { hacerAlgoConfigurable } from './servicioY.js';</span>
+             <span class="keyword">const</span> <span class="variable">loggerFalso</span> <span class="operator">=</span> <span class="punctuation">{</span> <span class="method">log</span><span class="punctuation">:</span> <span class="punctuation">(</span><span class="variable">msg</span><span class="punctuation">)</span> <span class="operator">=></span> <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="string">`[TEST-LOG]: ${</span><span class="variable">msg</span><span class="string">}`</span><span class="punctuation">)</span> <span class="punctuation">};</span>
+             <span class="comment">// Inyectamos el logger falso para el test</span>
+             <span class="comment">// hacerAlgoConfigurable({ logger: loggerFalso });</span>
+             <span class="comment">// assert(...)</span>
+        </div>
+        <p>Ahora `servicioY.js` es más flexible y testeable. No sabe (ni le importa) qué implementación concreta de `logger` le pasan. Es el patrón DI clásico, aplicado pasando dependencias a funciones o constructores exportados.</p>
+
+        <h3>5. Patrón Fábrica (Factory)</h3>
+        <p>Una <span class="keyword keyword-pattern">Fábrica</span> es un módulo o función cuyo único propósito es <strong>crear y retornar instancias</strong> de otros objetos/clases. Útil para centralizar la lógica de creación, especialmente si es compleja o requiere configuración.</p>
+        <div class="code-block">
+            <span class="comment">// === creadorEntidades.js ===</span>
+            <span class="keyword">class</span> <span class="class-name">Usuario</span> <span class="punctuation">{</span>
+              <span class="method">constructor</span><span class="punctuation">(</span><span class="variable">nombre</span><span class="punctuation">)</span> <span class="punctuation">{</span>
+                <span class="keyword">this</span><span class="punctuation">.</span><span class="variable">nombre</span> <span class="operator">=</span> <span class="variable">nombre</span><span class="punctuation">;</span>
+                <span class="keyword">this</span><span class="punctuation">.</span><span class="variable">id</span> <span class="operator">=</span> <span class="variable">Math</span><span class="punctuation">.</span><span class="method">random</span><span class="punctuation">().</span><span class="method">toString</span><span class="punctuation">(</span><span class="number">36</span><span class="punctuation">).</span><span class="method">substring</span><span class="punctuation">(</span><span class="number">2</span><span class="punctuation">);</span>
+              <span class="punctuation">}</span>
+            <span class="punctuation">}</span>
+            
+            <span class="keyword">class</span> <span class="class-name">Producto</span> <span class="punctuation">{</span>
+                <span class="method">constructor</span><span class="punctuation">(</span><span class="variable">nombre</span><span class="punctuation">,</span> <span class="variable">precio</span><span class="punctuation">) {</span>
+                <span class="keyword">this</span><span class="punctuation">.</span><span class="variable">nombre</span> <span class="operator">=</span> <span class="variable">nombre</span><span class="punctuation">;</span>
+                <span class="keyword">this</span><span class="punctuation">.</span><span class="variable">precio</span> <span class="operator">=</span> <span class="variable">precio</span><span class="punctuation">;</span>
+              <span class="punctuation">}</span>
+            <span class="punctuation">}</span>
+
+            <span class="comment">// La Fábrica</span>
+            <span class="keyword">export</span> <span class="keyword">function</span> <span class="function">crearEntidad</span><span class="punctuation">(</span><span class="variable">tipo</span><span class="punctuation">,</span> <span class="variable">opciones</span><span class="punctuation">) {</span>
+              <span class="keyword">switch</span> <span class="punctuation">(</span><span class="variable">tipo</span><span class="punctuation">) {</span>
+                <span class="keyword">case</span> <span class="string">'usuario'</span><span class="punctuation">:</span>
+                  <span class="keyword">return</span> <span class="keyword">new</span> <span class="class-name">Usuario</span><span class="punctuation">(</span><span class="variable">opciones</span><span class="punctuation">.</span><span class="variable">nombre</span><span class="punctuation">);</span>
+                <span class="keyword">case</span> <span class="string">'producto'</span><span class="punctuation">:</span>
+                  <span class="keyword">return</span> <span class="keyword">new</span> <span class="class-name">Producto</span><span class="punctuation">(</span><span class="variable">opciones</span><span class="punctuation">.</span><span class="variable">nombre</span><span class="punctuation">,</span> <span class="variable">opciones</span><span class="punctuation">.</span><span class="variable">precio</span><span class="punctuation">);</span>
+                <span class="keyword">default</span><span class="punctuation">:</span>
+                  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="class-name">Error</span><span class="punctuation">(</span><span class="string">`Tipo de entidad desconocido: ${</span><span class="variable">tipo</span><span class="string">}`</span><span class="punctuation">);</span>
+              <span class="punctuation">}</span>
+            <span class="punctuation">}</span>
+
+            <span class="comment">// === main.js ===</span>
+            <span class="keyword">import</span> <span class="punctuation">{</span> <span class="function">crearEntidad</span> <span class="punctuation">}</span> <span class="keyword">from</span> <span class="string">'./creadorEntidades.js'</span><span class="punctuation">;</span>
+
+            <span class="keyword">const</span> <span class="variable">user1</span> <span class="operator">=</span> <span class="function">crearEntidad</span><span class="punctuation">(</span><span class="string">'usuario'</span><span class="punctuation">,</span> <span class="punctuation">{</span> <span class="variable">nombre</span><span class="punctuation">:</span> <span class="string">'Alice'</span> <span class="punctuation">});</span>
+            <span class="keyword">const</span> <span class="variable">prod1</span> <span class="operator">=</span> <span class="function">crearEntidad</span><span class="punctuation">(</span><span class="string">'producto'</span><span class="punctuation">,</span> <span class="punctuation">{</span> <span class="variable">nombre</span><span class="punctuation">:</span> <span class="string">'Papitas Cósmicas'</span><span class="punctuation">,</span> <span class="variable">precio</span><span class="punctuation">:</span> <span class="number">99.99</span> <span class="punctuation">});</span>
+
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="variable">user1</span><span class="punctuation">);</span>
+            <span class="variable">console</span><span class="punctuation">.</span><span class="method">log</span><span class="punctuation">(</span><span class="variable">prod1</span><span class="punctuation">);</span>
+        </div>
+        <p>Centraliza la creación. Si mañana cambias cómo se crean los `Usuario`, solo modificas la fábrica.</p>
+
+        <hr class="section-divider">
+
+        <h2>Consideraciones del Mundo Real (Donde las Cosas Explotan)</h2>
+        <div class="warning-box alert-box">
+            <strong>¡ZONA DE PELIGRO!</strong>
+            <ul>
+                <li><span class="keyword keyword-danger">Dependencias Circulares:</span> El infierno en la tierra. Módulo A importa B, y Módulo B importa A. A veces funciona, a veces explota sutilmente, a veces tu bundler se rinde. ¡Evítalas como la peste! Reestructura tu código. Usa fachadas o inyección de dependencias para romper ciclos.</li>
+                <li><strong>Bundlers y Transpiladores:</strong> Aunque ESM es nativo, en producción casi siempre usarás herramientas como <code class="keyword keyword-term">Webpack</code>, <code class="keyword keyword-term">Rollup</code>, o <code class="keyword keyword-term">Vite</code>. Optimizan, empaquetan, y a veces transpilan (con Babel) para navegadores viejos. Entender cómo funcionan es... necesario.</li>
+                <li><strong>Dynamic Imports (`import()`):</strong> Para cargar módulos bajo demanda (code splitting). Devuelven una Promesa. Útiles para reducir el tamaño inicial de tu bundle. <code class="code-block"><span class="keyword">const</span> <span class="variable">modulo</span> <span class="operator">=</span> <span class="keyword">await</span> <span class="keyword">import</span><span class="punctuation">(</span><span class="string">'./miModuloPesado.js'</span><span class="punctuation">);</span></code></li>
+                <li><strong>Estructura de Archivos:</strong> No hay una regla única, pero sé consistente. Agrupa por funcionalidad (`features/`) o por tipo (`components/`, `services/`, `utils/`). ¡No crees un solo archivo `god-module.js` de 10 mil líneas!</li>
+                <li><strong>Testing:</strong> La modularidad FACILITA las pruebas unitarias. Patrones como DI son tus amigos aquí. Frameworks como Jest o Vitest tienen buen soporte para mocks de módulos ESM.</li>
+            </ul>
+        </div>
+
+        <hr class="section-divider">
+
+        <div class="tldr">
+            <h3>☢️ TL;DR - Módulos JS Sin Llorar ☢️</h3>
+            <p>Antes de <code class="keyword keyword-js">ESM</code>, JS era el Far West. Ahora, <code class="keyword keyword-term">import</code>/<code>export</code> mandan. Beneficios: No más caos global, código organizado, dependencias claras, reutilización, <code class="keyword keyword-term">tree-shaking</code>. Patrones adaptados a ESM: <br/>
+            <strong>1. Módulo Revelador:</strong> Exporta solo lo público (ESM lo hace fácil). <br/>
+            <strong>2. Singleton:</strong> ESM es singleton por defecto ¡GRATIS! Úsalo para configs/estado global. <br/>
+            <strong>3. Fachada:</strong> Interfaz simple para subsistemas complejos. Desacopla. <br/>
+            <strong>4. Inyección Dependencias:</strong> Pasa dependencias (funciones, config) a módulos/funciones exportadas para flexibilidad y testing (más allá del `import` básico). <br/>
+            <strong>5. Fábrica:</strong> Módulo que crea instancias de otros objetos. Centraliza la creación. <br/>
+            <strong>Cuidado con:</strong> <code class="keyword keyword-danger">Dependencias Circulares</code> (¡MAL!), entiende tu <code class="keyword keyword-term">bundler</code>, usa <code class="keyword keyword-term">dynamic import()</code> si necesitas, estructura bien tus archivos y ¡testea!</p>
+        </div>
+
+        <footer class="footer">
+            <p>¿Sigues usando `require()`? ¿Tu proyecto es un monolito infernal? ¿Descubriste un patrón aún más loco?</p>
+            <p>Compártelo (o llora) en los comentarios. Esto fue un deep dive en <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>.</p>
+            <p>&copy; 2024 papitasfritas.com - Código limpio o muerte. O algo así. No somos responsables si tu build explota.</p>
+        </footer>
+
+    </div>
+</body>
+</html>

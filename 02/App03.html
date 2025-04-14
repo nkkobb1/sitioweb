@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizFlow AI v3.9 (Intento #3 Respuesta/Feedback) - papitasfritas.com</title>
+    <style>
+        /* --- Estilos Base (Igual que v3.7) --- */
+        :root { /* ... (colores y variables sin cambios) ... */
+             --bg-color: #1a1a2e; --primary-color: #00f0c0; --secondary-color: #2c2c3e;
+            --text-color: #e8e8e8; --accent-color: #ff80ff; --user-input-bg: #3a3a4f;
+            --ai-question-bg: #405060; --ai-result-bg: #306050;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --button-disabled-bg: #4a5568; --button-disabled-color: #a0aec0;
+            --error-bg: rgba(255, 60, 60, 0.2); --error-border: #ff5555; --error-text: #ffaaaa;
+            --button-icon-color: #b0c4de; --button-icon-hover-color: #ffffff;
+            --info-color: #a0d0ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; } html, body { height: 100%; overflow: hidden; }
+        body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; background: radial-gradient(circle, #2c2c3e 0%, var(--bg-color) 100%); }
+        .container { background-color: var(--secondary-color); border-radius: 15px; box-shadow: 0 10px 40px rgba(0, 240, 192, 0.2); overflow: hidden; display: flex; flex-direction: column; width: 100%; max-width: 700px; height: 90vh; border: 1px solid var(--primary-color); }
+        header { background: linear-gradient(90deg, rgba(0, 240, 192, 0.15) 0%, rgba(128, 0, 128, 0.1) 100%); padding: 15px 20px; text-align: center; border-bottom: 1px solid var(--primary-color); flex-shrink: 0; }
+        header h1 { color: var(--primary-color); font-size: 1.5em; text-shadow: 0 0 6px var(--primary-color); } header p { font-size: 0.9em; color: var(--text-color); opacity: 0.8; }
+        .config-area { padding: 20px; background-color: rgba(44, 44, 62, 0.8); border-bottom: 1px solid var(--primary-color); display: grid; grid-template-columns: auto 1fr; gap: 12px 15px; align-items: center; flex-shrink: 0; }
+        .config-area label { font-weight: bold; color: var(--primary-color); grid-column: 1 / 2; text-align: right; }
+        .config-area input[type="text"], .config-area select { padding: 10px 12px; border: 1px solid var(--primary-color); background-color: var(--bg-color); color: var(--text-color); border-radius: 5px; font-size: 0.95em; width: 100%; grid-column: 2 / 3; }
+        .config-area input::placeholder { color: #888; }
+        .config-area button { padding: 12px 20px; border: none; background-color: var(--primary-color); color: var(--bg-color); font-weight: bold; cursor: pointer; border-radius: 5px; font-size: 1em; transition: background-color 0.2s ease, box-shadow 0.2s ease; text-align: center; grid-column: 1 / -1; margin-top: 5px; }
+        .config-area button:hover:not(:disabled) { background-color: #00d8a8; box-shadow: 0 0 10px var(--primary-color); } .config-area button:disabled { background-color: var(--button-disabled-bg); color: var(--button-disabled-color); cursor: not-allowed; box-shadow: none; }
+        .quiz-log-area { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scrollbar-width: thin; scrollbar-color: var(--primary-color) var(--secondary-color); }
+        .quiz-log-area::-webkit-scrollbar { width: 8px; } .quiz-log-area::-webkit-scrollbar-track { background: var(--secondary-color); } .quiz-log-area::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 10px; border: 2px solid var(--secondary-color); }
+        .log-entry { padding: 12px 18px; border-radius: 8px; max-width: 95%; word-wrap: break-word; animation: fadeIn 0.4s ease-out; line-height: 1.5; position: relative; }
+        .log-entry.topic { background-color: rgba(160, 208, 255, 0.1); border-left: 4px solid var(--info-color); align-self: center; font-style: italic; color: var(--info-color); text-align: center; }
+        .log-entry.question-audio { background-color: var(--ai-question-bg); align-self: flex-start; padding-bottom: 40px; border-bottom-left-radius: 2px; border-top-right-radius: 8px; }
+        .log-entry.result-audio { background-color: var(--ai-result-bg); align-self: flex-start; padding-bottom: 40px; border-bottom-left-radius: 2px; border-top-right-radius: 8px; }
+        .log-entry.answer { background-color: var(--user-input-bg); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; border-top-left-radius: 8px; }
+        .log-entry.answer::before { content: "Tu R: "; font-weight: bold; color: var(--primary-color); margin-right: 5px; }
+        .log-entry.loading, .log-entry.error { background: transparent; font-style: italic; align-self: center; text-align: center; padding: 8px 0; }
+        .log-entry.loading { color: var(--primary-color); } .log-entry.error { color: var(--error-text); border: 1px dashed var(--error-border); background-color: var(--error-bg); padding: 10px 15px; }
+        .audio-controls { position: absolute; bottom: 5px; left: 10px; display: flex; gap: 10px; margin-top: 5px; }
+        .audio-controls button { background: none; border: none; padding: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background-color: rgba(0,0,0, 0.2); transition: background-color 0.2s ease, fill 0.2s ease; }
+        .audio-controls button svg { width: 18px; height: 18px; fill: var(--button-icon-color); } .audio-controls button:hover { background-color: rgba(0,0,0, 0.4); } .audio-controls button:hover svg { fill: var(--button-icon-hover-color); }
+        .log-entry.question-audio:not([data-audio-ready="true"]) .audio-controls, .log-entry.result-audio:not([data-audio-ready="true"]) .audio-controls { display: none; }
+        .pause-audio-btn { display: none; } .log-entry[data-playing="true"] .play-audio-btn { display: none; } .log-entry[data-playing="true"] .pause-audio-btn { display: inline-flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .answer-area { display: flex; padding: 15px 20px; border-top: 1px solid var(--primary-color); background-color: rgba(44, 44, 62, 0.8); flex-shrink: 0; gap: 10px; }
+        #answer-input { flex-grow: 1; padding: 10px 15px; border: 1px solid var(--primary-color); background-color: var(--bg-color); color: var(--text-color); border-radius: 20px; font-size: 1em; outline: none; transition: border-color 0.2s ease; }
+        #answer-input:focus { border-color: var(--accent-color); } #answer-input::placeholder { color: #888; }
+        #submit-answer-btn { padding: 10px 20px; border: none; background-color: var(--accent-color); color: var(--bg-color); font-weight: bold; cursor: pointer; border-radius: 20px; font-size: 1em; transition: background-color 0.2s ease, box-shadow 0.2s ease; }
+        #submit-answer-btn:hover:not(:disabled) { background-color: #ff40ff; box-shadow: 0 0 10px var(--accent-color); } #submit-answer-btn:disabled { background-color: var(--button-disabled-bg); color: var(--button-disabled-color); cursor: not-allowed; box-shadow: none; }
+        #answer-section { display: none; } #audio-player { display: none; }
+        @media (max-width: 600px) { /* ... (sin cambios) ... */ }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header> <h1>QuizFlow AI v3.9</h1> <p>Corrección Final Respuesta/Feedback - papitasfritas.com</p> </header>
+        <div class="config-area">
+            <label for="topic-input">Tema:</label> <input type="text" id="topic-input" placeholder="Ej: Sistema Solar...">
+            <label for="difficulty-select">Dificultad:</label> <select id="difficulty-select"><option value="medio" selected>Medio</option><option value="facil">Fácil</option><option value="dificil">Difícil</option></select>
+            <label for="voice-select">Voz:</label> <select id="voice-select"><option value="alloy">Alloy</option><option value="echo">Echo</option><option value="fable">Fable</option><option value="onyx">Onyx</option><option value="nova">Nova</option><option value="shimmer">Shimmer</option></select>
+            <button id="generate-question-btn">Generar Pregunta</button>
+        </div>
+        <div class="quiz-log-area" id="quiz-log-area"> <div class="log-entry topic" id="initial-message">Genera una pregunta, responde y obtén el resultado.</div> </div>
+        <div class="answer-area" id="answer-section"> <input type="text" id="answer-input" placeholder="Escribe tu respuesta aquí..." autocomplete="off" disabled> <button id="submit-answer-btn" disabled>Enviar y Obtener Resultado</button> </div>
+        <audio id="audio-player"></audio>
+        <svg width="0" height="0" style="position:absolute"><defs> <symbol id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol> <symbol id="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></symbol> <symbol id="icon-download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol> </defs></svg>
+    </div>
+
+    <script>
+        // --- DOM Elements & State (igual que v3.7) ---
+        const topicInput = document.getElementById('topic-input'); const voiceSelect = document.getElementById('voice-select'); const difficultySelect = document.getElementById('difficulty-select'); const generateBtn = document.getElementById('generate-question-btn'); const quizLogArea = document.getElementById('quiz-log-area'); const answerSection = document.getElementById('answer-section'); const answerInput = document.getElementById('answer-input'); const submitAnswerBtn = document.getElementById('submit-answer-btn'); const audioPlayer = document.getElementById('audio-player'); const initialMessage = document.getElementById('initial-message');
+        const audioBlobs = {}; let currentTopic = ""; let currentVoice = "alloy"; let currentDifficulty = "medio"; let currentQuestionPrompt = ""; let currentlyPlayingLogId = null;
+
+        // --- Event Listeners (igual que v3.7) ---
+        generateBtn.addEventListener('click', generateQuestion); submitAnswerBtn.addEventListener('click', submitAnswerAndGetResult); voiceSelect.addEventListener('change', (e) => { currentVoice = e.target.value; }); difficultySelect.addEventListener('change', (e) => { currentDifficulty = e.target.value; });
+        quizLogArea.addEventListener('click', (e) => { const p=e.target.closest('.play-audio-btn'); const a=e.target.closest('.pause-audio-btn'); const d=e.target.closest('.download-audio-btn'); if(p){const l=p.closest('.log-entry[data-audio-url]');if(l)playAudioRequest(l);}else if(a){const l=a.closest('.log-entry[data-log-id]');if(l&&l.dataset.logId===currentlyPlayingLogId)pauseAudio(l);}else if(d){const l=d.closest('.log-entry[data-log-id]');if(l)downloadAudio(l.dataset.logId);} });
+        answerInput.addEventListener('keypress', (e) => { if(e.key==='Enter'&&!submitAnswerBtn.disabled){submitAnswerAndGetResult();} });
+        audioPlayer.onplay=handleAudioPlay; audioPlayer.onpause=handleAudioPause; audioPlayer.onended=handleAudioEnd; audioPlayer.onerror=handleAudioError;
+
+        // --- Core Functions ---
+        function generateId() { return `log-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`; }
+        function addLogEntry(content, type, logId = null) { if(initialMessage&&initialMessage.parentNode===quizLogArea){initialMessage.remove();} const e=document.createElement('div');e.classList.add('log-entry',type);e.dataset.timestamp=Date.now(); if((type==='question-audio'||type==='result-audio')&&logId){e.dataset.logId=logId;const s=document.createElement('span');s.textContent=content;e.appendChild(s);const c=document.createElement('div');c.classList.add('audio-controls');c.innerHTML=`<button class="play-audio-btn" title="Reproducir"><svg focusable="false"><use href="#icon-play"></use></svg></button><button class="pause-audio-btn" title="Pausar"><svg focusable="false"><use href="#icon-pause"></use></svg></button><button class="download-audio-btn" title="Descargar"><svg focusable="false"><use href="#icon-download"></use></svg></button>`;e.appendChild(c);}else{e.textContent=content;} quizLogArea.appendChild(e);scrollToBottom();return e; }
+        function scrollToBottom() { setTimeout(() => { quizLogArea.scrollTop = quizLogArea.scrollHeight; }, 100); }
+        function setLoadingState(isLoading, currentAction = "idle", message = "Procesando...") { generateBtn.disabled=isLoading; submitAnswerBtn.disabled=isLoading||answerSection.style.display==='none'; if(isLoading){const x=quizLogArea.querySelectorAll('.loading, .error');x.forEach(el=>el.remove());addLogEntry(message,'loading');generateBtn.textContent=(currentAction==='generatingQ')?'Generando Pregunta...':'Generar Pregunta';submitAnswerBtn.textContent=(currentAction==='gettingResult')?'Obteniendo Resultado...':'Enviar y Obtener Resultado';}else{const l=quizLogArea.querySelector('.loading');if(l)l.remove();generateBtn.textContent='Generar Pregunta';submitAnswerBtn.textContent='Enviar y Obtener Resultado';} }
+        function enableAnswerArea(enable) { answerSection.style.display=enable?'flex':'none'; answerInput.disabled=!enable; submitAnswerBtn.disabled=!enable; if(enable){answerInput.focus();}else{answerInput.value='';} }
+
+        // --- Call 1: Generate ONLY the question ---
+        async function generateQuestion() {
+            const topic=topicInput.value.trim(); if(!topic){addLogEntry("Ingresa un tema.","error"); return;}
+            currentTopic=topic; currentVoice=voiceSelect.value; currentDifficulty=difficultySelect.value;
+            const randomSeed = Date.now(); // Use timestamp for better randomness
+
+            // *** PROMPT v3.9 for QUESTION - Explicit variety instruction ***
+            currentQuestionPrompt = `Genera una pregunta ÚNICA y específica sobre el tema "${currentTopic}" con dificultad "${currentDifficulty}". Intenta variar el tipo de pregunta (qué, cómo, por qué, cuándo, etc.) respecto a veces anteriores. Factor aleatorio: ${randomSeed}. Tu salida de audio debe ser *únicamente* el texto literal de esa pregunta, sin introducciones ni saludos.`;
+
+            setLoadingState(true,'generatingQ', `Generando pregunta (${currentDifficulty})...`); enableAnswerArea(false); addLogEntry(`Tema: ${topic} (Dificultad: ${currentDifficulty})`, 'topic');
+            const u=`https://text.pollinations.ai/${encodeURIComponent(currentQuestionPrompt)}?model=openai-audio&voice=${currentVoice}`; const id=generateId();
+            try {
+                const{blob,objectUrl}=await fetchAudio(u); audioBlobs[id]=blob;
+                const q=addLogEntry(`Pregunta (${currentDifficulty}) (escucha)`, 'question-audio', id);
+                q.dataset.audioUrl=objectUrl; q.setAttribute('data-audio-ready','true');
+                setLoadingState(false,'idle'); playAudioRequest(q); enableAnswerArea(true);
+            } catch(e){ console.error("Error Q:",e); setLoadingState(false,'idle'); addLogEntry(`Error Pregunta: ${e.message}`,'error'); currentQuestionPrompt=""; }
+        }
+
+        // --- Call 2: Get Correct Answer + Feedback based on user's answer ---
+        async function submitAnswerAndGetResult() {
+            const userAnswerText = answerInput.value.trim(); if (!userAnswerText) { return; }
+            addLogEntry(userAnswerText,'answer'); enableAnswerArea(false); setLoadingState(true,'gettingResult',`Obteniendo resultado...`);
+            if (!currentQuestionPrompt) { addLogEntry("Error: Contexto perdido.","error"); setLoadingState(false,'idle'); return; }
+
+            // *** REVISED PROMPT v3.9 for RESULT ***
+            const resultPrompt = `**Tarea Principal:** Determinar la respuesta correcta a una pregunta específica y dar feedback.
+
+**Contexto:**
+*   Se generó previamente una pregunta usando este prompt: "${currentQuestionPrompt}"
+*   La respuesta dada por el usuario fue: "${userAnswerText}"
+
+**Instrucciones EXACTAS para tu salida de audio (sigue este orden):**
+1.  **Determina** cuál es la respuesta correcta y única a la pregunta implícita en el prompt original.
+2.  **Di EXACTAMENTE:** "La respuesta correcta es:" seguido **SOLO** por esa respuesta correcta. (¡No repitas la pregunta!).
+3.  **Haz una Pausa Breve:** Di "..." o un silencio corto similar.
+4.  **Da Feedback:** Compara la respuesta del usuario ("${userAnswerText}") con la respuesta correcta que acabas de decir. Indica si fue correcta, incorrecta o parcial, y explica brevemente por qué. Sé amable y conciso.
+
+**IMPORTANTE:** Tu audio final debe contener *solo* los puntos 2, 3 y 4 en ese orden estricto.`;
+
+            const apiUrl = `https://text.pollinations.ai/${encodeURIComponent(resultPrompt)}?model=openai-audio&voice=${currentVoice}`;
+            const logEntryId = generateId();
+
+             try {
+                 const { blob, objectUrl } = await fetchAudio(apiUrl); audioBlobs[logEntryId] = blob;
+                 const rLogElement = addLogEntry(`Respuesta y Feedback (escucha)`, 'result-audio', logEntryId);
+                 rLogElement.dataset.audioUrl = objectUrl; rLogElement.setAttribute('data-audio-ready', 'true');
+                 playAudioRequest(rLogElement); addLogEntry(`Ciclo completado. Puedes generar otra pregunta.`, 'topic');
+             } catch (error) {
+                 console.error("Error Result:", error); addLogEntry(`Error Resultado: ${error.message}`, 'error');
+                 addLogEntry(`No se pudo obtener resultado. Intenta otra pregunta.`, 'topic');
+             } finally {
+                 setLoadingState(false, 'idle'); currentQuestionPrompt = ""; // Limpiar prompt después del intento
+             }
+        }
+
+        // --- Audio Handling & Helpers (sin cambios desde v3.7) ---
+        async function fetchAudio(apiUrl) { try{const r=await fetch(apiUrl);if(!r.ok){let e=`${r.status}: ${r.statusText}`;try{const b=await r.text();e+=` - ${b.substring(0,100)}`}catch(err){}throw new Error(`Error API (${e}).`);}const ct=r.headers.get('content-type');if(!ct||!ct.startsWith('audio/')){let rt=await r.text();throw new Error(`API no devolvió audio. R: ${rt.substring(0,150)}`);}const blob=await r.blob();if(blob.size===0){throw new Error("API devolvió audio vacío.");}const u=URL.createObjectURL(blob);return {blob,objectUrl:u};}catch(e){console.error("FetchAudio Error:",e);throw e;}}
+        function playAudioRequest(logEntryElement) { const l=logEntryElement.dataset.logId,u=logEntryElement.dataset.audioUrl;if(!u){console.error("No URL:",l);return;}if(currentlyPlayingLogId&&currentlyPlayingLogId!==l){const p=quizLogArea.querySelector(`.log-entry[data-log-id="${currentlyPlayingLogId}"]`);resetPlayButton(p);audioPlayer.pause();}if(currentlyPlayingLogId===l&&audioPlayer.paused){audioPlayer.play().catch(handleAudioError);}else{audioPlayer.src=u;audioPlayer.play().catch(handleAudioError);}currentlyPlayingLogId=l;updateButtonState(logEntryElement,true); }
+        function pauseAudio(logEntryElement) { if(currentlyPlayingLogId===logEntryElement.dataset.logId&&!audioPlayer.paused){audioPlayer.pause();} }
+        function updateButtonState(logEntryElement, isPlaying) { if(logEntryElement)logEntryElement.setAttribute('data-playing',isPlaying.toString());}
+        function resetPlayButton(logEntryElement) { if(logEntryElement)logEntryElement.setAttribute('data-playing','false');}
+        function handleAudioPlay() { const c=quizLogArea.querySelector(`.log-entry[data-log-id="${currentlyPlayingLogId}"]`);updateButtonState(c,true); }
+        function handleAudioPause() { const c=quizLogArea.querySelector(`.log-entry[data-log-id="${currentlyPlayingLogId}"]`);resetPlayButton(c); }
+        function handleAudioEnd() { const c=quizLogArea.querySelector(`.log-entry[data-log-id="${currentlyPlayingLogId}"]`);resetPlayButton(c);currentlyPlayingLogId=null; }
+        function handleAudioError(e) { console.error("Audio Error:",e,audioPlayer.error);addLogEntry(`Error reproducción: ${audioPlayer.error?.message||'desconocido'}`, "error"); const c=quizLogArea.querySelector(`.log-entry[data-log-id="${currentlyPlayingLogId}"]`);resetPlayButton(c);currentlyPlayingLogId=null; }
+        function downloadAudio(logEntryId) { const b=audioBlobs[logEntryId];if(!b){addLogEntry("Audio no encontrado para descarga.","error");return;}console.log("Descarga:",logEntryId);try{const u=URL.createObjectURL(b);const a=document.createElement('a');a.style.display='none';a.href=u;const t=logEntryId.split('-')[1]||Date.now();const x=b.type.split('/')[1]||'mp3';a.download=`quizflow_audio_${t}.${x}`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},500);}catch(e){console.error("Error descarga:",e);addLogEntry(`Error descarga: ${e.message}`,'error');} }
+
+        // --- Initial Setup ---
+        scrollToBottom(); enableAnswerArea(false); currentDifficulty = difficultySelect.value;
+
+    </script>
+</body>
+</html>
