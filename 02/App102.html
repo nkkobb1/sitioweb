@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopedia Interactiva: Plantas del Mundo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Lato para cuerpo, Merriweather para títulos (elegante y legible) -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Plantas del Mundo --- */
+        :root {
+            --color-primary: #166534; /* Verde Bosque Oscuro */
+            --color-secondary: #ca8a04; /* Amarillo/Dorado (Pistilos, Sol) */
+            --color-tertiary: #a16207; /* Marrón/Ocre (Tierra, Troncos) */
+            --color-background: #f0fdf4; /* Verde Muy Claro / Casi Blanco */
+            --color-text: #3f3f46; /* Gris Oscuro Neutro */
+            --color-text-muted: #71717a;
+            --color-modal-bg: #ffffff; /* Blanco puro modal */
+            --color-border: #d4d4d8; /* Borde gris claro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 8px; /* Bordes más suaves/orgánicos */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; /* Un poco más de aire */ }
+        h1, h2, h3, h4, .logo { font-family: 'Merriweather', serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-tertiary); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700;}
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semi-transparente */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; box-shadow: var(--shadow-sm); transition: var(--transition-normal); background-color: white; }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Lato', sans-serif; font-size: 1rem; }
+        .title-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #dcfce7; /* Verde muy pálido hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal); margin-top: 1.8rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #15803d; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #a1a1aa; color: #e5e7eb; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(63, 63, 70, 0.88); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 300px; /* Altura mínima carga */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #e4e4e7; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.5rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+        #modal-content {
+            line-height: 1.75;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 10px 1.5rem 10px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content::-webkit-scrollbar { width: 9px; }
+        #modal-content::-webkit-scrollbar-track { background: #f1f5f9; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #f1f5f9; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.35em; }
+        #modal-content strong { color: var(--color-tertiary); font-weight: bold; }
+        #modal-content em { color: var(--color-primary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Merriweather', serif; margin-top: 2.1em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid #e4e4e7; padding-bottom: 0.45em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos para imagen y placeholder DENTRO del contenido */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); background-color: #f8fafc; /* Fondo claro por si tarda */ }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.2rem auto 1rem auto; color: var(--color-text-muted); background-color: #f8fafc; border: 1px dashed var(--color-border); border-radius: var(--border-radius); padding: 1rem; }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.7rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.8rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid #d4d4d8; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 500; color: var(--color-text); font-size: 1.25rem; font-family: 'Lato'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fff1f2; color: #be123c; padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #fecdd3; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 500; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        .title-item.hidden { display: none; } /* Para ocultar con buscador */
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-8">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-leaf mr-2 text-green-700"></i> <!-- Icono hoja -->
+                     Plantas del Mundo
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600"><i class="fas fa-seedling mr-1 text-green-600"></i>Enciclopedia Interactiva Botánica</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Descubre el Reino Vegetal</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto">Explora la increíble diversidad de plantas de nuestro planeta. Selecciona una especie o busca un nombre para aprender sobre ella.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-8 max-w-2xl mx-auto">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar planta (ej: Rosa, Baobab, Fotosíntesis)...">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-spa text-green-700 mr-2"></i> <!-- Icono planta zen/flor -->
+                 Especies y Conceptos Botánicos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Catalogando especies...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden">No se encontraron plantas o conceptos para tu búsqueda.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Explorar Más Especies
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Investigando especie...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-green-50 text-gray-700 py-6 mt-12 border-t border-green-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Descripciones generadas por IA con fines educativos y de divulgación botánica.</p>
+              <p class="mt-1">Consulta fuentes especializadas para identificación precisa o usos medicinales.</p>
+              <p class="mt-2">© 2025 Enciclopedia Botánica Interactiva</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Árboles Icónicos y Comunes
+            "Roble (Quercus robur)", "Secuoya Gigante (Sequoiadendron giganteum)", "Baobab Africano (Adansonia digitata)", "Pino Silvestre (Pinus sylvestris)", "Arce Rojo (Acer rubrum)", "Olivo (Olea europaea)", "Eucalipto Común (Eucalyptus globulus)", "Ginkgo Biloba", "Ceiba (Ceiba pentandra)", "Sauce Llorón (Salix babylonica)", "Abedul Común (Betula pendula)", "Haya Común (Fagus sylvatica)", "Fresno Común (Fraxinus excelsior)", "Tilo de Hoja Grande (Tilia platyphyllos)", "Ciprés Común (Cupressus sempervirens)", "Palmera Datilera (Phoenix dactylifera)", "Coco (Cocos nucifera)", "Caucho (Hevea brasiliensis)", "Árbol de Teca (Tectona grandis)", "Jacarandá (Jacaranda mimosifolia)", "Árbol de Júpiter (Lagerstroemia indica)", "Magnolia Grandiflora", "Drago de Canarias (Dracaena draco)", "Araucaria (Araucaria araucana)", "Cedro del Líbano (Cedrus libani)", "Árbol del Pan (Artocarpus altilis)", "Flamboyán (Delonix regia)", "Álamo Temblón (Populus tremuloides)",
+            // Flores Populares y Exóticas
+            "Rosa (Rosa spp.)", "Tulipán (Tulipa spp.)", "Girasol (Helianthus annuus)", "Orquídea (Orchidaceae)", "Margarita Común (Bellis perennis)", "Clavel (Dianthus caryophyllus)", "Lirio (Lilium spp.)", "Violeta Común (Viola odorata)", "Amapola Común (Papaver rhoeas)", "Lavanda (Lavandula angustifolia)", "Flor de Loto (Nelumbo nucifera)", "Nenúfar Blanco Europeo (Nymphaea alba)", "Ave del Paraíso (Strelitzia reginae)", "Hibisco (Hibiscus rosa-sinensis)", "Hortensia (Hydrangea macrophylla)", "Peonía (Paeonia spp.)", "Azalea (Rhododendron spp.)", "Camelia (Camellia japonica)", "Dalia (Dahlia spp.)", "Geranio Común (Pelargonium zonale)", "Pensamiento (Viola tricolor hortensis)", "Caléndula (Calendula officinalis)", "Edelweiss (Leontopodium alpinum)", "Flor de Cerezo (Sakura - Prunus serrulata)", "Rafflesia Arnoldii (Flor Cadáver)", "Flor de la Pasión (Passiflora caerulea)", "Anémona (Anemone spp.)", "Gladiolo (Gladiolus spp.)", "Iris (Iris germanica)", "Lirio de los Valles (Convallaria majalis)", "Nomeolvides (Myosotis sylvatica)",
+            // Plantas Comestibles (Frutas, Verduras, Cereales, etc.)
+            "Tomate (Solanum lycopersicum - la planta)", "Patata (Solanum tuberosum - la planta)", "Trigo (Triticum aestivum)", "Arroz (Oryza sativa)", "Maíz (Zea mays)", "Manzano (Malus domestica)", "Naranjo Dulce (Citrus sinensis)", "Plátano/Banano (Musa spp. - la planta)", "Cafeto (Coffea arabica / canephora)", "Cacao (Theobroma cacao)", "Vid (Vitis vinifera)", "Lechuga (Lactuca sativa)", "Zanahoria (Daucus carota - la planta)", "Cebolla (Allium cepa - la planta)", "Ajo (Allium sativum - la planta)", "Fresa/Frutilla (Fragaria ananassa - la planta)", "Pimiento/Chile (Capsicum annuum - la planta)", "Calabaza (Cucurbita pepo - la planta)", "Pepino (Cucumis sativus - la planta)", "Soja (Glycine max)", "Lenteja (Lens culinaris)", "Garbanzo (Cicer arietinum)", "Judía/Frijol Común (Phaseolus vulgaris)", "Caña de Azúcar (Saccharum officinarum)", "Remolacha Azucarera (Beta vulgaris var. altissima)", "Espárrago (Asparagus officinalis)", "Alcachofa (Cynara scolymus - la planta)", "Brócoli (Brassica oleracea var. italica)", "Coliflor (Brassica oleracea var. botrytis)", "Espinaca (Spinacia oleracea)", "Aguacate/Palta (Persea americana - el árbol)", "Mango (Mangifera indica - el árbol)", "Piña/Ananá (Ananas comosus - la planta)", "Papaya (Carica papaya - la planta)", "Olivo (Olea europaea) - producción de aceite", "Almendro (Prunus dulcis)", "Nogal Común (Juglans regia)",
+            // Plantas Medicinales y Aromáticas
+            "Aloe Vera (Aloe barbadensis)", "Manzanilla Común (Matricaria chamomilla)", "Menta Piperita (Mentha piperita)", "Romero (Rosmarinus officinalis)", "Salvia Común (Salvia officinalis)", "Tomillo Común (Thymus vulgaris)", "Albahaca (Ocimum basilicum)", "Orégano (Origanum vulgare)", "Ginseng (Panax ginseng)", "Equinácea (Echinacea purpurea)", "Hierba de San Juan (Hypericum perforatum)", "Valeriana (Valeriana officinalis)", "Jengibre (Zingiber officinale - la planta)", "Cúrcuma (Curcuma longa - la planta)", "Tila (Tilia spp.)", "Eucalipto (Eucalyptus globulus) - uso medicinal", "Árnica Montana", "Diente de León (Taraxacum officinale)", "Ortiga Mayor (Urtica dioica)", "Caléndula (Calendula officinalis) - uso medicinal", "Lavanda (Lavandula angustifolia) - uso medicinal", "Ajo (Allium sativum) - uso medicinal", "Boldo (Peumus boldus)", "Cola de Caballo (Equisetum arvense)", "Ruda (Ruta graveolens)", "Hierbabuena (Mentha spicata)",
+            // Plantas Carnívoras y Parásitas
+            "Venus Atrapamoscas (Dionaea muscipula)", "Drosera (Sundew - Drosera spp.)", "Planta Jarro (Nepenthes spp.)", "Sarracenia (Pitcher Plant - Sarracenia spp.)", "Utricularia (Bladderwort - Utricularia spp.)", "Cuscuta (Dodder - Cuscuta spp.)", "Muérdago Europeo (Viscum album)", "Rafflesia Arnoldii (también parásita)", "Hidnora Africana",
+            // Suculentas y Cactus
+            "Saguaro (Carnegiea gigantea)", "Nopal (Opuntia ficus-indica)", "Aloe Vera (Aloe barbadensis)", "Echeveria (Echeveria spp.)", "Sedum (Stonecrop - Sedum spp.)", "Agave Azul (Agave tequilana)", "Cactus de Navidad (Schlumbergera bridgesii)", "Lithops (Piedras Vivas)", "Sansevieria (Lengua de Suegra - Dracaena trifasciata)", "Cactus Peyote (Lophophora williamsii)", "Árbol de Jade (Crassula ovata)", "Kalanchoe (Kalanchoe blossfeldiana)", "Haworthia", "Sempervivum (Siempreviva)",
+            // Plantas Acuáticas
+            "Flor de Loto (Nelumbo nucifera)", "Nenúfar Blanco (Nymphaea alba)", "Jacinto de Agua (Eichhornia crassipes)", "Lenteja de Agua (Lemna minor)", "Elodea Canadensis", "Vallisneria Spiralis", "Espada Amazónica (Echinodorus amazonicus)", "Lechuga de Agua (Pistia stratiotes)", "Cola de Zorro (Ceratophyllum demersum)", "Alga Kelp Gigante (Macrocystis pyrifera)", "Posidonia Oceanica",
+            // Helechos, Musgos y Plantas Antiguas
+            "Helecho Común (Dryopteris filix-mas)", "Helecho Nido de Ave (Asplenium nidus)", "Musgo (Bryophyta - concepto general)", "Equiseto (Cola de Caballo - Equisetum arvense)", "Licopodios (Lycopodiophyta)", "Cícadas (Cycadophyta)", "Ginkgo Biloba (fósil viviente)", "Welwitschia Mirabilis",
+            // Plantas Venenosas
+            "Belladona (Atropa belladonna)", "Cicuta (Conium maculatum)", "Adelfa (Nerium oleander)", "Ricino (Ricinus communis)", "Estramonio (Datura stramonium)", "Tejo Común (Taxus baccata)", "Hiedra Venenosa (Toxicodendron radicans)", "Regaliz Americano (Abrus precatorius)", "Acónito Común (Aconitum napellus)", "Digitalis Purpurea (Dedalera)",
+            // Conceptos Botánicos Fundamentales
+            "Fotosíntesis: El proceso vital", "Polinización: Tipos y agentes", "Dispersión de semillas", "Clasificación de las plantas (Taxonomía)", "Anatomía de la Flor", "Estructura de la Hoja", "Tipos de Raíces", "Ciclo de vida de una planta con flor (Angiosperma)", "Ciclo de vida de un helecho", "Adaptaciones de las plantas al desierto", "Adaptaciones de las plantas acuáticas", "Plantas Gimnospermas vs. Angiospermas", "Plantas Monocotiledóneas vs. Dicotiledóneas", "Simbiosis en plantas (Micorrizas, Líquenes)", "Hormonas Vegetales (Fitohormonas)", "Tropismos Vegetales (Fototropismo, Geotropismo)", "La Célula Vegetal: Estructura y orgánulos", "Tejidos Vegetales (Meristemo, Parénquima, Xilema, Floema)", "Plantas Endémicas: ¿Qué son?", "Especies Invasoras: Impacto ecológico", "Conservación de la Biodiversidad Vegetal", "Bancos de Germoplasma", "Evolución de las Plantas Terrestres", "Importancia de los Bosques Tropicales", "El papel de las plantas en el ciclo del carbono", "Fitoquímica: Compuestos vegetales", "Botánica Económica: Usos de las plantas", "Etnobotánica: Relación humano-planta", "Organismos Genéticamente Modificados (OGM) en plantas"
+            // Añadir más si es necesario
+        ];
+        const plantThemes = [
+            "árboles majestuosos", "flores exóticas", "plantas medicinales", "cultivos alimentarios",
+            "plantas carnívoras", "suculentas del desierto", "flora acuática", "plantas venenosas",
+            "helechos y musgos", "plantas tropicales", "flores de jardín comunes", "árboles frutales",
+            "hierbas aromáticas", "conceptos de botánica", "adaptaciones vegetales", "plantas en peligro",
+            "cactus", "orquídeas", "plantas bulbosas", "coníferas", "palmeras"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un botánico y divulgador científico apasionado. Tu misión es describir la planta o concepto botánico indicado de forma detallada, precisa y accesible para un público general interesado. Incluye: Nombre común y científico (si aplica), descripción morfológica (apariencia, tamaño, hojas, flores, frutos), hábitat natural y distribución geográfica, ciclo de vida básico, usos principales (ornamental, medicinal, comestible, industrial, ecológico), datos curiosos o históricos relevantes, y estado de conservación si es pertinente. Para conceptos, explica el proceso o idea claramente con ejemplos. Usa un lenguaje claro y atractivo, estructurando la información lógicamente. El objetivo es una descripción completa de aproximadamente 1200-1300 palabras. Basa tu información únicamente en la siguiente planta o concepto:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia botánica. Genera exactamente 15 nombres de plantas (comunes o científicas diversas) o conceptos clave de botánica, adecuados para una descripción detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor texto e imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios funcionales)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                throw new Error(`Error de comunicación con la API: ${error.message}`);
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo generar una descripción adecuada o suficientemente detallada para esta planta o concepto.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+             const randomTheme = getRandomElement(plantThemes) || "plantas fascinantes";
+             const specificPrompt = `Genera 15 ítems (nombres de plantas diversas, conceptos botánicos) sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a PLANTAS
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText.replace(/\s*\(.*?\)\s*/g, '').trim() : "diverse plant life"; // Remove scientific name for image prompt
+            // Prompt ENFOCADO en la planta, ilustración botánica o hábitat. NO texto.
+            const enhancedPrompt = `Detailed botanical illustration or realistic depiction of the plant '${safePromptText}' in its natural setting. Focus on accurate morphology, color, and texture. Natural lighting, high detail. Avoid text labels or diagrams.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, captions, writing, numbers, formulas, charts, diagrams, map, multiple specimens, collage, blurry, abstract, deformed, ugly, human hand, person, drawing, sketch, watermark, signature, low quality";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (Sin cambios funcionales)
+        function formatExplanationText(rawText) { /* ... */
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Keep just in case
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                 let content = block.replace(/\n/g, ' '); // Replace internal newlines with space for paragraph flow
+                 return `<p>${content}</p>`;
+             }).join('');
+             return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { /* ... */ if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { /* ... */
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() { /* ... */
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear text and image
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios funcionales, solo texto/iconos)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b)); // Ordenar alfabéticamente
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay plantas o conceptos disponibles.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => {
+                 if (!existingTitles.has(title)) {
+                     titleListContainer.appendChild(createTitleItem(title));
+                 }
+             });
+             filterTitles(searchInput.value); // Re-apply filter
+        }
+
+        // *** MODIFIED: handleTitleClick (sin cambios funcionales mayores, solo texto/iconos) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Set text first
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalContent.scrollTop = 0; // Reset scroll AFTER content is visible
+                console.log("Scroll set to 0 after content visible");
+
+                // Append image placeholder INSIDE modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i> <!-- Placeholder icon -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Cargando imagen botánica...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Create and append actual image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración o foto de ${title}`;
+                imgElement.style.display = 'none'; // Hide until loaded
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon"></i> <!-- Error icon -->
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo cargar la imagen.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append image to the end of content
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de imagen.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Clear on error
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     appendTitles(newTitles);
+                 } else {
+                     alert("No se pudieron encontrar más especies o conceptos en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al explorar más: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Explorar Más Especies';
+             }
+         }
+
+         // *** Search Filter Function (Sin cambios funcionales) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Normalize for accents
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) {
+                     visibleCount++;
+                 }
+             });
+
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error crítico: No se pudo inicializar la enciclopedia botánica.</p>';
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            searchInput.addEventListener('input', (event) => { filterTitles(event.target.value); });
+
+            displayTitles(predefinedTitles); // Carga inicial
+            noResultsMsg.classList.add('hidden'); // Asegurar que esté oculto al inicio
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

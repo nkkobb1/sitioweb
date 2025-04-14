@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsenal Histórico: Armas a Través del Tiempo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes con peso histórico/técnico -->
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Armas Históricas --- */
+        :root {
+            --color-primary: #a16207; /* Bronce / Oro viejo */
+            --color-secondary: #4b5563; /* Gris Acero Oscuro */
+            --color-tertiary: #dc2626; /* Rojo Sangre (uso MUY moderado) */
+            --color-background: #1f2937; /* Gris Muy Oscuro / Casi Negro */
+            --color-text: #d1d5db; /* Gris Claro */
+            --color-text-muted: #9ca3af; /* Gris Medio */
+            --color-modal-bg: #374151; /* Gris Oscuro para Modal */
+            --color-border: #4b5563; /* Borde Gris Oscuro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+            --border-radius: 3px; /* Bordes más rectos/afilados */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        /* Títulos con fuente Oswald */
+        h1, h2, h3, h4, .logo, #modal-title { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700;}
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: rgba(31, 41, 55, 0.9); /* Fondo navbar oscuro semi-transparente */ backdrop-filter: blur(4px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; background-color: #4b5563; color: var(--color-text); border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1.1rem; box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); background-color: #374151; box-shadow: 0 0 0 3px rgba(161, 98, 7, 0.3); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 700; /* Lato bold */ color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Lato', sans-serif; font-size: 1rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #4b5563; /* Gris acero más claro */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: #ffffff; padding: 0.8rem 1.6rem; border: 1px solid #ca8a04; /* Borde amarillo oscuro */ border-radius: var(--border-radius); font-family: 'Oswald', sans-serif; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; text-transform: uppercase; letter-spacing: 1px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #854d0e; /* Bronce más oscuro */ border-color: #a16207; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #4b5563; border-color: #6b7280; color: #9ca3af; cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.9); /* Overlay muy oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 950px; /* Ancho generoso para texto técnico */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px; /* Altura mínima carga */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: var(--color-secondary); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; transform: rotate(180deg); }
+        #modal-title { font-size: 2.1rem; text-align: center; margin-bottom: 1.8rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.2; }
+        #modal-content {
+            line-height: 1.8;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 15px 1.5rem 15px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) #4b5563;
+        }
+        #modal-content::-webkit-scrollbar { width: 10px; }
+        #modal-content::-webkit-scrollbar-track { background: #4b5563; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #4b5563; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: #e5e7eb; /* Blanco roto para cursiva */ font-style: italic; }
+        /* Títulos dentro del contenido con Oswald */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Oswald', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        #modal-content h1 { font-size: 1.6em; }
+        #modal-content h2 { font-size: 1.45em; }
+        #modal-content h3 { font-size: 1.3em; color: var(--color-text); }
+        #modal-content h4 { font-size: 1.15em; color: var(--color-text-muted); border-bottom: none; }
+        /* Estilos imagen/placeholder DENTRO del contenido */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #4b5563; /* Fondo por si tarda */ }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.7rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(31, 41, 55, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid #4b5563; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.4rem; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: 1px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #450a0a; /* Rojo oscuro error */ color: #fecaca; padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-tertiary); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 700; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        .title-item.hidden { display: none; } /* Para ocultar con buscador */
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-shield-alt mr-3 transform rotate-[-15deg]"></i> <!-- Icono escudo -->
+                     ARSENAL HISTÓRICO
+                     <i class="fas fa-gavel ml-3 transform rotate-[15deg]"></i> <!-- Icono martillo/maza -->
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-['Lato']">Un Viaje por las Armas de la Humanidad</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">De la Piedra al Píxel: La Evolución del Armamento</h1>
+             <p class="text-lg text-gray-300 mb-8 max-w-4xl mx-auto font-['Lato']">Explora el diseño, la historia y el impacto de las herramientas de conflicto que han moldeado civilizaciones. Busca un arma, tipo o era, o selecciona de la lista.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-3xl mx-auto">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar arma, tipo, era (ej: Katana, WWII, Polearm)...">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-dead text-yellow-600 mr-2"></i> <!-- Icono libro antiguo/grimorio -->
+                 Selecciona un Ítem del Arsenal
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-['Lato']">Forjando la lista de armas...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-['Lato']">No se encontraron coincidencias en el arsenal.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Más Armamento
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Consultando archivos históricos...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg font-['Lato']">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-800 text-gray-500 py-6 mt-12 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm font-['Lato']">
+              <p>Información generada por IA con fines educativos e históricos sobre tecnología armamentística.</p>
+              <p class="mt-1">El estudio de las armas es el estudio de la historia, la tecnología y, a menudo, la tragedia humana.</p>
+              <p class="mt-2">© 2025 Arsenal Histórico</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // PREHISTORIA / EDAD DE PIEDRA
+            "Piedra Afilada (Herramienta/Arma)", "Garrote / Maza de Madera", "Lanza de Madera Aguzada", "Hacha de Mano (Bifaz)", "Punta de Lanza Lítica (Sílex, Obsidiana)", "Propulsor de Lanzas (Atlatl)", "Arco y Flecha Primitivos", "Honda (Sling)",
+            // EDAD DEL BRONCE
+            "Espada de Bronce (Tipos Tempranos)", "Hacha de Bronce", "Punta de Lanza de Bronce", "Daga de Bronce", "Escudo de Cuero/Madera/Bronce", "Casco de Bronce", "Carro de Guerra (Uso Temprano)", "Khopesh Egipcio",
+            // EDAD DEL HIERRO / ANTIGÜEDAD CLÁSICA
+            "Espada de Hierro (La Tène, Celta)", "Gladius Romano", "Spatha Romana/Germánica", "Pilum Romano (Jabalina Pesada)", "Hasta (Lanza Larga Romana)", "Scutum Romano (Escudo)", "Lorica Segmentata (Armadura Romana)", "Lorica Hamata (Cota de Malla Romana)", "Xiphos Griego (Espada Corta)", "Dory Griego (Lanza Hoplita)", "Aspis / Hoplon Griego (Escudo Hoplita)", "Sarissa Macedónica (Pica Larga)", "Kopis / Falcata Ibérica", "Machaira", "Ballista (Artillería Romana)", "Onagro (Artillería Romana)", "Corvus Romano (Puente de Abordaje Naval)", "Armamento Celta (Espadas, Escudos Largos)", "Armamento Persa (Arco Compuesto, Scimitarra Temprana)", "Armamento Galo", "Armamento Parto (Arqueros Montados)", "Pugio Romano (Daga)",
+            // ALTA EDAD MEDIA / ERA VIKINGA / BIZANCIO
+            "Espada Vikinga (Ulfberht)", "Seax Vikingo (Cuchillo/Espada Corta)", "Hacha de Guerra Danesa (Larga)", "Hacha de Guerra Vikinga (Arrojadiza/Mano)", "Lanza Vikinga", "Escudo Redondo Vikingo", "Casco de Gjermundbu", "Cota de Malla (Uso Generalizado)", "Espada Carolingia", "Espada Bizantina (Paramerion)", "Fuego Griego (Arma Incendiaria Bizantina)", "Armamento Anglosajón (Lanzas, Hachas)", "Armamento Franco",
+            // PLENA Y BAJA EDAD MEDIA / CRUZADAS / ERA FEUDAL
+            "Espada Normanda / Románica", "Espada Gótica / de Armar (Arming Sword)", "Espada Larga / de Mano y Media (Longsword)", "Mandoble / Espada a Dos Manos (Zweihänder, Claymore)", "Falcata Medieval / Bracamante (Falchion)", "Misericordia (Daga)", "Rondel Dagger (Daga)", "Maza de Armas", "Mangual / Mayal de Armas (Flail)", "Martillo de Guerra", "Pico de Cuervo (War Pick)", "Hacha de Guerra Medieval", "Alabarda", "Guisarma", "Pica (Pike)", "Lanza de Caballería (Lance)", "Arco Largo Inglés (Longbow)", "Ballesta Medieval (Crossbow)", "Arco Compuesto (Asia Central/Oriental)", "Armadura de Placas Completa (Gótica, Milanesa)", "Yelmo (Bacinet, Sallet, Armet)", "Escudo de Cometa (Kite Shield)", "Escudo de Calentador (Heater Shield)", "Pavés (Escudo Grande Infantería)", "Trabuquete / Fundíbulo (Trebuchet)", "Catapulta / Mangana", "Ariete", "Torre de Asedio", "Armamento de las Cruzadas (Europeo vs. Sarraceno)", "Cimitarra (Scimitar)", "Armamento Mongol (Arco, Sable)",
+            // RENACIMIENTO / EDAD MODERNA TEMPRANA
+            "Arcabuz (Arquebus)", "Mosquete de Mecha (Matchlock Musket)", "Mosquete de Rueda (Wheellock Musket)", "Pistola de Rueda", "Cañón de Bronce/Hierro (Artillería Temprana)", "Bombarda", "Espada Ropera (Rapier)", "Main Gauche (Daga de Parada)", "Schiavona", "Katzbalger (Espada Lansquenete)", "Pica (Formaciones de Tercio Español)", "Armadura de Maximiliano", "Armadura Renacentista Decorada", "Armamento Lansquenete", "Armamento de los Tercios Españoles", "Armamento Otomano (Jenízaros, Cañones)", "Armamento Samurai (Ver abajo)",
+            // ARMAMENTO JAPONÉS FEUDAL
+            "Katana", "Wakizashi", "Tanto (Daga)", "Tachi (Espada Larga Anterior)", "Nodachi / Ōdachi (Espada Muy Larga)", "Naginata (Alabarda Japonesa)", "Yari (Lanza Japonesa)", "Yumi (Arco Largo Japonés)", "Kanabō (Maza de Hierro)", "Armadura Samurai (Ō-yoroi, Dō-maru, Gusoku)", "Kabuto (Casco Samurai)", "Tanegashima (Arcabuz Japonés)", "Kunai", "Shuriken",
+            // SIGLOS XVII Y XVIII / ERA DE LA PÓLVORA
+            "Mosquete de Chispa (Flintlock Musket)", "Bayoneta de Cubo (Socket Bayonet)", "Pistola de Chispa", "Trabuco (Blunderbuss)", "Rifle de Caza / Jezail (Cañón Largo)", "Cañón Naval ( avancarga, diferentes calibres)", "Mortero Temprano", "Granada de Mano Temprana", "Sable de Caballería", "Espadín (Smallsword)", "Armamento de la Guerra de los Treinta Años", "Armamento de la Guerra de Sucesión Española", "Armamento de la Revolución Americana", "Armamento de las Guerras Napoleónicas", "Rifle Baker", "Mosquete Charleville", "Mosquete Brown Bess", "Artillería de Gribeauval", "Congreve Rocket (Cohete Temprano)",
+            // SIGLO XIX / REVOLUCIÓN INDUSTRIAL / GUERRAS CIVILES
+            "Mosquete de Percusión (Percussion Cap Musket)", "Rifle Minié", "Rifle de Aguja Dreyse (Retro carga Temprana)", "Rifle Chassepot", "Rifle Springfield (Modelos varios)", "Rifle Enfield", "Carabina Sharps", "Carabina Spencer (Repetición)", "Revólver Colt (Paterson, Walker, Navy, Army)", "Revólver Remington", "Revólver Adams", "Pistola Derringer", "Ametralladora Gatling", "Ametralladora Gardner", "Ametralladora Nordenfelt", "Cañón de Retro carga (Acero)", "Artillería Krupp", "Cañón Dahlgren (Naval)", "Cañón Armstrong", "Buque Acorazado (Ironclad)", "Monitor (Tipo de Buque)", "Torpedo Autopropulsado (Whitehead)", "Mina Naval", "Armamento de la Guerra Civil Estadounidense", "Armamento de la Guerra Franco-Prusiana", "Armamento de las Guerras del Opio", "Bowie Knife (Cuchillo)",
+            // PRINCIPIOS SIGLO XX / WWI
+            "Rifle de Cerrojo (Mauser Gewehr 98, Lee-Enfield SMLE, Mosin-Nagant, Springfield M1903, Mannlicher–Carcano)", "Ametralladora Maxim", "Ametralladora Vickers", "Ametralladora Lewis", "Ametralladora Hotchkiss", "Subfusil Temprano (MP 18)", "Pistola Semiautomática (Luger P08, Colt M1911, Mauser C96)", "Revólver Webley", "Lanzagranadas de Fusil", "Granada de Palo (Stielhandgranate)", "Granada Mills", "Mortero de Trinchera (Stokes Mortar)", "Artillería Pesada de Campaña (Cañones, Obuses)", "Cañón de 75 mm Modelo 1897 (Francés)", "Big Bertha (Obús Alemán)", "Gas Mostaza (Arma Química)", "Gas Cloro (Arma Química)", "Gas Fosgeno (Arma Química)", "Lanzallamas (Flammenwerfer)", "Tanque Mark I / IV / V (Británico)", "Tanque Renault FT (Francés)", "Tanque A7V (Alemán)", "Avión de Reconocimiento (Temprano)", "Avión de Caza (Biplanos: Sopwith Camel, Fokker Dr.I)", "Bombardero (Temprano: Gotha G.V)", "Zeppelin (Dirigible Bombardero)", "Acorazado Dreadnought", "Submarino (U-Boot Alemán)", "Mina Terrestre", "Alambre de Espino", "Maza de Trinchera", "Cuchillo de Trinchera",
+            // PERIODO DE ENTREGUERRAS / WWII
+            "Rifle Semiautomático (M1 Garand, SVT-40, Gewehr 43)", "Subfusil (MP 40, Thompson M1A1, PPSh-41, Sten Gun, M3 Grease Gun)", "Ametralladora Ligera (Bren Gun, BAR M1918, DP-27, MG 34/MG 42)", "Fusil de Asalto Temprano (StG 44)", "Fusil Antitanque (Boys, PTRD/PTRS)", "Lanzacohetes Antitanque (Bazooka, Panzerschreck, PIAT)", "Panzerfaust (Granada Antitanque de Carga Hueca)", "Granada de Carga Hueca (HEAT)", "Mortero (Mediano/Pesado)", "Artillería Autopropulsada (SPG)", "Cañón Antitanque (PaK 36/38/40, QF 6/17 pounder, ZiS-3)", "Cañón Antiaéreo (Flak 88)", "Tanque Ligero (Stuart, Panzer II)", "Tanque Medio (M4 Sherman, T-34, Panzer IV)", "Tanque Pesado (Tiger I/II, IS-2, M26 Pershing)", "Cazacarros (Tank Destroyer)", "Avión de Caza (Spitfire, Messerschmitt Bf 109, P-51 Mustang, Fw 190, Yak-3, Zero)", "Bombardero Medio (B-25 Mitchell, Heinkel He 111)", "Bombardero Pesado (B-17 Flying Fortress, Avro Lancaster, B-29 Superfortress)", "Bombardero en Picado (Stuka Ju 87)", "Avión de Ataque a Tierra (Il-2 Sturmovik)", "Portaaviones", "Acorazado (Clase Yamato, Clase Iowa)", "Crucero (Ligero/Pesado)", "Destructor", "Submarino (Tipo VII/IX Alemán, Clase Gato USA)", "Bomba Voladora V-1", "Cohete V-2", "Bomba Atómica (Little Boy, Fat Man)", "Napalm", "Armamento de la Guerra Civil Española", "Armamento de la Segunda Guerra Chino-Japonesa",
+            // GUERRA FRÍA
+            "Fusil de Asalto (AK-47, FN FAL, M14, M16, G3)", "Subfusil (Uzi, MAC-10, Sterling)", "Ametralladora de Propósito General (M60, FN MAG, PKM)", "Fusil de Francotirador (Dragunov SVD, M21/M40)", "Lanzagranadas (M79, GP-25)", "RPG-7 (Lanzacohetes Antitanque)", "Misil Antitanque Guiado (ATGM: TOW, MILAN, Sagger)", "Misil Superficie-Aire (SAM: SA-2 Guideline, MIM-23 Hawk)", "Misil Aire-Aire (AAM: AIM-9 Sidewinder, K-13 Atoll)", "Misil Balístico Intercontinental (ICBM)", "Misil Balístico Lanzado desde Submarino (SLBM)", "Bomba de Hidrógeno (Termonuclear)", "Armas Nucleares Tácticas", "Bomba de Neutrones", "Agentes Nerviosos (Armas Químicas: VX, Sarín)", "Armas Biológicas (Ántrax, Viruela - Programas)", "Caza a Reacción (MiG-15/21, F-86 Sabre/F-4 Phantom/F-15/16, Su-27)", "Bombardero Estratégico (B-52 Stratofortress, Tu-95 Bear)", "Helicóptero de Ataque (AH-1 Cobra, Mi-24 Hind)", "Helicóptero de Transporte (UH-1 Huey, Mi-8 Hip)", "Submarino Nuclear (SSN/SSBN)", "Portaaviones (Clase Forrestal/Nimitz)", "Misil Antibuque (Exocet, Harpoon)", "Mina Antitanque / Antipersonal (Mejoradas)", "Claymore Mine (Mina Direccional)", "Tecnología Stealth Temprana (F-117 Nighthawk)", "Armamento de la Guerra de Corea", "Armamento de la Guerra de Vietnam", "Armamento de las Guerras Árabe-Israelíes", "Armamento de la Guerra Irán-Iraq", "Armamento de la Invasión Soviética de Afganistán",
+            // ERA MODERNA / CONTEMPORÁNEA
+            "Fusil de Asalto Moderno (FAMAS, Steyr AUG, SA80, QBZ-95, AK-74/100 Series, M4 Carbine)", "Fusil de Combate (SCAR-H, HK417)", "Subfusil Moderno (MP5, P90, MP7)", "Pistola Semiautomática Moderna (Glock, Beretta 92, SIG Sauer P226, H&K USP)", "Escopeta de Combate (Benelli M4, SPAS-12)", "Ametralladora Ligera Moderna (M249 SAW, Negev)", "Fusil de Francotirador de Gran Calibre / Antimatériel (Barrett M82)", "Fusil de Precisión (Accuracy International AW, M24/M40A series)", "Lanzagranadas Automático (Mk 19)", "Misil Antitanque Moderno (Javelin, Spike)", "Misil Antiaéreo Portátil (MANPADS: Stinger, Igla)", "Sistemas SAM Avanzados (Patriot, S-300/400)", "Munición Merodeadora (Loitering Munition / Drone Suicida)", "Vehículo Aéreo No Tripulado (UAV / Drone: Predator, Reaper, Bayraktar TB2)", "Avión de Caza de 5ª Generación (F-22 Raptor, F-35 Lightning II, Su-57, J-20)", "Bombardero Stealth (B-2 Spirit)", "Helicóptero de Ataque Moderno (AH-64 Apache, Ka-52 Alligator)", "Carro de Combate Principal (MBT: M1 Abrams, Leopard 2, Challenger 2, T-90/T-14 Armata)", "Vehículo de Combate de Infantería (IFV: Bradley, BMP-3, Puma)", "Artillería Autopropulsada Moderna (PzH 2000, M109 Paladin)", "Lanzacohetes Múltiple (MLRS: HIMARS, BM-21 Grad)", "Municiones Guiadas de Precisión (PGM: JDAM, Paveway)", "Misil de Crucero (Tomahawk)", "Misil Hipersónico (Conceptual/Emergente)", "Armas de Energía Dirigida (Laser, Microondas - Conceptual/Experimental)", "Armas Cibernéticas (Guerra Electrónica, Malware)", "Armas No Letales (Taser, Gas Pimienta, Cañones Sónicos)", "Chalecos Antibalas Modernos (Kevlar, Placas Cerámicas)", "Exoesqueletos Militares (Experimental)", "Armamento de la Guerra del Golfo", "Armamento de las Guerras en Yugoslavia", "Armamento de la Guerra de Afganistán (2001-)", "Armamento de la Guerra de Iraq (2003-)", "Armamento de la Guerra Ruso-Ucraniana",
+            // CONCEPTOS Y TIPOS GENERALES
+            "Evolución de la Espada", "Evolución de la Armadura", "Evolución de la Artillería", "Evolución de las Armas de Fuego", "Evolución de la Guerra Naval", "Evolución de la Guerra Aérea", "Impacto de la Pólvora", "Impacto de la Industrialización en el Armamento", "Impacto de las Armas Nucleares", "La Carrera Armamentística", "Tratados de Control de Armas / Desarme", "Guerra Química y Biológica: Historia y Ética", "Guerra Asimétrica", "Armas de Infantería", "Armas de Caballería", "Armas de Asedio", "Armas Antitanque", "Armas Antiaéreas", "Armas Incendiarias", "Guerra de Trincheras", "Blitzkrieg (Guerra Relámpago)", "Guerra Anfibia", "Guerra Submarina", "Guerra Electrónica", "Fabricación de Armas a lo Largo de la Historia", "Logística Militar y Armamento", "El Papel de la Tecnología en la Guerra", "Ética del Desarrollo y Uso de Armas"
+        ];
+        const weaponThemes = [
+            "armas antiguas", "armas medievales", "espadas históricas", "armas de asta (polearms)", "arcos y ballestas",
+            "armamento samurai", "armamento vikingo", "armas del renacimiento", "primeras armas de fuego", "artillería histórica",
+            "armas de la era napoleónica", "armas de la guerra civil USA", "armamento de la WWI", "armamento de la WWII",
+            "tanques históricos", "aviones de combate históricos", "buques de guerra históricos", "submarinos históricos",
+            "armas de la guerra fría", "fusiles de asalto icónicos", "subfusiles", "ametralladoras", "pistolas y revólveres",
+            "armas nucleares", "armas químicas y biológicas", "misiles guiados", "drones militares", "tecnología stealth",
+            "armas modernas", "armas no letales", "evolución de la armadura", "tácticas militares y armas"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un historiador militar y experto en tecnología armamentística de renombre mundial. Tu tarea es describir y analizar en detalle el arma, tipo de arma, concepto o periodo armamentístico indicado. Cubre su origen histórico, diseño técnico (materiales, mecanismo si aplica), método de uso y tácticas asociadas, efectividad en combate, variantes significativas, impacto histórico/tecnológico, y su legado o relevancia cultural si la tiene. Adopta un tono enciclopédico, preciso y objetivo, pero fascinante. El objetivo es un análisis exhaustivo de aproximadamente 1200-1300 palabras. Basa tu análisis únicamente en el siguiente ítem:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de armamento histórico. Genera exactamente 15 nombres de armas específicas (de cualquier era), tipos de armas, o conceptos clave relacionados con la historia militar y el armamento, adecuados para un análisis detallado. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios funcionales)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+               if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo generar un análisis adecuado o suficientemente detallado para este ítem.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+             const randomTheme = getRandomElement(weaponThemes) || "armas icónicas de la historia";
+             const specificPrompt = `Genera 15 ítems (armas, tipos, conceptos) sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 2 && line.length < 150); // Permitir nombres cortos (ej: Uzi)
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a ARMAS
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "ancient weapon schematic";
+            // Prompt ENFOCADO en diseño/ilustración técnica/conceptual, NO gore, NO texto.
+            const enhancedPrompt = `Technical illustration or conceptual artwork depicting '${safePromptText}'. Focus on the design, materials, and historical context. Dramatic lighting, blueprint style, or museum display aesthetic. Avoid showing graphic violence, blood, or active combat if possible. No text labels.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            // Negative prompt MUY importante aquí
+            const negativePrompt = "text, words, labels, letters, titles, captions, writing, numbers, formulas, graphs, charts, diagrams, gore, blood, wounds, death, suffering, active combat scene, multiple weapons cluttered, modern UI, watermark, signature, blurry, low quality, cartoonish";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                 let content = block.replace(/\n/g, ' ');
+                 return `<p>${content}</p>`;
+             }).join('');
+             return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { /* ... */ if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { /* ... */
+             if(!storyModal || !modalContent) return;
+             storyModal.classList.remove('active');
+             document.body.style.overflow = '';
+             modalContent.scrollTop = 0;
+             console.log("Scroll set to 0 on hideModal");
+             resetModalState();
+        }
+        function resetModalState() { /* ... */
+              if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+              modalLoadingIndicator.style.display = 'flex';
+              modalStoryContentArea.classList.add('content-hidden');
+              modalError.classList.add('content-hidden');
+              modalTitle.textContent = '';
+              modalContent.innerHTML = '';
+              modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios funcionales mayores)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+              if (!titleListContainer || !titlesLoading) return;
+              // Ordenar puede ser útil, pero la lista es TAN larga que quizá mantener el orden lógico/cronológico inicial sea mejor.
+              // const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+              const initialTitles = titles; // Usar el orden de la lista
+              titleListContainer.innerHTML = '';
+              titlesLoading.style.display = 'none';
+              if (initialTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">El arsenal está vacío.</p>'; return; }
+              initialTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+          }
+        function appendTitles(newTitles) { /* ... */
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => {
+                 if (!existingTitles.has(title)) {
+                     titleListContainer.appendChild(createTitleItem(title));
+                 }
+             });
+             filterTitles(searchInput.value); // Re-aplicar filtro
+         }
+
+        // *** handleTitleClick (sin cambios funcionales mayores, texto/icono adaptado) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Placeholder DENTRO de modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i> <!-- Icono genérico imagen -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando diagrama técnico/conceptual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Crear y añadir elemento imagen
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-ban placeholder-icon"></i> <!-- Icono error -->
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo generar la ilustración.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de ilustración.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+              if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+              generateMoreBtn.disabled = true;
+              generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Investigando...';
+              try {
+                  const newTitles = await fetchGeneratedTitles();
+                  if (newTitles && newTitles.length > 0) {
+                      appendTitles(newTitles);
+                  } else {
+                      alert("No se encontraron más ítems en los archivos.");
+                  }
+              } catch (error) {
+                  console.error("Failed title generation:", error);
+                  alert(`Error al buscar más ítems: ${error.message}`);
+              } finally {
+                  generateMoreBtn.disabled = false;
+                  generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Más Armamento';
+              }
+          }
+
+         // *** Search Filter Function (sin cambios funcionales) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Normalize for accents
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) {
+                     visibleCount++;
+                 }
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (sin cambios funcionales)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: #f87171; font-size: 1.8em; text-align: center; padding-top: 4em; font-family: Oswald;">FALLO CATASTRÓFICO EN LA ARMERÍA DIGITAL.</p>'; // Thematic error
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            searchInput.addEventListener('input', (event) => {
+                filterTitles(event.target.value);
+            });
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

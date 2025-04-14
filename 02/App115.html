@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arsenal Futurista - Enciclopedia Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Sci-Fi/Modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Arsenal Futurista --- */
+        :root {
+            --color-primary: #00ffff; /* Cyan Neón */
+            --color-secondary: #ff00ff; /* Magenta Neón (uso moderado) */
+            --color-tertiary: #39ff14; /* Verde Neón (para énfasis) */
+            --color-background: #0a0f1f; /* Azul Muy Oscuro/Casi Negro */
+            --color-text: #e0f2fe; /* Azul Hielo / Blanco Azulado */
+            --color-text-muted: #a1a1aa; /* Gris Claro Metálico */
+            --color-modal-bg: #111827; /* Gris/Azul Oscuro */
+            --color-border: #374151; /* Borde Gris Oscuro */
+            --color-error-bg: #3f1212; /* Fondo error rojo oscuro */
+            --color-error-text: #fecaca; /* Texto error claro */
+            --color-error-border: #dc2626; /* Borde error rojo */
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 255, 255, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 255, 255, 0.15), 0 2px 4px -2px rgba(0, 255, 255, 0.1);
+            --shadow-lg: 0 0 25px -5px rgba(0, 255, 255, 0.2), 0 8px 10px -6px rgba(0, 255, 255, 0.15);
+            --border-radius: 3px; /* Bordes más afilados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Exo 2', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); text-shadow: 0 0 8px var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; text-shadow: 0 0 5px rgba(0, 255, 255, 0.7); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; text-shadow: 0 0 3px rgba(0, 255, 255, 0.5); }
+        .navbar { background-color: rgba(10, 15, 31, 0.8); backdrop-filter: blur(6px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: rgba(17, 24, 39, 0.8); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Exo 2'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.25); outline: none; background-color: #111827; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Exo 2'; font-size: 1rem; border-left: 3px solid transparent; }
+        .title-item:hover { transform: translateY(-4px) translateX(2px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #1f2937; border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-tertiary)); color: var(--color-background); padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Orbitron', sans-serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: none; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-tertiary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.02); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); } /* Ensure spinner is visible */
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(10, 15, 31, 0.9); /* Overlay oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem; /* Ajustar padding */
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px; /* Más altura para chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: var(--color-border); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; } /* Más z-index */
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(180deg); box-shadow: 0 0 10px var(--color-primary); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; /* Crucial para flexbox scroll */ display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; /* Espacio para scrollbar */ margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) rgba(55, 65, 81, 0.5);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(55, 65, 81, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; /* Padding interno del texto */ }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: var(--color-tertiary); font-style: normal; font-weight: 400;} /* Estilo diferente para énfasis */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Orbitron', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-primary); border-radius: var(--border-radius); box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(55, 65, 81, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; /* No debe crecer */ display: flex; flex-direction: column; max-height: 250px; /* Altura máxima del chat */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(10, 15, 31, 0.7); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(55, 65, 81, 0.5);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(55, 65, 81, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; }
+        .user-message { background-color: var(--color-tertiary); color: var(--color-background); margin-left: auto; text-align: right; font-weight: 400;}
+        .ai-message { background-color: #374151; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #1f2937; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Exo 2'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #00e0e0; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { /* Mismos estilos que antes, quizás ajustar color spinner */ text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 15, 31, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.3rem; font-family: 'Orbitron'; text-shadow: 0 0 5px var(--color-primary); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Exo 2'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; } /* Asegurar que oculte */
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(10, 15, 31, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-atom mr-3 transform rotate-[-15deg]"></i> <!-- Icono átomo/tech -->
+                     Arsenal Futurista
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">» Enciclopedia Interactiva «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Tecnología Bélica del Mañana</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">Accede a los archivos desclasificados. Analiza el armamento del futuro: principios operativos, especificaciones y potencial táctico.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar arma o tecnología...">
+             <i class="fas fa-crosshairs fa-search"></i> <!-- Icono mira/búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-database text-cyan-400 mr-2"></i> <!-- Icono base de datos -->
+                 Índice de Prototipos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Accediendo a la base de datos clasificada...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">» Ningún prototipo coincide con los parámetros de búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Solicitar Nuevos Esquemas
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Procesando Datos...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Analizando consulta...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Haz una pregunta sobre este prototipo...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0"> <!-- Added flex-shrink-0 -->
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Datos generados por IA con fines especulativos y de entretenimiento basados en conceptos de ciencia ficción.</p>
+              <p class="mt-1">La tecnología descrita no representa armamento real existente.</p>
+              <p class="mt-2">© 2077 Arsenal Futurista DB</p> <!-- Año futurista :) -->
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Energía Dirigida (Lasers)
+            "Pistola Láser Estándar (Sidearm)", "Rifle Láser de Pulso", "Cañón Láser Pesado (Montado)", "Láser de Rayo Continuo", "Láser de Frecuencia Variable (Anti-escudo/Anti-personal)", "Escopeta Láser (Dispersión)", "Láser de Precisión (Sniper)", "Daga/Cuchillo Láser", "Sistema de Defensa Puntual Láser (ADS)", "Láser Orbital Táctico", "Proyector Láser Cegador (No letal)", "Láser de Pulso Ultravioleta (Anti-orgánico)", "Láser de Rayos X (Penetración)", "Generador de Pared Láser (Defensivo)", "Láser Criogénico (Conceptual)",
+            // Energía Dirigida (Plasma)
+            "Pistola de Plasma", "Rifle de Plasma", "Lanzador de Plasma Pesado", "Granada de Plasma", "Espada de Plasma Confinada", "Cañón de Plasma de Asedio", "Nube de Plasma Ionizado (Area Denial)", "Proyector de Plasma Sobrecalentado", "Mina de Plasma", "Torpedo de Plasma (Espacial)", "Bomba de Plasma de Vacío", "Plasma de Fusión Fría (Estable)", "Incinerador de Plasma", "Escudo de Contención de Plasma", "Repetidor de Plasma Rápido",
+            // Energía Dirigida (Partículas)
+            "Acelerador de Partículas Portátil", "Rifle de Rayo de Partículas", "Cañón de Partículas Pesado (Vehicular)", "Disruptor de Partículas (Anti-material)", "Proyector de Partículas de Materia Oscura (Exótico)", "Haz de Neutrinos Pulsado (Sigiloso)", "Emisor de Protones Concentrados", "Cañón de Iones Pesados", "Desintegrador Molecular (Haz de Partículas)", "Inductor de Fisión de Partículas", "Campo Disruptor de Partículas (Defensivo)", "Granada de Partículas Inestables", "Emisor de Antipartículas Táctico", "Rayo Tractor de Partículas (Manipulación)", "Proyector de Hadrones",
+            // Energía Dirigida (Sónicas / Ondas)
+            "Emisor Sónico Direccional (Aturdidor)", "Cañón Sónico Disruptor (Daño estructural)", "Proyector de Ondas de Choque Enfocadas", "Generador de Campo de Silencio Táctico", "Arma de Resonancia de Frecuencia", "Disruptor Neuronal Sónico (No letal)", "Emisor Infrasónico de Pánico", "Proyector Ultrasónico de Alta Intensidad", "Granada Sónica", "Mina de Vibración Armónica", "Campo de Cancelación de Ruido Activo", "Amplificador Sónico de Precisión", "Onda de Estasis Sónica", "Generador de Terremotos Localizados (Sónico)", "Disruptor de Comunicaciones Sónico",
+            // Proyectiles Cinéticos Avanzados (Railgun / Gauss)
+            "Pistola Railgun Táctica", "Rifle Railgun de Asalto", "Cañón Railgun Pesado Anti-Blindaje", "Cañón Gauss Portátil (Coilgun)", "Rifle de Precisión Gauss", "Escopeta Gauss (Flechettes)", "Sistema de Artillería Railgun Orbital", "Ametralladora Gauss de Alta Cadencia", "Proyectil Railgun Subcalibrado Perforante", "Proyectil Railgun Explosivo-Cinético", "Batería de Defensa Railgun", "Pistola Gauss Silenciosa", "Lanzagranadas Gauss", "Proyectil Gauss Guiado", "Cañón de Asedio Gauss",
+            // Proyectiles Químicos / Exóticos
+            "Rifle de Munición Inteligente (Guiada)", "Lanzador de Micro-Misiles Guiados", "Proyectil de Nanitos Desensambladores", "Enjambre de Drones Explosivos Autónomos", "Escopeta de Munición de Energía Cinética Almacenada (EKV)", "Lanzador de Gel Adhesivo Incapacitante", "Proyector de Espuma Criogénica", "Arma de Agujas de Toxina Neural", "Lanzador de Redes de Monofilamento", "Proyector de Campo de Estasis Temporal", "Granada de Singularidad Controlada", "Mina de Agujero de Gusano Táctico", "Lanzador de Proyectiles de Materia Exótica", "Arma Biológica de Diseño (Virus/Bacteria Específica)", "Proyector de Feromonas Sintéticas (Control mental básico)", "Disparador de Balas de Agujero Negro Miniatura (Extremo)", "Cañón de Torsión Espacial", "Generador de Vacío Localizado", "Proyector de Materia Gris Programable", "Emisor de Cronones (Manipulación Temporal Localizada)",
+            // Armas Cuerpo a Cuerpo Avanzadas
+            "Espada de Energía / Sable de Luz", "Cuchillo/Daga Vibratoria (Vibroblade)", "Martillo de Energía Cinética", "Guantelete de Poder / Puño Energético", "Látigo de Monofilamento", "Alabarda de Plasma", "Hacha de Energía Térmica", "Garras Retráctiles de Adamantio/Material Exótico", "Bastón de Combate Disruptor Sónico", "Escudo de Energía Personal (Defensivo/Ofensivo)", "Nudillos Eléctricos de Alto Voltaje", "Cadena Energizada", "Lanza de Partículas", "Escudo Antidisturbios Táctil (Descarga)", "Implantes de Combate Cuerpo a Cuerpo (Cuchillas Mantis, etc.)",
+            // Explosivos y Area Denial
+            "Granada EMP (Pulso Electromagnético)", "Mina EMP", "Granada de Fragmentación Inteligente (Selección de blancos)", "Mina de Proximidad Camuflada (Óptica/Térmica)", "Generador de Campo de Fuerza Táctico (Barrera)", "Mina Gravitatoria (Aumento/Reducción de Gravedad)", "Dispositivo de Denegación de Área Psiónico", "Bomba de Agujero Negro Táctico", "Generador de Campo Nulificador (Anti-energía)", "Mina de Estasis", "Granada de Agujeros de Gusano", "Bomba de Materia Oscura", "Dispositivo de Terra-formación hostil (Arma planetaria)", "Sembrador de Nano-plagas", "Baliza de Distorsión Temporal",
+            // Defensa y Sistemas Personales
+            "Escudo de Energía Personal Recargable", "Generador de Campo de Sigilo Óptico (Camuflaje)", "Blindaje Corporal Adaptativo (Reactivo/Endurecible)", "Interfaz Neuronal de Combate (Aumento de Reflejos)", "Exoesqueleto de Combate Ligero", "Exoesqueleto de Combate Pesado (Tipo Mecha ligero)", "Sistema de Puntería Asistida por IA", "Implantes Cibernéticos de Combate (Visión Mejorada, Fuerza)", "Generador de Hologramas Tácticos (Distracción)", "Sistema de Auto-reparación de Blindaje (Nanobots)", "Botas Gravitatorias / Jetpack Personal Silencioso", "Interfaz de Control de Drones de Combate", "Sistema de Soporte Vital Integrado (Traje sellado)", "Módulo de Traducción Universal Instantánea", "Escáner Biológico/Tecnológico Integrado",
+            // Armamento Vehicular / Estacionario
+            "Cañón de Iones Principal (Nave Espacial)", "Batería de Torpedos de Antimateria", "Lanzador de Misiles Interplanetarios", "Cañón Orbital de Masa (Rod from God mejorado)", "Plataforma de Defensa Planetaria Autónoma", "Torreta Láser Automática Pesada", "Cañón Sónico de Asedio (Vehicular)", "Sistema de Guerra Electrónica Vehicular Avanzado", "Proyector de Escudo Deflector (Nave/Base)", "Armamento Principal de Mecha de Combate (Variado)", "Campo de Minas Espaciales Inteligentes", "Drone de Combate Orbital Hipersónico", "Cañón de Agujero Negro Estacionario (Defensa estelar)", "Generador de Tormenta Psiónica (Escala planetaria, exótico)", "Red de Satélites de Ataque Cinético",
+            // Conceptos Generales y Teóricos
+            "Principio de Funcionamiento de las Armas Láser", "Ventajas y Desventajas del Plasma como Arma", "Propulsión de Proyectiles: Railgun vs Gauss", "Consideraciones Éticas de las Armas Autónomas", "El Futuro de la Guerra No Letal", "Impacto de los Escudos de Energía en Tácticas", "Guerra Cibernética y Armas Físicas", "Materiales Exóticos en Armamento Futurista", "La Singularidad Tecnológica y la Guerra", "Armas Psiónicas: ¿Realidad o Ficción?", "Limitaciones Físicas de las Armas de Energía", "El Rol de la IA en el Campo de Batalla Futuro", "Camuflaje Activo vs Detección Avanzada", "Logística del Armamento Energético", "Guerra Espacial: Tácticas y Armamento",
+            // Añadir más... El botón 'Generar Más' ayudará a completar
+        ];
+        const futureWeaponThemes = [
+            "armas de energía dirigida", "armas láser", "armas de plasma", "armas de partículas", "railguns y cañones gauss", "armas sónicas", "proyectiles inteligentes", "nanotecnología militar", "armas cuerpo a cuerpo futuristas", "explosivos avanzados", "sistemas de defensa personal", "escudos de energía", "camuflaje activo", "exoesqueletos de combate", "implantes cibernéticos", "armamento vehicular sci-fi", "armas orbitales", "mechas de combate", "armas no letales futuristas", "guerra electrónica avanzada", "armas psiónicas conceptuales", "armas de materia oscura/exótica", "armas biológicas de diseño", "drones de combate autónomos", "armas de distorsión espacial/temporal"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un ingeniero jefe de I+D y analista de tecnología militar del año 2350. Tu especialidad es el armamento avanzado y conceptual. Describe el arma o tecnología futurista indicada de forma detallada y técnica, pero comprensible. Incluye: Principio operativo fundamental, especificaciones técnicas estimadas (potencia, alcance, cadencia si aplica), materiales clave, fuente de energía, ventajas tácticas, debilidades conocidas o limitaciones, posible fabricante o facción (ficcional), y una breve nota sobre su estado (prototipo, estándar, obsoleto, teórico). Utiliza un lenguaje preciso y evocador del sci-fi. El objetivo es un informe técnico detallado de aproximadamente 1200-1300 palabras. Basa tu informe únicamente en el siguiente prototipo o concepto:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat, system prompt se sobreescribe
+            model: "mistral-tiny", // Usar un modelo más rápido para chat si es posible/deseado
+             systemPrompt: "Actúa como un asistente técnico IA especializado únicamente en el arma o concepto que se está mostrando. Responde preguntas de seguimiento sobre sus características, uso, o detalles mencionados en la descripción principal. Sé conciso y relevante al tema actual.",
+            timeoutSeconds: 45 // Menor timeout para chat
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una base de datos de armamento futurista. Genera exactamente 15 nombres evocadores de armas, tecnologías defensivas o conceptos bélicos de ciencia ficción, adecuados para una descripción técnica detallada. Devuelve *solo* la lista de nombres/conceptos, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area'); // Wrapper principal del contenido modal
+        const modalTextArea = document.getElementById('modal-content-area'); // Área de texto y imagen
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Div para el texto HTML
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentWeaponTitle = null; // Para saber de qué trata el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             // *** USA EL SYSTEM PROMPT DINÁMICO PARA CHAT ***
+             const systemPromptToUse = isChat && currentWeaponTitle
+                 ? `Eres un asistente técnico IA especializado únicamente en el arma o concepto llamado '${currentWeaponTitle}'. Responde preguntas de seguimiento sobre sus características, uso, o detalles mencionados en la descripción principal. Sé conciso y relevante al tema actual.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed); // Seed no es tan útil en chat
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     // *** MENSAJE DE ERROR AMIGABLE ***
+                     throw new Error(`(Error ${response.status}) Nuestros servidores están experimentando mucho tráfico en este momento. Por favor, intenta de nuevo en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía. Intenta reformular la pregunta.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 // Propaga el error (ya debería ser amigable si vino del !response.ok)
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        // Wrapper para claridad
+        async function fetchExplanationText(conceptTitle) {
+            return fetchTextFromApi(conceptTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentWeaponTitle) throw new Error("Error interno: No se ha establecido el contexto del arma para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true); // true indica que es chat
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(futureWeaponThemes) || "armamento futurista general";
+            const specificPrompt = `Genera 15 nombres/conceptos de armas o tecnología militar sobre ${randomTheme}`;
+            // Usa la función genérica fetchTextFromApi
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 5) throw new Error("La IA no generó suficientes ideas de prototipos.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "futuristic weapon concept art";
+             const enhancedPrompt = `Conceptual artwork depicting the futuristic weapon or technology '${safePromptText}'. Sci-fi aesthetic, focus on design, materials, energy effects if applicable. Avoid text, labels, diagrams. Cinematic lighting, detailed.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, realistic photograph, human figure holding weapon unless specified, simple background";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { // Solo quita el lock si el fullscreen no está activo
+                document.body.style.overflow = '';
+            }
+            // Reset scroll of the content area
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Limpia texto e imagen
+             modalErrorMessage.textContent = '';
+             // Reset Chat
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentWeaponTitle = null; // Limpia el contexto del chat
+             // Asegurarse que el overlay de imagen también esté oculto
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ==========
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Asegurar el bloqueo del scroll
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) { // Solo desbloquea si el modal principal está cerrado
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = ''; // Limpiar src
+        }
+
+        // ========== CHAT FUNCTIONS ==========
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            // Basic Markdown support (bold/italic)
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message; // Usar innerHTML para que strong/em funcionen
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
+        }
+        function addChatError(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus(); // Refocus input after response/error
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">» No hay prototipos en la base de datos «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick to integrate chat context and image click ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Reset general state, including chat context
+            showModal();
+            modalTitle.textContent = title;
+            currentWeaponTitle = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = ''; // Clear chat history for new item
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Add text first
+                modalStoryContentArea.classList.remove('content-hidden'); // Show the main area (text + chat placeholder)
+
+                modalTextArea.scrollTop = 0; // Reset text area scroll
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare image placeholder WITHIN modalContent
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-camera-retro placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando visualización...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Create image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image'; // Class for styling and click listener
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    // *** ADD CLICK LISTENER FOR FULLSCREEN ***
+                    imgElement.addEventListener('click', () => {
+                        showFullscreenImage(imgElement.src);
+                    });
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Visualización fallida.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append image to the text content
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                // *** USE FRIENDLY ERROR MESSAGE ***
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar datos.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = ''; // Clear partial content
+                chatSection.classList.add('content-hidden'); // Hide chat on main error
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Procesando Solicitud...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron generar nuevos esquemas en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 // *** USE FRIENDLY ERROR MESSAGE ***
+                 alert(`Error al generar esquemas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Solicitar Nuevos Esquemas';
+             }
+         }
+
+         // *** Search Filter Function (sin cambios) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); // Normalize for accents
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">++ CRITICAL SYSTEM FAILURE ++ UI Components Missing ++</p>';
+                return;
+             }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); }); // Click outside modal closes it
+
+            // Title generation listener
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); }); // Prevent form submission feel
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage); // Click on overlay closes it
+            fullscreenCloseBtn.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent overlay click from triggering too
+                hideFullscreenImage();
+            });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

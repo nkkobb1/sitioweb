@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador Global: Países del Mundo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes claras y legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Países del Mundo --- */
+        :root {
+            --color-primary: #2a62bf; /* Azul Océano / Global */
+            --color-secondary: #16a34a; /* Verde Tierra / Naturaleza */
+            --color-background: #f8fafc; /* Blanco Hueso / Muy Claro */
+            --color-text: #1f2937; /* Gris Muy Oscuro / Casi Negro */
+            --color-text-muted: #6b7280; /* Gris Medio */
+            --color-modal-bg: #ffffff; /* Blanco Puro para Modal */
+            --color-border: #e5e7eb; /* Gris Claro para Bordes */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.6; }
+        h1.logo, h1.page-title, h2.section-title, #modal-title { font-family: 'Merriweather', serif; font-weight: 700; }
+        h1.logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.5rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Ajuste para nombres potentially más cortos */ gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.25rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Lato', sans-serif; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #eff6ff; /* Azul muy claro hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #1d4ed8; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #9ca3af; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.85); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 300px; /* Asegura espacio para carga */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #e5e7eb; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.5rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: #d1d5db; color: var(--color-text); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1.5rem; line-height: 1.3; }
+        #modal-content {
+            line-height: 1.7;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 10px 1.5rem 10px; /* Padding inferior para espacio post-imagen */
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-secondary) var(--color-border); /* Scrollbar temático */
+        }
+        #modal-content::-webkit-scrollbar { width: 9px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Merriweather', serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.4em; }
+        #modal-content h3 { font-size: 1.25em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; }
+        /* Estilos para imagen y placeholder DENTRO del contenido */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); /* Fondo de carga claro */ display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid #d1d5db; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.2rem; font-family: 'Lato'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fee2e2; /* Fondo error rojo claro */ color: #b91c1c; /* Texto rojo oscuro */ padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #fca5a5; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-globe-americas mr-3 text-blue-600"></i> <!-- Icono globo -->
+                     Explorador Global
+                 </h1>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Descubre los Países del Mundo</h1>
+             <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">Viaja virtualmente y aprende sobre la geografía, historia, cultura y datos fascinantes de naciones y territorios de todo el planeta. ¡Selecciona un destino para empezar tu exploración!</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-map-marked-alt text-green-600 mr-2"></i> <!-- Icono mapa -->
+                 Selecciona un País o Territorio
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Desplegando el mapamundi...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Explorar Más Regiones
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Recopilando información...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - Image appended here -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- Image placeholder/image appended via JS -->
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información generada por IA con fines educativos y de referencia general sobre países y territorios del mundo.</p>
+              <p class="mt-1">Los datos pueden requerir verificación cruzada con fuentes oficiales para información actualizada o detallada.</p>
+              <p class="mt-2">© 2025 Explorador Global</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Países Miembros de la ONU (y observadores) - Exhaustivo
+            "Afganistán", "Albania", "Alemania", "Andorra", "Angola", "Antigua y Barbuda", "Arabia Saudita", "Argelia", "Argentina", "Armenia", "Australia", "Austria", "Azerbaiyán",
+            "Bahamas", "Bangladés", "Barbados", "Baréin", "Bélgica", "Belice", "Benín", "Bielorrusia", "Birmania (Myanmar)", "Bolivia", "Bosnia y Herzegovina", "Botsuana", "Brasil", "Brunéi", "Bulgaria", "Burkina Faso", "Burundi",
+            "Bután", "Cabo Verde", "Camboya", "Camerún", "Canadá", "Catar", "Chad", "Chile", "China", "Chipre", "Ciudad del Vaticano (Santa Sede)", "Colombia", "Comoras", "Corea del Norte", "Corea del Sur", "Costa de Marfil", "Costa Rica", "Croacia", "Cuba",
+            "Dinamarca", "Dominica", "Ecuador", "Egipto", "El Salvador", "Emiratos Árabes Unidos", "Eritrea", "Eslovaquia", "Eslovenia", "España", "Estados Unidos", "Estonia", "Esuatini (Suazilandia)", "Etiopía",
+            "Filipinas", "Finlandia", "Fiyi", "Francia", "Gabón", "Gambia", "Georgia", "Ghana", "Granada", "Grecia", "Guatemala", "Guinea", "Guinea-Bisáu", "Guinea Ecuatorial", "Guyana",
+            "Haití", "Honduras", "Hungría", "India", "Indonesia", "Irak", "Irán", "Irlanda", "Islandia", "Islas Marshall", "Islas Salomón", "Israel", "Italia",
+            "Jamaica", "Japón", "Jordania", "Kazajistán", "Kenia", "Kirguistán", "Kiribati", "Kuwait", "Laos", "Lesoto", "Letonia", "Líbano", "Liberia", "Libia", "Liechtenstein", "Lituania", "Luxemburgo",
+            "Macedonia del Norte", "Madagascar", "Malasia", "Malaui", "Maldivas", "Malí", "Malta", "Marruecos", "Mauricio", "Mauritania", "México", "Micronesia", "Moldavia", "Mónaco", "Mongolia", "Montenegro", "Mozambique",
+            "Namibia", "Nauru", "Nepal", "Nicaragua", "Níger", "Nigeria", "Noruega", "Nueva Zelanda",
+            "Omán", "Países Bajos", "Pakistán", "Palaos", "Palestina", "Panamá", "Papúa Nueva Guinea", "Paraguay", "Perú", "Polonia", "Portugal",
+            "Reino Unido", "República Centroafricana", "República Checa", "República del Congo", "República Democrática del Congo", "República Dominicana", "Ruanda", "Rumania", "Rusia",
+            "Samoa", "San Cristóbal y Nieves", "San Marino", "San Vicente y las Granadinas", "Santa Lucía", "Santo Tomé y Príncipe", "Senegal", "Serbia", "Seychelles", "Sierra Leona", "Singapur", "Siria", "Somalia", "Sri Lanka", "Suazilandia (ver Esuatini)", "Sudáfrica", "Sudán", "Sudán del Sur", "Suecia", "Suiza", "Surinam",
+            "Tailandia", "Tanzania", "Tayikistán", "Timor Oriental", "Togo", "Tonga", "Trinidad y Tobago", "Túnez", "Turkmenistán", "Turquía", "Tuvalu",
+            "Ucrania", "Uganda", "Uruguay", "Uzbekistán", "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Yibuti", "Zambia", "Zimbabue",
+
+            // Territorios Dependientes Notables / Regiones con Estatus Especial
+            "Anguila (Reino Unido)", "Antártida (Tratado Antártico)", "Antillas Neerlandesas (Disueltas, ver Curazao, Sint Maarten, BES)", "Aruba (Países Bajos)", "Bermudas (Reino Unido)", "Bonaire (Países Bajos)",
+            "Ciudad Autónoma de Buenos Aires (Argentina)", "Ciudad de México (México)", "Ciudad del Vaticano", // Ya listado, pero como entidad separada
+            "Chipre del Norte (Disputado/No reconocido universalmente)", "Curazao (Países Bajos)",
+            "Escocia (Reino Unido)", "Estado Libre Asociado de Puerto Rico (Estados Unidos)",
+            "Gales (Reino Unido)", "Gibraltar (Reino Unido)", "Groenlandia (Dinamarca)", "Guadalupe (Francia)", "Guam (Estados Unidos)", "Guayana Francesa (Francia)", "Guernsey (Reino Unido)",
+            "Hong Kong (China)", "Inglaterra (Reino Unido)", "Irlanda del Norte (Reino Unido)", "Isla de Man (Reino Unido)", "Isla de Navidad (Australia)", "Isla Norfolk (Australia)", "Islas Caimán (Reino Unido)", "Islas Cocos (Keeling) (Australia)", "Islas Cook (Nueva Zelanda)", "Islas Feroe (Dinamarca)", "Islas Georgias del Sur y Sandwich del Sur (Reino Unido)", "Islas Malvinas (Falkland Islands) (Reino Unido/Disputado)", "Islas Marianas del Norte (Estados Unidos)", "Islas Pitcairn (Reino Unido)", "Islas Turcas y Caicos (Reino Unido)", "Islas Vírgenes Británicas (Reino Unido)", "Islas Vírgenes de los Estados Unidos (Estados Unidos)",
+            "Jan Mayen (Noruega)", "Jersey (Reino Unido)",
+            "Kosovo (Disputado/Reconocimiento limitado)",
+            "Macao (China)", "Martinica (Francia)", "Mayotte (Francia)", "Montserrat (Reino Unido)",
+            "Niue (Nueva Zelanda)", "Nueva Caledonia (Francia)",
+            "Polinesia Francesa (Francia)", "Puerto Rico (Estados Unidos)", // Ya listado, refuerzo
+            "República Árabe Saharaui Democrática (Disputado/Reconocimiento limitado)", "Reunión (Francia)",
+            "Saba (Países Bajos)", "Samoa Americana (Estados Unidos)", "San Bartolomé (Francia)", "San Eustaquio (Países Bajos)", "San Martín (Francia)", "San Pedro y Miquelón (Francia)", "Santa Elena, Ascensión y Tristán de Acuña (Reino Unido)", "Sint Maarten (Países Bajos)", "Somalilandia (No reconocido universalmente)", "Svalbard (Noruega)",
+            "Taiwán (República de China) (Disputado/Estatus político complejo)", "Territorio Antártico Británico (Reino Unido)", "Territorio Británico del Océano Índico (Reino Unido)", "Tokelau (Nueva Zelanda)", "Transnistria (No reconocido universalmente)",
+            "Wallis y Futuna (Francia)",
+            "Washington D.C. (Estados Unidos)",
+
+            // Conceptos Geográficos / Regionales (para "Generar Más")
+            "¿Qué es un Estado sin Litoral?", "¿Qué es un Microestado?", "Países de la Unión Europea", "Países Nórdicos", "Sudeste Asiático", "África Subsahariana", "América Latina", "El Caribe", "Oriente Medio", "Asia Central", "El Magreb", "Los Balcanes", "Oceanía", "El Cuerno de África", "Regiones Polares (Ártico y Antártida)"
+        ];
+        const geographyThemes = [
+            "países de Europa", "países de Asia", "países de África", "países de América del Norte", "países de América del Sur", "países de Oceanía", "islas del Caribe", "países sin litoral", "microestados", "países nórdicos", "países del sudeste asiático", "países de América Latina", "países de Oriente Medio", "territorios dependientes", "países de la Mancomunidad de Naciones (Commonwealth)", "países francófonos", "países lusófonos", "estados insulares", "países montañosos", "países con mayor biodiversidad", "grandes potencias económicas", "países recientemente independizados"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un geógrafo y enciclopedista experto. Tu tarea es proporcionar una descripción completa y atractiva de un país o territorio específico. Incluye información clave sobre su ubicación, geografía física (relieve, clima, hidrografía), capital y ciudades importantes, una breve reseña histórica relevante, aspectos culturales destacados (idioma, religión, tradiciones, gastronomía), estructura política básica, economía principal y algunos datos curiosos o puntos de interés notables. Mantén un tono neutral, informativo y preciso. El objetivo es un resumen detallado de aproximadamente 1200-1300 palabras. Basa tu descripción únicamente en el siguiente país o territorio:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un atlas mundial. Genera exactamente 15 nombres de países, territorios dependientes menos conocidos, o regiones geográficas significativas (ej: 'El Sahel', 'Archipiélago de Bismarck'), adecuados para ser descritos en detalle. Devuelve *solo* la lista de nombres, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Text container
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config) { /* ... Sin cambios ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                throw new Error(`Error de comunicación con la API: ${error.message}`);
+            }
+        }
+        async function fetchExplanationText(countryTitle) { /* ... Sin cambios ... */
+             const text = await fetchTextFromApi(countryTitle, textApiConfig);
+             if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                  throw new Error("La IA no pudo generar una descripción adecuada o suficientemente detallada para este lugar.");
+              }
+            return text;
+        }
+        async function fetchGeneratedTitles() { /* ... Sin cambios ... */
+             const randomTheme = getRandomElement(geographyThemes) || "regiones geográficas del mundo";
+             const specificPrompt = `Genera 15 nombres de países, territorios o regiones sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 100); // Adjusted length constraints
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de lugares.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a PAISES
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "beautiful world landscape";
+            // Prompt ENFOCADO en paisajes, landmarks o cultura representativa.
+            const enhancedPrompt = `Scenic landscape, iconic landmark, or representative cultural element of '${safePromptText}'. High quality photograph or realistic illustration style. Natural beauty or significant architecture. Avoid flags, maps, text overlays, political symbols.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            // NEGATIVE PROMPT: Evitar texto, mapas, banderas (a menos que sea parte del landmark), diagramas.
+            const negativePrompt = "text, words, labels, letters, captions, writing, numbers, map, diagram, chart, graph, flag (unless part of landmark), political cartoon, multiple images, collage, blurry photo, poorly drawn illustration, ui elements, watermark, signature";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (sin cambios estructurales)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear text and any appended image
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (sin cambios estructurales)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]);
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay destinos disponibles.</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        // *** handleTitleClick (sin cambios estructurales en lógica de imagen/scroll) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // 1. Fetch and format text
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 2. Stop loading, display text
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                // 3. RESET SCROLL after content is visible
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // 4. Prepare and append image placeholder WITHIN #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Cargando imagen representativa...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // 5. Create and append the actual image element (starts loading)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Imagen representativa de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo cargar la imagen.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                    console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de imagen.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+            }
+        }
+
+        // handleGenerateMoreTitles (adaptado texto)
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando regiones...'; // Thematic text
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     // Re-append the button container after the new titles
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("No se pudieron encontrar más regiones o territorios en este momento."); // Thematic text
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al explorar más: ${error.message}`); // Thematic text
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Explorar Más Regiones'; // Thematic text
+             }
+         }
+
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 4em;">Error: No se pudo cargar el mapa interactivo. Por favor, recargue la página.</p>'; return; } // Thematic error
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

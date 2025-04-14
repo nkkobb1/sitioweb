@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivo de Conspiraciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes temáticas: Una tipo máquina de escribir y una limpia -->
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Teorías de Conspiración --- */
+        :root {
+            --color-primary: #0f9d58; /* Verde monitor antiguo / Esmeralda oscuro */
+            --color-secondary: #b71c1c; /* Rojo oscuro "clasificado" */
+            --color-background: #1a1a1a; /* Casi negro */
+            --color-text: #e0e0e0; /* Gris muy claro */
+            --color-text-muted: #757575; /* Gris medio */
+            --color-modal-bg: #2c2c2c; /* Gris oscuro para modal */
+            --color-border: #424242; /* Borde gris oscuro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+            --border-radius: 3px; /* Bordes más rectos */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; /* Buen interlineado para texto oscuro */ }
+        /* Fuente temática para títulos principales */
+        h1.logo, h1.page-title { font-family: 'Special Elite', monospace; font-weight: normal; color: var(--color-primary); text-shadow: 0 0 5px rgba(15, 157, 88, 0.5); }
+        h2.section-title, #modal-title { font-family: 'Special Elite', monospace; font-weight: normal; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px dotted var(--color-primary); padding-bottom: 0.5rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); font-size: 1.9rem; } /* Título modal grande */
+        .navbar { background-color: rgba(26, 26, 26, 0.85); backdrop-filter: blur(4px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; box-shadow: var(--shadow-sm); transition: var(--transition-normal); background-color: #333; color: var(--color-text); font-family: 'Lato', sans-serif;}
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(15, 157, 88, 0.3); outline: none; background-color: #444; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; /* Alinear a la izquierda */ font-weight: normal; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: flex-start; /* Alinear contenido a la izq */ min-height: 60px; font-family: 'Lato', sans-serif; font-size: 0.9rem; }
+        .title-item i { margin-right: 10px; color: var(--color-primary); min-width: 16px; text-align: center;} /* Icono */
+        .title-item:hover { transform: translateY(-2px); box-shadow: 0 0 10px rgba(15, 157, 88, 0.4); border-color: var(--color-primary); color: var(--color-primary); background-color: #3a3a3a; }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: var(--color-background); padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Special Elite', monospace; font-size: 1.1rem; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        #generate-more-btn:hover:not(:disabled) { background-color: #0c7a43; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #555; color: #aaa; cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(10, 10, 10, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 950px; /* Ancho generoso */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #444; border: none; border-radius: var(--border-radius); width: 35px; height: 35px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; font-family: sans-serif;}
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: var(--color-text); transform: scale(1.1); }
+        #modal-title { text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+        #modal-content {
+            line-height: 1.8;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 15px 1.5rem 15px; /* Padding para scrollbar y espacio inferior */
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) #444; /* Scrollbar temático */
+        }
+        #modal-content::-webkit-scrollbar { width: 9px; }
+        #modal-content::-webkit-scrollbar-track { background: #444; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #444; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: #ccc; font-style: italic; } /* Énfasis más sutil */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Lato', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px dashed var(--color-border); padding-bottom: 0.5em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: #eee; }
+        #modal-content h4 { font-size: 1.1em; color: #bbb; border-bottom: none; }
+        /* Estilos imagen y placeholder DENTRO del contenido */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); filter: grayscale(30%) contrast(110%); opacity: 0.9; }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); text-align: center; }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 1rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; margin-bottom: 0.5rem;}
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 26, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid #555; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: normal; color: var(--color-text); font-size: 1.3rem; font-family: 'Special Elite', monospace; text-shadow: 0 0 3px rgba(15, 157, 88, 0.5); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #4a1a1a; /* Fondo error rojo oscuro */ color: #ffcdd2; /* Texto claro */ padding: 1.2rem; border-radius: var(--border-radius); border: 1px dashed var(--color-secondary); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        .title-item.hidden { display: none; } /* Para ocultar con buscador */
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-user-secret mr-3 text-green-500"></i> <!-- Icono secreto -->
+                     Archivo de Conspiraciones
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-mono">//: La Verdad Está Ahí Fuera...?</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Desclasifica lo Oculto</h1>
+             <p class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto font-mono">Investiga las sombras, cuestiona la narrativa oficial. Selecciona un expediente o busca por palabra clave para iniciar el análisis.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-8 max-w-2xl mx-auto">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar teoría (ej: Roswell, Illuminati, MKUltra...)">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-folder-open text-green-500 mr-2"></i> <!-- Icono carpeta -->
+                 Expedientes Disponibles
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-mono">Accediendo a la base de datos segura...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-mono">-- Ningún expediente coincide con los criterios de búsqueda --</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                      <i class="fas fa-plus-circle"></i> Solicitar Más Expedientes
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Analizando transmisiones...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle text-red-400"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-600 py-6 mt-12 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm font-mono">
+              <p>// Información presentada con fines informativos y de exploración de fenómenos socio-culturales.</p>
+              <p class="mt-1">// No se afirma la veracidad de ninguna teoría. Investiga por tu cuenta.</p>
+              <p class="mt-2">// Archivo de Conspiraciones [v1.0] - Desconfía siempre.</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // OVNIs y Extraterrestres
+            "El Incidente Roswell (1947)", "¿Qué es el Área 51?", "Majestic 12 (MJ-12): El Gobierno Secreto OVNI", "Los Hombres de Negro (Men in Black)", "Abducciones Extraterrestres: ¿Realidad o Psicosis?", "Antiguos Astronautas / Ancient Aliens", "La Conspiración de los Reptilianos", "Proyecto Libro Azul (Project Blue Book)", "El Caso Varginha (Brasil)", "Las Luces de Phoenix (1997)", "OVNIs Nazis (Die Glocke / Haunebu)", "La Cara de Marte y las estructuras artificiales", "La Teoría del Silencio Cósmico / Zoo Hypothesis", "Contacto Extraterrestre Encubierto por Gobiernos", "Los Greys: Origen y Motivos", "Exopolítica: Relaciones Diplomáticas con ETs", "El Incidente OVNI de Kecksburg (1965)", "El Incidente del Bosque Rendlesham (1980)", "Bob Lazar y la Ingeniería Inversa en el Área S4", "Crop Circles (Círculos de las Cosechas): ¿Mensajes ET?", "Mutilaciones de Ganado y su conexión OVNI", "Bases Submarinas o Subterráneas Extraterrestres (OSNI/USO)", "La Hipótesis Interdimensional", "El Caballero Negro (Black Knight Satellite)", "El encubrimiento del Apolo 20 y la nave en la Luna", "Filtraciones recientes del Pentágono sobre OVNIs/UAPs", "El Programa Secreto Espacial (SSP)", "Conexión entre OVNIs y Armas Nucleares", "La Teoría de la Panspermia Dirigida", "Los Anunnaki y la creación de la humanidad",
+            // Gobierno y Política
+            "El Asesinato de JFK: ¿Quién lo hizo realmente?", "Operación Mockingbird: Control de Medios por la CIA", "Operación MKUltra: Control Mental de la CIA", "Los Papeles del Pentágono y el encubrimiento de Vietnam", "Watergate: ¿Más profundo de lo que parece?", "El Incidente Irán-Contra", "El Atentado de Oklahoma City: ¿Trabajo Interno?", "Los Ataques del 11 de Septiembre (9/11): Teorías alternativas", "Las Armas de Destrucción Masiva en Irak que nunca existieron", "FEMA y los Campos de Concentración en EE.UU.", "El Nuevo Orden Mundial (NWO)", "El Gobierno Secreto / Estado Profundo (Deep State)", "HAARP: Control del Clima y la Mente", "Chemtrails: Fumigación Química Aérea", "El Accidente del Vuelo TWA 800 (1996)", "La Muerte de la Princesa Diana: ¿Asesinato?", "El Programa de Vigilancia PRISM (NSA)", "La Militarización de la Policía", "El Grupo Bilderberg: ¿Gobierno Mundial en la Sombra?", "La Comisión Trilateral", "Council on Foreign Relations (CFR)", "Bohemian Grove: Rituales secretos de la élite", "El Proyecto Montauk", "La Gripe Española de 1918: ¿Origen artificial?", "Pearl Harbor: ¿Sabía EE.UU. del ataque?", "El Incendio del Reichstag (1933)", "La Operación Gladio (Ejércitos secretos de la OTAN)", "El Asesinato de Martin Luther King Jr.", "El Asesinato de Robert F. Kennedy", "La Masacre de Jonestown: ¿Experimento de la CIA?", "El caso de Gary Webb y 'Dark Alliance'", "Las 'Octopus Murders' / Caso Danny Casolaro", "El Escándalo Franklin Cover-up", "La Conexión Bush-Bin Laden", "El software PROMIS y el espionaje global", "La Doctrina del Shock (Naomi Klein)",
+            // Sociedades Secretas y Órdenes
+            "Los Illuminati: Origen y Supuesto Poder Actual", "La Masonería (Freemasons): Secretos y Rituales", "Los Caballeros Templarios: ¿Sobrevivieron en secreto?", "El Priorato de Sión y el linaje de Jesús", "Skull and Bones (Sociedad Secreta de Yale)", "La Orden Hermética del Alba Dorada (Golden Dawn)", "Ordo Templi Orientis (O.T.O.) y Aleister Crowley", "Rosacrucismo: Misticismo y Secretismo", "El Club del Fuego Infernal (Hellfire Club)", "Thule-Gesellschaft y el ocultismo Nazi", "La Orden de los Asesinos (Hashshashin)", "Propaganda Due (Logia P2 Italiana)", "El Círculo (Le Cercle)", "Opus Dei: ¿Influencia oculta en el Vaticano?", "La Nobleza Negra (Familias poderosas europeas)",
+            // Historia y Arqueología
+            "El Engaño del Hombre de Piltdown", "La Atlántida: ¿Existió realmente?", "El Triángulo de las Bermudas", "¿Quién construyó realmente las Pirámides de Egipto?", "La Maldición de Tutankamón", "El Arca de la Alianza: ¿Dónde está?", "El Santo Grial: ¿Qué es y dónde buscarlo?", "La Sábana Santa de Turín: ¿Auténtica o Falsificación Medieval?", "Los Protocolos de los Sabios de Sión", "El Misterio de la Isla de Oak", "El Código Voynich: ¿Indescifrable o un Engaño?", "La Biblioteca Perdida de Alejandría", "Las Líneas de Nazca: ¿Mensajes para Dioses?", "La Fuente de la Juventud", "El Dorado: La Ciudad Perdida de Oro", "El Holocausto: Negacionismo y Revisionismo", "El alunizaje del Apolo: ¿Fue un montaje?", "La Muerte de Adolf Hitler: ¿Escapó a Sudamérica?", "El Proyecto Filadelfia (Experimento de Invisibilidad Naval)", "La Conspiración del Titanic (¿Fue el Olympic?)", "Shakespeare: ¿Escribió realmente sus obras?", "Juana de Arco: ¿Superviviente secreta?", "Anastasia Romanov: ¿Sobrevivió a la ejecución?", "Jack el Destripador: ¿Identidad oculta por la realeza?", "El misterio del Mary Celeste", "Kaspar Hauser: ¿Príncipe secuestrado?", "El Hombre de la Máscara de Hierro", "La Flota Perdida de Colón", "Los Mapas de Piri Reis", "Las Esferas de Piedra de Costa Rica", "Las Cabezas Olmecas: ¿Origen africano?", "La Tecnología Perdida de la Antigüedad (Baterías de Bagdad, Mecanismo de Anticitera)",
+            // Ciencia, Tecnología y Medicina
+            "La Tierra Plana (Flat Earth)", "La Tierra Hueca", "La Conspiración de la Energía Libre (Supresión de inventos)", "El Motor de Agua", "La Fusión Fría Encubierta", "Los Peligros Ocultos del 5G", "El Gran Colisionador de Hadrones (LHC) y los portales dimensionales", "La Inteligencia Artificial (IA) como amenaza existencial controlada", "El Transhumanismo y la agenda de la élite", "La Industria Farmacéutica (Big Pharma) y la supresión de curas", "La Conspiración contra las Vacunas (Anti-Vax)", "El SIDA/VIH: ¿Origen artificial?", "La Enfermedad de Lyme: ¿Arma biológica?", "El Fluoruro en el Agua: ¿Control mental?", "Los Microchips Implantables Obligatorios", "La Obsolescencia Programada", "El Pico del Petróleo (Peak Oil) como manipulación", "El Calentamiento Global: ¿Engaño o Exageración?", "La Geoingeniería Secreta", "El Efecto Mandela", "La Simulación por Computadora (Hipótesis de la Simulación)", "El Proyecto Blue Beam (Falsa invasión alienígena holográfica)", "El Síndrome de Morgellons", "El Control Mental a través de Ondas Electromagnéticas", "La Supresión de la Evidencia del Bigfoot/Sasquatch", "La Supresión de la Evidencia del Monstruo del Lago Ness", "El Efecto Placebo/Nocebo como poder oculto",
+            // Finanzas y Economía
+            "La Creación de la Reserva Federal (FED) en Jekyll Island", "El Patrón Oro: ¿Por qué se abandonó?", "La Manipulación del Precio del Oro y la Plata", "El Colapso Económico Controlado", "El Club de Roma y los Límites del Crecimiento", "George Soros y la desestabilización de mercados", "El Foro Económico Mundial (WEF) y 'El Gran Reinicio' (The Great Reset)", "Las Criptomonedas como herramienta de control o liberación", "La Deuda Nacional como mecanismo de esclavitud", "El Complejo Militar-Industrial", "El Petrodólar y las guerras por recursos",
+            // Cultura Pop y Entretenimiento
+            "Paul McCartney está Muerto (Paul is Dead - PID)", "Elvis Presley Fingió su Muerte", "Stanley Kubrick filmó el alunizaje", "La Maldición de Superman", "El Club de los 27 (Músicos muertos a los 27)", "Walt Disney está Criogenizado", "La Industria Musical y los Mensajes Subliminales / Backmasking", "Stevie Wonder no es ciego", "Keanu Reeves es inmortal", "Britney Spears: Control y tutela (#FreeBritney)", "Michael Jackson: ¿Vivo o asesinato encubierto?", "Tupac Shakur y Biggie Smalls: ¿Asesinatos orquestados?", "Kurt Cobain: ¿Suicidio o asesinato?", "Los Simpsons y sus predicciones", "Hollywood y el Ocultismo / Simbolismo Illuminati", "La muerte de Bruce Lee y Brandon Lee", "Avril Lavigne fue reemplazada por una doble (Melissa)", "La Industria del Entretenimiento y el control mental (Monarch)", "La conexión entre Disney y programas gubernamentales secretos",
+            // Modernas / Internet / Misceláneas
+            "QAnon: La Tormenta y el Despertar", "Pizzagate: Red de pedofilia de la élite", "Sandy Hook: ¿Fue un montaje (False Flag)?", "La Maratón de Boston: ¿Actores de crisis?", "El Jade Helm 15 (Ejercicio militar sospechoso)", "El Aeropuerto Internacional de Denver: Símbolos y túneles secretos", "Las Piedras Guía de Georgia (Georgia Guidestones)", "La Teoría del Tiempo Fantasma", "El Experimento Ruso del Sueño", "Polybius: El videojuego arcade maldito", "El Efecto Flynn inverso: ¿Nos estamos volviendo más tontos?", "La Ley de Atracción y el control de la realidad", "La Psicología detrás de la creencia en conspiraciones", "El papel de Internet en la difusión de teorías", "Sesgo de Confirmación y Cámaras de Eco", "El concepto de 'Fake News' y la desinformación", "Operaciones de Bandera Falsa (False Flags)", "El fenómeno de los 'Actores de Crisis'", "El concepto de 'Gaslighting' a nivel social", "La teoría de la 'Ventana de Overton'", "El 'Hombre Polilla' (Mothman)", "El 'Chupacabras'", "Los 'Niños de Ojos Negros' (Black Eyed Children)", "Las 'Criaturas de la Noche' (Nightcrawlers)", "El Monstruo de Montauk", "Las Sirenas: ¿Existen?", "El Experimento Stargate (Visión Remota)"
+            // Más de 400 entradas!
+        ];
+        const conspiracyThemes = [
+            "teorías OVNI", "conspiraciones gubernamentales", "sociedades secretas", "aterrizaje lunar falso", "asasinato de JFK", "9/11 teorías alternativas", "Illuminati", "nuevo orden mundial", "chemtrails", "HAARP", "tierra plana", "reptilianos", "MKUltra", "área 51", "encubrimientos históricos", "criptozoología", "conspiraciones médicas", "big pharma", "control mental", "simbolismo oculto", "misterios sin resolver", "tecnología suprimida", "conspiraciones financieras", "profecías y apocalipsis", "cultura pop conspiraciones"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un investigador neutral y objetivo, un cronista de narrativas alternativas y teorías de conspiración. Tu tarea es describir la teoría de conspiración indicada de forma detallada, clara y desapasionada. Explica sus principales afirmaciones, la 'evidencia' que suelen citar sus proponentes, los contraargumentos o explicaciones convencionales, su origen histórico o contexto de surgimiento, y su impacto cultural o difusión. NO DEBES afirmar la veracidad o falsedad de la teoría. Simplemente preséntala como un fenómeno social/cultural existente. Utiliza un lenguaje enciclopédico pero accesible. El objetivo es un resumen completo de aproximadamente 1200-1300 palabras. Basa tu descripción únicamente en la siguiente teoría o concepto:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un archivo de conspiraciones. Genera exactamente 15 nombres de teorías de conspiración (conocidas o de nicho) o preguntas relacionadas con ellas, adecuadas para una descripción detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('.fa-sync-alt');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor texto e imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios funcionales)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía o corrupta.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                throw new Error(`Error de comunicación con la API: ${error.message}`);
+            }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+             if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                  throw new Error("La IA no pudo generar una descripción adecuada o suficientemente detallada para este expediente.");
+              }
+            return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+            const randomTheme = getRandomElement(conspiracyThemes) || "teorías de conspiración populares";
+            const specificPrompt = `Genera 15 nombres o preguntas sobre ${randomTheme}`;
+            console.log("Generating titles with prompt:", specificPrompt);
+            const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+            const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+            const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+            if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de expedientes.");
+            return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a Conspiración
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Abstract conspiracy concept";
+            const enhancedPrompt = `Mysterious abstract concept art inspired by '${safePromptText}'. Focus on atmosphere, symbolism, hidden connections, shadows, surveillance, cryptic elements. Use dark, moody color palettes (deep blues, grays, blacks, muted greens or reds). Avoid literal depictions, text, clear faces unless specifically requested. Cinematic, enigmatic.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, writing, labels, logos, clear faces, photograph, bright daylight, happy scene, diagram, chart, map, cartoon, simple illustration, watermark, signature";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             // Correcciones básicas de Markdown/formato
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Mantener por si acaso
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             // Convertir párrafos
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                 let content = block.replace(/\n/g, ' '); // Reemplazar saltos internos con espacio
+                 return `<p>${content}</p>`;
+             }).join('');
+             return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Limpia texto e imagen
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        // *** MODIFIED: createTitleItem to include icon ***
+        function createTitleItem(title) {
+            const div = document.createElement('div');
+            div.className = 'title-item';
+            div.setAttribute('data-title', title);
+            // Simple logic for icon based on keywords (can be expanded)
+            let iconClass = 'fa-question-circle'; // Default
+            const lowerTitle = title.toLowerCase();
+            if (lowerTitle.includes('ovni') || lowerTitle.includes('alien') || lowerTitle.includes('extraterrestre') || lowerTitle.includes('roswell') || lowerTitle.includes('área 51')) iconClass = 'fa-alien';
+            else if (lowerTitle.includes('gobierno') || lowerTitle.includes('cia') || lowerTitle.includes('fbi') || lowerTitle.includes('nsa') || lowerTitle.includes('estado profundo') || lowerTitle.includes('jfk') || lowerTitle.includes('9/11')) iconClass = 'fa-landmark';
+            else if (lowerTitle.includes('illuminati') || lowerTitle.includes('mason') || lowerTitle.includes('bilderberg') || lowerTitle.includes('secreto') || lowerTitle.includes('skull and bones')) iconClass = 'fa-eye';
+            else if (lowerTitle.includes('historia') || lowerTitle.includes('antiguo') || lowerTitle.includes('egipto') || lowerTitle.includes('templario') || lowerTitle.includes('luna')) iconClass = 'fa-history';
+            else if (lowerTitle.includes('ciencia') || lowerTitle.includes('tecnología') || lowerTitle.includes('haarp') || lowerTitle.includes('chemtrail') || lowerTitle.includes('tierra plana') || lowerTitle.includes('5g')) iconClass = 'fa-atom';
+            else if (lowerTitle.includes('medicina') || lowerTitle.includes('vacuna') || lowerTitle.includes('pharma') || lowerTitle.includes('sida') || lowerTitle.includes('virus')) iconClass = 'fa-notes-medical';
+             else if (lowerTitle.includes('finanza') || lowerTitle.includes('fed') || lowerTitle.includes('oro') || lowerTitle.includes('dinero') || lowerTitle.includes('reset')) iconClass = 'fa-dollar-sign';
+            else if (lowerTitle.includes('cultura') || lowerTitle.includes('música') || lowerTitle.includes('hollywood') || lowerTitle.includes('disney')) iconClass = 'fa-film';
+
+
+            div.innerHTML = `<i class="fas ${iconClass}"></i> ${title}`; // Add icon
+            div.addEventListener('click', () => handleTitleClick(title));
+            return div;
+         }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]); // Shuffle for variety
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-mono">-- No hay expedientes en el archivo --</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => {
+                 if (!existingTitles.has(title)) {
+                     titleListContainer.appendChild(createTitleItem(title));
+                 }
+             });
+             filterTitles(searchInput.value); // Re-apply filter
+        }
+
+        // *** MODIFIED: handleTitleClick (thematic adjustments, core logic same) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title; // Set title early
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Show loading
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none'; // Hide loading
+                modalContent.innerHTML = formattedExplanation; // Inject text
+                modalStoryContentArea.classList.remove('content-hidden'); // Show content area
+
+                modalContent.scrollTop = 0; // Reset scroll AFTER content is visible
+                console.log("Scroll reset after content injection.");
+
+                // Prepare and append image placeholder WITHIN #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-low-vision placeholder-icon"></i> <!-- Thematic icon -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem; font-family: 'Special Elite', monospace;">Generando representación visual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Create and append image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Representación conceptual de: ${title}`;
+                imgElement.style.display = 'none'; // Hide until loaded
+
+                imgElement.onload = () => {
+                    console.log("Visual representation loaded.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading visual representation for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-ban placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem; font-family: 'Special Elite', monospace;">//: Error en transmisión de imagen ://</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Add image to the end
+                } else {
+                    console.error("Could not generate image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-triangle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem; font-family: 'Special Elite', monospace;">//: Fallo al generar URL de imagen ://</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Display failure:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error de Sistema: ${error.message}`; // Thematic error msg
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Clear partial content
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreSpinner.classList.remove('hidden'); // Show spinner
+             generateMoreBtn.querySelector('.fa-plus-circle').style.display = 'none'; // Hide plus icon
+             generateMoreBtn.lastChild.textContent = ' Buscando más pistas...'; // Update text
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     appendTitles(newTitles);
+                 } else {
+                     alert("No se encontraron más expedientes clasificados por ahora.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al solicitar expedientes: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreSpinner.classList.add('hidden'); // Hide spinner
+                 generateMoreBtn.querySelector('.fa-plus-circle').style.display = 'inline-block'; // Show plus icon
+                 generateMoreBtn.lastChild.textContent = ' Solicitar Más Expedientes'; // Restore text
+             }
+         }
+
+         // *** Search Filter Function (core logic unchanged) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); // Normalize for accents
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) {
+                     visibleCount++;
+                 }
+             });
+
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: monospace;">*** ALERTA: Fallo Crítico del Sistema. Imposible Cargar Archivo. ***</p>';
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            searchInput.addEventListener('input', (event) => {
+                filterTitles(event.target.value);
+            });
+
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden'); // Ensure hidden initially
+            generateMoreSpinner.classList.add('hidden'); // Hide spinner initially
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

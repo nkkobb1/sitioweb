@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recetario Navideño Interactivo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Una festiva para títulos, una limpia para cuerpo -->
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Lato:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Recetas Navideñas --- */
+        :root {
+            --color-primary: #c8102e; /* Rojo Navideño Intenso */
+            --color-secondary: #00703c; /* Verde Navideño Oscuro */
+            --color-accent: #facc15; /* Dorado/Amarillo Festivo */
+            --color-background: #fefcfb; /* Blanco Nieve Suave */
+            --color-text: #374151; /* Gris Oscuro para texto principal */
+            --color-text-muted: #6b7280; /* Gris Medio */
+            --color-modal-bg: #ffffff; /* Blanco puro modal */
+            --color-border: #e5e7eb; /* Borde gris claro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 8px; /* Bordes más suaves, más acogedor */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        /* Título principal con fuente festiva */
+        h1.logo, h1.page-title { font-family: 'Mountains of Christmas', cursive; font-weight: 700; color: var(--color-primary); letter-spacing: 1px; }
+        h2.section-title, #modal-title { font-family: 'Roboto', sans-serif; font-weight: 700; }
+        h2.section-title { color: var(--color-secondary); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semi-transparente */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; box-shadow: var(--shadow-sm); transition: var(--transition-normal); }
+        #search-input:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(0, 112, 60, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Roboto', sans-serif; font-size: 1rem; line-height: 1.3; }
+        .title-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #fff1f2; /* Rojo muy claro hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-secondary); color: white; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Roboto', sans-serif; font-weight: 500; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #047857; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #9ca3af; color: #e5e7eb; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(55, 65, 81, 0.9); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 950px; /* Más ancho para recetas */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; }
+        #modal-title { font-size: 2rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; font-family: 'Roboto', sans-serif; font-weight: 700; }
+        #modal-content {
+            line-height: 1.75;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 15px 1.5rem 15px; /* Espacio extra abajo para imagen */
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content::-webkit-scrollbar { width: 9px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-secondary); font-weight: bold; }
+        #modal-content em { color: var(--color-primary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Roboto', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-secondary); border-bottom: 1px solid #d1d5db; padding-bottom: 0.4em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; color: var(--color-primary); } /* H2 en rojo */
+        #modal-content h3 { font-size: 1.15em; }
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos específicos para listas de ingredientes y pasos */
+        #modal-content ul, #modal-content ol { margin-left: 1.5rem; margin-bottom: 1.5em; list-style: revert; /* Usar bullets/números por defecto */ }
+        #modal-content ul { list-style-type: disc; }
+        #modal-content ol { list-style-type: decimal; }
+        #modal-content li { margin-bottom: 0.6em; }
+        /* Estilos para imagen y placeholder dentro del contenido */
+        #modal-content .final-image { display: block; max-width: 90%; /* Imagen grande */ height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 5px solid rgba(0, 0, 0, 0.05); width: 45px; height: 45px; border-radius: 50%; border-left-color: var(--color-secondary); /* Verde */ animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid #e5e7eb; border-top-color: var(--color-primary); /* Rojo */ border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 500; color: var(--color-text); font-size: 1.3rem; font-family: 'Roboto'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fee2e2; color: #dc2626; /* Rojo error */ padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #fecaca; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 500; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        .title-item.hidden { display: none; } /* Para ocultar con buscador */
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-candy-cane mr-3 text-red-600"></i> <!-- Icono bastón -->
+                     Recetario Navideño
+                 </h1>
+             </div>
+              <span class="text-sm text-gray-600 flex items-center">
+                   <i class="fas fa-cookie-bite mr-2 text-yellow-600"></i> <!-- Icono galleta -->
+                   Inspiración para tus Fiestas
+               </span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">¡Cocina la Magia de la Navidad!</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto">Encuentra cientos de recetas deliciosas para celebrar: desde aperitivos y platos fuertes hasta postres y bebidas festivas. ¡Busca tu favorita o explora!</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar receta (p.ej. Pavo relleno, Galletas de jengibre, Eggnog)...">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-utensils text-green-700 mr-2"></i> <!-- Icono cubiertos -->
+                 Selección de Recetas
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Horneando la lista de recetas...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden">¡Oh! No encontramos recetas para tu búsqueda.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     ¡Quiero Más Ideas!
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Preparando la receta...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-50 text-gray-600 py-6 mt-12 border-t border-gray-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Recetas generadas por IA con fines de inspiración culinaria. Adapta los ingredientes y pasos a tu gusto.</p>
+              <p class="mt-1">¡Felices Fiestas y Buen Provecho!</p>
+               <p class="mt-2 flex justify-center items-center space-x-3">
+                   <i class="fas fa-tree text-green-600"></i>
+                   <span>© 2025 Recetario Navideño</span>
+                   <i class="fas fa-gifts text-red-600"></i>
+               </p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // --- Aperitivos y Entrantes ---
+            "Tabla de Quesos y Embutidos Festiva", "Dip Cremoso de Espinacas y Alcachofas", "Dip Caliente de Queso y Cangrejo", "Champiñones Rellenos de Salchicha y Queso", "Brochetas Caprese con Reducción Balsámica", "Volovanes Rellenos de Champiñones al Ajillo", "Rollitos de Salmón Ahumado con Queso Crema y Eneldo", "Mini Quiches Lorraine", "Tostadas con Paté de Hígado Casero y Mermelada de Higo", "Bolitas de Queso de Cabra con Nueces y Arándanos", "Hummus con Granada y Piñones Tostados", "Guacamole Navideño con Granada", "Bruschetta de Tomate y Albahaca con Toque Festivo", "Dátiles Rellenos de Queso Azul y Envueltos en Bacon", "Cóctel de Gambas Clásico", "Vieiras a la Plancha con Mantequilla de Ajo y Limón", "Mini Brochetas de Pollo Teriyaki", "Empanadillas de Carne Navideñas", "Patatas Bravas con Alioli Festivo", "Crostini con Prosciutto, Higo y Queso de Cabra", "Sopa Crema de Calabaza Asada con Jengibre", "Crema de Champiñones y Trufa", "Consomé Navideño con Pelotillas", "Sopa de Cebolla Gratinada", "Ensalada Waldorf Navideña", "Ensalada de Invierno con Peras, Nueces y Queso Azul", "Ensalada de Rúcula con Granada, Naranja y Vinagreta Cítrica", "Tartaletas de Cebolla Caramelizada y Queso Brie", "Blinis con Salmón Ahumado y Crema Agria", "Canapés Variados Navideños", "Pinchos de Tortilla de Patatas con Chorizo", "Carpaccio de Ternera con Rúcula y Parmesano", "Carpaccio de Pulpo con Pimentón y Aceite de Oliva", "Selección de Patés Vegetales", "Aceitunas Aliñadas Festivas", "Mini Pizzas Navideñas", "Rollitos de Primavera Vegetales con Salsa Agridulce", "Pastel de Cabracho (Pudding de Cabracho)", "Mejillones al Vapor con Vino Blanco", "Almejas a la Marinera",
+            // --- Platos Principales ---
+            "Pavo Relleno Clásico al Horno", "Pavo Asado con Mantequilla de Hierbas y Limón", "Pavo Relleno de Frutos Secos y Manzana", "Cómo Trinchar un Pavo Perfectamente", "Cómo Hacer Salmuera (Brine) para Pavo Jugoso", "Jamón Glaseado con Miel y Mostaza", "Jamón Asado con Glaseado de Piña y Clavo", "Pierna de Cerdo Asada con Hierbas", "Solomillo de Cerdo Relleno de Ciruelas y Nueces", "Lomo de Cerdo Asado con Salsa de Manzana", "Roast Beef (Solomillo de Ternera) al Horno con Salsa de Vino Tinto", "Solomillo Wellington Clásico", "Entrecot a la Plancha con Mantequilla de Hierbas", "Cordero Asado con Patatas Panadera", "Paletilla de Cordero Lechal al Horno", "Costillas de Cordero a la Menta", "Salmón al Horno con Verduras de Invierno", "Bacalao a la Vizcaína Navideño", "Merluza en Salsa Verde con Almejas", "Lubina a la Sal", "Besugo al Horno con Limón y Romero", "Pato a la Naranja Clásico", "Magret de Pato con Salsa de Frutos Rojos", "Pollo Relleno Navideño", "Capón Relleno al Horno", "Lasaña de Carne Clásica Navideña", "Canelones de Carne Gratinados", "Lasaña Vegetariana de Espinacas y Ricotta", "Pastel de Pastor Vegetariano con Lentejas", "Wellington Vegetariano de Champiñones y Nueces", "Curry de Verduras de Invierno con Leche de Coco", "Quiche de Verduras de Temporada", "Risotto de Setas y Trufa", "Raviolis Caseros con Salsa de Salvia y Mantequilla", "Zarzuela de Mariscos", "Caldereta de Pescado y Marisco", "Fabada Asturiana (Plato contundente)", "Cocido Madrileño (Versión festiva)", "Redondo de Ternera en Salsa",
+            // --- Acompañamientos y Guarniciones ---
+            "Puré de Patatas Cremoso Perfecto", "Puré de Patatas al Ajo Asado", "Patatas Gratinadas (Gratén Delfinés)", "Patatas Asadas con Romero y Ajo", "Patatas Duquesa", "Boniato (Batata) Asado con Miel y Canela", "Puré de Boniato con Nuez Moscada", "Zanahorias Glaseadas con Miel y Jengibre", "Coles de Bruselas Asadas con Bacon y Jarabe de Arce", "Judías Verdes Salteadas con Almendras", "Espárragos Verdes a la Plancha con Limón", "Brócoli al Vapor con Aceite de Oliva y Limón", "Calabaza Asada con Salvia", "Lombarda con Manzana y Piñones", "Compota de Manzana Casera (para carnes)", "Chutney de Arándanos y Naranja", "Relleno (Stuffing) Clásico de Pan y Hierbas", "Relleno de Salchicha y Manzana", "Relleno de Castañas y Champiñones", "Salsa Gravy Casera para Pavo", "Salsa de Arándanos Rojos Frescos", "Salsa Cumberland", "Salsa de Vino Tinto para Carne", "Salsa Holandesa (para pescado o espárragos)", "Ensalada Rusa Navideña", "Arroz Blanco Perfumado", "Arroz Pilaf con Frutos Secos", "Cuscús con Verduras de Invierno", "Setas Salteadas al Ajillo", "Pimientos Asados Tricolor", "Escalivada Catalana", "Cardo con Salsa de Almendras",
+            // --- Postres ---
+            "Tronco de Navidad (Bûche de Noël) de Chocolate", "Tronco de Navidad de Crema y Frutas", "Panettone Italiano Clásico", "Pandoro Italiano con Azúcar Glas", "Stollen Alemán (Pan de Navidad)", "Turrón de Jijona (Blando)", "Turrón de Alicante (Duro)", "Turrón de Chocolate Crujiente (Suchard casero)", "Polvorones Caseros de Almendra", "Mantecados de Canela y Limón", "Mazapanes Caseros", "Roscón de Reyes (Aunque es de Enero, muy navideño)", "Galletas de Jengibre Decoradas", "Hombrecitos de Jengibre", "Galletas de Mantequilla Navideñas para Decorar", "Galletas Spritz", "Galletas Linzer con Mermelada", "Galletas de Copo de Nieve", "Casita de Jengibre: Montaje y Decoración", "Tarta de Manzana Clásica Navideña", "Pastel de Calabaza Especiado (Pumpkin Pie)", "Tarta de Queso (Cheesecake) con Frutos Rojos", "Tarta de Santiago (Almendra)", "Tarta Tres Leches Navideña", "Pudin de Navidad Inglés (Christmas Pudding)", "Pudin de Pan y Mantequilla con Salsa de Vainilla", "Flan de Huevo Casero", "Flan de Turrón", "Natillas Caseras con Galleta María", "Arroz con Leche Cremoso con Canela", "Mousse de Chocolate Intenso", "Mousse de Limón Refrescante", "Tiramisú Clásico Italiano", "Panna Cotta con Salsa de Frambuesa", "Profiteroles Rellenos de Nata con Chocolate Caliente", "Brazo de Gitano de Nata y Fresas", "Milhojas de Crema Pastelera", "Tarta Selva Negra", "Tarta Sacher", "Tarta Red Velvet Navideña", "Frutas de Aragón con Chocolate", "Yemas de Santa Teresa", "Compota de Frutas de Invierno", "Macedonia de Frutas Navideña con Cava", "Copa de Chocolate y Nata Montada", "Brownies de Chocolate y Nueces", "Coulant de Chocolate (Volcán)", "Sorbete de Limón al Cava", "Sorbete de Mandarina", "Helado de Turrón", "Peras al Vino Tinto", "Manzanas Asadas con Canela", "Alfajores de Maicena", "Coquitos Caseros", "Panellets Catalanes (Variados)",
+            // --- Bebidas ---
+            "Eggnog (Ponche de Huevo) Casero", "Eggnog Vegano", "Vino Caliente Especiado (Mulled Wine / Glühwein)", "Sidra Caliente Especiada", "Ponche Navideño de Frutas (con o sin alcohol)", "Chocolate Caliente Espeso a la Taza", "Chocolate Caliente con Nubes y Bastón de Caramelo", "Chocolate Blanco Caliente", "Café Irlandés (Irish Coffee)", "Cóctel Mimosa Navideño (con zumo de arándanos o granada)", "Cóctel Bellini de Melocotón", "Kir Royal (Champagne y Crema de Cassis)", "Cóctel Poinsettia (Cava, Cointreau, Zumo Arándanos)", "Sangría de Invierno con Especias", "Licor de Café Casero", "Licor de Hierbas Digestivo", "Té Chai Especiado Casero", "Infusión Navideña de Jengibre, Limón y Miel", "Agua Saborizada Festiva (con romero, arándanos, naranja)", "Champagne o Cava para Brindar",
+            // --- Desayunos y Brunch Navideños ---
+            "Tortitas (Pancakes) Especiadas con Jarabe de Arce", "Gofres (Waffles) Navideños con Frutas y Nata", "Tostadas Francesas (French Toast) con Canela", "Cazuela de Desayuno con Salchicha, Huevo y Queso", "Huevos Benedictinos Navideños", "Bizcocho de Jengibre y Melaza", "Pan de Plátano con Nueces", "Muffins de Arándanos y Naranja", "Roles de Canela (Cinnamon Rolls)", "Scones con Mermelada y Nata", "Chocolate con Churros", "Fruta Fresca de Temporada con Yogur y Granola", "Batido Navideño de Frutas y Especias", "Quiche de Espinacas y Queso Feta",
+            // --- Panes Navideños ---
+            "Pan de Jamón Venezolano", "Pan de Pascua Chileno", "Christopsomo Griego (Pan de Cristo)", "Vánočka Checo (Trenza Navideña)", "Julekake Noruego (Pan de Navidad)", "Hogaza de Pan Rústico Casero", "Panecillos de Leche Suaves", "Focaccia con Romero y Sal Gruesa",
+            // --- Dulces y Caramelos ---
+            "Fudge de Chocolate Clásico", "Fudge de Mantequilla de Cacahuete", "Trufas de Chocolate Negro", "Trufas de Chocolate Blanco y Coco", "Rocky Road Navideño", "Chocolate Bark (Tableta Rota) con Frutos Secos y Arándanos", "Peladillas", "Guirlache de Almendras", "Fruta Escarchada Casera", "Bastones de Caramelo (Candy Canes) - Fabricación (difícil)", "Manzanas de Caramelo Rojas", "Nubes Caseras (Marshmallows)",
+            // --- Internacional ---
+            "Tamales Navideños (Varios países latinos)", "Hallacas Venezolanas", "Lechón Asado (Estilo Cubano/Puertorriqueño)", "Buñuelos Colombianos Navideños", "Natilla Colombiana", "Pernil Asado (Varios países latinos)", "Ensalada de Gallina Venezolana", "Pão de Queijo Brasileño (Aperitivo)", "Pierogi Polaco (Rellenos variados)", "Sopa de Remolacha (Borscht) Navideña (Europa del Este)", "Kutia (Postre de trigo, Ucrania/Polonia)", "Lussekatter Suecos (Bollos de Santa Lucía)", "Banketstaaf Holandés (Rollo de Almendra)", "Tourtière Canadiense (Pastel de Carne)", "Bibingka Filipina (Pastel de Arroz)", "Puto Bumbong Filipino", "Melomakarona Griegos (Galletas de Miel)", "Kourabiedes Griegos (Galletas de Mantequilla)",
+            // --- Técnicas y Consejos ---
+            "Cómo hacer un buen Caldo Casero para Salsas", "Técnicas para Espesar Salsas", "Cómo Montar Nata Perfectamente", "Cómo Hacer Merengue Italiano o Suizo", "Temperado de Chocolate para Decoraciones", "Cómo Conservar Sobras Navideñas de Forma Segura", "Ideas para Aprovechar el Pavo Sobrante", "Planificación del Menú Navideño sin Estrés", "Consejos para Decorar la Mesa de Navidad", "Maridaje de Vinos para la Cena de Navidad"
+        ];
+        const recipeThemes = [
+            "aperitivos navideños", "entrantes festivos", "platos principales de Navidad", "recetas de pavo", "recetas de jamón navideño", "guarniciones de Navidad", "postres navideños clásicos", "recetas de tronco de Navidad", "galletas de Navidad para decorar", "recetas de turrón casero", "bebidas calientes navideñas", "cócteles de Navidad", "panes dulces navideños", "recetas de Stollen o Panettone", "brunch de Navidad", "recetas vegetarianas de Navidad", "recetas veganas para Navidad", "recetas sin gluten navideñas", "dulces y caramelos de Navidad", "recetas navideñas internacionales", "cocina española para Navidad", "recetas fáciles de Navidad", "recetas para Nochebuena", "recetas para Nochevieja"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un chef experto y amigable bloguero de cocina, especializado en recetas festivas, particularmente navideñas. Tu tarea es proporcionar una receta detallada, clara y apetitosa para el plato o bebida navideña que se te indique. Incluye: 1. Una breve introducción apetitosa sobre el plato. 2. Lista de ingredientes clara con cantidades exactas (métrico y/o imperial si es posible). 3. Instrucciones paso a paso numeradas y fáciles de seguir. 4. Tiempo estimado de preparación y cocción. 5. Número de porciones aproximado. 6. Consejos útiles, trucos del chef o posibles variaciones. El objetivo es una descripción completa y útil, de aproximadamente 1000-1200 palabras. Basa tu respuesta únicamente en la siguiente receta navideña:",
+            timeoutSeconds: 150 // Mantener por si la IA necesita pensar recetas complejas
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un recetario festivo. Genera exactamente 15 nombres de recetas navideñas (aperitivos, principales, postres, bebidas, galletas, etc.) o preguntas sobre técnicas culinarias navideñas, adecuadas para ser detalladas. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor texto e imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios funcionales)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 // Añadir chequeo básico de contenido vacío o mensaje de error de la IA
+                 if (!text || text.trim().length === 0 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("unable to provide") || text.toLowerCase().includes("no puedo generar")) {
+                     throw new Error("La IA no pudo generar una receta válida para este título.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intenta de nuevo con otra receta.`);
+                 // Simplificar el mensaje de error para el usuario
+                 throw new Error(`Error al contactar el servicio de recetas: ${error.message}`);
+             }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+             // El chequeo de calidad ahora está dentro de fetchTextFromApi
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+             const randomTheme = getRandomElement(recipeThemes) || "recetas navideñas variadas";
+             const specificPrompt = `Genera 15 ideas de recetas o técnicas de cocina para ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de recetas.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a RECETAS
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 1024, height: 768, nologo: true }; // Imagen más ancha
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Plato navideño delicioso";
+            // Prompt ENFOCADO en foto de comida apetitosa
+            const enhancedPrompt = `High-quality, appetizing food photography of '${safePromptText}'. Festive Christmas setting, warm lighting, shallow depth of field. Focus on the finished dish. Clean presentation. Professional food styling.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            // Negativo: evitar manos, gente comiendo, cocina sucia, texto, etc.
+            const negativePrompt = "text, words, labels, letters, titles, captions, writing, numbers, ingredients list, recipe steps, diagram, chart, illustration, drawing, cartoon, sketch, hands holding food, people eating, messy kitchen, dirty dishes, blurry, low quality, watermark, signature, multiple dishes unless specified";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (Misma lógica, puede requerir ajustes para formato de recetas si la IA lo usa)
+        function formatExplanationText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+
+            // Correcciones básicas Markdown (mantenerlas por si acaso)
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // Intentar detectar listas de ingredientes/pasos (si la IA usa guiones o números)
+            // Convertir líneas que empiezan con "- " o "* " en items <li> dentro de <ul>
+            formatted = formatted.replace(/^(?:-|\*)\s+(.*)$/gm, '<li>$1</li>');
+            formatted = formatted.replace(/^(<li>.*<\/li>\s*)+/gm, (match) => `<ul>\n${match}</ul>\n`); // Agrupar LIs sueltos en ULs
+
+            // Convertir líneas que empiezan con número y punto/paréntesis en <li> dentro de <ol>
+            formatted = formatted.replace(/^\d+[.)]\s+(.*)$/gm, '<li>$1</li>');
+            formatted = formatted.replace(/^(<li>.*<\/li>\s*)+/gm, (match) => {
+                 // Evitar reagrupar si ya está en un UL (solución simple, puede fallar si se mezclan)
+                if (match.includes('<ul>')) return match;
+                return `<ol>\n${match}</ol>\n`; // Agrupar LIs numerados en OLs
+             });
+
+
+            // Convertir párrafos separados por doble salto de línea en <p>
+            // ¡Importante! Ejecutar esto DESPUÉS de las listas para no romperlas
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                // Si ya es un encabezado, lista (UL/OL) o bloque preformateado, dejarlo como está
+                if (block.startsWith('<h') || block.startsWith('<ul') || block.startsWith('<ol') || block.startsWith('<li')) {
+                     // Limpiar saltos de línea extra *dentro* de los LIs si los hubiera
+                     return block.replace(/<li>\s*\n/g, '<li>').replace(/\n\s*<\/li>/g,'</li>');
+                }
+                // Reemplazar saltos de línea simples dentro de un bloque de texto normal por espacio o <br>
+                let content = block.replace(/\n/g, ' '); // Reemplaza saltos internos con espacio
+                return `<p>${content}</p>`;
+            }).join('\n'); // Unir bloques con un solo salto de línea para mantener estructura HTML
+
+            // Limpieza final de etiquetas de lista vacías o mal formadas (simple)
+            formatted = formatted.replace(/<ul>\s*<\/ul>/g, '');
+            formatted = formatted.replace(/<ol>\s*<\/ol>/g, '');
+
+            return formatted;
+        }
+
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Misma lógica, textos adaptados)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar recetas alfabéticamente para facilitar búsqueda visual
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay recetas disponibles por ahora.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             const addedTitles = [];
+             newTitles.forEach(title => {
+                 if (!existingTitles.has(title)) {
+                      const newItem = createTitleItem(title);
+                      titleListContainer.appendChild(newItem);
+                      addedTitles.push(newItem); // Guardar los nuevos para posible filtrado
+                 }
+             });
+              // Re-aplicar filtro actual a toda la lista (incluyendo los nuevos)
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick (Lógica de imagen y scroll igual, textos adaptados) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Poner texto formateado primero
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalContent.scrollTop = 0; // Resetear scroll DESPUÉS de añadir contenido
+                console.log("Scroll set to 0 after content visible");
+
+                // Placeholder de imagen
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-camera placeholder-icon"></i> <!-- Icono cámara -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Cargando foto de la receta...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Elemento imagen
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Foto de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-image-slash placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo cargar la foto.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de foto.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error al obtener la receta: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '<p>Lo sentimos, no pudimos cargar esta receta.</p>'; // Mensaje dentro del área de contenido
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando más delicias...'; // Texto temático
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     appendTitles(newTitles);
+                 } else {
+                     alert("¡Parece que el horno de ideas necesita un descanso! No hay más recetas por ahora."); // Texto temático
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`¡Ups! Algo se quemó al buscar recetas: ${error.message}`); // Texto temático
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> ¡Quiero Más Ideas!'; // Texto temático
+             }
+         }
+
+         // *** NEW: Search Filter Function (Lógica sin cambios) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); // Normalizar para quitar acentos
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) {
+                     visibleCount++;
+                 }
+             });
+
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">¡Error en la cocina! No se cargaron los ingredientes de la página.</p>'; // Temático
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            searchInput.addEventListener('input', (event) => {
+                filterTitles(event.target.value);
+            });
+
+            displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden'); // Oculto al inicio
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recetas Caseras para Principiantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Recetas Caseras --- */
+        :root {
+            --color-primary: #f97316; /* Naranja cálido (comida, hogar) */
+            --color-secondary: #16a34a; /* Verde (ingredientes frescos) */
+            --color-background: #fefce8; /* Crema/Amarillo muy pálido (limpio, cálido) */
+            --color-text: #3f3f46; /* Gris oscuro (legible) */
+            --color-text-muted: #71717a; /* Gris medio */
+            --color-modal-bg: #ffffff; /* Blanco (claridad receta) */
+            --color-border: #e7e5e4; /* Gris muy claro para bordes */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 8px; /* Bordes un poco más suaves */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        h1, h2, h3, h4, .logo { font-family: 'Merriweather', serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.5rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+
+        /* --- Search Input Styling --- */
+        #search-container { margin-bottom: 2rem; position: relative; }
+        #search-input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.7rem; /* More padding for icon */
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-normal);
+            background-color: var(--color-modal-bg);
+        }
+        #search-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); /* Primary color focus ring */
+        }
+        #search-container .fa-magnifying-glass { /* Specific icon */
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-muted);
+            pointer-events: none;
+        }
+
+        /* --- Title List Styling --- */
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.25rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Lato', sans-serif; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #fff7ed; /* Light orange hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #ea580c; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #fdba74; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(63, 63, 70, 0.85); /* Overlay gray */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 900px; /* Standard width is fine for recipes */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--color-border);
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #f3f4f6; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.5rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: #e5e7eb; color: #000; }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1.5rem; line-height: 1.3; }
+        #modal-content { /* Scrollable recipe content */
+            line-height: 1.75;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 15px 1.5rem 15px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-secondary) var(--color-border); /* Green scrollbar */
+        }
+        #modal-content::-webkit-scrollbar { width: 9px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: 4px;}
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: 4px; border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.2em; } /* Slightly less margin for recipe steps */
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; } /* Green emphasis */
+        #modal-content ul, #modal-content ol { margin-left: 1.5rem; margin-bottom: 1.2em; list-style: inherit; } /* Basic list styling */
+        #modal-content li { margin-bottom: 0.5em; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Merriweather', serif; margin-top: 1.8em; margin-bottom: 0.8em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.15em; color: #c2410c; } /* Darker orange */
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* --- Image within Content Styling --- */
+        #modal-content .final-image { display: block; max-width: 90%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); text-align: center; }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid #fed7aa; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.2rem; font-family: 'Lato'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fff1f2; color: #e11d48; padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #fecdd3; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        #no-results-message { text-align: center; color: var(--color-text-muted); padding: 2rem; grid-column: 1 / -1; font-style: italic; }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-8">
+         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-utensils mr-3 text-green-600"></i> <!-- Icono utensilios -->
+                     Recetas Fáciles Caseras
+                     <i class="fas fa-mortar-pestle ml-3 text-yellow-600"></i> <!-- Icono mortero -->
+                 </h1>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">¡A Cocinar se Dijo!</h1>
+             <p class="text-xl text-gray-700 mb-6 max-w-3xl mx-auto">Encuentra recetas deliciosas y súper fáciles, perfectas para empezar en la cocina. Busca un plato o elige uno de la lista.</p>
+             <!-- Search Input -->
+             <div id="search-container" class="max-w-2xl mx-auto">
+                  <i class="fas fa-magnifying-glass"></i>
+                 <input type="text" id="search-input" placeholder="Buscar receta (ej: pasta, pollo, ensalada...)">
+             </div>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-book-open text-orange-500 mr-2"></i> <!-- Icono libro -->
+                 Nuestro Recetario Principiante
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Abriendo el recetario...</p>
+                  <!-- No results message will be injected here by JS -->
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Buscar Más Recetas
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Preparando la receta...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - Image appended here -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Recipe text (HTML) goes here -->
+                     <!-- Image and placeholder will be appended here by JS -->
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-yellow-50 text-gray-600 py-6 mt-12 border-t border-yellow-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Recetas generadas por IA con fines educativos y de inspiración culinaria para principiantes.</p>
+              <p class="mt-1">¡Cocina con cuidado y disfruta del proceso!</p>
+              <p class="mt-2">© 2025 Recetas Fáciles Caseras</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // --- Huevos ---
+            "Cómo Hacer Huevos Revueltos Cremosos", "Huevos Fritos Perfectos (Puntilla Opcional)", "Huevo Cocido / Huevo Duro (Tiempos)", "Huevo Pasado por Agua", "Huevo Poché Fácil (Método Vinagre)", "Tortilla Francesa Básica", "Tortilla Española Sencilla (Patatas Precocidas)", "Huevos Rancheros Fáciles", "Huevos a la Flamenca Simplificados", "Shakshuka para Principiantes", "Huevos Benedictinos (Salsa Holandesa Fácil)", "Omelette de Jamón y Queso", "Omelette de Champiñones", "Huevos Pericos Colombianos Fáciles", "Migas con Huevo Sencillas", "Frittata Básica de Verduras", "Huevos al Plato Simples",
+            // --- Arroz ---
+            "Arroz Blanco Básico (Olla Normal)", "Arroz Blanco en Arrocera Eléctrica", "Arroz Integral Básico", "Arroz Frito Fácil con Verduras", "Arroz Frito Tres Delicias Simplificado", "Arroz con Pollo Sencillo (Muslos)", "Arroz a la Cubana Fácil", "Arroz con Lentejas Básico", "Arroz con Leche Cremoso (Paso a Paso)", "Arroz al Horno Básico (Con Caldo)", "Arroz Pilaf Sencillo", "Arroz Verde Fácil (Cilantro)", "Arroz con Coco Básico (Estilo Caribeño)", "Cómo Evitar que el Arroz se Pegue", "Risotto Básico de Champiñones (Simplificado)",
+            // --- Pasta ---
+            "Cómo Cocer Pasta Correctamente (Al Dente)", "Pasta con Salsa de Tomate Casera Fácil", "Pasta Aglio e Olio (Ajo y Aceite)", "Pasta Carbonara Sencilla (Sin Nata)", "Pasta Alfredo Fácil (Con Nata)", "Pasta al Pesto (Pesto Comprado o Fácil)", "Pasta Boloñesa Rápida (Carne Picada)", "Pasta con Verduras Salteadas", "Pasta con Atún y Tomate", "Lasaña Fácil de Carne (Placas Precocidas)", "Macarrones con Queso (Mac and Cheese) Caseros", "Pasta con Brócoli y Ajo", "Ensalada de Pasta Fría Simple", "Pasta con Salmón Ahumado y Nata Fácil", "Espaguetis con Albóndigas (Albóndigas Compradas o Fáciles)", "Pasta Puttanesca Simplificada", "Fideuá Fácil (Con Caldo de Pescado)", "Canelones Fáciles de Carne o Atún", "Pasta con Salsa de Champiñones Fácil",
+            // --- Pollo ---
+            "Pechuga de Pollo a la Plancha Jugosa", "Pollo al Horno Entero Fácil (Con Patatas)", "Muslos de Pollo al Horno con Limón y Hierbas", "Pollo Asado Básico", "Filetes de Pollo Empanados (Rebozados)", "Pollo al Ajillo Fácil", "Pollo en Salsa de Champiñones Sencilla", "Pollo al Curry Fácil (Con Leche de Coco)", "Pollo Teriyaki Básico (Salsa Comprada)", "Tiras de Pollo Fritas (Estilo KFC Fácil)", "Brochetas de Pollo y Verduras Fáciles", "Pollo Guisado con Patatas Básico", "Ensalada César con Pollo a la Plancha", "Sopa de Pollo Casera Simple", "Alitas de Pollo al Horno BBQ Fáciles", "Fajitas de Pollo Rápidas", "Pollo Salteado con Verduras (Estilo Chino Básico)", "Milanesa de Pollo Fácil",
+            // --- Carne (Res/Cerdo) ---
+            "Bistec a la Plancha Perfecto", "Carne Picada para Tacos Fácil", "Albóndigas en Salsa de Tomate Fáciles", "Lomo de Cerdo al Horno Sencillo", "Filetes de Cerdo a la Plancha", "Carne Guisada Básica (Olla Rápida o Lenta)", "Hamburguesas Caseras Fáciles", "Chili con Carne Simple", "Solomillo de Cerdo a la Plancha o al Horno Fácil", "Estofado de Ternera Básico", "Costillas de Cerdo al Horno BBQ Fáciles", "Carne Mechada Sencilla (Olla Lenta)", "Lomo Saltado Peruano Simplificado", "Ropa Vieja Cubana Fácil (Olla Lenta)", "Guiso de Lentejas con Chorizo Básico",
+            // --- Pescado y Marisco ---
+            "Pescado Blanco al Horno con Patatas", "Salmón a la Plancha Fácil", "Merluza a la Romana (Rebozada)", "Pescado Empapelado (Papillote) con Verduras", "Bacalao con Tomate Fácil", "Sardinas a la Plancha o al Horno", "Atún a la Plancha Sencillo", "Gambas al Ajillo Clásicas", "Mejillones al Vapor Fáciles", "Calamares a la Romana Fáciles (Anillas)", "Sopa de Pescado Básica", "Filete de Pescado Frito Básico", "Ceviche Simple de Pescado Blanco", "Ensalada de Gambas Fácil", "Boquerones Fritos Sencillos", "Pulpo a la Gallega (Pulpo Cocido Comprado)",
+            // --- Sopas y Cremas ---
+            "Sopa de Tomate Casera Fácil", "Crema de Calabacín Sencilla", "Crema de Zanahoria Básica", "Sopa de Lentejas Casera (Sin Carne)", "Sopa de Verduras Simple", "Sopa de Ajo (Sopa Castellana) Fácil", "Crema de Champiñones Fácil", "Sopa de Cebolla Francesa Simplificada", "Gazpacho Andaluz Fácil (Sin Pan)", "Salmorejo Cordobés Básico", "Crema de Calabaza Asada Fácil", "Sopa Minestrone Sencilla", "Caldo de Pollo Casero Básico", "Caldo de Verduras Casero", "Vichyssoise Fácil (Crema Fría de Puerro)", "Porrusalda Vasca Sencilla",
+            // --- Verduras y Ensaladas ---
+            "Brócoli al Vapor Perfecto", "Judías Verdes Cocidas con Patata", "Patatas Asadas al Horno Fáciles", "Puré de Patatas Casero Cremoso", "Patatas Fritas Caseras (Doble Fritura Opcional)", "Verduras Salteadas Básicas (Wok o Sartén)", "Ensalada Mixta Simple", "Ensalada Griega Fácil", "Ensalada Caprese (Tomate, Mozzarella, Albahaca)", "Vinagreta Básica (Aceite y Vinagre)", "Pisto Manchego Fácil", "Escalivada Sencilla (Verduras Asadas)", "Champiñones al Ajillo", "Espinacas a la Crema Fáciles", "Coliflor Gratinada con Bechamel Simple", "Calabacín a la Plancha", "Berenjenas Fritas Fáciles", "Ensaladilla Rusa Básica", "Guacamole Casero Fácil", "Hummus Sencillo (Garbanzos de Bote)", "Tabulé Fácil (Cuscús)",
+            // --- Legumbres ---
+            "Lentejas Guisadas Básicas (Con Verduras)", "Garbanzos Guisados Fáciles (Con Espinacas)", "Alubias Blancas Estofadas Sencillas", "Ensalada de Garbanzos Rápida", "Potaje de Vigilia Simplificado", "Fabada Asturiana Fácil (Con Compango)", "Judiones de La Granja Sencillos",
+            // --- Sándwiches y Bocadillos ---
+            "Sándwich Mixto (Jamón y Queso) a la Plancha", "Sándwich Club Básico", "Bocadillo de Tortilla Francesa", "Bocadillo de Calamares (Estilo Madrid Fácil)", "Grilled Cheese Sandwich (Queso Fundido)", "Tostadas Francesas (Pain Perdu) Fáciles", "Bruschetta de Tomate y Albahaca", "Pan con Tomate (Pa amb Tomàquet)", "Montadito de Lomo con Pimiento", "Bikini (Sándwich Mixto Catalán)",
+            // --- Postres Fáciles ---
+            "Macedonia de Frutas Frescas", "Yogur con Fruta y Miel/Granola", "Natillas Caseras Fáciles (Maizena)", "Arroz con Leche (Receta Básica)", "Flan de Huevo Casero (Al Baño María)", "Mousse de Chocolate Fácil (2 Ingredientes)", "Tarta de Santiago Fácil (Almendras)", "Tarta de Queso Fría sin Horno (Base Galleta)", "Brownies de Chocolate Fáciles", "Galletas de Mantequilla Básicas", "Mug Cake de Chocolate (Microondas)", "Crepes Dulces Básicos", "Tortitas Americanas (Pancakes) Esponjosas", "Bizcocho de Yogur Fácil (Medida Vaso)", "Manzanas Asadas al Horno", "Peras al Vino Tinto Fáciles", "Coulant de Chocolate Sencillo", "Leche Frita Fácil", "Torrijas de Leche Clásicas", "Panellets Simples (Cataluña)", "Pestiños Andaluces Fáciles",
+            // --- Bebidas Caseras ---
+            "Limonada Casera Fácil", "Té Helado Básico (Limón o Melocotón)", "Agua de Valencia Simple", "Sangría de Vino Tinto Fácil", "Batido de Fresa y Plátano", "Smoothie Verde Básico (Espinaca, Fruta)", "Chocolate a la Taza Espeso Fácil", "Café con Leche Perfecto", "Infusión Relajante (Manzanilla, Tila)",
+            // --- Técnicas Básicas (Cómo...) ---
+            "Cómo Cortar Cebolla sin Llorar (Trucos)", "Cómo Picar Ajo Finamente", "Cómo Hacer un Sofrito Básico", "Cómo Hacer una Bechamel Sencilla (Sin Grumos)", "Cómo Rebozar Correctamente (Huevo y Pan Rallado)", "Cómo Cocinar al Vapor sin Vaporera", "Cómo Usar la Olla Rápida/Exprés (Conceptos)", "Cómo Organizar la Nevera (Básico)", "Cómo Leer una Receta (Interpretación)", "Medidas Básicas de Cocina (Tazas, Cucharadas)", "Seguridad Básica en la Cocina (Cuchillos, Fuego)", "Limpieza Básica de Utensilios y Cocina", "Cómo Escaldar Tomates para Pelarlos", "Cómo Hacer Caldo Casero (Pollo/Verduras)", "Cómo Espesar una Salsa (Maizena/Harina)", "Cómo Conservar Hierbas Frescas", "Cómo Saber si el Pollo está Cocido", "Cómo Saber si el Pescado está Fresco", "Cómo Aprovechar Sobras (Ideas Básicas)", "Planificación de Comidas Semanal (Meal Prep Básico)",
+            // --- Conceptos ---
+            "Cocina de Aprovechamiento para Principiantes", "Comida Rápida Casera y Saludable", "Recetas para Llevar al Trabajo (Tupper)", "Cocinar para Uno: Ideas Fáciles", "Recetas Económicas para Estudiantes", "Cena Rápida entre Semana (Menos de 30 min)", "Desayunos Energéticos y Rápidos", "Snacks Saludables Caseros", "Introducción a las Especias Básicas", "Aceites de Cocina: Cuál Usar y Cuándo", "Tipos de Corte Básicos (Brunoise, Juliana... Explicación)", "Diferencia entre Hervir, Cocer y Escalfar", "Diferencia entre Saltear, Freír y Rehogar", "Diferencia entre Asar y Hornear", "Utensilios Básicos para Empezar a Cocinar",
+            // Añadir más recetas simples aquí
+             "Tostada con Aguacate y Huevo", "Quesadillas de Pollo o Queso", "Nachos con Queso Fáciles", "Patatas Bravas Simplificadas", "Tortilla de Patatas Individual (Sartén pequeña)", "Wrap de Pollo César Fácil", "Ensalada de Lentejas Rápida", "Crema Fría de Pepino y Yogur", "Sopa de Fideos Sencilla", "Calabacines Rellenos de Carne Picada Fáciles", "Pimientos Rellenos de Arroz y Verduras", "Pastel de Carne Básico (Shepherd's Pie Fácil)", "Polenta Cremosa Básica", "Cuscús con Verduras Rápido", "Salchichas al Vino Blanco", "Chorizo a la Sidra Fácil", "Setas al Ajillo", "Revuelto de Setas y Ajos Tiernos", "Espárragos Trigueros a la Plancha", "Alcachofas Cocidas Simples", "Croquetas Fáciles (Pollo o Jamón - Base)", "Buñuelos de Viento Sencillos", "Rosquillas Fritas de Anís Fáciles"
+             // ... (Continuar hasta alcanzar ~400 o más)
+        ];
+        const recipeThemes = [ // Temas para generar más títulos
+            "recetas con huevo", "recetas de arroz fáciles", "platos de pasta para principiantes", "recetas de pollo rápidas",
+            "cenas fáciles entre semana", "postres sin horno", "sopas y cremas sencillas", "ensaladas básicas",
+            "guarniciones fáciles", "recetas con patatas", "cocina con carne picada", "recetas de pescado al horno",
+            "desayunos rápidos y nutritivos", "snacks caseros", "recetas vegetarianas fáciles", "recetas veganas básicas",
+            "cocina española para principiantes", "cocina italiana básica", "recetas para tupper (llevar al trabajo)",
+            "cocinar con latas (atún, legumbres)", "postres con fruta", "técnicas de cocina esenciales",
+            "recetas con 5 ingredientes o menos", "cocina en microondas (básico)", "recetas para niños (fáciles)"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un amigable y paciente instructor de cocina casera. Tu tarea es explicar recetas de forma muy clara y sencilla, paso a paso, enfocándote en principiantes. Para la receta solicitada, proporciona: 1. Una breve introducción apetitosa sobre el plato y por qué es ideal para empezar. 2. Lista de ingredientes clara (cantidades exactas para 1-2 personas, o indicar claramente). 3. Instrucciones numeradas, detalladas pero con lenguaje simple y directo (evita jerga culinaria compleja). 4. Tiempo estimado de preparación y cocción. 5. Consejos clave para asegurar el éxito (ej: 'no remuevas mucho el arroz', 'fuego medio-bajo'). 6. Sugerencias de variaciones muy simples o acompañamientos. El objetivo es una guía completa y alentadora de aproximadamente 1200-1300 palabras. Basa tu explicación únicamente en la siguiente receta:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un recetario de principiantes. Genera exactamente 15 nombres de recetas caseras muy fáciles o técnicas de cocina básicas, adecuadas para ser explicadas en detalle a alguien que empieza. Devuelve *solo* la lista de nombres, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Igual que versión Colombia)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        let noResultsMessageElement = null;
+
+        // ========== API FUNCTIONS ========== (Igual que versión Colombia)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                throw new Error(`Error de comunicación con la API: ${error.message}`);
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              if (text.trim().length < 500 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de") || !text.toLowerCase().includes("ingredientes") || !text.toLowerCase().includes("pasos")) { // Check for keywords
+                   throw new Error("La IA no pudo generar una receta adecuada o suficientemente detallada para este plato.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+            const randomTheme = getRandomElement(recipeThemes) || "recetas fáciles para empezar";
+            const specificPrompt = `Genera 15 nombres de recetas caseras muy fáciles o conceptos clave sobre ${randomTheme}`;
+            console.log("Generating titles with prompt:", specificPrompt);
+            const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+            const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+            const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 100);
+            if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de recetas.");
+            return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a RECETAS
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText.replace(/^Cómo Hacer /i, '').replace(/^Cómo /i, '') : "comida casera deliciosa"; // Clean title
+            // Prompt ENFOCADO en plato terminado y apetitoso
+            const enhancedPrompt = `Delicious-looking, appetizing photo of the finished dish: '${safePromptText}'. Home cooking style, natural light, plated nicely but simply. Focus on the food.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, recipe book, ingredients scattered, messy kitchen, hands cooking, person eating, diagram, chart, multiple dishes, blurry food, illustration, drawing, cartoon";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ==========
+        function formatExplanationText(rawText) {
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             // Basic Markdown (Headers, Bold, Italic)
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+              // Handle potential numbered lists (simple approach)
+             formatted = formatted.replace(/^\s*(\d+)\.\s+(.*)$/gm, '<li>$2</li>'); // Convert "1. Item" to <li>Item</li>
+             // Wrap consecutive LIs in OL
+             formatted = formatted.replace(/(<li>.*?<\/li>\s*)+/g, (match) => `<ol>${match.trim()}</ol>`);
+
+             // Handle potential bullet points (simple approach)
+             formatted = formatted.replace(/^\s*[-\*\+]\s+(.*)$/gm, '<li>$1</li>'); // Convert "* Item" to <li>Item</li>
+              // Wrap consecutive LIs in UL (after OL replacement)
+             formatted = formatted.replace(/(<li>.*?<\/li>\s*)+/g, (match) => {
+                 // Avoid re-wrapping if already in OL
+                 if (match.includes('<ol>')) return match;
+                 return `<ul>${match.trim()}</ul>`;
+             });
+
+
+             // Paragraph handling (split by double newlines, wrap non-list/header blocks in <p>)
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<ul') || block.startsWith('<ol')) return block;
+                 let content = block.replace(/\n/g, '<br>'); // Convert single newlines within block to <br>
+                 return `<p>${content}</p>`;
+             }).join('');
+
+             return formatted;
+        }
+
+
+        // ========== MODAL FUNCTIONS ========== (Igual que versión Colombia)
+        function showModal() { /* ... */ if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { /* ... */
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() { /* ... */
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Igual que versión Colombia)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+            if (!titleListContainer || !titlesLoading) return;
+            const shuffledTitles = shuffleArray([...titles]);
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (shuffledTitles.length === 0) {
+                showNoResultsMessage("No hay recetas iniciales disponibles.");
+                return;
+            }
+            shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+            filterTitles();
+         }
+        function appendTitles(newTitles) { /* ... */
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            newTitles.forEach(title => {
+                const item = createTitleItem(title);
+                if (searchTerm === '' || title.toLowerCase().includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+                titleListContainer.appendChild(item);
+            });
+            checkIfAnyResultsVisible();
+        }
+        function filterTitles() { /* ... */
+            if (!searchInput || !titleListContainer) return;
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const titleItems = titleListContainer.querySelectorAll('.title-item');
+            let visibleCount = 0;
+            titleItems.forEach(item => {
+                const title = item.textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            updateNoResultsMessage(visibleCount);
+        }
+        function updateNoResultsMessage(visibleCount) { /* ... */
+             if (!titleListContainer) return;
+             if (noResultsMessageElement) {
+                 noResultsMessageElement.remove();
+                 noResultsMessageElement = null;
+             }
+             if (visibleCount === 0 && titleListContainer.children.length > 0 && !titlesLoading.style.display || titlesLoading.style.display === 'none') {
+                 showNoResultsMessage(`No se encontraron recetas para "${searchInput.value}"`);
+             }
+        }
+        function showNoResultsMessage(message) { /* ... */
+             if (noResultsMessageElement || !titleListContainer) return;
+             noResultsMessageElement = document.createElement('p');
+             noResultsMessageElement.id = 'no-results-message';
+             noResultsMessageElement.textContent = message;
+             titleListContainer.appendChild(noResultsMessageElement);
+        }
+        function checkIfAnyResultsVisible() { /* ... */
+             const visibleItems = titleListContainer.querySelectorAll('.title-item[style*="display: flex"], .title-item:not([style*="display: none"])');
+             updateNoResultsMessage(visibleItems.length);
+         }
+
+        // *** handleTitleClick (Image logic same, adapted placeholder/alt text) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // 1. Fetch and format text
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 2. Stop loading indicator, display text FIRST
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                 // 3. RESET SCROLL after text content is in and visible
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // 4. Prepare and append image placeholder WITHIN #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-camera placeholder-icon"></i> <!-- Camera icon -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">¡Foto del plato terminado!</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // 5. Create and append the actual image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Foto de ${title}`; // Alt text for recipe
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-utensils-slash placeholder-icon" style="color: #dc2626;"></i> <!-- Error icon -->
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">¡Ups! No se cargó la foto.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error generando URL de foto.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+            }
+        }
+
+        async function handleGenerateMoreTitles() { // Adapted button text
+             if (!generateMoreBtn || !generateMoreContainer) return;
+             const spinner = generateMoreBtn.querySelector('i');
+             generateMoreBtn.disabled = true;
+             if(spinner) spinner.classList.remove('hidden');
+             generateMoreBtn.childNodes[generateMoreBtn.childNodes.length - 1].nodeValue = " Buscando...";
+
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("No se encontraron más recetas por ahora.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error buscando recetas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 if(spinner) spinner.classList.add('hidden');
+                 generateMoreBtn.childNodes[generateMoreBtn.childNodes.length - 1].nodeValue = " Buscar Más Recetas";
+                 checkIfAnyResultsVisible();
+             }
+         }
+
+
+        // ========== INITIALIZATION ========== (Igual que versión Colombia)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput) { console.error("Init fail."); document.body.innerHTML = '<p style="color: #b91c1c; font-size: 1.5em; text-align: center; padding-top: 3em;">¡Error en la Cocina! No se pudo cargar el recetario.</p>'; return; }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            searchInput.addEventListener('input', filterTitles);
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

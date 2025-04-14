@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recetario Embrujado de Halloween</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Una temática para títulos, una legible para el cuerpo -->
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Recetas de Halloween --- */
+        :root {
+            --color-primary: #f97316; /* Naranja Halloween */
+            --color-secondary: #a855f7; /* Morado Halloween */
+            --color-background: #111827; /* Negro/Gris Muy Oscuro */
+            --color-text: #e5e7eb; /* Gris Claro/Blanco Apagado */
+            --color-text-muted: #9ca3af; /* Gris Medio */
+            --color-modal-bg: #1f2937; /* Gris Oscuro Modal */
+            --color-border: #4b5563; /* Borde Gris Oscuro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+            --border-radius: 5px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        /* Fuente temática para el logo y título principal */
+        h1.logo, h1.page-title { font-family: 'Creepster', cursive; font-weight: normal; color: var(--color-primary); letter-spacing: 1.5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+        h2.section-title, #modal-title { font-family: 'Lato', sans-serif; font-weight: 700; } /* Lato bold para legibilidad */
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); font-size: 1.9rem; } /* Título modal más grande */
+        .navbar { background-color: rgba(17, 24, 39, 0.85); backdrop-filter: blur(6px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; box-shadow: var(--shadow-sm); transition: var(--transition-normal); background-color: var(--color-modal-bg); color: var(--color-text); }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Lato', sans-serif; font-size: 1rem; }
+        .title-item:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 0 12px rgba(249, 115, 22, 0.4); border-color: var(--color-primary); color: var(--color-primary); background-color: #374151; } /* Gris más oscuro hover */
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(to right, var(--color-primary), #ea580c); color: white; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { box-shadow: 0 0 15px rgba(249, 115, 22, 0.6); transform: scale(1.02); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: #4b5563; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; transform: rotate(180deg); }
+        #modal-content {
+            line-height: 1.75;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 10px 1.5rem 10px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) #374151;
+        }
+        #modal-content::-webkit-scrollbar { width: 9px; }
+        #modal-content::-webkit-scrollbar-track { background: #374151; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #374151; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; font-weight: bold; }
+        /* Estilos para listas en recetas */
+        #modal-content ul, #modal-content ol { margin-left: 1.5rem; margin-bottom: 1.5em; margin-top: 1em; }
+        #modal-content ul li, #modal-content ol li { margin-bottom: 0.7em; line-height: 1.6; }
+        #modal-content ul { list-style-type: disc; /* O usar 'none' y ::before con icono */ padding-left: 1rem;}
+        #modal-content ol { list-style-type: decimal; padding-left: 1rem;}
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Lato', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.5em; } /* Títulos dentro del contenido */
+        #modal-content h2 { font-size: 1.35em; color: var(--color-secondary); } /* Subtítulos (Ingredientes, Pasos) */
+        #modal-content h3 { font-size: 1.2em; color: var(--color-primary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; }
+        /* Imagen y Placeholder */
+        #modal-content .final-image { display: block; max-width: 90%; height: auto; margin: 2.5rem auto 1rem auto; border: 2px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 24, 39, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid #4b5563; border-top-color: var(--color-primary); border-bottom-color: var(--color-secondary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.3rem; font-family: 'Lato'; text-shadow: 1px 1px 3px rgba(0,0,0,0.6); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #581c87; /* Morado oscuro error */ color: #f3e8ff; /* Texto lila claro */ padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-secondary); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 500; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        .title-item.hidden { display: none; }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-ghost mr-3 text-purple-400 animate-pulse"></i> <!-- Icono fantasma -->
+                     Recetario Embrujado
+                     <i class="fas fa-cauldron ml-3 text-orange-400"></i> <!-- Icono caldero -->
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400">¡La Cocina Más Espeluznante!</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">¡Conjura Delicias de Halloween!</h1>
+             <p class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">Encuentra recetas terroríficamente deliciosas para tu fiesta o para disfrutar la temporada. Busca tu favorita o explora las ideas...</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar receta (ej: galletas araña, ponche vampiro)...">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-pumpkin text-orange-500 mr-2"></i> <!-- Icono calabaza -->
+                 Selecciona tu Pócima Culinaria
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Desenterrando recetas del grimorio...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden">¡Buu! No encontramos recetas con ese nombre.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Invocar Más Recetas Macabras
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Cocinando la receta...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Recipe text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-skull-crossbones"></i> <!-- Icono calavera -->
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Recetas generadas por IA. ¡Ajusta ingredientes y pasos a tu gusto y habilidades!</p>
+              <p class="mt-1">¡Feliz y espeluznante cocina!</p>
+              <p class="mt-2">© 2025 Recetario Embrujado</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // --- Dulces: Galletas ---
+            "Galletas de Azúcar Fantasma", "Galletas Araña de Mantequilla de Cacahuete", "Galletas Ojo de Monstruo", "Galletas Dedo de Bruja", "Galletas de Jengibre Esqueleto", "Galletas Vidriera de Halloween", "Galletas de Calabaza con Glaseado", "Galletas Murciélago de Chocolate", "Galletas Momia de Oreo", "Galletas de Telaraña (Glaseado Real)", "Whoopie Pies de Calabaza con Relleno Crema", "Macarons Naranja y Negro (Halloween)", "Galletas Sándwich Monstruosas", "Galletas Mágicas Cambiantes (Color)", "Galletas de Sombrero de Bruja", "Galletas 'Cementerio' de Chocolate", "Galletas de Huella Monstruosa", "Galletas Red Velvet 'Sangrientas'", "Galletas de Gato Negro", "Alfajores Temáticos de Halloween", "Galletas Linzer de Calabaza", "Galletas Decoradas con Royal Icing (Calabazas)", "Galletas Decoradas con Royal Icing (Fantasmas)", "Galletas Decoradas con Royal Icing (Calaveras)", "Galletas Mosaico de Halloween", "Galletas de Avena 'Nido de Araña'", "Brookies (Brownie + Cookie) de Halloween", "Galletas de Espiral Naranja y Negro",
+            // --- Dulces: Cupcakes y Muffins ---
+            "Cupcakes de Chocolate 'Tierra de Cementerio'", "Cupcakes de Araña (Oreo y Regaliz)", "Cupcakes Fantasma (Merengue)", "Cupcakes Sombrero de Bruja (Cono de Helado)", "Cupcakes Cerebro Sangriento (Frambuesa)", "Cupcakes Caldero de Bruja (con Hielo Seco Opcional)", "Cupcakes de Calabaza con Frosting de Queso Crema", "Cupcakes Monstruo Peludo (Coco Rallado)", "Cupcakes Momia (Frosting Vendas)", "Cupcakes Ojo Sangriento", "Cupcakes Murciélago (Galleta Oreo)", "Cupcakes de Vainilla con Sorpresa Dentro (Golosinas)", "Muffins de Calabaza y Especias", "Muffins 'Telaraña' de Chocolate Blanco", "Cupcakes Red Velvet con Glaseado Negro", "Cupcakes de Manzana y Caramelo", "Pull-Apart Cupcakes (Forma Calabaza)", "Pull-Apart Cupcakes (Forma Fantasma)", "Cupcakes Veganos de Calabaza", "Cupcakes sin Gluten de Halloween", "Mini Cupcakes Monstruosos", "Cupcakes Inyectados con 'Sangre' (Mermelada)", "Cupcakes Gato Negro", "Cupcakes Drácula (Colmillos de Gominola)", "Cupcakes Gusano Saliente (Gominola)",
+            // --- Dulces: Pasteles y Tartas ---
+            "Pastel de Calabaza Clásico", "Pastel Red Velvet 'Sangriento'", "Pastel de Chocolate 'Telaraña'", "Pastel Bundt de Calabaza con Glaseado Naranja", "Pastel Sorpresa de Halloween (Relleno de Golosinas)", "Pastel de Manzana 'Momia'", "Tarta de Queso (Cheesecake) de Calabaza", "Tarta de Queso con Cobertura de Telaraña", "Pastel de Tres Leches Fantasmal", "Pastel de Mantequilla de Cacahuete 'Araña'", "Pastel Cementerio (Decorado)", "Pastel de Zanahoria con Decoración Halloween", "Pastel Mármol Naranja y Negro", "Pastel Piñata de Halloween", "Layer Cake Monstruoso", "Tarta de Chocolate y Naranja 'Calabaza'", "Pastel de Araña Gigante (Decorado)", "Tarta de Manzana Embrujada (Decoración Corteza)", "Pastel de Terciopelo Morado", "Pastel de Cráneo (Molde Especial)", "Pastel 'Libro de Hechizos'", "Pastel Goteante (Drip Cake) de Halloween", "Roll Cake (Brazo Gitano) de Calabaza", "Pastel Vegano de Chocolate Halloween", "Tarta de Calabaza sin Gluten", "Mini Tartas de Calabaza",
+            // --- Dulces: Otros Postres y Golosinas ---
+            "Manzanas de Caramelo Clásicas", "Manzanas de Caramelo Decoradas (Halloween)", "Fresas Fantasma (Chocolate Blanco)", "Cake Pops Ojo de Monstruo", "Cake Pops Araña", "Cake Pops Calabaza", "Cake Pops Fantasma", "Dirt Pudding (Pudín de Tierra con Gusanos)", "Corteza de Chocolate (Bark) de Halloween", "Brigadeiros Monstruosos", "Mousse de Chocolate 'Cementerio'", "Arroz con Leche Naranja (Calabaza/Zanahoria)", "Gelatina de Cerebro (Molde Especial)", "Gelatina de Gusanos", "Brochetas de Fruta Monstruosas", "Plátanos Fantasma y Mandarinas Calabaza", "Palomitas de Maíz 'Sangrientas' (Colorante)", "Palomitas de Maíz Monstruosas (Ojos de Caramelo)", "Caramel Corn Casero", "Bolas de Palomitas Monstruosas", "Pretzels Cubiertos de Chocolate (Halloween)", "Rice Krispie Treats de Calabaza", "Rice Krispie Treats Monstruosos", "Malvaviscos Fantasma", "Trufas de Oreo 'Araña'", "Trufas de Chocolate 'Murciélago'", "Brownies Telaraña", "Brownies Fantasma", "Brownies de Calabaza", "Blondies con Chips de Halloween", "Fudge de Calabaza", "Fudge Marmolado Naranja y Negro", "Merengues Fantasma", "Huesos de Merengue", "Copas de Mousse 'Capas de Monstruo'", "Parfait de Calabaza y Yogur", "Natillas 'Pantano'", "Cerezas 'Ojo Sangriento' en Almíbar", "Gominolas Caseras de Halloween (Formas)", "Pudín de Chía 'Calabaza'", "Helado Casero de Calabaza", "S'mores Dip de Halloween",
+            // --- Salados: Aperitivos y Snacks ---
+            "Dip de 7 Capas 'Telaraña'", "Dip de Espinacas en Pan 'Caldero'", "Guacamole Monstruoso (con Totopos)", "Hummus de Calabaza con Pan de Pita 'Fantasma'", "Tabla de Embutidos y Quesos de Halloween", "Momias de Salchicha (Hojaldre)", "Dedos de Queso Sangrientos (Pimiento/Almendra)", "Escobas de Bruja (Palitos Pretzel y Queso)", "Mini Pizzas Momia (Tiras de Queso)", "Mini Pizzas Araña (Aceitunas Negras)", "Mini Pizzas Fantasma (Queso Mozzarella)", "Huevos Rellenos (Deviled Eggs) Araña", "Huevos Rellenos Calabaza (Pimentón)", "Queso Crema 'Cementerio' con Crudités", "Bola de Queso Monstruo", "Nachos Monstruosos", "Rollitos de Jamón y Queso 'Ojo'", "Calabaza Rellena de Dip Caliente", "Tostadas Fantasma (Aguacate/Queso)", "Empanadillas de Calabaza y Queso", "Empanadillas 'Ataúd'", "Quesadillas Jack-o'-Lantern", "Serpiente de Hojaldre Rellena", "Pan de Ajo 'Huesos'", "Dip de Calabaza Salado", "Alitas de Murciélago (Alitas de Pollo con Tinte Negro)", "Albóndigas Ojo (con Mozzarella y Aceituna)", "Mini Quiches de Telaraña", "Calabacines Rellenos 'Barco Fantasma'", "Pimientos Rellenos Jack-o'-Lantern", "Rollitos de Primavera 'Dedo de Monstruo'", "Sushi Temático de Halloween", "Patatas Fritas 'Fantasma'", "Aros de Cebolla 'Araña'", "Crackers 'Lápida' con Dip", "Dip Caliente de Pizza 'Intestinos'", "Bolitas de Mac & Cheese Fritas 'Ojo'", "Bruschettas de Calabaza Asada y Ricotta", "Palitos de Pan 'Dedo de Bruja' Salados", "Gusanos de Salchicha en Masa",
+            // --- Salados: Platos Principales ---
+            "Pastel de Carne 'Mano Sangrienta'", "Shepherd's Pie 'Cementerio'", "Chili Servido en Caldero o Calabaza", "Pasta Negra con Salsa 'Sangrienta' (Tomate)", "Pasta Naranja (Calabaza) con 'Ojos' de Albóndiga", "Pizza Grande Decorada Halloween (Telaraña/Fantasma)", "Sopa de Calabaza Asada", "Crema de Remolacha 'Vampiro'", "Pot Pie (Pastel Salado) con Decoración Halloween", "Lasaña Monstruosa (Decoración Queso)", "Risotto de Calabaza", "Pollo Asado 'Araña'", "Salmón con Costra Negra (Sésamo/Especias)", "Costillas BBQ 'Huesudas'", "Estofado 'Pantano' (Verde)", "Fideos 'Gusanos' Verdes con Pesto", "Curry de Calabaza", "Calzone 'Calabaza'", "Hamburguesas Monstruosas", "Tacos con Tortillas Negras o Naranjas", "Enchiladas 'Fantasma'", "Sopa de Tomate 'Sangre de Vampiro' con Crutones", "Macarrones con Queso Naranja (Calabaza/Zanahoria)",
+            // --- Bebidas ---
+            "Ponche de Pantano Verde (con Ojos de Lichi)", "Ponche Rojo 'Sangre de Vampiro'", "Ponche Morado 'Poción Mágica'", "Limonada Negra (Carbón Activado - con precaución)", "Chocolate Caliente Blanco 'Fantasma'", "Chocolate Caliente Naranja Especiado", "Sidra de Manzana Caliente Especiada", "Té Helado 'Poción de Bruja' (con Hielo Seco)", "Batido de Calabaza Especiado", "Batido Verde Monstruoso (Espinaca/Fruta)", "Mocktail 'Amanecer Sangriento' (Naranja y Granadina)", "Cóctel 'Beso del Vampiro'", "Cóctel 'Cerebro Hemorrágico'", "Cóctel 'Viuda Negra'", "Margarita de Halloween (Color Naranja/Morado)", "Martini 'Ojo Sangriento'", "Sangría Oscura de Halloween", "Vino Caliente Especiado (Mulled Wine)", "Aguas Frescas Temáticas (Calabaza, Remolacha)", "Refresco con Gusanos de Gominola", "Leche Morada (con Arándanos/Colorante)", "Té de Hibisco 'Sangriento'", "Café Especiado de Calabaza (Pumpkin Spice Latte Casero)",
+            // --- Conceptos y Técnicas ---
+            "Cómo Hacer Glaseado Real Negro Perfecto", "Cómo Usar Colorante Alimentario en Gel (Halloween)", "Decoración de Galletas Halloween para Principiantes", "Ideas para Mesa Dulce de Halloween", "Ideas para Buffet Salado de Halloween", "Recetas 'Asquerosas' pero Deliciosas", "Recetas de Halloween para Niños", "Recetas de Halloween Saludables", "Recetas Veganas para Halloween", "Recetas sin Gluten para Halloween", "Cómo Tallar Pimientos como Jack-o'-Lanterns", "Crear 'Sangre' Comestible (Sirope/Mermelada)", "Hacer Ojos Comestibles Caseros", "Usar Hielo Seco en Bebidas de Forma Segura", "Ideas para Decorar Platos en Halloween", "Montaje de un Pastel 'Cementerio'", "Modelado de Figuras con Fondant (Halloween)", "Maridaje de Vinos/Cervezas para Comida Halloween", "Planificación de Menú para Fiesta Halloween", "Conservación de Dulces Caseros Halloween"
+            // ... (Se pueden añadir muchísimas más variaciones)
+        ];
+        const halloweenThemes = [
+            "galletas de Halloween", "cupcakes de Halloween", "pasteles de Halloween", "postres espeluznantes", "aperitivos salados Halloween", "platos principales Halloween", "bebidas de Halloween", "recetas con calabaza", "recetas monstruosas", "recetas fantasma", "recetas araña", "recetas momia", "recetas sangrientas (comestibles)", "recetas para fiesta Halloween niños", "recetas veganas Halloween", "recetas sin gluten Halloween", "decoración comestible Halloween", "golosinas caseras Halloween", "comida temática Halloween", "recetas fáciles Halloween", "recetas 'asquerosas' Halloween"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un chef creativo y bloguero gastronómico especializado en cocina temática, particularmente para Halloween. Tu tarea es proporcionar una receta completa, detallada y entusiasta para el plato de Halloween indicado. Incluye: una breve introducción evocadora, una lista clara de ingredientes con cantidades precisas (ej: '1 taza (120g) de harina'), instrucciones paso a paso numeradas y fáciles de seguir, consejos útiles (tips), posibles variaciones, y sugerencias de presentación o decoración temática. Escribe en un tono amigable y divertido, ¡como si estuvieras compartiendo tu secreto culinario más espeluznante! El objetivo es una receta bien explicada y completa, de aproximadamente 1200-1300 palabras. Basa tu receta únicamente en el siguiente nombre de plato:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas culinarias conciso. Genera exactamente 15 nombres creativos de recetas de Halloween (dulces o saladas), adecuadas para ser desarrolladas en detalle. Devuelve *solo* la lista de nombres, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor texto e imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios funcionales)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). ¡Intenta invocarla de nuevo!`);
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+               if (text.trim().length < 500 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de generar receta")) { // Umbral más bajo para recetas
+                   throw new Error("La IA no pudo conjurar una receta adecuada o suficientemente detallada para este plato.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+            const randomTheme = getRandomElement(halloweenThemes) || "recetas de Halloween";
+            const specificPrompt = `Genera 15 nombres creativos de recetas de Halloween sobre ${randomTheme}`;
+            console.log("Generating titles with prompt:", specificPrompt);
+            const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+            const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+            const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 100); // Ajustar longitud si es necesario
+            if (titles.length < 5) throw new Error("No se pudieron invocar suficientes ideas.");
+            return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a RECETAS HALLOWEEN
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Halloween food spooky";
+            // Prompt ENFOCADO en foto atractiva del plato, temática Halloween
+            const enhancedPrompt = `High-quality food photography of '${safePromptText}', Halloween themed presentation. Appetizing, well-lit, focus on the dish. May include subtle spooky elements like cobwebs (on background), dark plating, thematic colors (orange, black, purple). Professional food styling.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, recipe text, diagram, chart, ugly food, messy plate, poorly lit, blurry, multiple dishes, people eating, hands, drawing, illustration, cartoon, watermark, signature";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== *** Text Formatting Function (Improved for Recipes) *** ==========
+        function formatExplanationText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+
+            // 1. Basic Markdown (like before)
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // 2. Split into potential blocks (paragraphs, lists)
+            const blocks = formatted.split(/\n\s*\n/);
+            let htmlOutput = '';
+
+            blocks.forEach(block => {
+                block = block.trim();
+                if (!block) return;
+
+                // Check for list patterns (simple check for lines starting with markers)
+                const lines = block.split('\n').map(l => l.trim());
+                const isUnorderedList = lines.length > 1 && lines.every(line => line.startsWith('- ') || line.startsWith('* '));
+                const isOrderedList = lines.length > 1 && lines.every(line => /^\d+\.\s/.test(line));
+
+                if (isUnorderedList) {
+                    htmlOutput += '<ul>\n';
+                    lines.forEach(line => {
+                        htmlOutput += `  <li>${line.substring(2)}</li>\n`; // Remove marker
+                    });
+                    htmlOutput += '</ul>\n';
+                } else if (isOrderedList) {
+                    htmlOutput += '<ol>\n';
+                    lines.forEach(line => {
+                        // Remove marker (e.g., "1. ", "10. ")
+                        htmlOutput += `  <li>${line.replace(/^\d+\.\s+/, '')}</li>\n`;
+                    });
+                    htmlOutput += '</ol>\n';
+                } else if (block.startsWith('<h') || block.startsWith('<ul') || block.startsWith('<ol')) {
+                    // If it's already HTML (from markdown conversion or previous step), pass through
+                    htmlOutput += block + '\n';
+                }
+                 else {
+                    // Treat as a paragraph, replace internal newlines with <br> (optional)
+                    // htmlOutput += `<p>${block.replace(/\n/g, '<br>')}</p>\n`;
+                    // Or treat as a paragraph without internal <br>
+                    htmlOutput += `<p>${block.replace(/\n/g, ' ')}</p>\n`;
+                }
+            });
+
+            return htmlOutput;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Limpia texto e imagen
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios funcionales, solo texto)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]); // Shuffle for variety
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">El grimorio parece vacío...</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => {
+                 if (!existingTitles.has(title)) {
+                     titleListContainer.appendChild(createTitleItem(title));
+                 }
+             });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick (sin cambios funcionales mayores, solo texto/iconos) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                // *** Usa la función de formato MEJORADA ***
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Poner texto formateado
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalContent.scrollTop = 0; // Reset scroll DESPUÉS de contenido visible
+                console.log("Scroll set to 0 after content visible");
+
+                // Placeholder de imagen DENTRO de modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-utensils placeholder-icon"></i> <!-- Icono cubiertos -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Materializando foto del plato...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Crear y añadir elemento imagen
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Foto de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => { /* ... */ placeholderDiv.remove(); imgElement.style.display = 'block'; };
+                imgElement.onerror = () => { /* ... */ console.error("Error loading image for:", title); placeholderDiv.innerHTML = `... Error al cargar imagen ...`; };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir img al final
+                } else { /* ... */ placeholderDiv.innerHTML = `... Error al generar URL ...`; }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `¡Hechizo fallido! ${error.message}`; // Error temático
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Invocando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     appendTitles(newTitles);
+                 } else {
+                     alert("¡El caldero está vacío por ahora!");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al invocar más recetas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Invocar Más Recetas Macabras';
+             }
+         }
+
+         // *** Search Filter Function (Sin cambios funcionales) ***
+         function filterTitles(searchTerm) {
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); // Normalize para quitar acentos
+            const titleItems = titleListContainer.querySelectorAll('.title-item');
+            let visibleCount = 0;
+
+            titleItems.forEach(item => {
+                const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const isVisible = titleText.includes(term);
+                item.classList.toggle('hidden', !isVisible);
+                if (isVisible) {
+                    visibleCount++;
+                }
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (Sin cambios funcionales)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: orange; font-size: 2em; text-align: center; padding-top: 3em; font-family: Creepster;">¡Algo salió terriblemente mal al cargar el recetario!</p>';
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            searchInput.addEventListener('input', (event) => { filterTitles(event.target.value); });
+            displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

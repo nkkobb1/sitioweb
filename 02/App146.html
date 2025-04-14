@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopedia de Insectos - Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes limpias y legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Enciclopedia de Insectos --- */
+        :root {
+            --color-primary: #4CAF50; /* Verde Naturaleza */
+            --color-secondary: #FF9800; /* Naranja (Acento) */
+            --color-tertiary: #8BC34A; /* Verde Claro */
+            --color-background: #fdfdfb; /* Blanco Hueso/Papel Claro */
+            --color-text: #424242; /* Gris Oscuro */
+            --color-text-muted: #757575; /* Gris Medio */
+            --color-modal-bg: #ffffff; /* Blanco Puro */
+            --color-border: #e0e0e0; /* Borde Gris Claro */
+            --color-error-bg: #fff3e0; /* Fondo error naranja muy claro */
+            --color-error-text: #e65100; /* Texto error naranja oscuro */
+            --color-error-border: #ffcc80; /* Borde error naranja claro */
+
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 5px; /* Bordes suavemente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 400; }
+        h1, h2, h3, h4, .logo { font-family: 'Merriweather', serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: #388E3C; /* Verde más oscuro para título modal */ font-weight: 700; }
+        .navbar { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Lato'; font-size: 0.95rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: #c8e6c9; /* Borde verde claro */ color: var(--color-primary); background-color: #f1f8e9; /* Fondo verde muy pálido */ border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #388E3C; /* Verde más oscuro */ box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: #bdbdbd; color: #f5f5f5; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(66, 66, 66, 0.85); /* Overlay gris */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px; /* Ensure sufficient height for loading state */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #f1f1f1; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Area for scrollable text + image */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid #f1f1f1; }
+
+        #modal-content { padding: 0 5px; /* Padding for text */ }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: #6D4C41; /* Marrón para énfasis */ font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Merriweather', serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5em; font-weight: 700; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.15em; color: #558B2F; /* Verde oliva */ }
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none; }
+        /* Image styles */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(200, 200, 200, 0.5); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #fafafa; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; }
+        .user-message { background-color: var(--color-tertiary); color: #333; margin-left: auto; text-align: left; } /* User bubble style */
+        .ai-message { background-color: #e0e0e0; color: var(--color-text); margin-right: auto; text-align: left; } /* AI bubble style */
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #fff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Lato'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #388E3C; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid #e0e0e0; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.2rem; font-family: 'Merriweather'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-text); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-border); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-border); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: #e0e0e0; color: var(--color-text); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-bug mr-3 text-green-700"></i> <!-- Icono insecto -->
+                     Enciclopedia de Insectos
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wider">» Exploración Interactiva «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">El Mundo Secreto de los Insectos</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-light">Descubre la increíble diversidad de los artrópodos más abundantes del planeta. Selecciona una especie o busca por nombre.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar especie, orden o familia...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-green-600 mr-2"></i> <!-- Icono libro -->
+                 Índice Entomológico
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Cargando índice de especies...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron entradas para tu búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Sugerir Más Especies/Temas
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Cargando ficha...</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image and placeholder will be appended here by JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <h4 class="text-sm font-semibold text-gray-600 mb-2 text-center font-sans"><i class="fas fa-question-circle mr-1 text-green-600"></i>Pregúntale al Entomólogo sobre este insecto:</h4>
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Consultando base de datos...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Ej: ¿Cuál es su dieta? ¿Dónde vive?">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada del Insecto">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información generada por IA basada en conocimientos entomológicos. Siempre contrasta datos específicos con fuentes científicas.</p>
+              <p class="mt-1">Las representaciones visuales son interpretaciones artísticas.</p>
+              <p class="mt-2">© 2024 Enciclopedia Interactiva de Insectos</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Órdenes Principales
+            "Orden Coleoptera (Escarabajos)", "Orden Lepidoptera (Mariposas y Polillas)", "Orden Hymenoptera (Abejas, Avispas, Hormigas)", "Orden Diptera (Moscas y Mosquitos)", "Orden Hemiptera (Chinches, Cigarras, Pulgones)", "Orden Orthoptera (Saltamontes, Grillos, Langostas)", "Orden Odonata (Libélulas y Caballitos del Diablo)", "Orden Blattodea (Cucarachas y Termitas)", "Orden Mantodea (Mantis Religiosas)", "Orden Phasmatodea (Insectos Palo e Insectos Hoja)", "Orden Dermaptera (Tijeretas)", "Orden Ephemeroptera (Efemérides)", "Orden Neuroptera (Neurópteros: Crisopas, Hormigas León)", "Orden Plecoptera (Moscas de las Piedras)", "Orden Siphonaptera (Pulgas)", "Orden Thysanoptera (Trips)", "Orden Trichoptera (Frigáneas)", "Orden Isoptera (Termitas - ahora en Blattodea)", "Orden Psocodea (Piojos)", "Orden Collembola (Colémbolos - técnicamente Hexapoda, no Insecta)",
+            // Familias y Especies Notables (Ejemplos - expandir mucho más)
+            // Coleoptera
+            "Familia Carabidae (Escarabajos de Tierra)", "Familia Scarabaeidae (Escarabajos Peloteros, de Junio)", "Familia Coccinellidae (Mariquitas)", "Familia Cerambycidae (Escarabajos Longicornios)", "Familia Curculionidae (Gorgojos)", "Familia Chrysomelidae (Escarabajos de las Hojas)", "Familia Lampyridae (Luciérnagas)", "Escarabajo Hércules (Dynastes hercules)", "Escarabajo Goliat (Goliathus goliatus)", "Escarabajo Bombardero (Brachinini tribe)", "Mariquita de Siete Puntos (Coccinella septempunctata)", "Escarabajo Pelotero Sagrado (Scarabaeus sacer)", "Gorgojo del Algodón (Anthonomus grandis)", "Escarabajo Japonés (Popillia japonica)", "Escarabajo de la Patata de Colorado (Leptinotarsa decemlineata)", "Escarabajo Ciervo Volante (Lucanus cervus)", "Escarabajo Joya (Buprestidae)",
+            // Lepidoptera
+            "Familia Nymphalidae (Ninfálidos: Monarca, Vanesas)", "Familia Papilionidae (Papiliónidos: Macaones)", "Familia Pieridae (Piéridos: Blancas, Colias)", "Familia Lycaenidae (Licénidos: Azules, Cobrizas)", "Familia Hesperiidae (Hespéridos)", "Familia Sphingidae (Esfíngidos: Polillas Colibrí)", "Familia Saturniidae (Satúrnidos: Polillas Atlas, Luna)", "Familia Noctuidae (Noctuidos: Polillas Gusano Cortador)", "Familia Geometridae (Geométridos: Orugas Medidoras)", "Mariposa Monarca (Danaus plexippus)", "Mariposa Macaón (Papilio machaon)", "Mariposa Atlas (Attacus atlas)", "Polilla Luna (Actias luna)", "Mariposa Morfo Azul (Morpho peleides)", "Mariposa Vanessa Cardui (Painted Lady)", "Polilla Gitana (Lymantria dispar)", "Gusano de Seda (Bombyx mori)", "Mariposa Tigre del Este (Papilio glaucus)", "Mariposa Búho (Caligo)",
+            // Hymenoptera
+            "Familia Apidae (Abejas: Melíferas, Abejorros)", "Familia Formicidae (Hormigas)", "Familia Vespidae (Avispas Sociales: Papeleras, Avispones)", "Familia Ichneumonidae (Avispas Ichneumónidas)", "Familia Sphecidae (Avispas Cavadoras)", "Familia Megachilidae (Abejas Cortadoras de Hojas)", "Abeja Melífera Europea (Apis mellifera)", "Abejorro Común (Bombus terrestris)", "Hormiga Roja de Fuego (Solenopsis invicta)", "Hormiga Argentina (Linepithema humile)", "Hormiga Cortadora de Hojas (Atta spp.)", "Hormiga Bala (Paraponera clavata)", "Avispa Papelera Europea (Polistes dominula)", "Avispón Gigante Asiático (Vespa mandarinia)", "Avispa Esmeralda (Ampulex compressa)", "Avispa de las Agallas (Cynipidae)", "Hormiga León (Myrmeleontidae - Orden Neuroptera!)",
+            // Diptera
+            "Familia Culicidae (Mosquitos)", "Familia Muscidae (Moscas Domésticas)", "Familia Calliphoridae (Moscardas Azules/Verdes)", "Familia Syrphidae (Sírfidos, Moscas de las Flores)", "Familia Tabanidae (Tábanos)", "Familia Drosophilidae (Moscas de la Fruta)", "Familia Tipulidae (Típulas, Zancudos)", "Mosca Doméstica (Musca domestica)", "Mosquito Tigre Asiático (Aedes albopictus)", "Mosquito Anopheles (Portador de Malaria)", "Mosca Tsé-Tsé (Glossina spp.)", "Mosca de la Fruta (Drosophila melanogaster)", "Mosca Negra (Simuliidae)", "Mosca Panteonera (Conopidae)", "Mosca Escorpión (Mecoptera - Orden separado!)",
+            // Hemiptera
+            "Suborden Heteroptera (Chinches Verdaderas)", "Familia Pentatomidae (Chinches Apestosas)", "Familia Reduviidae (Chinches Asesinas, Vinchucas)", "Familia Cimicidae (Chinches de Cama)", "Familia Gerridae (Zapateros)", "Suborden Auchenorrhyncha (Cigarras, Saltahojas)", "Familia Cicadidae (Cigarras Periódicas y Anuales)", "Familia Cicadellidae (Saltahojas)", "Suborden Sternorrhyncha (Pulgones, Cochinillas, Moscas Blancas)", "Familia Aphididae (Pulgones)", "Familia Coccidae (Cochinillas)", "Cigarra Periódica (Magicicada spp.)", "Chinche Apestosa Marrón Mármol (Halyomorpha halys)", "Pulgón del Rosal (Macrosiphum rosae)", "Vinchuca (Triatoma infestans)", "Zapatero Común (Gerris lacustris)", "Cochinilla Algodonosa (Planococcus citri)", "Mosca Blanca (Aleyrodidae)",
+            // Orthoptera
+            "Familia Acrididae (Langostas y Saltamontes Verdaderos)", "Familia Tettigoniidae (Saltamontes de Antenas Largas, Esperanzas)", "Familia Gryllidae (Grillos Verdaderos)", "Familia Gryllotalpidae (Grillos Topo, Alacranes Cebolleros)", "Langosta del Desierto (Schistocerca gregaria)", "Saltamontes Común de Campo (Chorthippus brunneus)", "Grillo Doméstico (Acheta domesticus)", "Esperanza Verde (Tettigonia viridissima)", "Grillo Topo Europeo (Gryllotalpa gryllotalpa)", "Saltamontes Katydid",
+            // Odonata
+            "Suborden Anisoptera (Libélulas)", "Familia Libellulidae (Libélulas Comunes)", "Familia Aeshnidae (Libélulas Dárner)", "Suborden Zygoptera (Caballitos del Diablo)", "Familia Coenagrionidae (Caballitos de Diablo de Estanque)", "Libélula Emperador (Anax imperator)", "Libélula Dardo Común (Sympetrum striolatum)", "Caballito del Diablo Azul Común (Enallagma cyathigerum)",
+            // Blattodea
+            "Familia Blattidae (Cucarachas Grandes: Americana, Oriental)", "Familia Blattellidae (Cucarachas Pequeñas: Alemana)", "Familia Termitidae (Termitas Superiores)", "Familia Rhinotermitidae (Termitas Subterráneas)", "Cucaracha Americana (Periplaneta americana)", "Cucaracha Alemana (Blattella germanica)", "Termita Subterránea Oriental (Reticulitermes flavipes)", "Cucaracha de Madagascar Silbadora (Gromphadorhina portentosa)",
+            // Mantodea
+            "Mantis Religiosa Europea (Mantis religiosa)", "Mantis Orquídea (Hymenopus coronatus)", "Mantis Fantasma (Phyllocrania paradoxa)",
+            // Phasmatodea
+            "Insecto Palo Común (Carausius morosus)", "Insecto Hoja Gigante (Phyllium giganteum)",
+            // Otros Notables
+            "Tijereta Común (Forficula auricularia)", "Efímera Común (Ephemera vulgata)", "Crisopa Verde Común (Chrysoperla carnea)", "Pulga del Gato (Ctenocephalides felis)", "Frigánea Común (Limnephilus spp.)", "Piojo Humano (Pediculus humanus)", "Pececillo de Plata (Lepisma saccharina - Orden Zygentoma!)", "Hormiga Argentina", "Mosca Soldado Negra (Hermetia illucens)", "Abeja Carpintera (Xylocopa)",
+            // Conceptos Entomológicos
+            "Metamorfosis Completa (Holometabolismo)", "Metamorfosis Incompleta (Hemimetabolismo)", "Ametabolismo en Insectos", "Anatomía Externa del Insecto (Cabeza, Tórax, Abdomen)", "Sistema Respiratorio Traqueal", "Sistema Circulatorio Abierto (Hemolinfa)", "Sistema Nervioso Ganglionar", "Tipos de Aparatos Bucales (Masticador, Chupador, Picador-Chupador)", "Tipos de Antenas en Insectos", "Tipos de Patas en Insectos (Caminadora, Saltadora, Cavadora)", "Tipos de Alas y Vuelo", "Reproducción en Insectos (Sexual y Partenogénesis)", "Desarrollo Embrionario y Eclosión", "Estados Larvarios (Oruga, Gusano, Ninfa)", "Estado de Pupa (Crisálida, Capullo)", "El Exoesqueleto de Quitina", "Muda o Ecdisis", "Diapausa e Hibernación", "Comunicación Química (Feromonas)", "Comunicación Visual (Colores, Bioluminiscencia)", "Comunicación Acústica (Estridulación)", "Termorregulación en Insectos", "Mimetismo Batesiano", "Mimetismo Mülleriano", "Camuflaje (Cripsis)", "Aposematismo (Coloración de Advertencia)", "Insectos Sociales (Eusocialidad)", "Polinización por Insectos", "Descomposición por Insectos", "Control Biológico con Insectos", "Vectores de Enfermedades (Insectos)", "Plagas Agrícolas (Insectos)", "Plagas Forestales (Insectos)", "Plagas Urbanas (Insectos)", "Insectos Comestibles (Entomofagia)", "Bioindicadores (Insectos)", "Adaptaciones a Ambientes Extremos", "Insectos Acuáticos", "Migración de Insectos", "Coevolución Insecto-Planta", "Clasificación Taxonómica de Insectos", "Filogenia de los Insectos", "Entomología Forense", "Historia de la Entomología", "Técnicas de Colecta y Preservación", "Microscopía en Entomología", "Control de Plagas Integrado (IPM)", "Efectos del Cambio Climático en Insectos", "Conservación de Insectos", "Diversidad de Insectos en Biomas (Selva, Desierto, etc.)", "Fósiles de Insectos (Ámbar)", "Relación Insecto-Humano", "Importancia Económica de los Insectos", "Cutícula Hidrofóbica", "Termitas y Celulosa", "Navegación en Hormigas", "Danza de las Abejas", "Bioluminiscencia en Luciérnagas", "Producción de Seda", "Producción de Laca", "Producción de Cera de Abeja", "Ciclo de Vida de la Mosca Doméstica", "Ciclo de Vida del Mosquito", "Ciclo de Vida de la Mariposa Monarca", "Organización de una Colonia de Hormigas", "Organización de una Colmena de Abejas", "Organización de un Termitero", "Defensas Químicas en Insectos", "Ojos Compuestos y Ocelos", "Partes de la Pata del Insecto", "Venación Alar", "Genitalia Externa", "Ovipositor", "Cercos Abdominales", "Espinas y Pelos Sensoriales (Setas)", "Quimiorrecepción (Gusto y Olfato)", "Mecanorrecepción (Tacto y Oído - Órgano Timpánico)", "Fotorrecepción", "Cuerpos Grasos", "Tubos de Malpigio (Excreción)", "Espermateca (Almacenamiento de Esperma)", "Glándulas Accesorias", "Feromonas Sexuales", "Feromonas de Alarma", "Feromonas de Pista", "Termorregulación Comportamental (Basking)", "Termorregulación Fisiológica (Calentamiento Pre-vuelo)", "Insectos Hematófagos", "Insectos Fitófagos (Herbívoros)", "Insectos Xilófagos (Comedores de Madera)", "Insectos Depredadores", "Insectos Parasitoides", "Insectos Parásitos", "Insectos Detritívoros", "Insectos Coprófagos", "Insectos Necrófagos", "Galerías de Insectos en Madera", "Agallas de Plantas Inducidas por Insectos", "Mutualismo Insecto-Hongo (Hormigas Cortadoras)", "Forésia (Transporte por otro animal)", "Impacto de Pesticidas en Insectos No-Objetivo", "Resistencia a Insecticidas"
+            // Add many more specific species and families...
+        ];
+        const insectThemes = [ // For "Generate More"
+            "órdenes de insectos", "escarabajos (Coleoptera)", "mariposas y polillas (Lepidoptera)", "abejas avispas y hormigas (Hymenoptera)", "moscas y mosquitos (Diptera)", "chinches y cigarras (Hemiptera)", "saltamontes y grillos (Orthoptera)", "libélulas (Odonata)", "mantis religiosas", "insectos palo y hoja", "cucarachas y termitas", "insectos sociales", "metamorfosis", "polinización", "control de plagas", "insectos beneficiosos", "insectos acuáticos", "mimetismo y camuflaje", "anatomía de insectos", "comportamiento de insectos", "ecología de insectos", "insectos vectores", "insectos comestibles", "conservación de insectos", "plagas agrícolas"
+        ];
+        const textApiConfig = { // For main description
+            model: "mistral",
+            systemPrompt: "Eres un entomólogo experto y divulgador científico. Tu tarea es proporcionar una descripción detallada y precisa sobre la especie, familia, orden o concepto entomológico indicado. Cubre: clasificación taxonómica (hasta donde sea relevante), morfología distintiva (características físicas clave), ciclo de vida (metamorfosis, etapas), hábitat preferido, distribución geográfica general, dieta, comportamiento notable (social, reproductivo, defensivo), rol ecológico (polinizador, plaga, depredador, etc.), e importancia para los humanos (si aplica). Usa un lenguaje claro, accesible pero riguroso. El objetivo es una ficha completa de aproximadamente 1200-1300 palabras. Basa tu información únicamente en el siguiente ítem entomológico:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Base config for chat
+             model: "mistral-tiny", // Faster model for chat
+             systemPrompt: "Actúa como un asistente entomólogo, especializado únicamente en el insecto o concepto que se está mostrando. Responde preguntas de seguimiento sobre sus características, ciclo de vida, hábitat, comportamiento o detalles mencionados en la ficha principal. Sé conciso y científicamente preciso, relevante al tema actual.",
+             timeoutSeconds: 45
+         };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de insectos. Genera exactamente 15 nombres de especies de insectos (comunes o científicos), familias, órdenes o conceptos entomológicos relevantes, adecuados para una ficha detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Selectors remain the same as the previous 'Futuristic Weapons' version)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area'); // Area containing text+image
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Div for HTML text content
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentInsectName = null; // Context for the chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             // Dynamic system prompt for chat
+             const systemPromptToUse = isChat && currentInsectName
+                 ? `Eres un asistente entomólogo, especializado únicamente en '${currentInsectName}'. Responde preguntas sobre sus características, ciclo de vida, hábitat, etc., basándote en la información típica de esta especie/grupo. Sé conciso y preciso.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             // Seed maybe less relevant for chat, useful for main text generation consistency if needed
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     // Friendly error message
+                     throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento. Por favor, inténtalo de nuevo en unos segundos.`);
+                 }
+                 const text = await response.text();
+                  if (!text || text.trim().length === 0 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("i cannot provide") || text.toLowerCase().includes("no puedo generar") ) {
+                     throw new Error("La IA no pudo generar una respuesta válida o la información solicitada no está disponible. Intenta con otro término.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La solicitud tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 // Propagate the error message (already user-friendly if from response.ok check)
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        // Wrapper functions for clarity
+        async function fetchExplanationText(conceptTitle) {
+            return fetchTextFromApi(conceptTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentInsectName) throw new Error("Error interno: Contexto del insecto no establecido para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true); // true marks it as a chat request
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(insectThemes) || "diversidad de insectos";
+            const specificPrompt = `Genera 15 nombres de especies, familias, órdenes o conceptos relacionados con ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+                     if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas entomológicas.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Adapted for insects
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "common insect";
+            // Prompt focused on artistic illustration, not photo/diagram
+            const enhancedPrompt = `Artistic illustration of the insect '${safePromptText}'. Focus on accurate morphology and distinctive features in a naturalistic style. Soft natural lighting, detailed texture. Avoid labels, text, diagrams, scientific charts, multiple specimens unless specified.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, photorealistic, photograph, ugly, deformed, blurry, low quality, human elements";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (Remains the same)
+        function formatExplanationText(rawText) {
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                 // Replace internal newlines with space for better paragraph flow
+                 let content = block.replace(/\n/g, ' ');
+                 return `<p>${content}</p>`;
+             }).join('');
+             return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Remain the same)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0; // Reset scroll on hide
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear text and image
+             modalErrorMessage.textContent = '';
+             // Reset Chat
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentInsectName = null; // Clear chat context
+             // Hide fullscreen overlay if it was open
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Remain the same)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            // Only restore body scroll if the main modal is ALSO closed
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (Remain the same logic)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled || !currentInsectName) return; // Ensure context exists
+
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                // Use the friendly error message from the API function
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Remain the same logic)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+              // Sort alphabetically for better navigation
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay entradas en el índice «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+             console.log(`Added ${addedCount} new titles.`);
+             // Re-apply filter after adding
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick (Ensures context, image placement, scroll reset) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentInsectName = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+            // Hide chat section initially until content is loaded
+            chatSection.classList.add('content-hidden');
+
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Add text content first
+
+                // Reset scroll *after* text content is potentially rendered and has height
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after text content added");
+
+                // Prepare image placeholder and add it to the *end* of modalContent
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-leaf placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando ilustración...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Append placeholder AFTER text
+
+                // Now show the main content area (which includes the text and the placeholder)
+                modalStoryContentArea.classList.remove('content-hidden');
+                 // Show chat section now that main content is ready
+                chatSection.classList.remove('content-hidden');
+
+
+                // Create image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración de ${title}`;
+                imgElement.style.display = 'none'; // Hide until loaded
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    // Add click listener for fullscreen view
+                    imgElement.addEventListener('click', () => {
+                        showFullscreenImage(imgElement.src);
+                    });
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-image placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">No se pudo cargar la ilustración.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                     // Append the actual image element (initially hidden) AFTER the placeholder
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                      placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al generar URL.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                // Use friendly error message from API function
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar la ficha.";
+                modalError.classList.remove('content-hidden');
+                // Show the content area even on error to display the message
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Clear any partial text
+                chatSection.classList.add('content-hidden'); // Hide chat on main error
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron generar más sugerencias en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 // Use friendly error message
+                 alert(`Error al generar sugerencias: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                  // Restore original button text
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Sugerir Más Especies/Temas';
+             }
+         }
+
+         // *** Search Filter Function (Handles accents/case) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 // Use dataset.title which holds the original case/accent version for display
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0 || titleItems.length === 0); // Show if no results OR if list is initially empty
+         }
+
+        // ========== INITIALIZATION ========== (Remains the same logic)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential UI elements.");
+                 document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes esenciales de la interfaz.</p>';
+                return;
+             }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            // Title generation listener
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+             searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden'); // Start hidden
+             filterTitles(''); // Apply empty filter initially to potentially show 'no results' if predefinedTitles is empty
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

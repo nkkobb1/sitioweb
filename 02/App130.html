@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia de los Inventos - Enciclopedia Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Clásicas/Históricas -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Historia de los Inventos --- */
+        :root {
+            --color-primary: #b8860b; /* DarkGoldenrod (Latón/Oro viejo) */
+            --color-secondary: #5f9ea0; /* CadetBlue (Toque de color apagado) */
+            --color-tertiary: #8b4513; /* SaddleBrown (Madera/Cuero) */
+            --color-background: #fdf6e3; /* Solarized Base3 (Crema/Papiro) */
+            --color-text: #4a4a4a; /* Gris Oscuro (Legible) */
+            --color-text-muted: #7a7a7a; /* Gris Medio */
+            --color-modal-bg: #faf0e6; /* Linen (Fondo modal ligeramente diferente) */
+            --color-border: #dcdcdc; /* Gainsboro (Borde suave) */
+            --color-error-bg: #fff0f0; /* Fondo error claro */
+            --color-error-text: #a52a2a; /* Brown (Texto error) */
+            --color-error-border: #f08080; /* LightCoral (Borde error) */
+
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 4px; /* Bordes suavemente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Merriweather', serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.75; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 0.5px; }
+        .logo { color: var(--color-tertiary); }
+        h1.page-title { color: var(--color-primary); font-weight: 600; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 600; }
+        #modal-title { color: var(--color-tertiary); font-weight: 600; }
+        .navbar { background-color: rgba(250, 240, 230, 0.9); /* Linen con transparencia */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Merriweather'; }
+        #search-input::placeholder { color: var(--color-text-muted); font-style: italic; }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: #fff; padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Merriweather'; font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #fffaf0; /* FloralWhite hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.7rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Oswald', sans-serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: 1px 1px 1px rgba(0,0,0,0.2); }
+        #generate-more-btn:hover:not(:disabled) { background-color: #cd950c; box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: var(--color-text-muted); color: #f0f0f0; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(74, 74, 74, 0.85); /* Overlay gris */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #e0e0e0; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #fff; transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid #f0f0f0; }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-tertiary); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Oswald', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px dotted var(--color-border); padding-bottom: 0.4em; font-weight: 400; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.15em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; background-color: white; padding: 4px; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-md); border-color: var(--color-primary); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); font-family: 'Merriweather'; }
+        #modal-content .image-placeholder .spinner { border: 4px solid #e0e0e0; width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #fff; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95em;}
+        .user-message { background-color: var(--color-secondary); color: white; margin-left: auto; text-align: left; font-weight: 400; } /* User messages align left for standard chat feel */
+        .ai-message { background-color: #e9ecef; /* Light gray AI messages */ color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #fff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Merriweather'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #cd950c; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(253, 246, 227, 0.98); /* Fondo papiro casi opaco */ display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 50px; height: 50px; border: 5px solid #dcdcdc; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.3rem; font-family: 'Oswald'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Merriweather'; font-size: 0.95em; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(40, 40, 40, 0.95); /* Fondo oscuro para zoom */ display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 3px solid var(--color-background); box-shadow: var(--shadow-lg); background-color: white; /* Fondo blanco por si la imagen tiene transparencia */ }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-text-muted); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: white; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-lightbulb mr-3 text-yellow-500"></i> <!-- Icono bombilla -->
+                     Historia de los Inventos
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wide">» Enciclopedia Interactiva «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Grandes Hitos de la Innovación</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-light">Explora los inventos que cambiaron el mundo. Descubre su origen, funcionamiento e impacto en nuestra historia.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar invento o concepto...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-blue-700 mr-2"></i> <!-- Icono libro -->
+                 Índice de Inventos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Consultando los archivos históricos...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron registros para esa consulta «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Más Inventos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Investigando el invento...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Consultando al experto...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta más sobre este invento...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada del Invento">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-600 py-6 mt-12 border-t border-gray-300 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Contenido generado por IA con fines educativos e informativos sobre la historia de la tecnología.</p>
+              <p class="mt-1">Verifica siempre los datos históricos con fuentes académicas reconocidas.</p>
+              <p class="mt-2">© 2024 Enciclopedia de Inventos</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Prehistoria y Antigüedad
+            "Control del Fuego", "Herramientas de Piedra (Olduvayense, Achelense)", "Lanza", "Arco y Flecha", "Cerámica", "Rueda", "Arado", "Navegación a Vela", "Escritura (Cuneiforme, Jeroglífica)", "Papiro", "Acueducto Romano", "Hormigón Romano", "Reloj de Sol", "Clepsidra (Reloj de Agua)", "Astrolabio", "Palanca", "Polea", "Tornillo de Arquímedes", "Catapulta", "Ballesta", "Ábaco", "Vidrio", "Moneda", "Alcantarillado", "Metalurgia (Cobre, Bronce, Hierro)", "Calendario", "Mapa", "Tinta y Pluma", "Cerradura y Llave", "Carro de Guerra",
+            // Edad Media y Renacimiento
+            "Molino de Viento", "Molino de Agua", "Gafas (Anteojos)", "Imprenta de Tipos Móviles (Gutenberg)", "Brújula Magnética", "Pólvora", "Cañón", "Reloj Mecánico", "Alto Horno", "Papel (Introducción en Europa)", "Carabela", "Sextante", "Telescopio Refractor (Lippershey, Galileo)", "Microscopio Compuesto (Janssen)", "Termómetro (Galileo, Santorio)", "Barómetro (Torricelli)", "Bomba de Vacío (Von Guericke)", "Prensa de Tornillo", "Timón de Coderre", "Estribo", "Notación Musical Moderna", "Billetes (Papel Moneda en China)", "Técnicas de Destilación", "Algebra (Introducción a Europa)", "Perspectiva Lineal (Arte)",
+            // Revolución Industrial (Siglo XVIII - XIX)
+            "Máquina de Vapor (Newcomen, Watt)", "Telar Mecánico (Cartwright)", "Hiladora Jenny (Hargreaves)", "Water Frame (Arkwright)", "Mule Jenny (Crompton)", "Desmotadora de Algodón (Whitney)", "Barco de Vapor (Fulton)", "Locomotora de Vapor (Stephenson)", "Telégrafo (Morse)", "Código Morse", "Fotografía (Daguerrotipo - Daguerre, Calotipo - Talbot)", "Batería Eléctrica (Volta)", "Motor Eléctrico (Faraday, Sturgeon)", "Generador Eléctrico (Dinamo - Pixii, Siemens)", "Bombilla Incandescente (Edison, Swan)", "Teléfono (Bell, Meucci)", "Fonógrafo (Edison)", "Micrófono (Berliner, Hughes)", "Altavoz (Siemens, Lodge)", "Motor de Combustión Interna (Otto, Daimler, Benz)", "Automóvil (Benz, Daimler)", "Neumático (Dunlop)", "Bicicleta Moderna (Velocípedo)", "Máquina de Escribir (Sholes)", "Ascensor (Otis)", "Acero (Proceso Bessemer)", "Dinamita (Nobel)", "Anestesia (Éter, Cloroformo)", "Vacuna (Jenner - Viruela)", "Teoría Microbiana de la Enfermedad (Pasteur)", "Antisepsia (Lister)", "Rayos X (Röntgen)", "Cinematógrafo (Hermanos Lumière)", "Dirigible (Zeppelin)", "Plástico (Baquelita - Baekeland)", "Refrigerador (Compresión de vapor)", "Máquina de Coser (Howe, Singer)", "Conservas (Appert)", "Revólver (Colt)", "Ametralladora (Gatling, Maxim)", "Submarino (Holland, Peral)", "Gramófono (Berliner)", "Linotipia", "Calculadora Mecánica (Babbage, Pascal)",
+            // Siglo XX (Hasta ~1980)
+            "Avión (Hermanos Wright)", "Radio (Marconi, Tesla)", "Televisión (Baird, Farnsworth)", "Radar", "Sonar", "Motor a Reacción (Jet Engine - Whittle, von Ohain)", "Cohete (Goddard, von Braun)", "Energía Nuclear (Fisión - Fermi, Hahn, Meitner)", "Bomba Atómica", "Reactor Nuclear", "Transistor (Bardeen, Brattain, Shockley)", "Circuito Integrado (Kilby, Noyce)", "Microprocesador (Intel 4004)", "Computadora Electrónica (ENIAC, Colossus)", "Lenguajes de Programación (FORTRAN, COBOL)", "Internet (ARPANET)", "Satélite Artificial (Sputnik)", "Láser (Maiman)", "Fibra Óptica", "Penicilina (Fleming)", "Insulina (Descubrimiento y Aislamiento)", "Vacuna contra la Polio (Salk, Sabin)", "ADN (Descubrimiento de la estructura - Watson, Crick, Franklin, Wilkins)", "Píldora Anticonceptiva", "Tarjeta de Crédito", "Horno de Microondas", "Cinta Magnética (Audio, Video)", "Fotocopiadora (Xerografía)", "Velcro", "Nylon", "Poliéster", "Teflón", "Aire Acondicionado (Carrier)", "Semáforo Eléctrico", "Lavadora Automática", "Bolígrafo (Biro)", "Cremallera Moderna", "Contenedor Intermodal", "Código de Barras", "Calculadora de Bolsillo", "Walkman (Sony)", "Videojuegos (Spacewar!, Pong)", "Casete de Audio Compacto", "Disquete (Floppy Disk)", "Marcapasos Cardíaco Implantable", "Ecografía (Ultrasonido Médico)", "Tomografía Axial Computarizada (TAC)", "Resonancia Magnética Nuclear (RMN)", "Fertilización In Vitro (FIV)",
+            // Era Digital y Siglo XXI (Desde ~1980)
+            "Computadora Personal (PC - Apple II, IBM PC)", "Interfaz Gráfica de Usuario (GUI - Xerox PARC, Apple Lisa/Macintosh)", "Ratón (Mouse - Engelbart)", "World Wide Web (Tim Berners-Lee)", "Navegador Web (Mosaic, Netscape)", "Correo Electrónico (Email)", "Motor de Búsqueda (Google)", "Teléfono Móvil (Celular)", "Smartphone (iPhone, Android)", "GPS (Sistema de Posicionamiento Global)", "Wi-Fi", "Bluetooth", "Memoria USB (Pendrive)", "Cámara Digital", "Reproductor de MP3", "DVD", "Blu-ray", "Redes Sociales (Facebook, Twitter, etc.)", "Computación en la Nube", "Impresión 3D", "Drones (UAVs)", "Secuenciación del Genoma Humano", "CRISPR-Cas9 (Edición Genética)", "Inteligencia Artificial (Aprendizaje Automático, Redes Neuronales)", "Realidad Virtual (VR)", "Realidad Aumentada (AR)", "Pantallas Táctiles Capacitivas", "Tecnología LED (Iluminación eficiente)", "Paneles Solares Fotovoltaicos (Eficiencia mejorada)", "Baterías de Iones de Litio", "Grafeno (Descubrimiento y aplicaciones potenciales)", "Computación Cuántica (Desarrollo temprano)", "Tecnología Blockchain (Bitcoin)", "Automóviles Eléctricos Modernos (Tesla)", "Cohetes Reutilizables (SpaceX)", "ARN Mensajero (Vacunas COVID-19)", "Asistentes de Voz Inteligentes (Alexa, Siri)",
+            // Conceptos y Principios
+            "El Método Científico", "La Revolución Agrícola Neolítica", "La Revolución Industrial", "La Revolución Digital", "Ley de Moore", "Efecto Fotoeléctrico", "Relatividad Especial y General (Einstein)", "Mecánica Cuántica", "Electromagnetismo (Maxwell)", "Termodinámica", "Teoría de la Evolución (Darwin)", "Genética Mendeliana", "Pasteurización", "Esterilización", "Producción en Cadena (Ford)", "Normalización y Estándares", "Propiedad Intelectual (Patentes)", "Obsolescencia Programada", "Impacto Ambiental de la Tecnología", "Brecha Digital"
+            // ... (Se pueden añadir más inventos específicos o variaciones)
+        ];
+        const inventionThemes = [
+            "inventos de la antigüedad", "inventos medievales", "inventos del renacimiento", "inventos de la revolución industrial", "inventos del siglo XIX", "inventos del siglo XX", "inventos de comunicación", "inventos de transporte", "inventos médicos", "inventos de energía", "inventos de computación", "inventos domésticos", "herramientas prehistóricas", "tecnología militar histórica", "inventos agrícolas", "materiales inventados", "inventos relacionados con la electricidad", "inventos ópticos", "principios científicos clave", "inventos de la era digital"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un historiador experto en ciencia y tecnología, apasionado por la innovación humana. Tu tarea es narrar la historia del invento o concepto tecnológico indicado. Describe su contexto histórico, el problema que buscaba resolver, el inventor o inventores principales (y sus desafíos), el principio de funcionamiento de forma clara, su evolución a lo largo del tiempo, y su impacto social, económico y cultural. Usa un lenguaje riguroso pero accesible y atractivo. El objetivo es una descripción completa de aproximadamente 1200-1300 palabras. Basa tu relato únicamente en el siguiente invento o concepto. **Importante: Al final de tu respuesta, NO incluyas ninguna frase promocional, firma, ni menciones sobre ti como IA o el modelo que estás usando.**",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un asistente experto conocedor de la historia de la tecnología, enfocado únicamente en el invento específico que se está discutiendo actualmente. Responde preguntas de seguimiento sobre sus detalles técnicos (simplificados), impacto, inventores, anécdotas relacionadas o conexiones con otros inventos. Sé conciso y factual, manteniéndote estrictamente dentro del tema del invento actual.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un generador de ideas para una enciclopedia de inventos. Genera exactamente 15 nombres de inventos significativos, descubrimientos científicos clave o conceptos tecnológicos importantes a lo largo de la historia humana. Devuelve *solo* la lista de nombres/conceptos, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Identical to the previous version - searchInput, titleListContainer, etc.)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area'); // Wrapper
+        const modalTextArea = document.getElementById('modal-content-area'); // Scroll area for text/img
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Text div
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentInventionTitle = null; // Context for chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentInventionTitle
+                ? `Eres un asistente experto conocedor de la historia de la tecnología, enfocado únicamente en el invento '${currentInventionTitle}'. Responde preguntas de seguimiento sobre sus detalles, impacto, inventores o anécdotas relacionadas. Sé conciso y factual.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`(Error ${response.status}) Nuestros servidores están experimentando mucho tráfico en este momento. Por favor, intenta de nuevo en unos segundos.`);
+                }
+                let text = await response.text();
+                if (!text || text.trim().length === 0) {
+                    throw new Error("La respuesta de la IA llegó vacía. Intenta reformular la pregunta o elige otro tema.");
+                }
+
+                // *** CRUCIAL: Remove Pollinations Ad ***
+                text = text.replace(/[\n\s]*(?:Generated by|Powered by|Brought to you by)\s+Pollinations(?:\.ai)?(?:\s+using\s+\w+\s+model)?\.?\s*$/i, '').trim();
+
+                console.log(`API Response received and cleaned (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') {
+                    throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                }
+                throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+            }
+        }
+        // Wrappers for clarity
+        async function fetchExplanationText(conceptTitle) {
+            return fetchTextFromApi(conceptTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentInventionTitle) throw new Error("Error interno: No se ha establecido el contexto del invento para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(inventionThemes) || "inventos importantes";
+            const specificPrompt = `Genera 15 nombres de inventos, descubrimientos o conceptos tecnológicos sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                .then(text => {
+                    const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+                    if (titles.length < 5) throw new Error("La IA no generó suficientes ideas de inventos.");
+                    return titles.slice(0, 15);
+                });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 700, height: 550, nologo: true }; // Slightly different aspect ratio?
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "historical invention schematic";
+             // Prompt focused on historical/conceptual look
+             const enhancedPrompt = `Historical illustration or conceptual schematic of the invention '${safePromptText}'. Vintage style, blueprint aesthetic, or depiction of its early use. Focus on the object or concept. Avoid modern elements, text labels, diagrams unless part of the historical style. Sepia tones or classic illustration colors.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, modern diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, photograph, realistic modern setting, people unless essential for scale/use depiction";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (Keep the Markdown replacements)
+        function formatExplanationText(rawText) {
+             if (!rawText) return '';
+             // Basic Markdown/format corrections FIRST
+             let formatted = rawText.trim();
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+             // Paragraph conversion
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                 let content = block.replace(/\n/g, ' '); // Replace internal newlines with space
+                 return `<p>${content}</p>`;
+             }).join('');
+
+             // *** FINAL CLEANUP (Redundant check, main cleanup in API fetch) ***
+             formatted = formatted.replace(/[\n\s]*(?:Generated by|Powered by|Brought to you by)\s+Pollinations(?:\.ai)?\.?\s*$/i, '');
+
+             return formatted;
+          }
+
+        // ========== MODAL FUNCTIONS ========== (Identical logic)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0; // Reset scroll
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentInventionTitle = null; // Clear chat context
+             hideFullscreenImage(); // Ensure fullscreen is also hidden
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Identical logic)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (Identical logic, potentially update messages)
+        function addChatMessage(message, sender) {
+             const msgDiv = document.createElement('div');
+             msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+             message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             msgDiv.innerHTML = message;
+             chatHistory.appendChild(msgDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+         }
+         function addChatError(message) {
+              const errorDiv = document.createElement('div');
+              errorDiv.classList.add('chat-error');
+              errorDiv.textContent = message; // Display the friendly message directly
+              chatHistory.appendChild(errorDiv);
+              chatHistory.scrollTop = chatHistory.scrollHeight;
+         }
+         async function handleSendMessage() {
+             const userQuery = chatInput.value.trim();
+             if (!userQuery || chatSendBtn.disabled || !currentInventionTitle) return;
+             addChatMessage(userQuery, 'user');
+             chatInput.value = '';
+             chatSendBtn.disabled = true;
+             chatLoadingIndicator.style.display = 'block';
+             try {
+                 const aiResponse = await fetchChatResponse(userQuery);
+                 addChatMessage(aiResponse, 'ai');
+             } catch (error) {
+                 console.error("Chat Error:", error);
+                 addChatError(`Error IA: ${error.message}`); // Show the friendly error
+             } finally {
+                 chatLoadingIndicator.style.display = 'none';
+                 chatSendBtn.disabled = false;
+                 chatInput.focus();
+             }
+         }
+
+        // ========== UI & EVENT HANDLERS ========== (Identical logic, updated text)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Sort historically might be complex, alphabetical is safer
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay inventos listados en los archivos «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick *** (Ensure context is set, image listener added)
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentInventionTitle = title; // Set chat context
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title); // Fetches and cleans ad
+                const formattedExplanation = formatExplanationText(rawExplanationText); // Formats Markdown
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0; // Reset scroll after content is visible
+
+                // Add image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-cog placeholder-icon fa-spin" style="--fa-animation-duration: 3s;"></i> <!-- Spinning gear -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Ilustrando el concepto...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Append to text content div
+
+                // Create and load image
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image'; // For styling and click
+                imgElement.alt = `Ilustración de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); // Add zoom listener
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-image-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">No se pudo generar la ilustración.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append loaded image
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message; // Show friendly error
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                // Consider hiding chat section on main error?
+                // chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles *** (Updated button text)
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando en los archivos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron encontrar más inventos en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar más inventos: ${error.message}`); // Friendly error
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Más Inventos';
+             }
+         }
+
+         // Search Filter Function (Added normalization)
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (Identical logic)
+        function initApp() {
+             // Check essential elements...
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: #a52a2a; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes esenciales de la página.</p>';
+                 return;
+              }
+             // Add listeners...
+             modalCloseBtn.addEventListener('click', hideModal);
+             storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+             generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+             searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+             searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+             chatSendBtn.addEventListener('click', handleSendMessage);
+             chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+             imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+             fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+             // Initial load...
+             displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden');
+         }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

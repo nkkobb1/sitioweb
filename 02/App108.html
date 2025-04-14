@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fusionador de Animales - papitasfritas AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            background-image: url('https://cdn.jsdelivr.net/gh/pattern-library/pattern-library@main/patterns/memphis-mini.png');
+        }
+        .bg-custom-gradient {
+            background: linear-gradient(135deg, #FF6B6B, #FFD166);
+        }
+        .btn-gradient {
+            background-image: linear-gradient(to right, #FF6B6B, #FFD166);
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            background-image: linear-gradient(to right, #FF5252, #FFB300);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .animate-pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+        .loading-spinner {
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .animal-input {
+            transition: all 0.3s ease;
+            border-left: 4px solid #FF6B6B;
+        }
+        .animal-input:focus-within {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .result-container {
+            transition: all 0.5s ease;
+        }
+        .slide-in {
+            animation: slideIn 0.7s ease forwards;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .description-container {
+            border-radius: 12px;
+            background: linear-gradient(120deg, #f9f7fe, #fff3e0);
+            border-left: 5px solid #FFD166;
+            line-height: 1.8;
+        }
+        .description-container p {
+            font-size: 1.05rem;
+            color: #4B5563;
+        }
+        .fancy-border {
+            position: relative;
+            z-index: 0;
+        }
+        .fancy-border::before {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #FF6B6B, #FFD166, #06D6A0, #118AB2, #073B4C);
+            border-radius: 16px;
+            margin: -2px;
+            animation: gradientShift 8s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        .number-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: white;
+            background: linear-gradient(135deg, #FF6B6B, #FFD166);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #FF6B6B #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #FF6B6B;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header con animación -->
+        <header class="mb-10 text-center">
+            <div class="fancy-border inline-block mb-6">
+                <div class="bg-white px-8 py-6 rounded-xl">
+                    <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 inline-block">
+                        <i class="fas fa-magic mr-3"></i> Fusionador de Animales
+                    </h1>
+                    <p class="text-xl font-medium mt-3 text-gray-600">by <span class="font-bold text-pink-500">papitasfritas AI</span></p>
+                </div>
+            </div>
+            <p class="text-gray-600 max-w-2xl mx-auto text-lg">Combina hasta 5 animales para crear criaturas asombrosas con el poder de la inteligencia artificial. ¡Deja volar tu imaginación!</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Panel - Inputs -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-pink-200 pb-2 flex items-center">
+                        <i class="fas fa-paw mr-2 text-pink-500"></i> Elige tus animales
+                    </h2>
+                    
+                    <div id="animals-container" class="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                        <div class="animal-input bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <div class="number-badge mr-2">1</div>
+                                <label class="font-medium text-gray-700">Primer animal:</label>
+                            </div>
+                            <input type="text" class="animal-name w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition" placeholder="Ej: León">
+                        </div>
+                        
+                        <div class="animal-input bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <div class="number-badge mr-2">2</div>
+                                <label class="font-medium text-gray-700">Segundo animal:</label>
+                            </div>
+                            <input type="text" class="animal-name w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition" placeholder="Ej: Águila">
+                        </div>
+                        
+                        <div class="animal-input bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <div class="number-badge mr-2">3</div>
+                                <label class="font-medium text-gray-700">Tercer animal:</label>
+                            </div>
+                            <input type="text" class="animal-name w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition" placeholder="Ej: Tiburón">
+                        </div>
+                        
+                        <div class="animal-input bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <div class="number-badge mr-2">4</div>
+                                <label class="font-medium text-gray-700">Cuarto animal (opcional):</label>
+                            </div>
+                            <input type="text" class="animal-name w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition" placeholder="Ej: Elefante">
+                        </div>
+                        
+                        <div class="animal-input bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <div class="number-badge mr-2">5</div>
+                                <label class="font-medium text-gray-700">Quinto animal (opcional):</label>
+                            </div>
+                            <input type="text" class="animal-name w-full p-3 border border-pink-200 rounded-lg focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition" placeholder="Ej: Pulpo">
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-indigo-200 pb-2 flex items-center">
+                            <i class="fas fa-sliders-h mr-2 text-indigo-500"></i> Ajustes
+                        </h2>
+                        
+                        <div class="mb-4">
+                            <label class="block font-medium text-gray-700 mb-2">Modelo:</label>
+                            <select id="model-select" class="w-full p-3 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white">
+                                <option value="turbo" selected>Turbo (más rápido)</option>
+                                <option value="flux">Flux (alta calidad)</option>
+                                <option value="stable-diffusion">Stable Diffusion</option>
+                                <option value="dalle-3">DALL-E 3 (si disponible)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block font-medium text-gray-700 mb-2">Estilo de la imagen:</label>
+                            <select id="style-select" class="w-full p-3 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-white">
+                                <option value="realistic 4k detailed">Realista detallado</option>
+                                <option value="digital art">Arte digital</option>
+                                <option value="cartoon style">Estilo cartoon</option>
+                                <option value="fantasy art">Arte fantástico</option>
+                                <option value="3D render">Render 3D</option>
+                                <option value="watercolor painting">Acuarela</option>
+                                <option value="pencil sketch">Dibujo a lápiz</option>
+                                <option value="studio photography">Fotografía de estudio</option>
+                                <option value="isometric pixel art">Pixel art isométrico</option>
+                                <option value="oil painting">Pintura al óleo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-2">Ancho:</label>
+                                <input type="number" id="width-input" value="512" min="256" max="1024" step="64" class="w-full p-3 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+                            </div>
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-2">Alto:</label>
+                                <input type="number" id="height-input" value="512" min="256" max="1024" step="64" class="w-full p-3 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block font-medium text-gray-700 mb-2">Semilla (seed):</label>
+                            <div class="flex">
+                                <input type="number" id="seed-input" value="" placeholder="Aleatorio" class="w-full p-3 border border-indigo-200 rounded-l-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400">
+                                <button id="random-seed-btn" class="bg-indigo-500 text-white p-3 rounded-r-lg hover:bg-indigo-600 transition flex items-center justify-center">
+                                    <i class="fas fa-random"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Deja vacío para semilla aleatoria. Usa la misma semilla para reproducir resultados.</p>
+                        </div>
+                        
+                        <button id="generate-btn" class="w-full btn-gradient text-white py-4 px-6 rounded-lg text-xl font-bold shadow-lg flex items-center justify-center">
+                            <i class="fas fa-bolt mr-2"></i> ¡Fusionar Animales!
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Results -->
+            <div class="lg:col-span-2 space-y-6">
+                <div id="loading-container" class="hidden card bg-white p-8 text-center min-h-[300px] flex flex-col items-center justify-center">
+                    <div class="relative">
+                        <div class="w-20 h-20 border-4 border-pink-500 border-opacity-20 rounded-full"></div>
+                        <div class="w-20 h-20 border-4 border-t-pink-500 border-r-transparent border-b-transparent border-l-transparent rounded-full absolute top-0 left-0 loading-spinner"></div>
+                    </div>
+                    <p class="text-xl font-medium text-gray-700 mt-6 animate-pulse-slow">Creando tu animal híbrido...</p>
+                    <p class="text-gray-500 mt-2 max-w-md">La IA está combinando las características de tus animales para crear algo único y sorprendente</p>
+                </div>
+                
+                <div id="results-container" class="hidden space-y-6">
+                    <div class="card bg-white overflow-hidden">
+                        <div class="p-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-camera text-pink-500 mr-2"></i> Tu creación
+                            </h2>
+                            <div class="flex justify-center">
+                                <div class="relative w-full max-w-2xl">
+                                    <div class="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-500 rounded-lg blur opacity-70 animate-pulse"></div>
+                                    <div class="relative bg-white p-2 rounded-lg">
+                                        <img id="result-image" class="w-full h-auto rounded shadow-md" src="https://via.placeholder.com/512x512?text=Tu+fusion+aparecera+aqui" alt="Animal fusionado">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center mt-6 space-x-4">
+                                <button id="download-btn" class="bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-6 rounded-lg hover:from-blue-500 hover:to-blue-700 transition flex items-center font-medium">
+                                    <i class="fas fa-download mr-2"></i> Descargar
+                                </button>
+                                <button id="regenerate-btn" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white py-3 px-6 rounded-lg hover:from-purple-500 hover:to-purple-700 transition flex items-center font-medium">
+                                    <i class="fas fa-sync-alt mr-2"></i> Regenerar
+                                </button>
+                                <button id="share-btn" class="bg-gradient-to-r from-green-400 to-green-600 text-white py-3 px-6 rounded-lg hover:from-green-500 hover:to-green-700 transition flex items-center font-medium">
+                                    <i class="fas fa-share-alt mr-2"></i> Compartir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-white">
+                        <div class="p-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-book-open text-pink-500 mr-2"></i> Descripción de tu criatura
+                            </h2>
+                            <div id="description-container" class="description-container p-6 mt-2">
+                                <div class="text-center mb-3">
+                                    <span class="inline-block bg-yellow-400 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">Nuevo Descubrimiento</span>
+                                </div>
+                                <div id="result-description" class="prose max-w-none">
+                                    <p class="text-gray-700 leading-relaxed">La descripción de tu increíble criatura aparecerá aquí cuando la generes.</p>
+                                </div>
+                                <div class="flex justify-between items-center mt-4 text-sm text-gray-500 border-t border-gray-200 pt-3">
+                                    <span><i class="fas fa-flask mr-1"></i> papitasfritas AI</span>
+                                    <span><i class="fas fa-calendar-alt mr-1"></i> <span id="current-date">Hoy</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-white">
+                        <div class="p-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-code text-pink-500 mr-2"></i> Prompt utilizado
+                            </h2>
+                            <div class="bg-gray-800 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                <pre id="used-prompt" class="whitespace-pre-wrap break-words">El prompt usado para generar la imagen aparecerá aquí.</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="empty-state" class="card bg-white p-8 text-center flex flex-col items-center justify-center min-h-[400px]">
+                    <div class="w-32 h-32 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-magic text-5xl text-pink-500"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">¡Crea tu animal híbrido!</h3>
+                    <p class="text-gray-600 max-w-lg text-lg">Selecciona entre 2 y 5 animales para fusionar y presiona el botón "¡Fusionar Animales!" para crear una criatura única con la magia de la IA.</p>
+                    <div class="mt-6 grid grid-cols-5 gap-3 max-w-md">
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center mx-auto">
+                                <i class="fas fa-cat text-pink-500"></i>
+                            </div>
+                            <span class="text-xs mt-1 block text-gray-500">Felino</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                                <i class="fas fa-fish text-blue-500"></i>
+                            </div>
+                            <span class="text-xs mt-1 block text-gray-500">Acuático</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                                <i class="fas fa-frog text-green-500"></i>
+                            </div>
+                            <span class="text-xs mt-1 block text-gray-500">Anfibio</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+                                <i class="fas fa-dove text-yellow-500"></i>
+                            </div>
+                            <span class="text-xs mt-1 block text-gray-500">Ave</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
+                                <i class="fas fa-spider text-purple-500"></i>
+                            </div>
+                            <span class="text-xs mt-1 block text-gray-500">Insecto</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-12 text-center">
+            <div class="bg-white rounded-xl shadow-md p-6 max-w-4xl mx-auto">
+                <p class="text-gray-600">Creado con <i class="fas fa-heart text-pink-500"></i> por <span class="font-bold text-pink-500">papitasfritas AI</span> | Usando la tecnología de Pollinations</p>
+                <p class="mt-2 text-sm text-gray-500">Este es un proyecto de demostración. Las imágenes generadas son creaciones de IA y no representan animales reales.</p>
+                <div class="flex justify-center space-x-4 mt-4">
+                    <a href="#" class="text-gray-400 hover:text-pink-500 transition"><i class="fab fa-twitter text-xl"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-pink-500 transition"><i class="fab fa-instagram text-xl"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-pink-500 transition"><i class="fab fa-github text-xl"></i></a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos
+            const generateBtn = document.getElementById('generate-btn');
+            const randomSeedBtn = document.getElementById('random-seed-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            const shareBtn = document.getElementById('share-btn');
+            const loadingContainer = document.getElementById('loading-container');
+            const resultsContainer = document.getElementById('results-container');
+            const emptyState = document.getElementById('empty-state');
+            const resultImage = document.getElementById('result-image');
+            const resultDescription = document.getElementById('result-description');
+            const usedPrompt = document.getElementById('used-prompt');
+            const animalInputs = document.querySelectorAll('.animal-name');
+            
+            // Establecer fecha actual
+            const currentDate = document.getElementById('current-date');
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            currentDate.textContent = new Date().toLocaleDateString('es-ES', options);
+            
+            // Variables para almacenar la última configuración
+            let lastConfig = {
+                animals: [],
+                model: '',
+                style: '',
+                width: 0,
+                height: 0,
+                seed: 0
+            };
+            
+            // Event Listeners
+            generateBtn.addEventListener('click', generateFusion);
+            randomSeedBtn.addEventListener('click', generateRandomSeed);
+            downloadBtn.addEventListener('click', downloadImage);
+            regenerateBtn.addEventListener('click', regenerateWithSameSeed);
+            shareBtn.addEventListener('click', shareImage);
+            
+            // Generate random seed
+            function generateRandomSeed() {
+                const seedInput = document.getElementById('seed-input');
+                seedInput.value = Math.floor(Math.random() * 1000000);
+            }
+            
+            // Download image
+            function downloadImage() {
+                const link = document.createElement('a');
+                link.href = resultImage.src;
+                link.download = 'fusion-animal-papitasfritas-ai.jpg';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Share image (simulated)
+            function shareImage() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Mi animal híbrido creado con papitasfritas AI',
+                        text: 'Mira este increíble animal híbrido que creé con papitasfritas AI!',
+                        url: resultImage.src,
+                    })
+                    .catch(error => {
+                        console.log('Error compartiendo:', error);
+                        alert('Enlace copiado al portapapeles. ¡Comparte tu creación!');
+                    });
+                } else {
+                    // Fallback para navegadores que no soportan Web Share API
+                    const tempInput = document.createElement('input');
+                    document.body.appendChild(tempInput);
+                    tempInput.value = resultImage.src;
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    alert('Enlace copiado al portapapeles. ¡Comparte tu creación!');
+                }
+            }
+            
+            // Regenerate with same configuration
+            function regenerateWithSameSeed() {
+                const seedInput = document.getElementById('seed-input');
+                if (seedInput.value === '') {
+                    // Si no hay semilla, generamos una nueva
+                    generateRandomSeed();
+                }
+                generateFusion();
+            }
+            
+            // Formatear descripción para una mejor presentación
+            function formatDescription(text) {
+                // Dividir el texto en párrafos
+                const paragraphs = text.split('\n').filter(p => p.trim() !== '');
+                
+                // Crear elementos HTML para cada párrafo
+                let formattedHTML = '';
+                
+                paragraphs.forEach((paragraph, index) => {
+                    // Destacar el primer párrafo
+                    if (index === 0) {
+                        formattedHTML += `<p class="font-medium text-lg mb-3">${paragraph}</p>`;
+                    } else {
+                        formattedHTML += `<p class="mb-3">${paragraph}</p>`;
+                    }
+                });
+                
+                return formattedHTML;
+            }
+            
+            // Main function to generate the fusion
+            function generateFusion() {
+                // Get animal names
+                const animals = [];
+                animalInputs.forEach(input => {
+                    if (input.value.trim() !== '') {
+                        animals.push(input.value.trim());
+                    }
+                });
+                
+                // Validate inputs
+                if (animals.length < 2) {
+                    alert('Por favor, introduce al menos 2 animales para fusionar.');
+                    return;
+                }
+                
+                // Get other parameters
+                const model = document.getElementById('model-select').value;
+                const style = document.getElementById('style-select').value;
+                const width = document.getElementById('width-input').value;
+                const height = document.getElementById('height-input').value;
+                let seed = document.getElementById('seed-input').value || Math.floor(Math.random() * 1000000);
+                
+                // Save current configuration
+                lastConfig = {
+                    animals: [...animals],
+                    model,
+                    style,
+                    width,
+                    height,
+                    seed
+                };
+                
+                // Show loading
+                emptyState.classList.add('hidden');
+                loadingContainer.classList.remove('hidden');
+                resultsContainer.classList.add('hidden');
+                
+                // Create prompt for the fusion
+                const animalsText = animals.length > 2 
+                    ? animals.slice(0, -1).join(', ') + ' y ' + animals[animals.length - 1]
+                    : animals.join(' y ');
+                
+                const basePrompt = `Una fusión biológica de ${animalsText}, ${style}, anatomically correct, biological fusion, detailed features, creative hybrid animal`;
+                const encodedPrompt = encodeURIComponent(basePrompt);
+                
+                // Create image URL
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${model}&width=${width}&height=${height}&seed=${seed}&nologo=true`;
+                
+                // Create description prompt
+                const descriptionPrompt = `Describe detalladamente y con estilo entretenido cómo sería un animal híbrido que combina un ${animalsText}. Incluye detalles sobre:
+1. Su apariencia física y características distintivas
+2. Su hábitat natural y comportamiento
+3. Sus habilidades especiales y adaptaciones
+4. Un nombre científico creativo para esta nueva especie
+
+Usa un tono entretenido, divertido y educativo. Máximo 4 párrafos. En español.`;
+                
+                const encodedDescriptionPrompt = encodeURIComponent(descriptionPrompt);
+                const descriptionUrl = `https://text.pollinations.ai/${encodedDescriptionPrompt}`;
+                
+                // Load image
+                const newImage = new Image();
+                newImage.onload = function() {
+                    resultImage.src = imageUrl;
+                    usedPrompt.textContent = basePrompt;
+                    
+                    // Get description
+                    fetch(descriptionUrl)
+                        .then(response => response.text())
+                        .then(text => {
+                            // Formatear la descripción para una presentación más elegante
+                            resultDescription.innerHTML = formatDescription(text.trim());
+                            
+                            // Show results
+                            loadingContainer.classList.add('hidden');
+                            resultsContainer.classList.remove('hidden');
+                            resultsContainer.classList.add('slide-in');
+                        })
+                        .catch(error => {
+                            console.error('Error fetching description:', error);
+                            resultDescription.innerHTML = formatDescription(`¡Increíble! Has creado un extraordinario híbrido entre ${animalsText}. Esta fascinante criatura combina las mejores características de sus progenitores de formas sorprendentes.
+                            
+                            Su apariencia única mezcla elementos reconocibles de cada animal, creando una nueva especie que desafía la imaginación y muestra el increíble potencial de la evolución si tomara caminos inesperados.
+                            
+                            ¡Los biólogos estarían asombrados al estudiar sus características anatómicas y comportamentales únicas!`);
+                            
+                            // Show results even if description fails
+                            loadingContainer.classList.add('hidden');
+                            resultsContainer.classList.remove('hidden');
+                            resultsContainer.classList.add('slide-in');
+                        });
+                };
+                
+                newImage.onerror = function() {
+                    alert('Hubo un error al generar la imagen. Por favor intenta de nuevo.');
+                    loadingContainer.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                };
+                
+                newImage.src = imageUrl;
+            }
+            
+            // Initialize with random seed
+            generateRandomSeed();
+        });
+    </script>
+</body>
+</html>

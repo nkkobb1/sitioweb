@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personajes de Hora de Aventura - Enciclopedia de Ooo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Hora de Aventura style -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Hora de Aventura --- */
+        :root {
+            --color-primary: #FDF304; /* Amarillo Finn */
+            --color-secondary: #FF69B4; /* Rosa Chicle */
+            --color-tertiary: #50C8FF; /* Azul Hielo */
+            --color-accent: #DC143C; /* Rojo Marceline/Llama */
+            --color-background: #F0F8FF; /* Azul Cielo Muy Pálido */
+            --color-text: #333333; /* Gris Oscuro para contraste */
+            --color-text-muted: #555555; /* Gris medio */
+            --color-modal-bg: #ffffff; /* Blanco Modal */
+            --color-border: #cce4ff; /* Borde Azul Pálido */
+            --color-error-bg: #fff0f0; /* Fondo error rosa pálido */
+            --color-error-text: #D8000C; /* Texto error rojo */
+            --color-error-border: #ffbaba; /* Borde error rosa */
+
+            --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 20px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px; /* Bordes más redondeados */
+            --transition-normal: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Transición suave */
+        }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 400; }
+        h1, h2, h3, h4, .logo, .button-text { font-family: 'Bangers', cursive; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); text-shadow: 2px 2px 0 var(--color-text), -2px -2px 0 var(--color-text), 2px -2px 0 var(--color-text), -2px 2px 0 var(--color-text), 2px 0px 0 var(--color-text), -2px 0px 0 var(--color-text), 0px 2px 0 var(--color-text), 0px -2px 0 var(--color-text), 0 0 8px rgba(0,0,0,0.3); } /* Contorno + Sombra */
+        h1.page-title { color: var(--color-accent); font-weight: 400; } /* Bangers es bold por defecto */
+        h2.section-title { color: var(--color-secondary); border-bottom: 3px dotted var(--color-primary); padding-bottom: 0.5rem; display: inline-block; font-weight: 400; font-size: 2.6rem; }
+        #modal-title { color: var(--color-accent); font-weight: 400; font-size: 2.2rem; }
+        .navbar { background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 2px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 2px solid var(--color-border); border-radius: var(--border-radius); font-size: 1.1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Nunito'; }
+        #search-input::placeholder { color: var(--color-text-muted); font-style: italic; }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 4px rgba(253, 243, 4, 0.3); outline: none; background-color: #fff; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.2rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.3rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 700; color: var(--color-text); border: 2px solid var(--color-border); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; font-family: 'Nunito'; font-size: 1rem; position: relative; overflow: hidden;}
+        .title-item::before { /* Efecto hover divertido */ content: ''; position: absolute; bottom: -100%; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--color-primary), transparent); transition: bottom 0.3s ease-out; z-index: 0; opacity: 0.7; }
+        .title-item:hover::before { bottom: 0; }
+        .title-item span { position: relative; z-index: 1; } /* Texto sobre el efecto */
+        .title-item:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-text); } /* Mantiene texto oscuro para leer sobre amarillo */
+
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-secondary), var(--color-accent)); color: white; padding: 0.8rem 1.8rem; border: none; border-radius: 30px; /* Botón redondeado */ font-family: 'Bangers', cursive; font-weight: 400; font-size: 1.5rem; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1.5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); box-shadow: var(--shadow-md); }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-accent), var(--color-secondary)); box-shadow: var(--shadow-lg); transform: scale(1.03) rotate(-1deg); }
+        #generate-more-btn:disabled { background: #cccccc; color: #888888; cursor: not-allowed; opacity: 0.8; transform: none; box-shadow: none; text-shadow: none;}
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(80, 200, 255, 0.8); /* Overlay Azul Hielo */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 3px solid var(--color-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 900px; /* Un poco más estrecho */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Más altura */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffc0cb' fill-opacity='0.1'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); /* Fondo sutil */
+        }
+        .modal-close-btn { position: absolute; top: 8px; right: 8px; background: var(--color-secondary); border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; font-family: 'Bangers'; }
+        .modal-close-btn:hover { background-color: var(--color-accent); transform: rotate(360deg) scale(1.1); box-shadow: 0 0 10px var(--color-accent); }
+
+         /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 10px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-accent); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; font-weight: 700; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Bangers', cursive; margin-top: 2em; margin-bottom: 1em; color: var(--color-tertiary); border-bottom: 2px dashed var(--color-border); padding-bottom: 0.4em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.8em; color: var(--color-secondary); }
+        #modal-content h2 { font-size: 1.6em; }
+        #modal-content h3 { font-size: 1.4em; color: var(--color-accent); border-style: dotted;}
+        #modal-content h4 { font-size: 1.2em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; /* Más pequeña por defecto */ height: auto; margin: 2.5rem auto 1rem auto; border: 3px solid var(--color-primary); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efecto rebote */ }
+        #modal-content .final-image:hover { transform: scale(1.05) rotate(2deg); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); text-align: center; }
+        #modal-content .image-placeholder .spinner { width: 50px; height: 50px; border: 5px solid rgba(255, 105, 180, 0.3); border-top-color: var(--color-secondary); border-radius: 50%; animation: spin 1.2s linear infinite; margin-bottom: 1rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3.5rem; color: var(--color-tertiary); margin-bottom: 0.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 2px dashed var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 220px; /* Un poco menos altura */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 2px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(240, 248, 255, 0.7); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 8px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 1rem; border-radius: 15px; /* Más redondeado */ max-width: 88%; word-wrap: break-word; line-height: 1.5; font-family: 'Nunito'; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-tertiary); color: white; margin-left: auto; text-align: left; /* Alineado a la izquierda dentro del globo */ border-bottom-right-radius: 3px; }
+        .ai-message { background-color: var(--color-secondary); color: white; margin-right: auto; text-align: left; border-bottom-left-radius: 3px; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.5rem; }
+        #chat-input-area { display: flex; gap: 0.6rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 2px solid var(--color-border); background-color: white; color: var(--color-text); border-radius: 20px; font-family: 'Nunito'; font-size: 1rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.3); }
+        #chat-send-btn { padding: 0.7rem 1.2rem; background-color: var(--color-primary); color: var(--color-text); border: none; border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; font-size: 1.1rem; box-shadow: var(--shadow-sm); }
+        #chat-send-btn:hover:not(:disabled) { background-color: #e0d804; transform: scale(1.1); }
+        #chat-send-btn:disabled { background-color: #dddddd; cursor: not-allowed; transform: none; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; font-family: 'Nunito'; font-style: italic; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 70px; height: 70px; border: 8px dotted var(--color-tertiary); border-top-style: solid; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.5s linear infinite; margin: 0 auto 2rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-secondary); font-size: 2rem; font-family: 'Bangers'; text-shadow: 1px 1px 1px rgba(0,0,0,0.2); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 2px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 700; font-family: 'Nunito'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(253, 243, 4, 0.9); /* Overlay Amarillo */ display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 90%; max-height: 90%; object-fit: contain; border: 5px solid var(--color-secondary); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 25px; right: 30px; background: var(--color-modal-bg); border: 2px solid var(--color-secondary); border-radius: 50%; width: 45px; height: 45px; font-size: 2rem; color: var(--color-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); font-family: 'Bangers'; }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: var(--color-modal-bg); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                  <img src="https://img.icons8.com/color/48/000000/jake.png" alt="Jake Icon" class="h-10 mr-2 inline"/> <!-- Icono de Jake -->
+                 <h1 class="logo text-4xl sm:text-5xl">
+                     Hora de Aventura
+                 </h1>
+                  <img src="https://img.icons8.com/color/48/000000/finn.png" alt="Finn Icon" class="h-10 ml-2 inline"/> <!-- Icono de Finn -->
+             </div>
+             <span class="text-base text-gray-600 font-sans font-bold tracking-wide">¡La Enciclopedia de Ooo!</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">¡Explora los Personajes!</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-normal">¡Algebraico! Busca o selecciona un personaje para ver su archivo completo. ¿Listo para la aventura?</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-xl mx-auto"> <!-- Más estrecho -->
+             <input type="text" id="search-input" placeholder="Busca a Finn, Jake, PB...">
+             <i class="fas fa-search"></i> <!-- Icono búsqueda genérico ok -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-users text-pink-400 mr-2"></i> <!-- Icono grupo -->
+                 Habitantes de Ooo
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Consultando el Enchiridion...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">¡Oh, no! No encontramos a nadie con ese nombre.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                      <span class="button-text">¡Más Personajes!</span>
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">X</button> <!-- 'X' en Bangers -->
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Cargando Datos...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <h3 class="text-lg font-bold text-center mb-2 font-family-bangers text-gray-700">¡Pregúntale al Caracol!</h3> <!-- Título Chat Temático -->
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                         <div class="chat-message ai-message">¡Hola! Soy el caracol saludador (digital). Pregúntame lo que quieras sobre <strong id="chat-context-name">este personaje</strong>.</div>
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Pensando... Zzz...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Escribe tu pregunta aquí...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">X</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada del Personaje">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-blue-100 text-gray-700 py-6 mt-12 border-t-2 border-blue-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información recopilada por IA inspirada en el universo de Hora de Aventura.</p>
+              <p class="mt-1">Todos los personajes pertenecen a Pendleton Ward y Cartoon Network.</p>
+              <p class="mt-2">© ¡Año Glob! Enciclopedia de Ooo</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Principales y Secundarios Muy Relevantes
+            "Finn el Humano", "Jake el Perro", "Princesa Bubblegum (Bonnibel)", "Marceline la Reina Vampiro", "Rey Helado (Simon Petrikov)", "BMO", "Lady Rainicorn (Arcoiris)", "Princesa Llama (Phoebe)", "Lumpy Space Princess (LSP)", "Susan Strong (Kara)", "Martin Mertens", "Betty Grof", "Fern el Humano (Grass Finn)", "Mentita (Peppermint Butler)",
+            // Villanos Principales y Recurrentes
+            "El Lich", "Gunter (Orgalorg)", "GOLB", "Hunson Abadeer", "Magic Man (Hombre Mágico / Normal Man / King Man)", "Tío Gumbald", "Conde de Limonagrio (Lemongrab)", "Ricardio Corazón", "El Gato con Poderes", "Darren el Ser Antiguo", "La Emperatriz", "Paciencia St. Pim (Elemental de Hielo)",
+            // Familia y Relacionados
+            "Joshua (Padre de Jake)", "Margaret (Madre de Jake)", "Jermaine el Perro", "Tiffany Oiler", "Kim Kil Whan", "Jake Jr.", "T.V.", "Viola", "Charlie", "Bronwyn", "Minerva Campbell (Madre de Finn)", "Warren Ampersand", "Los Padres de Marceline (Hunson y Elise)", "Gibbon",
+            // Reyes y Reinas (Además de los principales)
+            "Rey de Ooo", "Rey Llama", "Reina Llama", "Rey Gusano", "Rey de las Nubes", "Reina Banana",
+            // Princesas (¡Hay muchas!)
+            "Princesa Galleta", "Princesa Slime", "Princesa Fantasma", "Princesa Hot Dog", "Princesa Tortuga", "Princesa Músculos", "Princesa Esqueleto", "Princesa Trapo", "Princesa Embrión", "Princesa Anillo de Compromiso", "Princesa Desayuno", "Princesa Doctora", "Princesa Abeja", "Princesa Mora", "Princesa Cachorro", "Princesa Tostada", "Princesa Lodo", "Princesa Codo", "Princesa Jungla", "Princesa Púrpura", "Princesa Maní", "Princesa Robot", "Princesa Gnomo", "Princesa Espacial Inflamable",
+            // Habitantes del Dulce Reino
+            "Pan de Canela (Cinnamon Bun)", "Starchy el Sepulturero", "Root Beer Guy (Chico Root Beer)", "Cherry Cream Soda", "Coronel Palanqueta", "Chicle Guardianes", "Manfried", "Goliad", "Stormo", "Neddy el Dragón de Caramelo", "Duque de la Nuez", "Chet", "Earl Agrio (Hermano de Lemongrab)", "James", "James II (y los otros clones)", "Chips & Ice Cream", "Doctor Helado", "Enfermera Poundcake",
+            // Habitantes del Reino Helado / Magos
+            "Gunter (Pingüino principal)", "Otros Pingüinos (Gunter, Gunther, Günter...)", "Pequeño Miau", "Bufo el Mago", "Ron James", "Abracadaniel", "Mago Anciano", "Cubo Mágico", "Gran Maestro de los Magos", "Mago del Bosque", "Pete Sassafras", "Presidente del Hielo", "Lazer Wizard", "Fly Wizard",
+            // Habitantes del Reino de Fuego
+            "Flambo", "Bernie", "Don John el Zorro de Fuego", "Senadores de Fuego", "Guardias Flama",
+            // Otros Personajes Recurrentes
+            "Tronquitos (Tree Trunks)", "Sr. Cerdo", "NEPTR (Robot de Pasteles)", "Choose Goose (Ganso Manso)", "El Caracol Saludador", "Búho Cósmico", "Prismo", "Muerte", "Party God (Dios de la Fiesta)", "Mujer Anciana", "Hombre Anciano", "Huntress Wizard (Maga Cazadora)", "Billy el Héroe", "Canyon", "Tiffany", "Kent", "Banana Man (Hombre Plátano)", "Giuseppe", "El Lich (Forma de Jake)", "El Lich (Forma de Caracol)", "El Lich (Forma de Sweet P.)", "Sweet P.",
+            // Personajes de Episodios Específicos (Notables)
+            "Shoko", "The Farm (La Granja)", "Manticore el Diminuto", "Elefante Psíquico Ancestral de Guerra", "James Baxter el Caballo", "Rattleballs", "Hombre Banana Guardia", "Toronto", "Aquandrius", "Rey Detestable", "Marshmaline la Reina Malvavisco", "Príncipe de la Suciedad", "Doctor Gross", "Vida", "Los Chicos del Sótano", "Samantha la Perra", "Isla (Amo de las Nubes)", "Sparkle el Bebé", "Randy Buttercups", "Moe (Creador de BMO)", "Los Hijos de Arcoiris (Charlie, Jake Jr., T.V., Viola, Kim Kil Whan)", "Cuber", "Glob (Grob Gob Glob Grod)", "Hunson Abadeer (Forma Monstruosa)", "Simon Petrikov (Antes de la corona)", "Ice Thing (Cosa Helada)",
+            // Versiones Alternativas (Fionna & Cake)
+            "Fionna la Humana", "Cake la Gata", "Príncipe Gumball", "Marshall Lee el Rey Vampiro", "Reina Helada", "Lord Monochromicorn", "Lumpy Space Prince (LSP hombre)", "Ice President", "Butterscotch Butler",
+            // Elementales
+            "Paciencia St. Pim (Hielo)", "Princesa Slime (Slime)", "Chatsberry (Dulce)", "Brasa (Fuego - Pr. Llama)",
+            // Otros Seres Cósmicos/Poderosos
+            "El Hombre Gris", "Orgalorg (Forma original)", "Catalizador Cometa (Diferentes formas)", "Seres de Antes del Tiempo", "Monstruo del Agujero", "Monstruos de Miedo de Finn",
+            // Personajes de 'Stakes'
+            "El Rey Vampiro", "La Luna", "El Hierofante", "La Emperatriz (Vampiresa)", "El Tonto",
+            // Personajes de 'Islands'
+            "Alva", "Frieda", "Los Buscadores", "Dr. Gross (Islands)", "Kara (Susan - Islands)",
+            // Personajes de 'Elements'
+            "Lolly (Slime Elemental)", "Rocky (Fuego Elemental)", "Sally (Dulce Elemental)",
+            // Personajes de 'Come Along With Me'
+            "Shermy", "Beth la Perra Princesa", "Gibbon (del futuro)", "Rey de Ooo (Futuro)", "Pup Kingdom",
+            // Animales y Criaturas
+            "Caracol Eléctrico", "Abeja Gigante", "Ardilla", "Cíclope", "Gusanos", "Demonio de la Dimensión Oscura", "Gato Demonio", "Gansos Mutantes", "Gnomos", "Hombre Lobo", "Oso Bailarín", "Pulpo", "Pájaros Cantores", "Araña Gigante", "Unicornios", "Zombie de Caramelo",
+            // Objetos Personificados
+            "El Enchiridion", "Espada de Finn (Varias)", "Guantelete del Héroe", "Sombrero de Finn", "Flauta de Jake", "Bajo-Hacha de Marceline", "Corona del Rey Helado", "Amuleto de Nocheósfera", "Varita de Mago", "Piedras Preciosas de las Princesas",
+            // Conceptos (Si se necesita rellenar mucho)
+            "La Gran Guerra de los Champiñones", "Historia de Ooo", "El Dulce Reino", "El Reino Helado", "Nocheósfera", "Reino de Fuego", "Espacio Bultos", "Dimensión de Cristal", "Biblioteca de Prismo", "Magia en Ooo", "Tecnología en Ooo", "Música en Hora de Aventura", "Comida en Hora de Aventura",
+            // Añadir más si es necesario... ¡es un mundo vasto!
+        ];
+        const adventureTimeThemes = [
+            "habitantes del Dulce Reino", "personajes del Reino Helado", "princesas de Ooo", "villanos de Hora de Aventura", "magos y seres mágicos", "familia de Jake el Perro", "personajes cósmicos", "versiones alternativas (Fionna & Cake)", "elementales", "personajes de Stakes", "personajes de Islands", "personajes de Elements", "criaturas de Ooo", "robots y seres artificiales", "personajes recurrentes menores", "familiares de los protagonistas", "realeza de Ooo"
+        ];
+        const textApiConfig = {
+            model: "mistral", // Modelo potente para descripciones detalladas
+            systemPrompt: "Eres el Guardián del Enchiridion, un sabio conocedor de todos los seres que habitan la Tierra de Ooo. Tu tarea es describir al personaje de Hora de Aventura indicado con gran detalle y entusiasmo. Incluye: Apariencia física distintiva, personalidad y rasgos clave, habilidades especiales o poderes, relaciones importantes (amigos, enemigos, familia), su arco argumental principal o momentos más icónicos, y quizás su primera aparición o una frase célebre. ¡Hazlo matemático! Usa un tono informativo pero divertido y fiel al espíritu de Hora de Aventura. La descripción debe tener entre 1200 y 1300 palabras. Describe únicamente al siguiente personaje:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny", // Modelo más rápido para chat
+            systemPrompt: "¡Hola! Soy el Caracol Saludador (digital). ¡Wooo! Responde preguntas SOLO sobre el personaje de Hora de Aventura que se está mostrando actualmente. Sé breve, amigable y usa lenguaje sencillo, ¡como si estuvieras en Ooo! Si no sabes algo, ¡di que estás saludando en otro lado!",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un generador de nombres para la Enciclopedia de Ooo. Genera exactamente 15 nombres de personajes del universo de Hora de Aventura (pueden ser principales, secundarios, recurrentes o incluso algo oscuros). Devuelve *solo* la lista de nombres, uno por línea. Sin números, guiones, saludos ni nada más. ¡Vamos!",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const chatContextName = document.getElementById('chat-context-name'); // Span para el nombre en el chat
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentCharacterName = null; // Para el contexto del chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            // Dynamic System Prompt for Chat
+            const systemPromptToUse = isChat && currentCharacterName
+                 ? `¡Hola! Soy el Caracol Saludador (digital). ¡Wooo! Responde preguntas SOLO sobre '${currentCharacterName}'. Sé breve, amigable y usa lenguaje sencillo, ¡como si estuvieras en Ooo! Si no sabes algo, ¡di que estás saludando en otro lado!`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     // Friendly Error Message
+                     throw new Error(`(Error ${response.status}) ¡Ay! Nuestros servidores tienen mucho tráfico en este momento, como cuando LSP hace una fiesta. Intenta en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("¡Glob! La respuesta de la IA está más vacía que el bolsillo de Finn después de comprar en el Ganso Manso. Intenta de nuevo.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 // Basic clean-up for potential markdown issues from AI
+                 return text.replace(/\\([_*`\[\]])/g, '$1'); // Remove unnecessary backslashes before markdown chars
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`¡Zas! La conexión tardó más que el Rey Helado en escribir un fanfic (>${config.timeoutSeconds}s). Revisa tu conexión o prueba luego.`);
+                 }
+                 throw new Error(error.message || "¡Mal rollo! Ocurrió un error inesperado contactando la IA.");
+             }
+        }
+        // Wrappers for clarity
+        async function fetchCharacterDescription(characterName) {
+            return fetchTextFromApi(characterName, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentCharacterName) throw new Error("Error interno: No sé de quién estamos hablando. ¡Wooo!");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(adventureTimeThemes) || "personajes variados de Ooo";
+            const specificPrompt = `Genera 15 nombres de personajes de Hora de Aventura relacionados con ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 2 && line.length < 100); // Shorter max length for names
+                     if (titles.length < 5) throw new Error("La IA no generó suficientes nombres. ¡Qué aburrido!");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(characterName, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 700, height: 700, nologo: true }; // Square-ish
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof characterName === 'string' && characterName.trim() !== '' ? characterName : "Adventure Time character";
+            // Prompt enfocado en el estilo AT
+            const enhancedPrompt = `Cartoonish conceptual artwork inspired by the Adventure Time character '${safePromptText}'. Bright colors, whimsical style, Adventure Time aesthetic by Pendleton Ward. Focus on the character's essence, unique features, powers, or iconic look. Dynamic pose maybe. Avoid text, logos, signatures, screenshots.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "photorealistic, realistic human, 3D render, text, words, label, signature, watermark, logo, multiple characters, multiple images, collage, blurry, low quality, deformed, bad anatomy";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (Mostly unchanged, maybe tweak header sizes if needed)
+        function formatExplanationText(rawText) {
+             if (!rawText) return '';
+            let formatted = rawText.trim();
+            // Basic Markdown/Formatting
+            formatted = formatted.replace(/\\([_*`\[\]{}()#+-.!])/g, '$1'); // Clean unnecessary escapes
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Headings (keep simple, rely on CSS for styling)
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+
+            // Paragraphs based on double line breaks
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                // Don't wrap existing headings in <p>
+                if (block.match(/^<h[1-4]>.*<\/h[1-4]>$/)) return block;
+                // Replace single newlines within a block with spaces (or <br> if preferred)
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             // Reset Chat
+             chatHistory.innerHTML = '<div class="chat-message ai-message">¡Hola! Soy el caracol saludador (digital). Pregúntame lo que quieras sobre <strong id="chat-context-name">este personaje</strong>.</div>'; // Reset with initial message
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = true; // Disable until character loads
+             currentCharacterName = null;
+             if(chatContextName) chatContextName.textContent = 'este personaje'; // Reset context name display
+             // Hide fullscreen image
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Unchanged)
+        function showFullscreenImage(imgSrc) { /* ... */ if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /* ... */ if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (Minor tweaks for context display)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv = document.createElement('div'); msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message'); message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); message = message.replace(/\*(.*?)\*/g, '<em>$1</em>'); msgDiv.innerHTML = message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        async function handleSendMessage() { /* ... */
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled || !currentCharacterName) return; // Ensure context exists
+
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error Caracol: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+         }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        // Modified createTitleItem to wrap text in span for hover effect
+        function createTitleItem(title) { const div = document.createElement('div'); div.className = 'title-item'; const span = document.createElement('span'); span.textContent = title; div.appendChild(span); div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             // Sort alphabetically for easier finding
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">¡Vacío! No hay personajes que mostrar.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             const addedTitles = [];
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedTitles.push(title); } });
+             // Maybe sort again or just append? Appending might feel more natural for 'load more'
+             // Re-apply filter if needed
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentCharacterName = title; // SET CHAT CONTEXT
+            if(chatContextName) chatContextName.textContent = title; // Update chat welcome message context
+            chatSendBtn.disabled = true; // Disable chat until description loads
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawDescription = await fetchCharacterDescription(title);
+                const formattedDescription = formatExplanationText(rawDescription);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedDescription;
+                modalStoryContentArea.classList.remove('content-hidden');
+                chatSendBtn.disabled = false; // ENABLE CHAT NOW
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Image Placeholder & Loading
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-paint-brush placeholder-icon"></i> <!-- Icono pincel -->
+                    <p style="font-size: 0.9em; margin-top: 0.5rem;">¡Dibujando a ${title}!</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => { /* ... */ console.log("Image loaded."); placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => { showFullscreenImage(imgElement.src); }); };
+                imgElement.onerror = () => { /* ... */ console.error("Image load error:", title); placeholderDiv.innerHTML = `<i class="fas fa-times-circle placeholder-icon" style="color:red;"></i><p style="font-size:0.9em;margin-top:0.5rem;">¡No se pudo dibujar! Inténtalo de nuevo.</p>`; };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-triangle placeholder-icon" style="color:orange;"></i><p style="font-size:0.9em;margin-top:0.5rem;">Error creando URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "¡Algo salió mal cargando los datos!";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSendBtn.disabled = true; // Disable chat on main error
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> <span class="button-text">Buscando...</span>';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("¡Parece que no hay más personajes por ahora!"); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error buscando más personajes: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                  generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> <span class="button-text">¡Más Personajes!</span>';
+             }
+         }
+
+         // Search Filter Function (Added normalization)
+         function filterTitles(searchTerm) { /* ... */
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() { /* ... */
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !chatContextName) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: Bangers;">¡ERROR CÓSMICO! Faltan piezas de la página.</p>';
+                 return;
+             }
+             // Modal listeners
+             modalCloseBtn.addEventListener('click', hideModal);
+             storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+             // Title generation listener
+             generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+             // Search listener
+             searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+             searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+             // Chat listeners
+             chatSendBtn.addEventListener('click', handleSendMessage);
+             chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+             // Fullscreen image listeners
+             imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+             fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+             // Initial display
+             displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden');
+             chatSendBtn.disabled = true; // Start with chat disabled
+         }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

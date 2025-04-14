@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopedia de Enfermedades Raras</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes limpias y legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Enfermedades Raras --- */
+        :root {
+            --color-primary: #3b82f6; /* Azul Claro/Medio (Confianza, Ciencia) */
+            --color-secondary: #a855f7; /* Morado/Lavanda (Conciencia ER) */
+            --color-tertiary: #10b981; /* Verde Esmeralda (Esperanza, Investigación) */
+            --color-background: #f9fafb; /* Blanco Hueso / Gris muy claro */
+            --color-text: #1f2937; /* Gris Muy Oscuro */
+            --color-text-muted: #6b7280; /* Gris Medio */
+            --color-modal-bg: #ffffff; /* Blanco puro */
+            --color-border: #e5e7eb; /* Borde Gris Claro */
+            --color-error-bg: #fee2e2; /* Fondo error rojo muy claro */
+            --color-error-text: #b91c1c; /* Texto error rojo oscuro */
+            --color-error-border: #fca5a5; /* Borde error rojo claro */
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px; /* Bordes suaves */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Nunito Sans', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 400; }
+        h1, h2, h3, h4, .logo { font-family: 'Lato', sans-serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: white; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Nunito Sans'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); outline: none; background-color: white; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: flex-start; min-height: 65px; font-family: 'Nunito Sans'; font-size: 0.95rem; border-left: 4px solid transparent; padding-left: 1.5rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-border); color: var(--color-primary); background-color: #eff6ff; /* Azul muy claro */ border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #2563eb; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #9ca3af; color: #e5e7eb; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.85); /* Overlay oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #f3f4f6; border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: white; }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.35; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Lato', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 700; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.15em; color: var(--color-secondary); border-bottom-style: dashed; }
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: var(--border-radius); padding: 1rem; background-color: #f9fafb; }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(209, 213, 219, 0.5); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; color: var(--color-text-muted); opacity: 0.7; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #f9fafb; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 1rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.55; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-primary); color: white; margin-left: auto; text-align: left; /* User messages align left */ }
+        .ai-message { background-color: #e5e7eb; color: var(--color-text); margin-right: auto; text-align: left; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.5rem; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 1px solid var(--color-border); background-color: white; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Nunito Sans'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #2563eb; }
+        #chat-send-btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid #e5e7eb; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-text); font-size: 1.3rem; font-family: 'Lato'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 600; font-family: 'Nunito Sans'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-border); box-shadow: var(--shadow-lg); background-color: white; /* Fondo por si la imagen es transparente */ }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-border); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: white; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-dna mr-3 text-blue-500"></i> <!-- Icono ADN -->
+                     Enfermedades Raras
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wider">» Enciclopedia Informativa «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-5">Comprendiendo lo Infrecuente</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto font-light">Explora información detallada sobre diversas enfermedades raras, sus causas, síntomas y abordajes actuales. Un recurso para pacientes, familias y profesionales.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar enfermedad o concepto...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-medical text-blue-500 mr-2"></i> <!-- Icono libro médico -->
+                 Índice Temático
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Cargando índice de enfermedades y conceptos...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron coincidencias para su búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Sugerir Más Temas
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Cargando información...</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image placeholder/image added here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                        <div class="ai-message" style="font-style: italic; font-size: 0.9em; background-color: #f3f4f6; color: #4b5563;">
+                            <i class="fas fa-info-circle mr-1"></i> Puedes hacer preguntas específicas sobre este tema. Recuerda, esto es informativo, no reemplaza el consejo médico profesional.
+                        </div>
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Consultando información...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este tema...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Conceptual Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>La información presentada es generada por IA con fines educativos y de referencia sobre enfermedades raras.</p>
+              <p class="mt-1"><strong class="text-red-600">Importante:</strong> Esta información NO sustituye el diagnóstico, consejo o tratamiento médico profesional. Consulte siempre a su médico.</p>
+              <p class="mt-2">© 2024 Enciclopedia Informativa ER</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Conceptos Generales y Temas Clave
+            "¿Qué es una Enfermedad Rara?",
+            "Definición de Enfermedad Rara en Europa",
+            "Definición de Enfermedad Rara en Estados Unidos",
+            "Epidemiología de las Enfermedades Raras",
+            "Causas Genéticas de las Enfermedades Raras",
+            "Tipos de Mutaciones Genéticas",
+            "Herencia Autosómica Dominante",
+            "Herencia Autosómica Recesiva",
+            "Herencia Ligada al Cromosoma X",
+            "Herencia Mitocondrial",
+            "Mutaciones De Novo",
+            "Diagnóstico de Enfermedades Raras",
+            "La Odisea Diagnóstica",
+            "Pruebas Genéticas (General)",
+            "Secuenciación del Exoma Completo (WES)",
+            "Secuenciación del Genoma Completo (WGS)",
+            "Paneles de Genes Específicos",
+            "Asesoramiento Genético",
+            "Tratamiento de Enfermedades Raras",
+            "Medicamentos Huérfanos",
+            "Terapias Génicas (Concepto)",
+            "Terapias Celulares",
+            "Manejo Sintomático y de Soporte",
+            "Investigación en Enfermedades Raras",
+            "Ensayos Clínicos en Enfermedades Raras",
+            "Registros de Pacientes",
+            "Redes Europeas de Referencia (ERNs)",
+            "Undiagnosed Diseases Network (UDN)",
+            "Impacto Psicosocial de las Enfermedades Raras",
+            "Calidad de Vida en Pacientes con ER",
+            "El Papel de las Asociaciones de Pacientes",
+            "Día Mundial de las Enfermedades Raras",
+            "Biobancos y Muestras Biológicas",
+            "Inteligencia Artificial en el Diagnóstico de ER",
+            "Medicina Personalizada en ER",
+            "Retos en el Acceso a Tratamientos",
+            "Enfermedades Raras y Discapacidad",
+            "Transición de la Atención Pediátrica a la Adulta",
+            "Cribado Neonatal para Enfermedades Raras",
+            "Aspectos Éticos en Genética y ER",
+
+            // Categorías Amplias (pueden solapar)
+            "Errores Congénitos del Metabolismo (General)",
+            "Enfermedades Lisosomales (General)",
+            "Enfermedades Mitocondriales (General)",
+            "Enfermedades Neuromusculares Raras (General)",
+            "Distrofias Musculares (General)",
+            "Ataxias Hereditarias (General)",
+            "Canalopatías (General)",
+            "Síndromes de Sobrecrecimiento",
+            "Displasias Esqueléticas (General)",
+            "Enfermedades Autoinmunes Raras (General)",
+            "Enfermedades Autoinflamatorias Raras (General)",
+            "Inmunodeficiencias Primarias (General)",
+            "Síndromes con Anomalías Congénitas Múltiples",
+            "Enfermedades Raras de la Piel (Genodermatosis)",
+            "Enfermedades Raras Hematológicas",
+            "Enfermedades Raras Renales",
+            "Enfermedades Raras Hepáticas",
+            "Enfermedades Raras Pulmonares",
+            "Enfermedades Raras Cardíacas",
+            "Enfermedades Raras Endocrinas",
+            "Cánceres Raros (General)",
+            "Síndromes de Predisposición al Cáncer",
+            "Enfermedades Raras Oftalmológicas",
+            "Enfermedades Raras Otorrinolaringológicas",
+
+             // Ejemplos Específicos (Lista No Exhaustiva - ¡Hay miles!)
+             "Acondroplasia",
+             "Alfa-1 Antitripsina (Déficit)",
+             "Albinismo Oculocutáneo",
+             "Amiloidosis Hereditaria por Transtiretina (ATTR)",
+             "Anemia de Células Falciformes (Drepanocitosis)",
+             "Anemia de Fanconi",
+             "Angioedema Hereditario",
+             "Artritis Idiopática Juvenil Sistémica",
+             "Ataxia de Friedreich",
+             "Atrofia Muscular Espinal (AME)",
+             "Autismo Sindrómico (Ej: Síndrome X Frágil)",
+             "Beta-Talasemia Mayor",
+             "Cistinosis",
+             "Cistinuria",
+             "Complejo Esclerosis Tuberosa",
+             "Corea de Huntington",
+             "Deficiencia de Lipasa Ácida Lisosomal (LAL-D)",
+             "Dermatomiositis Juvenil",
+             "Distonía Muscular",
+             "Distrofia Miotónica de Steinert (Tipo 1)",
+             "Distrofia Muscular de Duchenne",
+             "Distrofia Muscular de Becker",
+             "Distrofia Muscular Facioescapulohumeral (FSHD)",
+             "Distrofia Muscular de Cinturas (LGMD)",
+             "Disautonomía Familiar (Síndrome de Riley-Day)",
+             "Drepanocitosis (Anemia Falciforme)",
+             "Ehlers-Danlos (Tipos Clásico, Vascular, Hiperlaxitud)",
+             "Encefalopatía Epiléptica (Ej: Síndrome de Dravet)",
+             "Enfermedad de Batten (Lipofuscinosis Ceroide Neuronal)",
+             "Enfermedad de Charcot-Marie-Tooth (CMT)",
+             "Enfermedad de Fabry",
+             "Enfermedad de Gaucher",
+             "Enfermedad de Kawasaki",
+             "Enfermedad de Krabbe",
+             "Enfermedad de Niemann-Pick (Tipos A, B, C)",
+             "Enfermedad de Pompe (Glucogenosis tipo II)",
+             "Enfermedad de Stargardt",
+             "Enfermedad de Von Hippel-Lindau",
+             "Enfermedad de Wilson",
+             "Epidermólisis Bullosa (Piel de Mariposa)",
+             "Esclerodermia Sistémica",
+             "Esclerosis Lateral Amiotrófica (ELA) Familiar",
+             "Espina Bífida (Formas Graves)",
+             "Fenilcetonuria (PKU)",
+             "Fibrodisplasia Osificante Progresiva (FOP)",
+             "Fibrosis Quística",
+             "Galactosemia Clásica",
+             "Glucogenosis (Tipos I, III, etc.)",
+             "Hemofilia A y B",
+             "Hipercolesterolemia Familiar Homocigota",
+             "Hipertensión Pulmonar Arterial Hereditaria",
+             "Hipofosfatasia",
+             "Homocistinuria Clásica",
+             "Ictiosis Hereditaria (varios tipos)",
+             "Inmunodeficiencia Combinada Grave (SCID)",
+             "Leucodistrofia Metacromática",
+             "Linfangioleiomiomatosis (LAM)",
+             "Lupus Eritematoso Sistémico Pediátrico",
+             "Malformación de Chiari",
+             "Marfan (Síndrome de)",
+             "Mastocitosis Sistémica",
+             "Miopatías Congénitas",
+             "Miopatías Mitocondriales",
+             "Mucopolisacaridosis (MPS I - Hurler, MPS II - Hunter, etc.)",
+             "Narcolepsia con Cataplexia",
+             "Neurofibromatosis Tipo 1 (NF1)",
+             "Neurofibromatosis Tipo 2 (NF2)",
+             "Neuropatía Óptica Hereditaria de Leber (LHON)",
+             "NMO (Neuromielitis Óptica)",
+             "Osteogénesis Imperfecta (Huesos de Cristal)",
+             "Parálisis Periódica Hipo/Hiperkalémica",
+             "Poliarteritis Nodosa (PAN)",
+             "Poliquistosis Renal Autosómica Dominante (PQRAD)",
+             "Poliquistosis Renal Autosómica Recesiva (PQRAR)",
+             "Porfiria Aguda Intermitente",
+             "Prader-Willi (Síndrome de)",
+             "Progeria (Síndrome de Hutchinson-Gilford)",
+             "Púrpura Trombocitopénica Trombótica (PTT)",
+             "Retinitis Pigmentaria",
+             "Rett (Síndrome de)",
+             "Sarcoidosis",
+             "Schwannomatosis",
+             "Síndrome de Aarskog",
+             "Síndrome de Alagille",
+             "Síndrome de Alport",
+             "Síndrome de Angelman",
+             "Síndrome de Apert",
+             "Síndrome de Asperger (Histórico, ahora parte de TEA)",
+             "Síndrome de Bardet-Biedl",
+             "Síndrome de Beckwith-Wiedemann",
+             "Síndrome de Bloom",
+             "Síndrome de Brugada",
+             "Síndrome de Charge",
+             "Síndrome de Coffin-Lowry",
+             "Síndrome de Cornelia de Lange",
+             "Síndrome de Costello",
+             "Síndrome de Cri du Chat (Maullido de Gato)",
+             "Síndrome de Crouzon",
+             "Síndrome de Cushing Endógeno",
+             "Síndrome de DiGeorge (Deleción 22q11.2)",
+             "Síndrome de Down (Trisomía 21) - Común, pero con aspectos raros",
+             "Síndrome de Dravet",
+             "Síndrome de Edwards (Trisomía 18)",
+             "Síndrome de Ehlers-Danlos (mencionado antes, reforzar)",
+             "Síndrome de Guillain-Barré",
+             "Síndrome Hemolítico Urémico Atípico (SHUa)",
+             "Síndrome de Holt-Oram",
+             "Síndrome de Hurler (MPS I H)",
+             "Síndrome de Hunter (MPS II)",
+             "Síndrome de Jacobsen",
+             "Síndrome de Joubert",
+             "Síndrome de Kabuki",
+             "Síndrome de Kallmann",
+             "Síndrome de Klinefelter",
+             "Síndrome de Klippel-Trenaunay",
+             "Síndrome de Larsen",
+             "Síndrome de Lennox-Gastaut",
+             "Síndrome de Lesch-Nyhan",
+             "Síndrome de Li-Fraumeni",
+             "Síndrome de Lowe",
+             "Síndrome de Lynch",
+             "Síndrome de Marfan (mencionado antes, reforzar)",
+             "Síndrome de McCune-Albright",
+             "Síndrome de Ménière",
+             "Síndrome Mielodisplásico (SMD) en niños",
+             "Síndrome de Moebius",
+             "Síndrome de Morquio (MPS IV)",
+             "Síndrome de Mowat-Wilson",
+             "Síndrome Nefrótico Congénito",
+             "Síndrome de Noonan",
+             "Síndrome de Patau (Trisomía 13)",
+             "Síndrome Periódico Asociado a Criopirina (CAPS)",
+             "Síndrome de Peutz-Jeghers",
+             "Síndrome de Pierre Robin",
+             "Síndrome de Poland",
+             "Síndrome de Prader-Willi (mencionado antes, reforzar)",
+             "Síndrome de QT Largo Congénito",
+             "Síndrome de Rett (mencionado antes, reforzar)",
+             "Síndrome de Rubinstein-Taybi",
+             "Síndrome de Russell-Silver",
+             "Síndrome de Sanfilippo (MPS III)",
+             "Síndrome de Sjögren Primario",
+             "Síndrome de Smith-Lemli-Opitz",
+             "Síndrome de Smith-Magenis",
+             "Síndrome de Sotos",
+             "Síndrome de Stickler",
+             "Síndrome de Sturge-Weber",
+             "Síndrome de Tourette",
+             "Síndrome de Treacher Collins",
+             "Síndrome de Turner",
+             "Síndrome de Usher",
+             "Síndrome de VACTERL/VATER",
+             "Síndrome de Von Hippel-Lindau (VHL)",
+             "Síndrome de Waardenburg",
+             "Síndrome de West",
+             "Síndrome de Williams",
+             "Síndrome de Wolf-Hirschhorn",
+             "Síndrome X Frágil",
+             "Síndrome de Zellweger",
+             "Talasemias",
+             "Telangiectasia Hemorrágica Hereditaria (HHT)",
+             "Tiroiditis de Hashimoto (cuando es severa/refractaria)",
+             "Tirosinemia Tipo 1",
+             "Toxicidad por Aluminio (Dialítica)",
+             "Toxoplasmosis Congénita",
+             "Trastorno del Espectro Autista (TEA) - Formas sindrómicas raras",
+             "Trastornos del Ciclo de la Urea",
+             "Trastornos de Glicosilación Congénita (CDG)",
+             "Tricotiodistrofia",
+             "Trisomía 8 Mosaico",
+             "Trisomía 9 Mosaico",
+             "Tuberculosis Multirresistente (MDR-TB) - Epidemiológicamente rara en algunos contextos",
+             "Tumor de Wilms",
+             "Tumores del Estroma Gastrointestinal (GIST)",
+             "Urticaria Crónica Espontánea Refractaria",
+             "Uveítis Idiopática Intermedia",
+             "Vasculitis ANCA Asociada (GPA, MPA, EGPA)",
+             "Vasculitis por IgA (Púrpura de Schönlein-Henoch)",
+             "VHL (Von Hippel-Lindau)",
+             "Viteliform Macular Dystrophy (Best Disease)",
+             "Von Gierke (Enfermedad de) - Glucogenosis Ia",
+             "Von Recklinghausen (Neurofibromatosis 1)",
+             "Wilson (Enfermedad de)",
+             "Xantomatosis Cerebrotendinosa",
+             "Xeroderma Pigmentoso",
+             // Añadir más según sea necesario... la lista puede crecer mucho
+        ];
+        const rareDiseaseThemes = [
+            "enfermedades metabólicas hereditarias", "enfermedades lisosomales", "distrofias musculares", "síndromes genéticos", "enfermedades neuromusculares", "enfermedades autoinmunes raras", "inmunodeficiencias primarias", "cánceres raros", "enfermedades mitocondriales", "canalopatías", "displasias esqueléticas", "diagnóstico genético", "terapias génicas", "medicamentos huérfanos", "asociaciones de pacientes", "investigación en enfermedades raras", "errores congénitos del metabolismo", "genodermatosis", "enfermedades hematológicas raras", "trastornos del neurodesarrollo raros"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un genetista médico y comunicador científico experto, especializado en enfermedades raras (ER). Tu tarea es proporcionar una descripción detallada, precisa y empática sobre la enfermedad rara o concepto relacionado especificado. Incluye: Definición clara y concisa, Sinónimos comunes (si aplica), Base genética/causa (gen afectado, tipo de mutación, patrón de herencia, si se conoce), Síntomas principales y presentación clínica (variabilidad si existe), Métodos diagnósticos (clínicos, bioquímicos, genéticos), Estrategias actuales de manejo y tratamiento (incluyendo medicamentos huérfanos, terapias específicas si existen, manejo sintomático), Pronóstico general (con cautela, mencionando variabilidad), Epidemiología (prevalencia estimada). Utiliza terminología médica correcta, pero explica conceptos complejos de forma accesible. Si es un concepto general (ej: 'Diagnóstico de ER'), explica el proceso, retos y técnicas. Redacta en un tono profesional pero humano. El objetivo es una descripción de ~1200-1300 palabras. Basa tu respuesta ÚNICAMENTE en el tema proporcionado:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny", // O un modelo equivalente rápido
+            systemPrompt: "DEFAULT: Replaced Dynamically", // Placeholder
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de enfermedades raras. Genera exactamente 15 nombres de enfermedades raras específicas (de diferentes categorías: neurológicas, metabólicas, etc.), síndromes genéticos, o conceptos clave relacionados con el diagnóstico, tratamiento o investigación de ER. Prioriza la variedad. Devuelve *solo* la lista de nombres/conceptos, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios en IDs)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Renombrado para claridad
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentTopicTitle
+                  ? `Eres un asistente de información médica especializado ÚNICAMENTE en '${currentTopicTitle}'. Responde preguntas de seguimiento sobre sus características, causas, síntomas, diagnóstico o manejo general basándote en la información estándar conocida. NO des consejos médicos, pronósticos personales ni recomiendes tratamientos específicos. Mantén un tono informativo, neutral y conciso. Si la pregunta se desvía del tema '${currentTopicTitle}' o pide consejo médico, indica amablemente que no puedes responder eso.`
+                  : config.systemPrompt;
+              const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             // Seed no es relevante para chat o información factual
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros servidores pueden estar experimentando alto tráfico o un problema temporal. Por favor, inténtalo de nuevo en unos momentos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía. Intenta reformular la pregunta o inténtalo más tarde.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 // Basic check for refusal in chat
+                 if (isChat && (text.toLowerCase().includes("no puedo proporcionar consejo médico") || text.toLowerCase().includes("no soy un profesional médico"))) {
+                    // Let the response pass, it's a valid refusal/clarification
+                 } else if (text.trim().length < 50 && !isChat && text.toLowerCase().includes("no puedo")) { // Very short answer for main description might be a refusal
+                     throw new Error("La IA indicó que no puede generar la descripción solicitada para este tema.");
+                 }
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La solicitud tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o inténtalo de nuevo más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar los servidores de IA.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) {
+            return fetchTextFromApi(conceptTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentTopicTitle) throw new Error("Error interno: No se ha establecido el contexto del tema para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(rareDiseaseThemes) || "enfermedades raras genéticas";
+            const specificPrompt = `Genera 15 nombres/conceptos relacionados con ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+                     if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de temas.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 600, height: 450, nologo: true }; // Smaller aspect ratio?
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "rare disease abstract concept";
+             // *** CRUCIAL: Abstract Prompt ***
+             const enhancedPrompt = `Abstract conceptual medical illustration inspired by '${safePromptText}'. Focus on cellular processes, genetic helix motifs, interconnected networks, pathways, abstract biology. Soft, clinical color palette (light blues, purples, greys, white, accents of teal or soft orange). Ethereal, microscopic feel. Avoid depicting specific people, organs, symptoms, or suffering. No text, labels, or diagrams.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, person, patient, doctor, hospital, blood, suffering, needle, specific organ, realistic body part, photograph, diagram, chart, graph, map, flag, cartoon, drawing";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Keep just in case
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' '); // Replace internal newlines with space
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (sin cambios estructurales)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = `
+                <div class="ai-message" style="font-style: italic; font-size: 0.9em; background-color: #f3f4f6; color: #4b5563;">
+                    <i class="fas fa-info-circle mr-1"></i> Puedes hacer preguntas específicas sobre este tema. Recuerda, esto es informativo, no reemplaza el consejo médico profesional.
+                </div>`; // Reset with disclaimer
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTopicTitle = null; // Limpia el contexto
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios estructurales)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            // Basic Markdown support
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Convert newlines from AI to <br> for better formatting in chat
+            if (sender === 'ai') {
+                message = message.replace(/\n/g, '<br>');
+            }
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i> ${message}`; // Add icon
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled || !currentTopicTitle) return;
+
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (sin cambios estructurales)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar alfabéticamente para mejor navegación
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay temas disponibles en el índice «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentTopicTitle = title; // SET CHAT CONTEXT
+            modalContent.innerHTML = '';
+            // chatHistory cleaned in resetModalState
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // Fetch text first
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-dna placeholder-icon"></i> <!-- Icono placeholder temático -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando ilustración conceptual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Create image element (starts hidden)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => {
+                        showFullscreenImage(imgElement.src);
+                    });
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-image-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">No se pudo generar la ilustración.</p>`;
+                };
+
+                // Get and set image URL
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al preparar URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Ocurrió un error al cargar la información."; // Use friendly message
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden'); // Hide chat if main content fails
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando temas...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron encontrar más temas en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al sugerir temas: ${error.message}`); // Friendly message
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Sugerir Más Temas';
+             }
+         }
+
+         // *** Search Filter Function (con normalización) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Check essential elements
+             const essentialElements = [titleListContainer, storyModal, modalCloseBtn, generateMoreBtn, titlesLoading, searchInput, noResultsMsg, chatInput, chatSendBtn, imageFullscreenOverlay, fullscreenCloseBtn, modalTextArea];
+            if (essentialElements.some(el => !el)) {
+                 console.error("Initialization failed: Missing essential UI elements.");
+                 document.body.innerHTML = '<p style="color: #b91c1c; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: sans-serif;"><strong>Error Crítico:</strong> No se pudieron cargar componentes esenciales de la página. Por favor, recargue o contacte soporte si el problema persiste.</p>';
+                 return;
+             }
+             // Add event listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+            resetModalState(); // Ensure clean initial state
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

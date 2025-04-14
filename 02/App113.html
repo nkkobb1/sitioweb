@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Física Cuántica</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes modernas y limpias -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Física Cuántica --- */
+        :root {
+            --color-primary: #8b5cf6; /* Púrpura Vibrante */
+            --color-secondary: #06b6d4; /* Cian Brillante */
+            --color-background: #111827; /* Gris Muy Oscuro / Casi Negro */
+            --color-text: #d1d5db; /* Gris Claro */
+            --color-text-muted: #6b7280; /* Gris Medio */
+            --color-modal-bg: #1f2937; /* Gris Oscuro Azulado Modal */
+            --color-border: #374151; /* Borde Gris Oscuro */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.25);
+            --border-radius: 5px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        h1, h2, h3, h4, .logo { font-family: 'Roboto', sans-serif; font-weight: 700; }
+        .logo { color: var(--color-secondary); /* Cian para el logo */ }
+        h1.page-title { color: var(--color-primary); font-weight: 700; text-shadow: 0 0 5px rgba(139, 92, 246, 0.3); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem; display: inline-block; font-weight: 700;}
+        #modal-title { color: var(--color-secondary); font-weight: 700; } /* Cian para título modal */
+        .navbar { background-color: rgba(17, 24, 39, 0.85); backdrop-filter: blur(6px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1.05rem; box-shadow: var(--shadow-sm); transition: var(--transition-normal); background-color: #374151; color: var(--color-text); }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); outline: none; background-color: #4b5563; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.4rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Inter', sans-serif; font-size: 0.9rem; }
+        .title-item:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 0 12px rgba(139, 92, 246, 0.4); border-color: var(--color-primary); color: var(--color-primary); background-color: #374151; }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); color: white; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Roboto', sans-serif; font-weight: 500; cursor: pointer; transition: all 0.3s ease; margin-top: 2rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5), 0 0 15px rgba(6, 182, 212, 0.5); background-size: 150% 150%; opacity: 0.95; }
+        #generate-more-btn:disabled { background: #4b5563; color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.9); /* Overlay más oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 950px; /* Más ancho para contenido denso */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px; /* Altura mínima */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: #4b5563; border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; transform: rotate(90deg); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; text-shadow: 0 0 3px rgba(6, 182, 212, 0.3); }
+        #modal-content {
+            line-height: 1.75; /* Buena legibilidad */
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 15px 1.5rem 15px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) #4b5563;
+        }
+        #modal-content::-webkit-scrollbar { width: 9px; }
+        #modal-content::-webkit-scrollbar-track { background: #4b5563; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #4b5563; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.35em; }
+        #modal-content strong { color: var(--color-secondary); font-weight: bold; } /* Cian para strong */
+        #modal-content em { color: var(--color-primary); font-style: italic; } /* Púrpura para em */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Roboto', sans-serif; margin-top: 2.1em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-secondary); } /* Cian para h3 */
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos para imagen y placeholder DENTRO del contenido */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-secondary); /* Cian spinner */ animation: spin 1s linear infinite; margin-bottom: 0.7rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; } /* Icono átomo */
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 24, 39, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid #4b5563; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 500; color: var(--color-text); font-size: 1.3rem; font-family: 'Roboto'; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #3f1212; /* Rojo oscuro error */ color: #fecaca; padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #7f1d1d; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 500; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        .title-item.hidden { display: none; } /* Para ocultar con buscador */
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-atom mr-3 animate-spin" style="animation-duration: 10s;"></i> <!-- Icono átomo girando lento -->
+                     Explorador Cuántico
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400">Desentrañando los misterios del universo</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-5">El Universo a Escala Fundamental</h1>
+             <p class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto">Navega por los conceptos más extraños y maravillosos de la Física Cuántica. Elige un tema o busca para iniciar la exploración.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar concepto cuántico (ej: entrelazamiento, qubit)...">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-wave-square text-purple-500 mr-2"></i> <!-- Icono onda/función -->
+                 Conceptos Fundamentales y Avanzados
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Observando el vacío cuántico...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden">No se encontraron conceptos para esa búsqueda.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Explorar Más Conceptos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Calculando función de onda...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Explicaciones generadas por IA con fines educativos sobre Física Cuántica.</p>
+              <p class="mt-1">La simplicidad puede omitir detalles técnicos profundos. Consulte fuentes académicas para rigor completo.</p>
+              <p class="mt-2">© 2025 Explorador Cuántico</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+             // Conceptos Fundamentales (Expansión)
+            "¿Qué es la Física Cuántica?", "La Constante de Planck (h y ħ): El corazón de la cuántica", "Cuantización: Energía y Materia Discretas", "Dualidad Onda-Partícula: ¿Qué es real?", "Principio de Incertidumbre de Heisenberg: Límites del conocimiento", "Función de Onda: Interpretación y significado", "Amplitud de Probabilidad vs Probabilidad", "Ecuación de Schrödinger Dependiente del Tiempo", "Ecuación de Schrödinger Independiente del Tiempo", "Estados Estacionarios", "Superposición Cuántica: Estados múltiples a la vez", "Entrelazamiento Cuántico: Conexión instantánea", "Tunelamiento Cuántico: Atravesar barreras imposibles", "El Gato de Schrödinger: Paradoja y el rol del observador", "El Problema de la Medición Cuántica: ¿Qué colapsa la función de onda?", "Decoherencia Cuántica: La transición clásico-cuántico", "Espín Cuántico: Momento angular intrínseco", "Estadística Cuántica: Bosones y Fermiones", "Principio de Exclusión de Pauli: ¿Por qué la materia es estable?", "El Cero Absoluto y la Energía del Punto Cero", "Naturaleza Probabilística: ¿Dios juega a los dados?", "El concepto de 'Cuanto' (plural 'Cuanta')", "Longitud de Onda de De Broglie", "Paquete de Ondas", "¿Qué es un Estado Cuántico?", "Coherencia Cuántica vs Incoherencia", "El límite clásico de la Mecánica Cuántica",
+
+            // Experimentos Clave (Expansión)
+            "Experimento de la Doble Rendija (Fotones individuales)", "Experimento de la Doble Rendija (Electrones individuales)", "Experimento de la Doble Rendija con detector 'Which-Way'", "Experimento de la Goma Cuántica de Elección Retardada (Wheeler)", "Efecto Fotoeléctrico: Explicación cuántica de Einstein", "Radiación del Cuerpo Negro: La hipótesis de Planck", "Experimento de Stern-Gerlach: Cuantización del Espín", "Efecto Compton: Colisión fotón-electrón", "Espectros Atómicos Discretos: Huellas dactilares de los átomos", "Experimento de Franck-Hertz: Niveles de energía atómica", "Difracción de Electrones (Davisson-Germer)", "Experimentos de Bell: Probando la no-localidad cuántica", "Violación de las Desigualdades de Bell", "Experimento de Aspect (Confirmación de la violación de Bell)", "Experimento Elitzur-Vaidman (Interrogación libre de interacción)", "Efecto Aharonov-Bohm: Influencia del potencial vectorial", "Demostración del Entrelazamiento Multifotónico",
+
+            // Formalismo y Matemáticas (Expansión Conceptual)
+            "Espacio de Hilbert: El escenario de la cuántica", "Vectores de Estado (Kets)", "Funcionales Lineales (Bras)", "Producto Interno en Mecánica Cuántica", "Notación Bra-Ket de Dirac: Un lenguaje poderoso", "Operadores Hermíticos y Observables Físicos", "Operadores Cuánticos (Posición, Momento, Energía, Espín)", "Valores Propios y Vectores Propios (Estados propios)", "Espectro Discreto vs Continuo", "El Hamiltoniano: Operador de Energía Total", "Conmutadores: [A, B] = AB - BA", "Relación entre Conmutadores y Principio de Incertidumbre", "Operadores de Creación y Aniquilación", "Matrices de Pauli y el Espín 1/2", "Matrices de Dirac (Contexto relativista)", "Regla de Born: Calculando probabilidades", "Teorema de Ehrenfest: Conexión con la mecánica clásica", "Representación de Posición vs Representación de Momento", "Teoría de Perturbaciones (Dependiente e Independiente del Tiempo)", "Método Variacional", "Teorema Adiabático", "Matriz Densidad: Describiendo estados mixtos", "Entropía de Von Neumann",
+
+            // Átomos y Moléculas (Expansión)
+            "Modelo Atómico de Bohr: Primeros éxitos y limitaciones", "Modelo Cuántico del Átomo de Hidrógeno", "Números Cuánticos: Dirección y forma de los electrones (n, l, m_l, m_s)", "Configuración Electrónica de los Átomos", "Orbitales Atómicos: Nubes de probabilidad (s, p, d, f)", "Principio de Aufbau y Regla de Hund", "Tabla Periódica explicada por la cuántica", "Enlace Covalente y Orbitales Moleculares (Teoría OM)", "Enlace Iónico (Perspectiva cuántica)", "Hibridación de Orbitales (sp, sp2, sp3)", "Niveles de Energía Molecular: Electrónicos, Vibracionales, Rotacionales", "Espectroscopía Atómica y Molecular: Una ventana al mundo cuántico", "Estructura Fina: Efectos relativistas y acoplamiento espín-órbita", "Estructura Hiperfina: Interacción núcleo-electrón", "Efecto Zeeman: Desdoblamiento en campos magnéticos", "Efecto Stark: Desdoblamiento en campos eléctricos", "Láseres Atómicos y Moleculares", "Moléculas Diatómicas: Modelo cuántico", "Iones Moleculares",
+
+            // Física de Partículas (Contexto Cuántico - Expansión)
+            "El Modelo Estándar: Un zoológico de partículas", "Leptones: Electrón, Muón, Tau y sus Neutrinos", "Quarks: Up, Down, Charm, Strange, Top, Bottom", "Hadrones: Bariones (3 quarks) y Mesones (quark-antiquark)", "Protón y Neutrón: Estructura de quarks", "Bosones de Gauge: Mensajeros de las interacciones", "Fotón (Electromagnetismo)", "Gluones (Fuerza Fuerte)", "Bosones W y Z (Fuerza Débil)", "Las Cuatro Fuerzas Fundamentales bajo la óptica cuántica", "Antipartículas y Antimateria", "Diagramas de Feynman: Visualizando interacciones cuánticas", "El Bosón de Higgs: Dando masa a las partículas", "El Campo de Higgs: Impregnando el espacio", "Neutrinos: Partículas fantasma y sus masas", "Oscilaciones de Neutrinos: Cambio de 'sabor'", "Simetrías Fundamentales (C, P, T)", "Violación de la Paridad (Interacción Débil)", "Violación CP", "Leyes de Conservación (Energía, Momento, Carga, Número Leptónico/Bariónico)", "Teoría de Gran Unificación (GUT - Conceptual)", "Supersimetría (SUSY - Conceptual)", "Problema de la Jerarquía",
+
+            // Óptica Cuántica (Expansión)
+            "El Fotón: Naturaleza cuántica de la luz", "Cuantización del Campo Electromagnético", "Estados de Fock (Número definido de fotones)", "Estados Coherentes (Luz Láser)", "Estados Comprimidos de la Luz (Squeezed States): Más allá del límite cuántico", "Estadística Fotónica: Agrupamiento (Bunching) y Anti-agrupamiento (Antibunching)", "Óptica No Lineal Cuántica", "Generación Paramétrica Descendente (SPDC): Producción de fotones entrelazados", "Interferómetro de Mach-Zehnder (Versión cuántica)", "Interferómetro de Hong-Ou-Mandel", "Computación Cuántica Óptica Lineal (KLM)", "Criptografía Cuántica: Distribución de Clave Cuántica (QKD)", "Protocolo BB84 y E91", "Teletransportación Cuántica: Estado, no materia", "Metrología Cuántica con Luz", "Sensores Cuánticos Ópticos", "Pinzas Ópticas (Aspectos Cuánticos)", "Cavidad QED: Interacción luz-materia fuerte",
+
+            // Materia Condensada (Aspectos Cuánticos - Expansión)
+            "Teoría de Bandas en Sólidos: Conductores, Aislantes, Semiconductores", "Modelo de Electrones Libres (Drude-Sommerfeld)", "Redes de Bravais y Red Recíproca", "Fonones: Cuantos de vibración de la red", "Electrones y Huecos en Semiconductores", "Unión P-N y el Diodo (Base cuántica)", "Transistor (Base cuántica)", "Superconductividad: Resistencia cero", "Teoría BCS: Pares de Cooper", "Efecto Meissner: Expulsión del campo magnético", "Josephson Junctions y SQUIDs", "Superconductores de Alta Temperatura (Concepto y desafío)", "Condensado de Bose-Einstein (BEC): Materia en un solo estado cuántico", "Superfluidez: Flujo sin viscosidad (Helio-4, Helio-3)", "Efecto Hall Cuántico Entero (QHE)", "Efecto Hall Cuántico Fraccionario (FQHE) y Cuasipartículas", "Puntos Cuánticos (Quantum Dots): Átomos artificiales", "Pozos Cuánticos y Alambres Cuánticos", "Grafeno: Propiedades cuánticas del carbono 2D", "Otros Materiales 2D (MoS2, Fosforeno)", "Aislantes Topológicos: Conductores en la superficie, aislantes en el interior", "Semimetales de Weyl y Dirac", "Spintrónica: Usando el espín del electrón", "Válvulas de Espín y MRAM", "Magnones: Cuantos de ondas de espín", "Frustración Magnética y Líquidos de Espín Cuántico", "Efecto Kondo", "Fermiones Pesados",
+
+            // Interpretaciones de la Mecánica Cuántica (Expansión)
+            "Interpretación de Copenhague: ¿Qué dice realmente?", "Postulados de la Mecánica Cuántica (según Copenhague)", "La 'Ortodoxia' Cuántica", "Interpretación de los Muchos Mundos (MWI): División del universo", "Problema de la Base Preferida en MWI", "Variables Ocultas Locales vs No Locales", "Teorema de Bell y sus implicaciones experimentales", "Teorema de Kochen-Specker: Contextualidad cuántica", "Mecánica Bohmiana: Trayectorias definidas", "¿Es la Mecánica Bohmiana no-local?", "Modelos de Colapso Objetivo (GRW, CSL)", "¿Son los modelos de colapso testeables?", "Interpretación de Historias Consistentes (Decoherent Histories)", "Interpretación Transaccional (TIQM - Cramer)", "Mecánica Cuántica Relacional: Estados relativos al observador", "QBism (Bayesianismo Cuántico): La probabilidad como grado de creencia", "¿Realismo vs Instrumentalismo en la cuántica?", "¿Es la función de onda real (óntica) o conocimiento (epistémica)?", "Paradoja EPR (Einstein-Podolsky-Rosen)", "El papel del Observador: ¿Conciencia necesaria?", "Libre Albedrío y Mecánica Cuántica",
+
+            // Computación e Información Cuántica (Expansión)
+            "Qubit vs Bit Clásico", "La Esfera de Bloch: Visualizando un Qubit", "Puertas Cuánticas de un Qubit (Pauli-X, Y, Z, Hadamard, Fase, T)", "Puertas Cuánticas de Múltiples Qubits (CNOT, Toffoli, SWAP)", "Circuitos Cuánticos", "Algoritmo de Deutsch-Jozsa: Primer ejemplo de ventaja cuántica", "Algoritmo de Shor: Implicaciones para RSA", "Algoritmo de Grover: Aceleración en búsquedas", "Simulación Hamiltoniana Cuántica", "Algoritmos Cuánticos Variacionales (VQE)", "Machine Learning Cuántico (Conceptual)", "Hardware Cuántico: Tipos de Qubits (Superconductores, Iones Atrapados, Fotónicos, NV Centers, Topológicos)", "Desafíos en la Construcción de Computadoras Cuánticas (Escalabilidad, Fidelidad, Decoherencia)", "Corrección de Errores Cuánticos: Protegiendo la información cuántica", "Códigos de Superficie", "Umbral de Tolerancia a Fallos", "Recocido Cuántico (Quantum Annealing) y D-Wave", "Internet Cuántica: Redes de entrelazamiento", "Repetidores Cuánticos", "Ventaja Cuántica (antes Supremacía Cuántica)", "Oráculos Cuánticos",
+
+            // Temas Avanzados y Fronteras (Expansión)
+            "Teoría Cuántica de Campos (QFT): Uniendo cuántica y relatividad especial", "Cuantización Canónica vs Integral de Caminos (Feynman)", "Campos Cuánticos: Excitaciones son partículas", "Electrodinámica Cuántica (QED): Teoría de luz y materia", "Renormalización: Manejando infinitos en QFT", "Cromodinámica Cuántica (QCD): Teoría de la fuerza fuerte", "Confinamiento de Quarks y Libertad Asintótica", "Teoría Electrodébil: Unificación de EM y Débil", "Ruptura Espontánea de Simetría", "El Vacío Cuántico: Un mar de actividad", "Partículas Virtuales: Mediadoras de fuerzas", "Efecto Casimir: Fuerza del vacío", "Radiación de Hawking: Evaporación cuántica de agujeros negros", "Paradoja de la Información del Agujero Negro", "Principio Holográfico (Conceptual)", "Gravedad Cuántica: El gran desafío", "Incompatibilidad entre Relatividad General y Cuántica", "Teoría de Cuerdas: Vibraciones fundamentales", "Dimensiones Extra", "Branas y Teoría M", "Gravedad Cuántica de Lazos (LQG): Espacio-tiempo discreto", "Geometría No Conmutativa", "Conjuntos Causales (Causal Sets)", "Cosmología Cuántica: El universo temprano", "Inflación Cósmica: Origen cuántico de las estructuras", "Energía Oscura y el problema de la Constante Cosmológica", "Materia Oscura (Posibles explicaciones cuánticas)", "Termodinámica Cuántica", "Biología Cuántica (Fotosíntesis, Olfato - Controversial)", "Tiempo Cuántico: ¿Es fundamental?", "Teorema de No Clonación",
+
+            // Figuras Históricas y Contribuciones (Expansión)
+            "Max Planck: El inicio reacio", "Albert Einstein: Padre cuántico y crítico", "Niels Bohr: El filósofo de Copenhague", "Werner Heisenberg: Incertidumbre y matrices", "Erwin Schrödinger: La ecuación y el gato", "Paul Dirac: Elegancia matemática y antimateria", "Wolfgang Pauli: Exclusión, espín y conciencia", "Louis de Broglie: Ondas para la materia", "Max Born: La probabilidad al poder", "Pascual Jordan: Contribuciones a QED y QFT", "Satyendra Nath Bose: Estadística para bosones", "Enrico Fermi: Estadística para fermiones y teoría beta", "Richard Feynman: Integrales de camino y diagramas", "Julian Schwinger y Sin-Itiro Tomonaga: QED y renormalización", "John von Neumann: Fundamentos matemáticos", "Eugene Wigner: Simetrías en cuántica", "Maria Goeppert Mayer: Modelo de capas nucleares", "John Bell: Desafiando la localidad", "David Bohm: Variables ocultas y totalidad", "Hugh Everett III: Universos paralelos", "Murray Gell-Mann: Quarks y el camino óctuple", "Peter Higgs y otros: El mecanismo de Higgs", "Stephen Hawking: Cuántica y agujeros negros", "Gerard 't Hooft y Martinus Veltman: Renormalización de teorías gauge", "Anton Zeilinger, Alain Aspect, John Clauser: Experimentos de Bell", "Arnold Sommerfeld: Ampliación del modelo de Bohr", "Hans Bethe: Contribuciones a QED y física nuclear", "Hideki Yukawa: Predicción del mesón pi", "Lev Landau: Superfluidez y teoría de líquidos de Fermi", "Abdus Salam, Sheldon Glashow, Steven Weinberg: Teoría electrodébil", "Rosalind Franklin: (Aunque más en biología, su trabajo en difracción fue clave)", "Lise Meitner: Fisión nuclear (interpretación)",
+
+            // Preguntas Filosóficas (Expansión)
+            "Ontología Cuántica: ¿Qué existe realmente?", "Epistemología Cuántica: ¿Qué podemos saber?", "Determinismo vs Indeterminismo Fundamental", "Localidad vs No-Localidad: ¿Está conectado el universo?", "Causalidad en el Mundo Cuántico", "Realismo Científico y Mecánica Cuántica", "Emergencia: ¿Cómo surge el mundo clásico?", "El rol de la información en la física cuántica", "¿Es la matemática el lenguaje fundamental o una herramienta?", "¿Tiene límites la aplicabilidad de la cuántica?", "Consecuencias éticas de las tecnologías cuánticas", "¿Qué nos dice la cuántica sobre nuestra percepción de la realidad?", "¿Puede existir una 'Teoría del Todo'?", "La Flecha del Tiempo y la Mecánica Cuántica", "Complementariedad (Bohr)", "Contextualidad Cuántica", "¿Somos sistemas cuánticos?",
+
+            // Aplicaciones Actuales y Futuras (Expansión)
+            "Semiconductores y Microelectrónica", "Láseres en Medicina, Industria y Comunicaciones", "Microscopía Electrónica y de Efecto Túnel (STM/AFM)", "Resonancia Magnética Nuclear (RMN/MRI)", "Relojes Atómicos y GPS", "Criptografía Cuántica Comercial", "Generadores Cuánticos de Números Aleatorios (QRNG)", "Sensores Cuánticos (Gravímetros, Magnetómetros)", "Metrología Cuántica de Precisión", "Simuladores Cuánticos para Ciencia de Materiales y Química", "Desarrollo de Fármacos Asistido por Computación Cuántica (Potencial)", "Optimización Cuántica (Potencial)", "Inteligencia Artificial Cuántica (Investigación)", "Nuevos Materiales con Propiedades Cuánticas (Superconductores, Topológicos)", "Imágenes Médicas Mejoradas (Sensores Cuánticos)", "Comunicación Segura a Larga Distancia (Internet Cuántica)", "Radar Cuántico (Conceptual)", "Condensados de Bose-Einstein como herramientas", "Iones atrapados para computación y sensado", "Fotolitografía y fabricación de chips (base cuántica)", "Iluminación LED (base cuántica)", "Celdas Solares (eficiencia cuántica)", "Teletransportación cuántica de información", "Diagnóstico médico temprano con biomarcadores cuánticos (potencial)"
+        ];
+        const quantumThemes = [
+            "principios fundamentales de la cuántica", "interpretaciones de la mecánica cuántica", "experimentos cuánticos clave",
+            "computación cuántica", "información cuántica", "teoría cuántica de campos", "óptica cuántica",
+            "física de partículas y cuántica", "materia condensada cuántica", "historia de la física cuántica",
+            "matemáticas de la cuántica", "aplicaciones de la cuántica", "filosofía de la cuántica",
+            "entrelazamiento y no localidad", "el problema de la medición", "átomos y moléculas cuánticas", "gravedad cuántica (conceptual)"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un físico teórico y divulgador científico experto en mecánica cuántica. Tu tarea es explicar conceptos de física cuántica de forma clara, precisa y atractiva para un público interesado pero no necesariamente experto (estudiantes, aficionados a la ciencia). Define el concepto, explica su origen histórico (si aplica), describe la física subyacente (evitando matemáticas complejas pero siendo conceptualmente correcto), menciona experimentos clave o evidencia, discute sus implicaciones (filosóficas o tecnológicas) y posibles aplicaciones. Usa analogías con cuidado y aclara sus limitaciones. Estructura la explicación lógicamente. El objetivo es una explicación detallada de aproximadamente 1200-1300 palabras. Basa tu explicación únicamente en el siguiente concepto o pregunta de física cuántica:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un explorador de física. Genera exactamente 15 conceptos, principios, experimentos, interpretaciones o preguntas clave sobre Física Cuántica, adecuados para una explicación detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor texto+imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+         }
+        async function fetchExplanationText(conceptTitle) {
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo generar una explicación adecuada o suficientemente detallada para este concepto.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(quantumThemes) || "conceptos cuánticos fascinantes";
+             const specificPrompt = `Genera 15 conceptos, preguntas o temas sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a Física Cuántica
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "abstract quantum physics visualization";
+            const enhancedPrompt = `Abstract conceptual visualization inspired by the quantum physics concept: '${safePromptText}'. Focus on waves, particles, energy fields, probability clouds, superposition, entanglement motifs. Use a dark background with vibrant neon colors (purples, blues, cyans, greens). Ethereal, mysterious, minimalist style. Avoid text, labels, equations, diagrams, realistic depictions.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, titles, captions, writing, numbers, formulas, equations, graphs, charts, diagrams, realistic photo, person, people, cat, lab equipment, computer screen, UI, watermark, signature, blurry, low quality";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ==========
+        function formatExplanationText(rawText) {
+             if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+|[a-zA-Z])\}?/g, '$1<sub>$2</sub>'); // Allow letter subscripts too
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−a-zA-Z]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; }); // Allow letter superscripts
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\hbar/g, 'ħ'); // H-bar symbol
+            formatted = formatted.replace(/\\partial/g, '∂'); // Partial derivative symbol
+            formatted = formatted.replace(/\\psi/g, 'ψ'); // Psi symbol
+            formatted = formatted.replace(/\\phi/g, 'φ'); // Phi symbol
+            formatted = formatted.replace(/\\ket\{(.*?)\}/g, '|$1⟩'); // Ket notation
+            formatted = formatted.replace(/\\bra\{(.*?)\}/g, '⟨$1|'); // Bra notation
+            formatted = formatted.replace(/\\braket\{(.*?)\|(.*?)\}/g, '⟨$1|$2⟩'); // Braket notation
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Formulas
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' '); // Replace internal newlines with space for paragraphs
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        // Removed shuffleArray as we decided to sort
+        function createTitleItem(title) { const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Sort alphabetically for better navigation
+             const sortedTitles = [...titles].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No hay conceptos disponibles.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let added = false;
+             newTitles.forEach(title => {
+                 if (!existingTitles.has(title)) {
+                     titleListContainer.appendChild(createTitleItem(title));
+                     added = true;
+                 }
+             });
+             if (added) {
+                 // Re-apply filter after adding
+                 filterTitles(searchInput.value);
+             }
+        }
+
+        // handleTitleClick - Handles fetching, displaying text, and image appending
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalContent.scrollTop = 0; // Reset scroll AFTER content is visible
+                console.log("Scroll set to 0 after content visible");
+
+                // Add image placeholder INSIDE modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-atom placeholder-icon"></i> <!-- Atom placeholder icon -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando visualización cuántica...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Create and append image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none'; // Hide until loaded
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove(); // Remove placeholder
+                    imgElement.style.display = 'block'; // Show image
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-times-circle placeholder-icon" style="color: #ef4444;"></i> <!-- Error icon -->
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo cargar la visualización.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append img to the end of content
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-triangle placeholder-icon" style="color: #f97316;"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de imagen.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Clear on error
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Explorando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     appendTitles(newTitles);
+                 } else {
+                     alert("No se pudieron generar más conceptos en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al generar conceptos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Explorar Más Conceptos';
+             }
+         }
+
+         // Search Filter Function
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Normalize for accents
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) {
+                     visibleCount++;
+                 }
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: #f87171; font-size: 1.5em; text-align: center; padding-top: 3em;">Error de inicialización cuántica: Faltan componentes.</p>'; // Thematic error
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            searchInput.addEventListener('input', (event) => { filterTitles(event.target.value); });
+            displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden'); // Start hidden
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

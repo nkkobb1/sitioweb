@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Municipios de Norte de Santander - Guía Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes limpias y legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Norte de Santander --- */
+        :root {
+            --color-primary: #00843D; /* Verde (Naturaleza, Esperanza) */
+            --color-secondary: #FCD116; /* Amarillo (Riqueza, Sol) - Usar con moderación */
+            --color-tertiary: #003893; /* Azul (Agua, Cielo) */
+            --color-background: #f8fafc; /* Blanco Hueso / Gris muy claro */
+            --color-text: #334155; /* Gris Oscuro Azulado */
+            --color-text-muted: #64748b;
+            --color-modal-bg: #ffffff; /* Blanco puro para modal */
+            --color-border: #e2e8f0; /* Borde gris claro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; }
+        h1, h2, h3, h4, .logo { font-family: 'Roboto', sans-serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700;}
+        #modal-title { color: var(--color-tertiary); font-weight: 700; }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem; /* Espacio para icono */ border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; box-shadow: var(--shadow-sm); transition: var(--transition-normal); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(0, 132, 61, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Roboto', sans-serif; font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #f0fdf4; /* Verde muy claro hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: 'Roboto', sans-serif; font-weight: 500; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #006a31; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #9ca3af; color: #e5e7eb; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(51, 65, 85, 0.85); /* Overlay gris azulado */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 300px; /* Altura mínima para carga */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #e2e8f0; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.5rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+        #modal-content {
+            line-height: 1.7;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 10px 1.5rem 10px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content::-webkit-scrollbar { width: 8px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-tertiary); font-weight: bold; }
+        #modal-content em { color: var(--color-primary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Roboto', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.15em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos para imagen y placeholder dentro del contenido */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 50px; height: 50px; border: 5px solid #cbd5e1; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 500; color: var(--color-text); font-size: 1.2rem; font-family: 'Roboto'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fff1f2; color: #be123c; /* Rosa/Rojo error */ padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #fecdd3; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 500; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+        .title-item.hidden { display: none; } /* Para ocultar con buscador */
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-8">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-map-marked-alt mr-2 text-green-600"></i> <!-- Icono mapa -->
+                     Norte de Santander
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600">🇨🇴 Guía Interactiva de Municipios</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Explora Norte de Santander</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto">Descubre la riqueza histórica, cultural y geográfica de los municipios nortesantandereanos. Selecciona uno o busca un tema para conocer más.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-8 max-w-2xl mx-auto">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Buscar municipio o tema...">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-book-open text-blue-600 mr-2"></i> <!-- Icono libro -->
+                 Municipios y Temas de Interés
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Cargando lista de municipios y temas...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden">No se encontraron resultados para tu búsqueda.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Datos Regionales
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Obteniendo información...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información generada por IA con fines educativos y de referencia sobre Norte de Santander.</p>
+              <p class="mt-1">Verifica siempre datos específicos con fuentes oficiales.</p>
+              <p class="mt-2">© 2025 Guía Interactiva NDS</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Los 40 Municipios Oficiales
+            "Ábrego", "Arboledas", "Bochalema", "Bucarasica", "Cáchira", "Cácota", "Chinácota", "Chitagá", "Convención", "Cúcuta", "Cucutilla", "Duranía", "El Carmen", "El Tarra", "El Zulia", "Gramalote", "Hacarí", "Herrán", "La Esperanza", "La Playa de Belén", "Labateca", "Los Patios", "Lourdes", "Mutiscua", "Ocaña", "Pamplona", "Pamplonita", "Puerto Santander", "Ragonvalia", "Salazar de Las Palmas", "San Calixto", "San Cayetano", "Santiago", "Sardinata", "Silos", "Teorama", "Tibú", "Toledo", "Villa Caro", "Villa del Rosario",
+            // Preguntas y Temas Departamentales / Regionales
+            "Historia General de Norte de Santander", "Geografía y Relieve de Norte de Santander", "Hidrografía: Principales Ríos de Norte de Santander", "Clima predominante en Norte de Santander", "Economía Departamental: Sectores Clave", "Agricultura en Norte de Santander: Productos Principales", "Minería en Norte de Santander: Carbón y otros recursos", "Industria y Comercio en Cúcuta y su Área Metropolitana", "Turismo en Norte de Santander: Destinos destacados", "Parques Naturales Nacionales en Norte de Santander (Tamá, Catatumbo Barí)", "Áreas Naturales Únicas: Páramo de Santurbán (sector NDS)", "Áreas Naturales Únicas: Estoraques de La Playa de Belén", "Cultura y Folclore Nortesantandereano", "Gastronomía Típica de Norte de Santander", "Artesanías representativas de la región", "Música tradicional de Norte de Santander", "Personajes Históricos de Norte de Santander", "Historia Precolombina en la región (Indígenas Motilones, Chitareros)", "La Conquista y Colonia en el territorio actual de NDS", "Norte de Santander en la Independencia de Colombia", "La Batalla de Cúcuta: Importancia histórica", "El Ferrocarril de Cúcuta: Auge y caída", "Conflicto Armado y sus efectos en Norte de Santander", "Desafíos Sociales y Económicos en la región del Catatumbo", "Situación de Frontera con Venezuela: Impacto en NDS", "Vías de Comunicación y Transporte en el Departamento", "Educación Superior en Norte de Santander (UFPS, Unipamplona)", "Salud Pública en el Departamento", "Organización Administrativa de Norte de Santander", "Símbolos Departamentales: Bandera, Escudo, Himno",
+            // Preguntas Específicas sobre Municipios Clave
+            "¿Cuál es la historia de Cúcuta, capital del departamento?", "Economía y Comercio en Cúcuta", "Atractivos Turísticos de Cúcuta y Villa del Rosario", "La importancia histórica de Villa del Rosario (Congreso 1821)", "Historia y Cultura de Ocaña", "Economía y Agricultura en la Provincia de Ocaña", "La 'Ciudad Mitrada': Historia y Arquitectura de Pamplona", "Importancia Cultural y Religiosa de Pamplona (Semana Santa)", "Turismo en Pamplona y sus alrededores", "Economía y Desafíos en Tibú", "El Carmen de Norte de Santander: Historia y atractivos", "Chinácota: Clima y Turismo de Montaña", "Salazar de Las Palmas: Historia y Café", "La Playa de Belén: Pueblo Patrimonio y Los Estoraques", "Convención: Historia y relación con el Catatumbo", "Toledo: Geografía y producción agrícola", "Puerto Santander: Actividad portuaria y frontera", "Ábrego: Economía agrícola y cultural", "Los Patios: Desarrollo urbano y área metropolitana", "El Zulia: Industria y recursos hídricos", "Gramalote: Reasentamiento y resiliencia",
+            // Temas Adicionales (para alcanzar mayor número si es necesario, aunque menos centrales)
+            "Producción de Café en Norte de Santander", "Cultivo de Cacao en la región", "Producción de Arroz en El Zulia", "Ganadería en Norte de Santander", "Fiestas y Ferias importantes en los municipios", "Dialectos y Habla popular en Norte de Santander", "Arquitectura Colonial en Pamplona y Ocaña", "Museos Relevantes en Norte de Santander", "Retos Ambientales en el Departamento", "Proyectos de Desarrollo Regional", "Infraestructura Energética en NDS", "Población Indígena Actual en NDS", "Migración y Desplazamiento en NDS", "Organizaciones Sociales y Comunitarias", "Deportes Populares en Norte de Santander", "El Río Zulia y su cuenca", "El Río Pamplonita y su importancia", "El Río Catatumbo: Navegación y desafíos", "La Carretera Cúcuta-Ocaña: Importancia y retos", "La Carretera Cúcuta-Pamplona-Bucaramanga", "Biodiversidad en el Parque Nacional Natural Tamá", "Fauna y Flora del Catatumbo Barí", "Especies Endémicas de Norte de Santander", "Mitos y Leyendas de la región", "Influencia de la Cultura Andina Venezolana en la frontera", "Impacto del Contrabando en la economía fronteriza", "Planes de Ordenamiento Territorial (POT) en municipios clave", "Calidad del Aire en Cúcuta", "Gestión de Residuos Sólidos en el departamento", "Potencial de Energías Renovables en NDS"
+             // Lista inicial robusta. 'Generar Más' puede añadir temas más específicos o preguntas variadas.
+        ];
+        const ndsThemes = [
+            "municipios de Norte de Santander", "geografía de Norte de Santander", "historia de Norte de Santander",
+            "economía de Norte de Santander", "cultura nortesantandereana", "turismo en Norte de Santander",
+            "región del Catatumbo", "área metropolitana de Cúcuta", "provincia de Ocaña", "provincia de Pamplona",
+            "agricultura en NDS", "recursos naturales de NDS", "parques naturales NDS", "frontera colombo-venezolana",
+            "historia de Cúcuta", "cultura de Ocaña", "tradiciones de Pamplona", "ríos importantes NDS"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un geógrafo, historiador y sociólogo experto en Colombia, con un enfoque particular en el departamento de Norte de Santander. Tu tarea es proporcionar una descripción detallada, informativa y objetiva sobre el municipio o tema específico de Norte de Santander que se te indique. Cubre aspectos como: historia relevante, ubicación geográfica, características físicas (relieve, hidrografía, clima), demografía básica, economía principal (sectores, productos), cultura (tradiciones, gastronomía, fiestas), atractivos turísticos o sitios de interés, y si es pertinente, mencionar brevemente desafíos actuales (sociales, económicos, ambientales). Utiliza un lenguaje claro, preciso y enciclopédico. El objetivo es una descripción completa de aproximadamente 1200-1300 palabras. Basa tu información únicamente en el siguiente municipio o tema de Norte de Santander:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una guía regional. Genera exactamente 15 nombres de municipios, preguntas específicas sobre ellos, o temas relevantes relacionados con el departamento de Norte de Santander, Colombia, adecuados para una descripción detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor del texto e imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios respecto a la versión anterior)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo generar una descripción adecuada o suficientemente detallada para este ítem.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+             const randomTheme = getRandomElement(ndsThemes) || "municipios de Norte de Santander";
+             const specificPrompt = `Genera 15 ítems (municipios, preguntas, temas) sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a NDS
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Paisaje de Norte de Santander Colombia";
+            // Prompt ENFOCADO en paisaje/concepto, NO texto, NO diagramas.
+            const enhancedPrompt = `Conceptual landscape or symbolic representation inspired by '${safePromptText}', Norte de Santander, Colombia. Focus on atmosphere, geography (mountains, valleys, rivers), agriculture (coffee, cacao), or cultural elements (colonial architecture abstractly). Use natural color palettes (greens, browns, blues, earth tones). Avoid text, labels, maps, flags. Artistic interpretation.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, titles, captions, writing, numbers, formulas, graphs, charts, diagrams, map, flag, concrete highway, modern city skyline, person, people, photorealistic, ugly, deformed, blurry, low quality, watermark, signature";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            // Correcciones básicas de Markdown/formato que la IA pueda usar
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1'); // Quitar \text{}
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>'); // Subíndices
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; }); // Superíndices
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;'); // Flecha
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Fórmulas (si las hubiera)
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>'); // H4
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>'); // H3
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>'); // H2
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');   // H1
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Negrita
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');     // Cursiva
+
+            // Convertir párrafos separados por doble salto de línea en <p>
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                // Si ya es un encabezado o fórmula, dejarlo como está
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                // Reemplazar saltos de línea simples dentro de un bloque por <br> (opcional, puede hacer el texto menos legible)
+                // let content = block.replace(/\n/g, '<br>');
+                // O simplemente tratar cada bloque como un párrafo
+                let content = block.replace(/\n/g, ' '); // Reemplaza saltos internos con espacio
+                return `<p>${content}</p>`;
+            }).join('');
+
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Limpia texto e imagen anterior
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b)); // Ordenar alfabéticamente
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay municipios o temas disponibles.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             // Evitar duplicados antes de añadir
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => {
+                 if (!existingTitles.has(title)) {
+                     titleListContainer.appendChild(createTitleItem(title));
+                 }
+             });
+             // Re-aplicar filtro actual si existe
+             filterTitles(searchInput.value);
+        }
+
+        // *** MODIFIED: handleTitleClick (sin cambios funcionales mayores, solo texto) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Poner texto primero
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalContent.scrollTop = 0; // Resetear scroll DESPUÉS de que el contenido es visible
+                console.log("Scroll set to 0 after content visible");
+
+                // Preparar y añadir placeholder de imagen DENTRO de modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-mountain placeholder-icon"></i> <!-- Icono placeholder temático -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Cargando imagen conceptual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Crear y añadir elemento imagen (empieza a cargar)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none'; // Oculta hasta cargar
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove(); // Quitar placeholder
+                    imgElement.style.display = 'block'; // Mostrar imagen
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-image-slash placeholder-icon"></i> <!-- Icono error -->
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo cargar la imagen.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir img al final del contenido
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de imagen.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Limpiar en caso de error
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     // No mover el botón, solo añadir títulos
+                     appendTitles(newTitles);
+                     // Opcional: scroll to the bottom or near the button?
+                 } else {
+                     alert("No se pudieron generar más datos en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al generar datos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Datos Regionales';
+             }
+         }
+
+         // *** NEW: Search Filter Function ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase();
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible); // Añade/quita clase 'hidden'
+                 if (isVisible) {
+                     visibleCount++;
+                 }
+             });
+
+             // Mostrar/ocultar mensaje de "no resultados"
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+             // Opcional: Ocultar botón "Generar Más" si no hay resultados?
+             // generateMoreContainer.style.display = visibleCount > 0 ? 'block' : 'none';
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error crítico: No se pudieron cargar los componentes de la página.</p>';
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            // Add Search Listener
+            searchInput.addEventListener('input', (event) => {
+                filterTitles(event.target.value);
+            });
+
+            displayTitles(predefinedTitles); // Carga inicial
+             // Asegurar que el mensaje de no resultados esté oculto al inicio
+             noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>
