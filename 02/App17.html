@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title -->
+    <title>Abstract Logo Spark - Generador IA de Ideas para Logos | PapitasFritas.com</title>
+    <!-- Meta Description (IMPORTANTE para SEO - Añadir manualmente o con CMS): -->
+    <meta name="description" content="Genera 4 conceptos visuales abstractos y simbólicos para tu logo usando IA. Introduce tu marca o idea y obtén inspiración instantánea de alta calidad con Abstract Logo Spark en PapitasFritas.com.">
+
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-color: #0d0c1d; /* Slightly different deep blue/purple */
+            --primary-neon: #a020f0; /* Purple */
+            --secondary-neon: #00f0ff; /* Cyan */
+            --accent-neon: #39ff14; /* Green for success/loading */
+            --error-neon: #ff4d4d; /* Red for errors */
+            --text-color: #e8e8e8;
+            --border-color: rgba(0, 240, 255, 0.4); /* Cyan border */
+            --glow-primary: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon), 0 0 15px rgba(160, 32, 240, 0.6);
+            --glow-secondary: 0 0 5px var(--secondary-neon), 0 0 10px var(--secondary-neon), 0 0 15px rgba(0, 240, 255, 0.6);
+            --glow-accent: 0 0 5px var(--accent-neon), 0 0 10px var(--accent-neon);
+            --glow-error: 0 0 5px var(--error-neon), 0 0 10px var(--error-neon);
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Rajdhani', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            line-height: 1.6; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; background-image: radial-gradient(circle at top left, rgba(160, 32, 240, 0.08), transparent 50%), radial-gradient(circle at bottom right, rgba(0, 240, 255, 0.08), transparent 50%);
+        }
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 900px; /* Adjusted for potentially 2x2 grid */
+            margin: 20px auto; padding: 30px 40px; background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color); border-radius: 15px; backdrop-filter: blur(8px);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.1);
+            text-align: center;
+        }
+        /* --- Header --- */
+        header { margin-bottom: 30px; }
+        /* SEO Heading 1 */
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.8em; color: var(--primary-neon);
+            text-shadow: var(--glow-primary); margin-bottom: 10px; letter-spacing: 1px; font-weight: 700;
+        }
+        /* SEO Subtitle */
+        .subtitle {
+            font-size: 1.3em; color: var(--secondary-neon); text-shadow: 0 0 5px var(--secondary-neon);
+            font-weight: 400; max-width: 650px; margin: 0 auto 25px auto;
+        }
+        /* --- Controls --- */
+        .controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; align-items: center; }
+        .prompt-label { font-size: 1.2em; color: var(--secondary-neon); text-shadow: var(--glow-secondary); margin-bottom: 5px; font-weight: 600; }
+        #conceptInput {
+            width: 100%; max-width: 500px; padding: 12px 18px; font-size: 1.1em; background-color: var(--input-bg);
+            border: 1px solid var(--primary-neon); border-radius: 8px; color: var(--text-color); transition: all 0.3s ease;
+            box-shadow: inset 0 0 8px rgba(160, 32, 240, 0.4); font-family: 'Rajdhani', sans-serif;
+        }
+        #conceptInput:focus { outline: none; border-color: var(--secondary-neon); box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.5), 0 0 15px var(--secondary-neon); }
+        #generateBtn {
+            padding: 12px 35px; font-family: 'Orbitron', sans-serif; font-size: 1.2em; font-weight: 700;
+            color: var(--bg-color); background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+            border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+            letter-spacing: 1.5px; margin-top: 10px;
+            box-shadow: 0 0 12px rgba(160, 32, 240, 0.6), 0 0 12px rgba(0, 240, 255, 0.6);
+        }
+        #generateBtn:hover:not(:disabled) { box-shadow: var(--glow-primary), var(--glow-secondary); transform: translateY(-2px) scale(1.03); }
+        #generateBtn:active:not(:disabled) { transform: translateY(0) scale(1); box-shadow: 0 0 5px rgba(160, 32, 240, 0.5), 0 0 5px rgba(0, 240, 255, 0.5); }
+        #generateBtn:disabled { opacity: 0.6; cursor: wait; background: grey; box-shadow: none; }
+
+        /* --- Results Grid (Aiming for 2x2) --- */
+        #resultsGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adjust minmax for desired columns */
+            gap: 25px; margin-top: 40px; width: 100%;
+        }
+        /* --- Image Container & Image --- */
+        .image-container {
+            position: relative; aspect-ratio: 1 / 1; background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+            cursor: pointer;
+        }
+        .image-container.failed { cursor: default; }
+        .image-container:hover:not(.failed) { transform: scale(1.05); box-shadow: var(--glow-secondary); border-color: var(--secondary-neon); }
+        .result-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; pointer-events: none; }
+        .result-image.loaded { opacity: 1; pointer-events: auto; }
+
+        /* --- Loading / Feedback / Error States --- */
+        #feedback { min-height: 30px; /* Reserve space */ text-align: center; margin-top: 20px; }
+        .loading-indicator, .error-message { font-size: 1.1em; padding: 10px 15px; border-radius: 5px; display: inline-block; max-width: 80%; }
+        .loading-indicator { color: var(--accent-neon); border: 1px dashed var(--accent-neon); animation: pulse 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-neon); background-color: rgba(255, 77, 77, 0.1); border: 1px solid var(--error-neon); }
+        .error-message.partial { color: var(--accent-neon); background-color: rgba(57, 255, 20, 0.1); border: 1px solid var(--accent-neon); } /* Style for partial success */
+
+        /* Spinner inside image container */
+        .image-container.loading::before {
+            content: ''; position: absolute; width: 40px; height: 40px;
+            border: 4px solid rgba(0, 240, 255, 0.3); border-top-color: var(--secondary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        /* Hide spinner when loaded or failed */
+        .image-container.img-loaded::before, .image-container.failed::before { display: none; }
+
+        /* Style for failed image container */
+        .image-container.failed {
+            border-color: var(--error-neon); box-shadow: var(--glow-error);
+            color: var(--error-neon); font-size: 0.9em; padding: 10px;
+        }
+        .image-container.failed img { display: none; } /* Hide broken image */
+        .error-content { font-weight: 600; }
+        .retry-info { font-size: 0.9em; color: var(--secondary-neon); margin-top: 5px; display: block; }
+
+        /* --- Footer --- */
+        footer { margin-top: 50px; text-align: center; font-size: 0.9em; color: rgba(232, 232, 232, 0.7); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--primary-neon); text-shadow: 0 0 5px var(--primary-neon); }
+
+        /* --- Lightbox --- */
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(13, 12, 29, 0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(5px); cursor: pointer; }
+        #lightbox.active { display: flex; }
+        #lightbox img { display: block; max-width: 90%; max-height: 90%; object-fit: contain; border: 3px solid var(--primary-neon); box-shadow: var(--glow-primary); cursor: default; }
+        #lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 3rem; color: var(--text-color); cursor: pointer; line-height: 1; transition: color 0.3s, text-shadow 0.3s; text-shadow: 0 0 8px rgba(0,0,0,0.8); }
+        #lightbox .close-btn:hover { color: var(--error-neon); text-shadow: var(--glow-error); }
+
+        /* --- Animations --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .container { padding: 25px; }
+            h1 { font-size: 2.2em; }
+            .subtitle { font-size: 1.1em; }
+            #resultsGrid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 15px; }
+            .container { padding: 20px 15px; }
+            h1 { font-size: 1.9em; }
+            .subtitle { font-size: 1em; }
+            #conceptInput { font-size: 1em; }
+            #generateBtn { font-size: 1em; padding: 10px 25px; }
+            #resultsGrid { grid-template-columns: 1fr; gap: 15px; } /* Single column on very small screens */
+             #lightbox .close-btn { top: 15px; right: 20px; font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Abstract Logo Spark</h1>
+            <p class="subtitle">Genera Conceptos Abstractos para Logos con Inteligencia Artificial</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <label for="conceptInput" class="prompt-label">Introduce tu Marca o Concepto:</label>
+                <input type="text" id="conceptInput" placeholder="Ej: Quantum Dynamics, Solstice Cafe, EcoGrow">
+                <button id="generateBtn">Generar Ideas</button>
+            </div>
+
+            <!-- Area for global feedback -->
+            <div id="feedback" aria-live="polite"></div>
+
+            <div id="resultsGrid">
+                <!-- Logo concepts will appear here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Lightbox Structure -->
+    <div id="lightbox">
+        <span class="close-btn" title="Cerrar">&times;</span>
+        <img id="lightbox-img" src="" alt="Logo Concept Ampliado">
+    </div>
+
+    <footer>
+        Herramienta por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | Imágenes via <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM References ---
+        const conceptInput = document.getElementById('conceptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const feedbackDiv = document.getElementById('feedback');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.querySelector('#lightbox .close-btn');
+
+        // --- Configuration ---
+        const NUM_IMAGES = 4; // Generate 4 logo concepts
+        const IMAGE_WIDTH = 1024; // High Quality
+        const IMAGE_HEIGHT = 1024; // High Quality
+        const MAX_RETRIES = 2; // Max retries per image load
+        const RETRY_DELAY_MS = 1500; // Delay before retrying
+        const IMAGE_LOAD_TIMEOUT_MS = 60000; // Increased timeout for larger images (60 seconds)
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        conceptInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                handleGeneration();
+            }
+        });
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (event) => {
+            // Close if clicked on the background, not the image itself
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && lightbox.classList.contains('active')) {
+                closeLightbox();
+            }
+        });
+
+        // --- Core Generation Logic ---
+        function handleGeneration() {
+            const concept = conceptInput.value.trim();
+            if (!concept) {
+                showFeedback('error', '¡Necesitas introducir un concepto o nombre de marca!');
+                return;
+            }
+
+            clearResultsAndFeedback();
+            showFeedback('loading', `Generando ${NUM_IMAGES} ideas abstractas para "${concept}"...`);
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generando...';
+
+            // Define abstract style keywords to append
+            const styles = [
+                "abstract geometric logo concept",
+                "minimalist symbolic logo design",
+                "modern abstract emblem",
+                "fluid organic logo shape",
+                "clean vector logo mark",
+                "negative space logo idea",
+                "gradient abstract symbol",
+                "tech-inspired abstract logo"
+            ];
+
+            for (let i = 0; i < NUM_IMAGES; i++) {
+                // **Generate a unique random seed for EACH image, EVERY time**
+                const seed = Math.floor(Math.random() * 1000000);
+
+                // Combine concept with a random abstract style
+                const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+                const fullPrompt = `${concept}, ${randomStyle}, high quality`; // Add HQ hint
+                const encodedPrompt = encodeURIComponent(fullPrompt);
+
+                const imageUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+                // Create container immediately
+                const container = document.createElement('div');
+                container.className = 'image-container loading';
+                container.dataset.concept = concept; // Store for context
+                container.dataset.prompt = fullPrompt; // Store full prompt
+                container.dataset.retries = 0;
+
+                resultsGrid.appendChild(container);
+
+                // Start loading process for this specific image container and URL
+                loadImageWithRetry(container, imageUrl, fullPrompt);
+            }
+
+            checkAllImagesDone(NUM_IMAGES); // Initial check (might be redundant but safe)
+        }
+
+        // --- Image Loading & Retry Logic (Adapted from App04.html / ConceptGrid AI) ---
+        function loadImageWithRetry(container, imageUrl, promptForAlt) {
+            let timeoutId;
+
+            const img = document.createElement('img');
+            img.className = 'result-image';
+            // SEO: Descriptive alt text
+            img.alt = `Concepto de logo abstracto para: ${container.dataset.concept || 'idea'} - Estilo: ${promptForAlt}`;
+
+            // Clear previous state & content before loading attempt
+            container.classList.add('loading');
+            container.classList.remove('failed', 'img-loaded');
+            container.innerHTML = ''; // Clear previous error messages/spinners
+            container.appendChild(img); // Add the image element
+
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                container.classList.remove('loading', 'failed');
+                container.classList.add('img-loaded');
+                img.classList.add('loaded');
+                // Add click listener ONLY on successful load
+                container.addEventListener('click', () => openLightbox(imageUrl, img.alt));
+                console.log(`Imagen cargada: ${imageUrl.substring(0, 60)}...`);
+                checkAllImagesDone(NUM_IMAGES);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                console.error(`Error cargando: ${imageUrl}`);
+                handleImageLoadFailure(container, img, imageUrl, promptForAlt, 'Error de carga');
+            };
+
+            // Set src *after* listeners and timeout
+            img.src = imageUrl;
+
+            // Set a timeout for this specific load attempt
+            timeoutId = setTimeout(() => {
+                if (container.classList.contains('loading')) { // Check if still loading
+                    console.warn(`Timeout cargando: ${imageUrl}`);
+                    img.src = ''; // Prevent broken image icon / further loading
+                    handleImageLoadFailure(container, img, imageUrl, promptForAlt, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageLoadFailure(container, img, imageUrl, promptForAlt, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                const attempt = currentRetries + 1;
+                console.log(`Reintentando [${attempt}/${MAX_RETRIES}]: ${imageUrl}`);
+
+                // Update UI to show retry state
+                container.classList.remove('loading');
+                container.classList.add('failed'); // Mark as failed during retry
+                container.innerHTML = `
+                    <div class="error-content">${reason}</div>
+                    <span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span>
+                `;
+
+                // Exponential backoff for retry delay (optional but good practice)
+                const delay = RETRY_DELAY_MS * Math.pow(2, currentRetries -1);
+                setTimeout(() => {
+                    loadImageWithRetry(container, imageUrl, promptForAlt); // Retry the load
+                }, delay);
+
+            } else {
+                // Max retries reached - Final failure
+                console.error(`Fallo final tras ${MAX_RETRIES} reintentos: ${imageUrl}`);
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = `<div class="error-content">Error final: ${reason}</div>`;
+                // Remove click listener if it was somehow added previously
+                container.replaceWith(container.cloneNode(true)); // Simple way to remove listeners
+                checkAllImagesDone(NUM_IMAGES); // Check if everything else is done
+            }
+        }
+
+        // --- Completion Check ---
+        function checkAllImagesDone(totalExpected) {
+            const containers = resultsGrid.querySelectorAll('.image-container');
+
+            // Ensure the expected number of containers have been added first
+            if (containers.length < totalExpected) {
+                 // console.log(`Waiting for containers... ${containers.length}/${totalExpected}`);
+                return; // Still creating initial containers
+            }
+
+            // Check if ALL containers are no longer in the 'loading' state
+            const allAccountedFor = Array.from(containers).every(
+                cont => !cont.classList.contains('loading')
+            );
+
+            if (allAccountedFor) {
+                feedbackDiv.innerHTML = ''; // Clear "Generating..." message
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generar Ideas';
+
+                // Provide final feedback based on errors
+                const errorCount = resultsGrid.querySelectorAll('.image-container.failed').length;
+                if (errorCount > 0 && errorCount < totalExpected) {
+                    showFeedback('error partial', `Completado. ${errorCount} imagen(es) fallaron tras ${MAX_RETRIES} intentos.`);
+                } else if (errorCount === totalExpected) {
+                     showFeedback('error', `Error: No se pudo generar ninguna imagen. Revisa la API o inténtalo más tarde.`);
+                } else {
+                    // Optional: Success message (or just clear loading)
+                     // showFeedback('success', '¡Ideas de logo generadas!');
+                    console.log("Generación completada con éxito.");
+                }
+            } else {
+                 // Optional: Update loading message with progress
+                 const doneCount = Array.from(containers).filter(c => !c.classList.contains('loading')).length;
+                 showFeedback('loading', `Generando ${NUM_IMAGES} ideas abstractas... (${doneCount}/${totalExpected})`);
+            }
+        }
+
+        // --- UI Helper Functions ---
+        function showFeedback(type, message) {
+            feedbackDiv.innerHTML = ''; // Clear previous messages
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            // Assign class based on type (loading, error, partial error, success)
+            messageElement.className = `${type}-indicator`; // Default to loading style if type not error/partial
+            if (type.startsWith('error')) messageElement.className = 'error-message';
+            if (type === 'error partial') messageElement.className = 'error-message partial';
+
+            feedbackDiv.appendChild(messageElement);
+        }
+
+        function clearResultsAndFeedback() {
+            resultsGrid.innerHTML = '';
+            feedbackDiv.innerHTML = '';
+        }
+
+        // --- Lightbox Functions ---
+        function openLightbox(imageUrl, altText) {
+            lightboxImg.src = imageUrl;
+            lightboxImg.alt = altText || "Logo Concept Ampliado"; // Use provided alt text
+            lightbox.classList.add('active');
+            // Prevent body scrolling while lightbox is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxImg.src = ""; // Clear src to potentially free memory
+            document.body.style.overflow = ''; // Restore body scrolling
+        }
+
+        // --- Optional: Preconnect ---
+        document.addEventListener('DOMContentLoaded', () => {
+             const preconnectLink = document.createElement('link');
+             preconnectLink.rel = 'preconnect';
+             preconnectLink.href = 'https://image.pollinations.ai';
+             document.head.appendChild(preconnectLink);
+        });
+
+    </script>
+
+</body>
+</html>

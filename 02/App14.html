@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title: Descriptivo, con keywords relevantes y branding -->
+    <title>AI Asset Forge - Generador de Assets para Juegos y VN con IA | PapitasFritas.com</title>
+    <!-- Meta Description (IMPORTANTE para SEO): -->
+    <meta name="description" content="Crea assets únicos para tus videojuegos o novelas visuales con IA. Genera sprites de personajes, fondos, ítems y más con AI Asset Forge en PapitasFritas.com. ¡Inspiración instantánea!">
+
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+             /* Paleta Futurista/Sci-Fi sin mencionar 'neón' directamente */
+            --bg-color: #0d1117; /* Dark blue/grey like GitHub dark */
+            --primary-glow: #00aaff; /* Bright cyan */
+            --secondary-glow: #aa00ff; /* Vibrant purple */
+            --accent-glow: #00ffaa; /* Mint green */
+            --error-glow: #ff4444; /* Clear red */
+            --text-color: #c9d1d9; /* Light grey text */
+            --border-color: rgba(0, 170, 255, 0.3); /* Subtle cyan border */
+            --input-bg: rgba(255, 255, 255, 0.05);
+
+            /* Text Shadows for Glow Effect */
+            --text-glow-primary: 0 0 4px var(--primary-glow), 0 0 8px rgba(0, 170, 255, 0.5);
+            --text-glow-secondary: 0 0 4px var(--secondary-glow), 0 0 8px rgba(170, 0, 255, 0.5);
+            --element-glow-border: 0 0 8px var(--primary-glow), 0 0 12px rgba(0, 170, 255, 0.4);
+            --element-glow-error: 0 0 8px var(--error-glow);
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400&display=swap');
+
+        body {
+            font-family: 'Roboto Mono', monospace; background-color: var(--bg-color); color: var(--text-color);
+            line-height: 1.6; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            /* Subtle background grid/pattern */
+            background-image:
+                linear-gradient(rgba(0, 170, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 170, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 1000px; /* Adjusted for 4 large images */
+            margin: 20px auto; padding: 30px 40px;
+            background: rgba(13, 17, 23, 0.85); /* Slightly darker bg */
+            border: 1px solid var(--border-color); border-radius: 12px; backdrop-filter: blur(5px);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(0, 170, 255, 0.08);
+            text-align: center;
+        }
+
+        /* --- Header --- */
+        header { margin-bottom: 35px; }
+        /* SEO H1 */
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.6em; /* Slightly larger */
+            color: var(--primary-glow); text-shadow: var(--text-glow-primary); margin-bottom: 10px;
+            letter-spacing: 1.5px; font-weight: 700;
+        }
+        /* SEO Subtitle */
+        .subtitle {
+            font-size: 1.2em; color: var(--accent-glow); text-shadow: 0 0 5px var(--accent-glow);
+            font-weight: 300; max-width: 650px; margin-left: auto; margin-right: auto; /* Center */
+        }
+
+        /* --- Controls --- */
+        .controls {
+            display: grid; grid-template-columns: 1fr; /* Stack controls initially */
+            gap: 20px; margin-bottom: 35px; align-items: stretch; /* Make items same height */
+            text-align: left; /* Align labels left */
+        }
+        /* Responsive grid for controls on wider screens */
+         @media (min-width: 600px) {
+            .controls {
+                grid-template-columns: auto 1fr; /* Label + Input side-by-side */
+                align-items: center; /* Vertically align label and input */
+                 gap: 10px 15px; /* Row gap, Column gap */
+            }
+            label { grid-column: 1 / 2; justify-self: end; } /* Align label right */
+             .input-wrapper, #generateBtn { grid-column: 2 / 3; }
+             #generateBtn { justify-self: start; margin-top: 10px;} /* Align button left */
+        }
+
+        label { font-size: 1.1em; color: var(--secondary-glow); text-shadow: var(--text-glow-secondary); font-weight: 400; }
+        .input-wrapper { width: 100%; } /* Container for inputs */
+
+        select, textarea {
+            width: 100%; padding: 10px 15px; font-size: 1em; font-family: 'Roboto Mono', monospace;
+            background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px;
+            color: var(--text-color); transition: all 0.3s ease; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+        select:focus, textarea:focus {
+            outline: none; border-color: var(--primary-glow); box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), var(--element-glow-border);
+        }
+        textarea { min-height: 80px; resize: vertical; }
+        /* Style the dropdown arrow (basic cross-browser) */
+        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%2300aaff'%3E%3Cpath d='M6 8L0 2 1.4 0 6 4.6 10.6 0 12 2z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 15px center; background-size: 12px 8px; padding-right: 40px; }
+
+
+        #generateBtn {
+            padding: 12px 25px; font-family: 'Orbitron', sans-serif; font-size: 1.1em; font-weight: 700;
+            color: var(--bg-color); background: linear-gradient(45deg, var(--primary-glow), var(--accent-glow));
+            border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+            letter-spacing: 1px; box-shadow: 0 2px 8px rgba(0, 170, 255, 0.4);
+        }
+        #generateBtn:hover:not(:disabled) { box-shadow: 0 4px 15px var(--primary-glow); transform: translateY(-2px); }
+        #generateBtn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 1px 5px rgba(0, 170, 255, 0.4); }
+        #generateBtn:disabled { opacity: 0.6; cursor: not-allowed; background: #555; box-shadow: none; }
+
+        /* --- Feedback Area --- */
+        .feedback-area { min-height: 30px; text-align: center; margin: 20px 0 30px 0; }
+        .loading-indicator, .error-message { font-size: 1.1em; padding: 10px 15px; border-radius: 5px; display: none; /* Show via JS */ font-weight: 400; }
+        /* Ensure loading indicator is inline-block so error can appear next to/below it */
+        .loading-indicator { color: var(--accent-glow); border: 1px dashed var(--accent-glow); animation: pulse 1.5s infinite ease-in-out; display: inline-block; margin-right: 10px; /* Optional spacing */ }
+        .error-message { color: var(--error-glow); background-color: rgba(255, 68, 68, 0.1); border: 1px solid var(--error-glow); display: block; /* Or inline-block if preferred */ margin-top: 10px; /* Space if block */ }
+
+        /* --- Results Grid (Max 4 items, larger min size) --- */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Min size for larger images */
+            gap: 25px; margin-top: 30px;
+            width: 100%;
+        }
+         /* Ensure 2x2 on medium screens */
+        @media (min-width: 650px) {
+             .results-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+         /* Max 4 wide on very large screens */
+         @media (min-width: 1300px) {
+              .results-grid { grid-template-columns: repeat(4, 1fr); }
+         }
+
+
+        /* --- Image Container & Image --- */
+        .image-container {
+            position: relative; aspect-ratio: 1 / 1; /* Square images */
+            background-color: rgba(255, 255, 255, 0.02); border-radius: 8px; overflow: hidden;
+            border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center;
+            text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;
+        }
+        .image-container.loading { cursor: progress; }
+        .image-container.failed { cursor: not-allowed; }
+        .image-container:not(.failed):hover { transform: scale(1.04); box-shadow: 0 0 15px var(--primary-glow); border-color: var(--primary-glow); }
+        .result-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; position: absolute; top: 0; left: 0; pointer-events: none; }
+        .result-image.loaded { opacity: 1; pointer-events: auto; }
+
+        /* Spinner inside image container */
+        .image-container.loading::before {
+            content: ''; position: absolute; width: 40px; height: 40px;
+            border: 4px solid rgba(0, 170, 255, 0.3); border-top-color: var(--primary-glow);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 3;
+        }
+        /* Hide spinner when loaded or failed */
+        .image-container.img-loaded::before, .image-container.failed::before { display: none; }
+
+        /* Error state styling */
+        .image-container.failed { border-color: var(--error-glow); box-shadow: inset 0 0 8px rgba(255, 68, 68, 0.3); color: var(--error-glow); font-size: 0.85em; padding: 10px; }
+        .image-container.failed img { display: none; } /* Hide broken image */
+        .error-content { font-weight: 400; } /* Container for error text */
+        .retry-info { font-size: 0.9em; color: var(--accent-glow); margin-top: 5px; display: block; }
+
+
+        /* --- Footer --- */
+        footer { margin-top: 50px; text-align: center; font-size: 0.9em; color: rgba(201, 209, 217, 0.6); }
+        footer a { color: var(--secondary-glow); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--primary-glow); text-shadow: 0 0 5px var(--primary-glow); }
+
+        /* --- Lightbox (Copied & Adjusted Styles) --- */
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(13, 17, 23, 0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
+        #lightbox.active { display: flex; }
+        #lightbox img { display: block; max-width: 90%; max-height: 90%; object-fit: contain; border: 2px solid var(--primary-glow); box-shadow: 0 0 25px var(--primary-glow); border-radius: 4px; }
+        #lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.8rem; color: var(--text-color); cursor: pointer; line-height: 1; transition: color 0.3s, text-shadow 0.3s; text-shadow: 0 0 8px rgba(0, 0, 0, 0.7); }
+        #lightbox .close-btn:hover { color: var(--primary-glow); text-shadow: var(--text-glow-primary); }
+
+        /* --- Animations --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- Responsive Adjustments --- */
+         @media (max-width: 768px) {
+            .container { padding: 25px; }
+            h1 { font-size: 2.2em; }
+            .subtitle { font-size: 1.1em; }
+            .results-grid { gap: 15px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Smaller min for smaller screens */ }
+             @media (min-width: 480px) and (max-width: 768px) {
+                  .results-grid { grid-template-columns: repeat(2, 1fr); } /* Force 2 columns */
+             }
+         }
+         @media (max-width: 480px) {
+            body { padding: 15px; }
+            .container { padding: 20px; }
+            h1 { font-size: 1.9em; }
+            .subtitle { font-size: 1em; }
+            .controls { grid-template-columns: 1fr; gap: 15px; } /* Stack always */
+             label { grid-column: 1 / -1; justify-self: start; } /* Label top-left */
+             .input-wrapper, #generateBtn { grid-column: 1 / -1; justify-self: stretch; } /* Full width */
+             #generateBtn { margin-top: 5px; }
+            .results-grid { gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+             @media (max-width: 480px) { /* Force 2 columns even on very small */
+                  .results-grid { grid-template-columns: repeat(2, 1fr); }
+             }
+            #lightbox .close-btn { top: 15px; right: 20px; font-size: 2.2rem; }
+         }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <!-- SEO H1 -->
+            <h1>AI Asset Forge</h1>
+            <!-- SEO Subtitle -->
+            <p class="subtitle">Generador de Assets para Juegos y Novelas Visuales con IA</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <label for="assetType">Tipo de Asset:</label>
+                <div class="input-wrapper">
+                    <select id="assetType">
+                        <option value="Character Sprite">Character Sprite (Personaje)</option>
+                        <option value="Game Background">Background (Fondo)</option>
+                        <option value="Item/Prop">Item / Prop (Objeto)</option>
+                        <option value="UI Element">UI Element (Interfaz)</option>
+                        <option value="Concept Art">Concept Art (Arte Conceptual)</option>
+                    </select>
+                </div>
+
+                <label for="promptInput">Descripción:</label>
+                <div class="input-wrapper">
+                    <textarea id="promptInput" placeholder="Ej: guerrero fantasy, armadura detallada, pose neutral | bosque encantado, brillo místico, sendero" rows="3"></textarea>
+                </div>
+
+                <button id="generateBtn">Forjar Assets</button>
+            </div>
+
+            <!-- Area for global feedback -->
+            <div id="feedback" class="feedback-area" aria-live="polite">
+                <!-- Loading indicator moved inside feedback div -->
+                <span id="loading-indicator" class="loading-indicator"></span>
+                <!-- Error message also inside feedback div -->
+                <div id="error-message" class="error-message"></div>
+            </div>
+
+            <div id="resultsGrid" class="results-grid">
+                <!-- Generated images appear here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Lightbox Structure -->
+    <div id="lightbox">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="Imagen Ampliada">
+    </div>
+
+    <footer>
+        Potenciado por <a href="https://pollinations.ai" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | Una herramienta de <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- DOM References ---
+        const assetTypeSelect = document.getElementById('assetType');
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        const feedbackDiv = document.getElementById('feedback'); // Parent container for feedback
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.querySelector('#lightbox .close-btn');
+
+        // --- Configuration ---
+        const NUM_IMAGES = 4; // Max 4 images per generation
+        const IMAGE_WIDTH = 1024; // High Quality
+        const IMAGE_HEIGHT = 1024; // High Quality (Square)
+        const MAX_RETRIES = 2; // Retries per image load
+        const RETRY_DELAY_MS = 1500; // Delay before retry
+        const IMAGE_LOAD_TIMEOUT_MS = 60000; // 60 seconds timeout per image (for HQ)
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        promptInput.addEventListener('keypress', (event) => {
+            // Optional: Allow Ctrl+Enter or Shift+Enter to submit
+            // if ((event.ctrlKey || event.shiftKey) && event.key === 'Enter') {
+            //    handleGeneration();
+            // }
+        });
+
+        // --- Core Generation Logic ---
+        function handleGeneration() {
+            const assetType = assetTypeSelect.value;
+            const description = promptInput.value.trim();
+
+            if (!description) {
+                showError("Por favor, ingresa una descripción para el asset.");
+                return;
+            }
+
+            clearResultsAndFeedback();
+            showLoading(true, NUM_IMAGES); // Start loading indicator
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Forjando...';
+
+            let imagesInitiated = 0;
+
+            for (let i = 0; i < NUM_IMAGES; i++) {
+                imagesInitiated++;
+                const seed = Math.floor(Math.random() * 1000000); // Always random seed
+                let fullPrompt = `${assetType}, ${description}`;
+
+                // Add specific keywords (optional enhancement)
+                if (assetType.toLowerCase().includes('character')) fullPrompt += ', detailed, full body, game asset style, clear background';
+                else if (assetType.toLowerCase().includes('background')) fullPrompt += ', landscape, scenic view, detailed environment, game background art';
+                else if (assetType.toLowerCase().includes('item')) fullPrompt += ', isolated object, game item, detailed texture';
+                else if (assetType.toLowerCase().includes('ui')) fullPrompt += ', game UI element, clean design, interface component';
+
+                const encodedPrompt = encodeURIComponent(fullPrompt);
+                const requestUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+                // Create container
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'image-container loading';
+                imageContainer.dataset.prompt = fullPrompt;
+                imageContainer.dataset.retries = 0;
+                resultsGrid.appendChild(imageContainer);
+
+                // Fetch the final image URL
+                console.log(`[${i+1}/${NUM_IMAGES}] Requesting: "${fullPrompt}" (Seed: ${seed})`);
+                fetch(requestUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                        console.log(`   Received URL for Seed ${seed}: ${response.url}`);
+                        return response.url;
+                    })
+                    .then(finalImageUrl => {
+                        loadImageWithRetry(imageContainer, finalImageUrl, fullPrompt);
+                    })
+                    .catch(error => {
+                        console.error(`Initial fetch failed for Seed ${seed}:`, error);
+                        handleInitialFetchFailure(imageContainer, fullPrompt, error.message);
+                        checkAllImagesDone(NUM_IMAGES); // Check completion status immediately on fetch failure
+                    });
+            }
+        }
+
+        // --- Robust Image Loading with Retry ---
+        function loadImageWithRetry(container, imageUrl, promptForAlt) {
+            let timeoutId;
+            const img = document.createElement('img');
+            img.className = 'result-image';
+            img.alt = `AI Asset: ${promptForAlt.substring(0, 80)}...`; // SEO Alt text
+
+            container.classList.add('loading');
+            container.classList.remove('failed', 'img-loaded');
+            container.innerHTML = ''; // Clear old content/error
+            container.appendChild(img);
+            container.onclick = null; // Ensure click listener is removed initially
+
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                container.classList.remove('loading', 'failed');
+                container.classList.add('img-loaded');
+                img.classList.add('loaded');
+                container.onclick = () => openLightbox(imageUrl); // Add lightbox listener on success
+                console.log(`   Image loaded successfully: ${imageUrl.split('/').pop()}`);
+                checkAllImagesDone(NUM_IMAGES); // <<< Check completion state
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                console.error(`   Error loading image: ${imageUrl}`);
+                handleImageLoadFailure(container, img, imageUrl, promptForAlt, 'Error de carga');
+                // Note: checkAllImagesDone is called inside handleImageLoadFailure (on final fail)
+            };
+
+            img.src = imageUrl;
+
+            timeoutId = setTimeout(() => {
+                if (container.classList.contains('loading')) {
+                    console.warn(`   Image load timeout: ${imageUrl}`);
+                    img.src = ''; // Stop loading
+                    handleImageLoadFailure(container, img, imageUrl, promptForAlt, 'Timeout');
+                     // Note: checkAllImagesDone is called inside handleImageLoadFailure (on final fail)
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageLoadFailure(container, img, imageUrl, promptForAlt, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                const attempt = currentRetries + 1;
+                console.log(`   Retrying image load (${attempt}/${MAX_RETRIES}): ${imageUrl}`);
+
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = '';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-content';
+                errorDiv.innerHTML = `${reason}.<br><span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span>`;
+                container.appendChild(errorDiv);
+                container.onclick = null;
+
+                const delay = RETRY_DELAY_MS * Math.pow(2, currentRetries);
+                setTimeout(() => {
+                    loadImageWithRetry(container, imageUrl, promptForAlt);
+                }, delay);
+
+            } else {
+                // Max retries reached
+                console.error(`   Max retries reached for image. Giving up: ${imageUrl}`);
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = '';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-content';
+                errorDiv.textContent = `Error final: ${reason}`;
+                container.appendChild(errorDiv);
+                container.onclick = null;
+                checkAllImagesDone(NUM_IMAGES); // <<< Check completion state ON FINAL FAILURE
+            }
+        }
+
+        function handleInitialFetchFailure(container, promptForAlt, reason) {
+            console.error(`   Initial API request failed for "${promptForAlt}": ${reason}`);
+            container.classList.remove('loading');
+            container.classList.add('failed');
+            container.innerHTML = '';
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-content';
+            errorDiv.textContent = `Error API: ${reason}`;
+            container.appendChild(errorDiv);
+            container.onclick = null;
+            // No need to call checkAllImagesDone here, it's called in the main loop's catch block
+        }
+
+
+        // --- MODIFIED: Completion Check ---
+        function checkAllImagesDone(totalExpected) {
+            if (!totalExpected || !loadingIndicator.style.display || loadingIndicator.style.display === 'none') {
+                // Don't run if not expecting results or if loading isn't active
+                return;
+            }
+
+            const containers = resultsGrid.querySelectorAll('.image-container');
+
+            // Calculate how many tasks are COMPLETED (either success or final failure)
+            const tasksCompleted = Array.from(containers).filter(
+                cont => !cont.classList.contains('loading')
+            ).length;
+
+            // Update the counter text regardless of whether all are done yet
+            loadingIndicator.textContent = `Forjando... (${tasksCompleted}/${totalExpected})`;
+
+            // Check if ALL expected containers have finished processing
+            if (tasksCompleted === totalExpected && containers.length === totalExpected) {
+                 // All tasks are accounted for (loaded or failed)
+
+                 // Short delay before hiding loading and enabling button,
+                 // allows user to see the final count (e.g., 4/4) briefly.
+                 setTimeout(() => {
+                    showLoading(false); // Hide the loading indicator
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Forjar Assets';
+
+                    // Show final error summary if needed
+                    const errorCount = imageGrid.querySelectorAll('.image-container.failed').length;
+                    if (errorCount > 0 && errorCount === totalExpected) {
+                        showError(`Error: No se pudo generar ningún asset.`);
+                    } else if (errorCount > 0) {
+                        showError(`Completado con ${errorCount} error(es). Se generaron ${totalExpected - errorCount} assets.`, true);
+                    } else {
+                        // Optional: Hide error message on full success if it was previously shown
+                        errorMessage.style.display = 'none';
+                        console.log("AI Asset Forge: Generation complete!");
+                    }
+                }, 300); // 300ms delay
+            }
+        }
+
+
+        // --- UI Helper Functions ---
+        function showLoading(isLoading, total = 0) {
+             loadingIndicator.style.display = isLoading ? 'inline-block' : 'none';
+             if (isLoading) {
+                 // Set initial text when starting
+                 loadingIndicator.textContent = `Forjando... (0/${total})`;
+             }
+             // Ensure error message is hidden when loading starts
+             if (isLoading) {
+                errorMessage.style.display = 'none';
+             }
+        }
+
+        function showError(message, isPartial = false) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block'; // Use block or inline-block as needed
+            errorMessage.style.borderColor = isPartial ? 'var(--accent-glow)' : 'var(--error-glow)';
+            errorMessage.style.color = isPartial ? 'var(--accent-glow)' : 'var(--error-glow)';
+            errorMessage.style.backgroundColor = isPartial ? 'rgba(0, 255, 170, 0.1)' : 'rgba(255, 68, 68, 0.1)';
+
+            // If showing a non-partial error, ensure loading indicator is hidden
+            // and the button is re-enabled (in case of total failure before checkAllImagesDone runs)
+             if (!isPartial) {
+                  showLoading(false);
+                   if (generateBtn.disabled) { // Only re-enable if it was disabled
+                      generateBtn.disabled = false;
+                      generateBtn.textContent = 'Forjar Assets';
+                  }
+             }
+        }
+
+        function clearResultsAndFeedback() {
+            resultsGrid.innerHTML = '';
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+            loadingIndicator.style.display = 'none'; // Ensure loading is hidden initially
+        }
+
+        // --- Lightbox Functions ---
+        function openLightbox(imageUrl) {
+            lightboxImg.src = imageUrl;
+            lightbox.classList.add('active');
+        }
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxImg.src = ""; // Clear src
+        }
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (event) => { if (event.target === lightbox) closeLightbox(); }); // Close on backdrop click
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); }); // Close with Esc key
+
+         // --- Preconnect for performance ---
+         document.addEventListener('DOMContentLoaded', () => {
+              const preconnectLink = document.createElement('link');
+              preconnectLink.rel = 'preconnect';
+              preconnectLink.href = 'https://image.pollinations.ai';
+              document.head.appendChild(preconnectLink);
+         });
+
+    </script>
+
+</body>
+</html>

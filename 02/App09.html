@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title: Específico para la herramienta de avatares -->
+    <title>AI Avatar Generator - Crea tu Imagen de Perfil Única | PapitasFritas.com</title>
+    <!-- Meta Description (IMPORTANTE para SEO): -->
+    <meta name="description" content="Diseña avatares únicos y personalizados con inteligencia artificial. Introduce tu descripción (ej: 'robot feliz', 'mago con sombrero azul') y obtén un avatar cuadrado perfecto para perfiles online. Pruébalo en PapitasFritas.com.">
+
+    <style>
+        /* --- Estilos CSS (Neón Futurista - Adaptados para un solo resultado) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap');
+        :root {
+            --bg-color: #0a0a1a; --primary-neon: #39ff14; /* Verde neón como primario */
+            --secondary-neon: #00f0ff; /* Cian como secundario */
+            --accent-neon: #ff00ff; /* Magenta para acentos */
+            --error-neon: #ff4d4d;
+            --text-color: #e0e0e0; --border-color: rgba(0, 240, 255, 0.5);
+            --glow-primary: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon), 0 0 15px var(--primary-neon);
+            --glow-secondary: 0 0 5px var(--secondary-neon), 0 0 10px var(--secondary-neon), 0 0 15px var(--secondary-neon);
+            --glow-accent: 0 0 5px var(--accent-neon), 0 0 10px var(--accent-neon);
+            --glow-error: 0 0 5px var(--error-neon), 0 0 10px var(--error-neon);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Rajdhani', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 2rem; line-height: 1.6; background-image: radial-gradient(circle at top right, rgba(57, 255, 20, 0.08), transparent 50%), radial-gradient(circle at bottom left, rgba(0, 240, 255, 0.08), transparent 50%);
+        }
+        .container {
+            background-color: rgba(10, 10, 30, 0.85); padding: 2rem 3rem; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 0 25px rgba(0, 240, 255, 0.2);
+            width: 100%; max-width: 650px; /* Más estrecho, enfocado en un resultado */
+            backdrop-filter: blur(6px); text-align: center;
+        }
+        h1 { font-family: 'Orbitron', sans-serif; color: var(--primary-neon); text-shadow: var(--glow-primary); margin-bottom: 0.5em; font-size: 2.2rem; letter-spacing: 1px; }
+        .subtitle { color: var(--secondary-neon); margin-bottom: 2rem; font-weight: 400; font-size: 1.1rem; }
+        .input-section label { display: block; margin-bottom: 0.8rem; color: var(--secondary-neon); font-weight: 600; text-align: left; font-size: 1.1em; }
+        #promptInput { /* Cambiado de textarea a input */
+            width: 100%; padding: 0.8rem 1rem; margin-bottom: 1.5rem; background-color: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); border-radius: 5px;
+            color: var(--text-color); font-family: 'Rajdhani', sans-serif; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #promptInput:focus { outline: none; border-color: var(--primary-neon); box-shadow: var(--glow-primary); }
+        #generateBtn { /* Botón de generación */
+            background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon)); color: var(--bg-color); border: none; padding: 0.8rem 2rem; font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem; font-weight: 700; border-radius: 5px; cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, opacity 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            margin-top: 1rem; box-shadow: 0 0 10px rgba(57, 255, 20, 0.5), 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+        #generateBtn:hover:not(:disabled) { transform: scale(1.05); box-shadow: var(--glow-primary), var(--glow-secondary); }
+        #generateBtn:active:not(:disabled) { transform: scale(1); }
+        #generateBtn:disabled { cursor: wait; opacity: 0.7; background: grey; box-shadow: none; }
+
+        /* --- Área de Resultados (Adaptada para un solo avatar) --- */
+        #avatar-display-area {
+            margin-top: 2.5rem; display: flex; justify-content: center; align-items: center; flex-direction: column; min-height: 320px; /* Espacio reservado */
+        }
+        /* Contenedor del Avatar Individual */
+        #avatar-container {
+            position: relative; border: 1px solid var(--border-color); border-radius: 8px; /* Ligeramente redondeado */
+            overflow: hidden; box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; background-color: rgba(10, 10, 30, 0.6);
+            width: 100%; max-width: 300px; /* Tamaño del avatar */
+            aspect-ratio: 1 / 1; /* Asegura que sea cuadrado */
+            display: flex; justify-content: center; align-items: center;
+            cursor: default; /* No clickeable por defecto */
+            text-align: center;
+            margin-bottom: 1.5rem; /* Espacio antes de indicadores */
+        }
+        #avatar-container.img-loaded { cursor: pointer; } /* Clickeable solo si carga */
+        #avatar-container.failed { cursor: not-allowed; }
+        #avatar-container:hover.img-loaded { transform: scale(1.03); box-shadow: var(--glow-secondary); }
+
+        #avatar-container img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease-in-out; pointer-events: none; }
+        #avatar-container img.loaded { opacity: 1; pointer-events: auto; }
+
+        /* --- Estados (Loading, Error) para el contenedor único --- */
+        #avatar-container.loading::before {
+            content: ''; position: absolute; width: 40px; height: 40px; border: 4px solid rgba(0, 240, 255, 0.3); border-top-color: var(--secondary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 3;
+        }
+        #avatar-container.img-loaded::before, #avatar-container.failed::before { display: none; } /* Ocultar spinner */
+
+        #avatar-container.failed { border-color: var(--error-neon); box-shadow: var(--glow-error); color: var(--error-neon); font-size: 0.9em; padding: 10px; }
+        #avatar-container.failed img { opacity: 0; display: none; } /* Ocultar imagen rota */
+        .error-content { /* Estilo para mensajes dentro del contenedor */
+             width: 100%; padding: 5px;
+        }
+        .retry-info { font-size: 0.9em; color: var(--secondary-neon); margin-top: 5px; }
+
+        /* --- Indicadores Globales (Loading, Error) --- */
+        #feedback-area { min-height: 30px; /* Reserva espacio */ text-align: center; width: 100%; }
+        #loading-indicator, #error-message { padding: 0.8rem; border-radius: 5px; display: none; font-weight: 600; text-align: center; margin: 0 auto; max-width: 80%; }
+        #loading-indicator { color: var(--accent-neon); border: 1px dashed var(--accent-neon); animation: pulse 1.5s infinite ease-in-out; }
+        #error-message { color: var(--error-neon); background-color: rgba(255, 77, 77, 0.1); border: 1px solid var(--error-neon); }
+
+
+        /* --- Footer y Lightbox (Sin cambios significativos) --- */
+        footer { margin-top: 3rem; font-size: 0.9rem; color: rgba(224, 224, 224, 0.6); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: text-shadow 0.3s; }
+        footer a:hover { text-shadow: var(--glow-secondary); }
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
+        #lightbox.active { display: flex; }
+        #lightbox img { display: block; max-width: 90%; max-height: 90%; object-fit: contain; border: 2px solid var(--secondary-neon); box-shadow: var(--glow-secondary); border-radius: 5px; }
+        #lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: var(--text-color); cursor: pointer; line-height: 1; transition: color 0.3s, text-shadow 0.3s; text-shadow: 0 0 5px rgba(0, 0, 0, 0.7); }
+        #lightbox .close-btn:hover { color: var(--primary-neon); text-shadow: var(--glow-primary); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (max-width: 768px) { .container { padding: 1.5rem; max-width: 90%; } h1 { font-size: 1.8rem; } .subtitle { font-size: 1rem; } #avatar-container { max-width: 250px; } }
+        @media (max-width: 480px) { body { padding: 1rem; } .container { padding: 1rem; } h1 { font-size: 1.6rem; } .subtitle { font-size: 0.9rem; } #generateBtn { font-size: 1rem; padding: 0.7rem 1.5rem; } #avatar-container { max-width: 200px; } #lightbox .close-btn { top: 15px; right: 20px; font-size: 2rem; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- SEO H1 -->
+        <h1>Avatar Forge AI</h1>
+        <!-- SEO Subtitle -->
+        <p class="subtitle">Genera tu Avatar de Perfil Único con Inteligencia Artificial</p>
+
+        <div class="input-section">
+            <label for="promptInput">Describe tu avatar ideal:</label>
+            <input type="text" id="promptInput" placeholder="Ej: Gato astronauta sonriente, robot vintage, guerrera elfa cyberpunk">
+        </div>
+
+        <button id="generateBtn">Crear Avatar</button>
+
+        <!-- Área para mostrar el avatar y los indicadores globales -->
+        <div id="avatar-display-area">
+             <!-- El contenedor del avatar se añadirá aquí dinámicamente -->
+             <div id="feedback-area"> <!-- Para mensajes globales -->
+                 <div id="loading-indicator">Generando avatar...</div>
+                 <div id="error-message"></div>
+             </div>
+        </div>
+    </div>
+
+    <!-- Lightbox para ampliar imagen -->
+    <div id="lightbox">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="Avatar Ampliado">
+    </div>
+
+    <footer>
+        Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | Herramienta de <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- Element References ---
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const avatarDisplayArea = document.getElementById('avatar-display-area');
+        const feedbackArea = document.getElementById('feedback-area'); // Contenedor para indicadores
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.querySelector('#lightbox .close-btn');
+
+        // --- Configuration ---
+        const IMAGE_WIDTH = 512;  // Ancho cuadrado
+        const IMAGE_HEIGHT = 512; // Alto cuadrado
+        const MAX_RETRIES = 2;    // Máximo de reintentos por carga de imagen
+        const RETRY_DELAY_MS = 1500; // Retardo antes de reintentar
+        const IMAGE_LOAD_TIMEOUT_MS = 45000; // Timeout para carga de imagen
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        promptInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                handleGeneration();
+            }
+        });
+
+        // --- Generation Logic ---
+        function handleGeneration() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                showError("¡Describe cómo quieres que sea tu avatar!");
+                promptInput.focus();
+                return;
+            }
+
+            clearResults();
+            showLoading(true);
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Creando...';
+
+            const seed = Math.floor(Math.random() * 100000);
+            const encodedPrompt = encodeURIComponent(prompt);
+            // Añadir términos para mejorar resultado de avatar (opcional)
+            const fullPrompt = `${encodedPrompt}, profile picture, avatar, square image`;
+            const requestUrl = `${API_BASE_URL}${encodeURIComponent(fullPrompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+            // Crear contenedor del avatar
+            const avatarContainer = document.createElement('div');
+            avatarContainer.id = 'avatar-container'; // Asignar ID para estilos
+            avatarContainer.className = 'image-container loading'; // Clase genérica + estado loading
+            avatarContainer.dataset.prompt = prompt; // Guardar prompt original
+            avatarContainer.dataset.retries = 0;
+            avatarDisplayArea.insertBefore(avatarContainer, feedbackArea); // Insertar antes del feedback
+
+             // --- Initiate Fetch ---
+             console.log(`Solicitando Avatar: "${prompt}" URL: ${requestUrl}`);
+             fetch(requestUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP ${response.status}`);
+                    }
+                    console.log(`Recibida URL final para "${prompt}": ${response.url}`);
+                    return response.url; // URL final de la imagen
+                })
+                .then(finalImageUrl => {
+                    // --- Start Image Loading with Retry Logic ---
+                    loadImageWithRetry(avatarContainer, finalImageUrl, prompt);
+                })
+                .catch(error => {
+                    // Handle failure of the *initial* fetch request
+                    console.error(`Fetch inicial fallido para "${prompt}":`, error);
+                    handleInitialFetchFailure(avatarContainer, prompt, error.message);
+                    checkCompletion(); // Check completion status even on fetch fail
+                });
+        }
+
+        // --- Image Loading Logic with Retries (Adaptada de App04/ConceptGrid) ---
+        function loadImageWithRetry(container, imageUrl, prompt) {
+            let timeoutId;
+
+            // Crear el elemento img para este intento
+            const img = document.createElement('img');
+            img.alt = `Avatar generado por IA para: ${prompt}`; // SEO y accesibilidad
+
+            // Limpiar estado previo (mensajes de error) y añadir img
+            container.classList.add('loading');
+            container.classList.remove('failed', 'img-loaded');
+            container.innerHTML = ''; // Limpiar contenido previo
+            container.appendChild(img);
+
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                container.classList.remove('loading', 'failed');
+                container.classList.add('img-loaded'); // Clase para indicar carga completa
+                img.classList.add('loaded'); // Clase para transición de opacidad
+                // Añadir listener para lightbox SOLO al cargar con éxito
+                container.onclick = () => openLightbox(imageUrl);
+                console.log(`Avatar cargado con éxito para "${prompt}"`);
+                checkCompletion(); // Verificar si ya terminó todo
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                console.error(`Error cargando imagen final del avatar para "${prompt}": ${imageUrl}`);
+                handleImageLoadFailure(container, img, imageUrl, prompt, 'Error de carga');
+            };
+
+            // Establecer src DESPUÉS de añadir listeners
+            img.src = imageUrl;
+
+            // Timeout para esta carga específica
+            timeoutId = setTimeout(() => {
+                if (container.classList.contains('loading')) {
+                    console.warn(`Timeout de carga para avatar "${prompt}": ${imageUrl}`);
+                    img.src = ''; // Detener carga
+                    handleImageLoadFailure(container, img, imageUrl, prompt, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageLoadFailure(container, img, imageUrl, prompt, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                const attempt = currentRetries + 1;
+                console.log(`Reintentando carga de avatar para "${prompt}" (Intento: ${attempt}/${MAX_RETRIES})...`);
+
+                // Mostrar indicador de reintento DENTRO del contenedor
+                container.classList.remove('loading');
+                container.classList.add('failed'); // Indicar problema
+                container.innerHTML = `<div class="error-content">${reason}<br><span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span></div>`;
+                container.onclick = null; // Remover listener de lightbox si falló
+
+                // Retardo exponencial antes de reintentar
+                setTimeout(() => {
+                    loadImageWithRetry(container, imageUrl, prompt);
+                }, RETRY_DELAY_MS * Math.pow(2, currentRetries));
+
+            } else {
+                // Máximos reintentos alcanzados
+                console.error(`Máximos reintentos alcanzados para avatar "${prompt}".`);
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = `<div class="error-content">Error final: ${reason}<br>(No se pudo cargar)</div>`;
+                container.onclick = null; // Asegurar que no sea clickeable
+
+                checkCompletion(); // Verificar si ya terminó todo
+            }
+        }
+
+        function handleInitialFetchFailure(container, prompt, reason) {
+            // Falla la primera solicitud fetch (ej: API caída)
+             container.classList.remove('loading');
+             container.classList.add('failed');
+             container.innerHTML = `<div class="error-content">Error API: ${reason}<br>(Inténtalo de nuevo)</div>`;
+             container.onclick = null;
+        }
+
+
+        // --- Completion Check (Simplificado para un solo elemento) ---
+        function checkCompletion() {
+            const avatarContainer = document.getElementById('avatar-container');
+            // Si el contenedor existe y ya no está cargando (está 'img-loaded' o 'failed')
+            if (avatarContainer && !avatarContainer.classList.contains('loading')) {
+                showLoading(false); // Ocultar indicador global
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Crear Avatar';
+
+                // Mostrar error global si falló definitivamente
+                if (avatarContainer.classList.contains('failed')) {
+                    showError("No se pudo generar el avatar después de varios intentos.");
+                } else {
+                     // Opcional: Mensaje de éxito global
+                     // console.log("Avatar generado!");
+                     errorMessage.style.display = 'none'; // Ocultar si había error previo
+                }
+            }
+             // Si no hay contenedor o sigue cargando, no hacer nada (esperar a onload/onerror/timeout)
+        }
+
+        // --- UI Helper Functions ---
+        function showLoading(isLoading) {
+            loadingIndicator.style.display = isLoading ? 'block' : 'none';
+             // El botón se gestiona en handleGeneration y checkCompletion
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+             // Asegurar que el loading se oculte si hay un error definitivo
+            loadingIndicator.style.display = 'none';
+        }
+
+        function clearResults() {
+             const existingContainer = document.getElementById('avatar-container');
+             if (existingContainer) {
+                 existingContainer.remove();
+             }
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+            loadingIndicator.style.display = 'none'; // Asegurar que esté oculto al limpiar
+        }
+
+         // --- Lightbox Functions (Sin cambios) ---
+         function openLightbox(imageUrl) {
+            if (!imageUrl) return; // No abrir si no hay imagen
+            lightboxImg.src = imageUrl;
+            lightbox.classList.add('active');
+        }
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxImg.src = ""; // Limpiar src
+        }
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (event) => { if (event.target === lightbox) closeLightbox(); }); // Cerrar al clickear fuera
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); }); // Cerrar con ESC
+
+        // Optional: Preconnect for performance
+        document.addEventListener('DOMContentLoaded', () => {
+             const preconnectLink = document.createElement('link'); preconnectLink.rel = 'preconnect'; preconnectLink.href = 'https://image.pollinations.ai'; document.head.appendChild(preconnectLink);
+        });
+
+    </script>
+
+</body>
+</html>

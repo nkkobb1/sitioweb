@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciencia Sencilla - El Cerebro Humano</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos (igual que antes, colores ajustados para el tema) --- */
+        :root {
+            --color-primary: #8b5cf6; /* Violet */
+            --color-secondary: #10b981; /* Emerald */
+            --color-background: #f9fafb;
+            --color-text: #1f2937;
+            --color-text-muted: #6b7280;
+            --color-modal-bg: #ffffff;
+            --color-border: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--color-background); color: var(--color-text); }
+        h1, h2, h3, h4, .logo { font-family: 'Quicksand', sans-serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.5rem; display: inline-block; }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.25rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: 'Nunito', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #7c3aed; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #9ca3af; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.8); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper { background-color: var(--color-modal-bg); border-radius: var(--border-radius); padding: 1.5rem; max-width: 850px; width: 95%; max-height: 90vh; overflow: hidden; position: relative; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #e5e7eb; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.4rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: #d1d5db; color: var(--color-text); }
+        #modal-title { color: var(--color-primary); text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; }
+        #modal-content { line-height: 1.7; color: var(--color-text); white-space: normal; overflow-y: auto; margin-bottom: 1.5rem; padding: 0 10px; flex-grow: 1; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border); }
+        #modal-content::-webkit-scrollbar { width: 8px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: 4px;}
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: 4px; border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.2em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Quicksand', sans-serif; margin-top: 1.8em; margin-bottom: 0.8em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.3em; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.2em; }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-secondary); }
+        #modal-content .formula { text-align: center; font-family: 'Consolas', 'Courier New', Courier, monospace; font-size: 1.1em; padding: 0.8em; margin: 1.2em 0; border: 1px solid var(--color-border); background-color: #f9fafb; border-radius: var(--border-radius); overflow-x: auto; white-space: nowrap; }
+        #modal-content .formula sub, #modal-content .formula sup { font-size: 0.8em; line-height: 0; position: relative; vertical-align: baseline; }
+        #modal-content .formula sub { top: 0.5em; }
+        #modal-content .formula sup { top: -0.5em; }
+        #modal-image-container { width: 100%; height: 220px; background-color: #f3f4f6; border-radius: var(--border-radius); overflow: hidden; display: none; /* Start hidden */ align-items: center; justify-content: center; border: 1px solid var(--color-border); flex-shrink: 0; margin-top: 1rem; }
+        #modal-image-container.visible { display: flex; }
+        #modal-image-container img { width: 100%; height: 100%; object-fit: contain; display: none; }
+        #modal-image-container .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; display: none; }
+        #modal-image-container .placeholder-icon { font-size: 2.5rem; color: var(--color-border); display: none; }
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 50px; height: 50px; border: 5px solid #d1d5db; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-text); font-size: 1.1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: var(--border-radius); border: 1px solid #fecaca; margin-top: 1rem; text-align: center; flex-shrink: 0; }
+        .error-msg i { margin-right: 0.5rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- HTML Structure -->
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-8">
+         <div class="container mx-auto px-4 py-3 flex justify-center items-center">
+             <div class="flex items-center">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-brain mr-2"></i> Ciencia Sencilla: El Cerebro Humano
+                 </h1>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Explorando la Mente</h1>
+             <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">Descubre los secretos del órgano más complejo con explicaciones claras sobre el cerebro humano por IA.</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-lightbulb text-emerald-500 mr-2"></i>
+                 Conceptos a Descubrir
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Mapeando neuronas...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Conceptos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Procesando información...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                 </div>
+                  <!-- Image Container (Initially Hidden) -->
+                 <div id="modal-image-container">
+                     <div class="spinner"></div>
+                     <i class="fas fa-project-diagram placeholder-icon"></i> <!-- Placeholder icon -->
+                     <img id="modal-image" alt="Visualización abstracta del concepto cerebral" />
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-circle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-5 mt-12 border-t border-gray-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Explicaciones generadas por IA con fines educativos. El cerebro es complejo, consulta fuentes neurocientíficas expertas.</p>
+              <p class="mt-1">© 2025 Ciencia Sencilla</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            "¿Qué es el Cerebro Humano y por qué es Importante?", "Partes Principales: Cerebro, Cerebelo y Tronco Encefálico",
+            "Los Hemisferios Cerebrales: Izquierdo y Derecho", "El Cuerpo Calloso: Conectando los Hemisferios",
+            "Los Lóbulos Cerebrales: Frontal, Parietal, Temporal, Occipital", "Lóbulo Frontal: Funciones Ejecutivas y Personalidad",
+            "Lóbulo Parietal: Sensaciones y Orientación Espacial", "Lóbulo Temporal: Audición, Memoria y Lenguaje",
+            "Lóbulo Occipital: Procesamiento Visual", "La Corteza Cerebral (Córtex): La Capa Pensante",
+            "Materia Gris y Materia Blanca: ¿Cuál es la Diferencia?", "El Cerebelo: Coordinación y Equilibrio",
+            "El Tronco Encefálico: Funciones Vitales Básicas", "El Sistema Límbico: Emociones y Memoria",
+            "La Amígdala: Centro del Miedo y la Emoción", "El Hipocampo: Formación de Nuevos Recuerdos",
+            "El Tálamo: Estación de Relevo Sensorial", "El Hipotálamo: Regulación del Cuerpo (Hambre, Sed, Temperatura)",
+            "Las Neuronas: Células Fundamentales del Cerebro", "Partes de una Neurona: Soma, Dendritas, Axón",
+            "La Sinapsis: Comunicación entre Neuronas", "Neurotransmisores: Mensajeros Químicos del Cerebro",
+            "Tipos de Neurotransmisores (Dopamina, Serotonina, Acetilcolina, GABA)", "Dopamina: Placer, Motivación y Movimiento",
+            "Serotonina: Estado de Ánimo, Sueño y Apetito", "Acetilcolina: Memoria, Aprendizaje y Músculos",
+            "GABA: El Neurotransmisor Inhibitorio Principal", "Potencial de Acción: El Impulso Eléctrico Neuronal",
+            "La Vaina de Mielina: Acelerando el Impulso Nervioso", "Células Gliales: El Soporte de las Neuronas",
+            "Astrocitos, Oligodendrocitos, Microglía", "La Barrera Hematoencefálica: Protección del Cerebro",
+            "¿Cómo Aprende el Cerebro? Plasticidad Neuronal", "Neuroplasticidad: La Capacidad del Cerebro para Cambiar",
+            "Memoria a Corto Plazo vs. Memoria a Largo Plazo", "Tipos de Memoria a Largo Plazo (Episódica, Semántica, Procedimental)",
+            "El Olvido: ¿Por qué no Recordamos Todo?", "El Sueño y sus Fases (REM y No-REM)",
+            "¿Por Qué Dormimos? Funciones Reparadoras del Sueño", "Los Sueños: ¿Qué Significan?",
+            "La Atención: Enfocando Nuestros Recursos Mentales", "Tipos de Atención (Sostenida, Selectiva, Dividida)",
+            "La Percepción: Interpretando el Mundo Sensorial", "¿Cómo Vemos? El Procesamiento Visual",
+            "¿Cómo Oímos? El Procesamiento Auditivo", "¿Cómo Sentimos el Tacto, Dolor y Temperatura?",
+            "El Olfato y el Gusto: Los Sentidos Químicos", "El Sistema Nervioso Central (SNC)",
+            "El Sistema Nervioso Periférico (SNP)", "Sistema Nervioso Somático vs. Autónomo",
+            "Sistema Nervioso Simpático y Parasimpático (Lucha o Huida vs. Reposo)", "Reflejos: Respuestas Automáticas",
+            "Desarrollo del Cerebro: Desde el Embrión hasta la Adultez", "Periodos Críticos en el Desarrollo Cerebral",
+            "El Cerebro Adolescente: Cambios y Comportamiento", "Envejecimiento Cerebral: Cambios Normales",
+            "¿Qué es la Inteligencia?", "Inteligencias Múltiples (Teoría de Gardner)",
+            "El Lenguaje y el Cerebro: Áreas de Broca y Wernicke", "Lateralización del Lenguaje",
+            "Toma de Decisiones: Procesos Cognitivos", "Las Emociones: Origen y Función Cerebral",
+            "Estrés y su Impacto en el Cerebro", "Conciencia: El Gran Misterio",
+            "Ondas Cerebrales (Alfa, Beta, Theta, Delta)", "Técnicas de Neuroimagen (EEG, fMRI, PET)",
+            "Electroencefalograma (EEG): Midiendo la Actividad Eléctrica", "Resonancia Magnética Funcional (fMRI): Viendo el Cerebro en Acción",
+            "Trastornos Neurológicos Comunes (Alzheimer, Parkinson, Epilepsia)", "Enfermedad de Alzheimer: Pérdida de Memoria",
+            "Enfermedad de Parkinson: Problemas de Movimiento", "Epilepsia: Actividad Cerebral Anormal",
+            "Accidente Cerebrovascular (ACV): Interrupción del Flujo Sanguíneo", "Lesiones Cerebrales Traumáticas (LCT)",
+            "Trastornos del Estado de Ánimo (Depresión, Ansiedad)", "La Depresión y sus Bases Neuronales",
+            "Trastornos de Ansiedad y la Amígdala", "Trastorno por Déficit de Atención e Hiperactividad (TDAH)",
+            "Esquizofrenia: Alteraciones del Pensamiento", "El Microbioma Intestinal y su Conexión con el Cerebro",
+            "Nutrición y Salud Cerebral", "Ejercicio Físico y Beneficios para el Cerebro",
+            "Meditación y Mindfulness: Impacto Cerebral", "Música y Cerebro: ¿Cómo nos Afecta?",
+            "Bilingüismo y el Cerebro", "Creatividad y Bases Neuronales",
+            "Cognición Social: Entendiendo a los Demás", "Neuronas Espejo: Empatía e Imitación",
+            "Sesgos Cognitivos: Atajos Mentales", "El Efecto Placebo y el Cerebro",
+            "Adicciones y el Sistema de Recompensa Cerebral", "Neuroética: Implicaciones Morales de la Neurociencia",
+            "Interfaces Cerebro-Computadora (BCI)", "Inteligencia Artificial y el Cerebro",
+            "Mitos Comunes sobre el Cerebro (Usamos solo el 10%, etc.)", "Diferencias Cerebrales entre Sexos: ¿Realidad o Mito?",
+            "El Futuro de la Neurociencia", "Hemisferio Dominante: ¿Realmente Existe?",
+            "Propiocepción: El Sentido de la Posición Corporal", "Sinestesia: Mezcla de Sentidos",
+            "¿Cómo se Almacenan los Recuerdos?", "Consolidación de la Memoria durante el Sueño",
+            "El Papel del Cerebelo en el Aprendizaje Motor", "Ganglios Basales: Hábitos y Movimiento",
+            "La Ínsula: Conciencia Interoceptiva y Emociones", "Corteza Prefrontal: El Director de Orquesta",
+            "Neurotransmisores Excitatorios vs. Inhibitorios", "Glutamato: El Principal Excitador",
+            "Plasticidad Sináptica a Largo Plazo (LTP y LTD)", "Neurogénesis en Adultos: ¿Nacen Nuevas Neuronas?",
+            "Epigenética y Cerebro: Influencia del Ambiente", "El Dolor: Una Señal de Alarma Compleja",
+            "Placebo vs. Nocebo: El Poder de las Expectativas", "La Música como Terapia Cerebral",
+            "Sueños Lúcidos: Controlando el Mundo Onírico", "Déjà Vu: ¿Un Fallo en la Memoria?",
+            "El Cerebro y el Arte: Neuroestética", "Altruismo y Cooperación: Bases Neuronales",
+            "Juegos y Aprendizaje Cerebral", "Realidad Virtual y su Impacto en el Cerebro",
+            "El Cerebro Bilingüe: Ventajas Cognitivas", "Impacto de las Redes Sociales en el Cerebro Adolescente",
+            "Cronotipos: Alondras vs. Búhos y el Cerebro", "El Cerebro Social: Necesidad de Conexión",
+            "Resiliencia Cerebral ante la Adversidad", "Neuroinflamación: Causas y Consecuencias",
+            "Terapias de Neuroestimulación (EMT, ECP)", "Investigación con Organoides Cerebrales",
+            "Conectoma Humano: Mapeando las Conexiones", "Neurociencia Computacional: Modelando el Cerebro"
+        ];
+        const brainThemes = [
+            "la estructura básica del cerebro", "la comunicación neuronal", "los lóbulos cerebrales y sus funciones",
+            "la memoria y el aprendizaje", "las emociones y el sistema límbico", "el sueño y la conciencia",
+            "los sentidos y la percepción", "el sistema nervioso", "el desarrollo y envejecimiento cerebral",
+            "la neuroplasticidad", "los neurotransmisores clave", "las técnicas de estudio cerebral",
+            "trastornos neurológicos comunes", "trastornos del estado de ánimo", "la salud cerebral y el estilo de vida",
+            "la cognición superior (atención, lenguaje, decisión)", "la cognición social", "mitos sobre el cerebro",
+            "la neurociencia del futuro", "la relación cerebro-cuerpo", "las células gliales", "la barrera hematoencefálica"
+        ];
+        // Updated API Config
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un neurocientífico y excelente divulgador científico. Tu tarea es explicar conceptos complejos sobre el cerebro humano de forma muy clara, sencilla, detallada y atractiva para un público general o estudiantes (similar a un artículo de divulgación introductorio extenso). Utiliza analogías simples, ejemplos cotidianos y evita la jerga excesiva o explícala muy bien. Estructura la explicación con claridad usando párrafos y subtítulos (markdown: #, ##, ###, ####). El objetivo es una explicación completa y fácil de entender de unas 1200-1300 palabras. Basa tu explicación únicamente en el siguiente concepto:",
+            timeoutSeconds: 150 // Increased timeout
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso. Genera exactamente 15 conceptos o preguntas clave sobre el cerebro humano, adecuados para ser explicados de forma sencilla. Devuelve *solo* la lista de conceptos/preguntas, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 30
+        };
+
+        // ========== DOM ELEMENTS ========== (sin cambios)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
+        const modalImage = document.getElementById('modal-image');
+        const modalImageSpinner = modalImageContainer.querySelector('.spinner');
+        const modalImagePlaceholder = modalImageContainer.querySelector('.placeholder-icon');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // --- Variable to hold the current scroll listener ---
+        let currentScrollHandler = null;
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config) { /* ... (igual que antes) ... */
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}) [Timeout: ${config.timeoutSeconds}s]: ${url}`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intenta con un concepto más simple o revisa tu conexión.`);
+                 throw new Error(`Error de comunicación con la API. ${error.message}`);
+             }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... (igual que antes, usa textApiConfig actualizado) ... */
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              // Adjusted length check slightly, might need tuning based on actual API output
+               if (text.trim().length < 900 || text.toLowerCase().includes("cannot fulfill")) {
+                   throw new Error("La IA no pudo generar una explicación suficientemente detallada para este concepto.");
+               }
+             return text;
+         }
+        async function fetchGeneratedTitles() { /* ... (Usa brainThemes) ... */
+             const randomTheme = getRandomElement(brainThemes) || "funciones cerebrales básicas";
+             const specificPrompt = `Genera 15 conceptos o preguntas clave sobre ${randomTheme} en neurociencia o el cerebro humano`;
+             console.log("Generating concepts with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 120);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de conceptos.");
+             return titles.slice(0, 15);
+         }
+        // Updated Image Prompt
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "human brain concept abstract";
+             // Focus on abstract networks, connections, or thought processes
+             const enhancedPrompt = `Abstract artistic visualization representing the concept of '${safePromptText}', neural network connections, thought process, brain activity patterns, flowing energy, minimalist style`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             // Strengthened negative prompt
+             const negativePrompt = "text, words, labels, letters, titles, captions, writing, numbers, formulas, equations, graphs, charts, diagrams, figures, axes, coordinates, plot, data points, realistic brain illustration, anatomical diagram, labeled brain parts, medical illustration, surgery, blood, skull, face, person, people, detailed neuron drawing, specific brain scan image (EEG, fMRI), textbook page, handwriting";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... (igual que antes) ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (sin cambios en la lógica de scroll/visibilidad)
+        function showModal() { /* ... (igual que antes) ... */ if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { /* ... (igual que antes, resetea scroll y listener) ... */
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+                console.log("Scroll listener removed on hideModal.");
+            }
+            resetModalState();
+        }
+        function resetModalState() { /* ... (igual que antes) ... */
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent || !modalImage || !modalImageSpinner || !modalImagePlaceholder || !modalImageContainer) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalImage.src = '';
+             modalImage.style.display = 'none';
+             modalImageSpinner.style.display = 'none';
+             modalImagePlaceholder.style.display = 'none';
+             modalImageContainer.classList.remove('visible');
+             modalImageContainer.style.display = 'none';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (sin cambios en la lógica)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+            if (!titleListContainer || !titlesLoading) return;
+            const shuffledTitles = shuffleArray([...titles]);
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay conceptos disponibles.</p>'; return; }
+            shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        async function handleTitleClick(title) { /* ... (igual que antes, incluye scroll reset y listener condicional) ... */
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalImageContainer.style.display = 'none';
+            modalImageContainer.classList.remove('visible');
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+            }
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.scrollTop = 0; // <<<--- RESET SCROLL HERE
+                console.log("Scroll set to 0 after content visible");
+
+                modalImageSpinner.style.display = 'block';
+                const imageUrl = createPollinationsImageUrl(title);
+                 if (imageUrl) {
+                     modalImage.onload = () => { modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'none'; modalImage.style.display = 'block'; };
+                     modalImage.onerror = () => { console.error("Error loading image:", title); modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'block'; modalImage.style.display = 'none'; };
+                     modalImage.src = imageUrl;
+                 } else {
+                     console.error("Could not create image URL:", title);
+                     modalImageSpinner.style.display = 'none';
+                     modalImagePlaceholder.style.display = 'block';
+                 }
+
+                const scrollBuffer = 15;
+                currentScrollHandler = () => {
+                    if (modalContent.scrollHeight <= modalContent.clientHeight) {
+                         console.log("Content fits, showing image immediately.");
+                         modalImageContainer.classList.add('visible');
+                         modalImageContainer.style.display = 'flex';
+                         modalContent.removeEventListener('scroll', currentScrollHandler);
+                         currentScrollHandler = null;
+                    } else if ((modalContent.scrollTop + modalContent.clientHeight) >= (modalContent.scrollHeight - scrollBuffer)) {
+                        console.log("Scroll end reached, showing image.");
+                        modalImageContainer.classList.add('visible');
+                        modalImageContainer.style.display = 'flex';
+                        modalContent.removeEventListener('scroll', currentScrollHandler);
+                        currentScrollHandler = null;
+                        console.log("Scroll listener removed after showing image.");
+                    }
+                };
+                modalContent.addEventListener('scroll', currentScrollHandler);
+                console.log("Scroll listener added.");
+                setTimeout(currentScrollHandler, 100);
+
+            } catch (error) {
+                console.error("Failed to display explanation:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error al cargar: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalImageContainer.style.display = 'none';
+                modalContent.innerHTML = '';
+                 if (currentScrollHandler) {
+                    modalContent.removeEventListener('scroll', currentScrollHandler);
+                    currentScrollHandler = null;
+                 }
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... (Usa texto de botón actualizado) ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Pensando...'; // Updated text
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none'; appendTitles(newTitles);
+                     if (titleListContainer.parentNode) { titleListContainer.parentNode.appendChild(generateMoreContainer); }
+                     generateMoreContainer.style.display = 'block';
+                 } else { alert("No se pudieron generar nuevos conceptos en este momento."); }
+             } catch (error) { console.error("Failed generation:", error); alert(`Error al generar: ${error.message}`);
+             } finally { generateMoreBtn.disabled = false; generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Conceptos'; }
+         }
+
+        // ========== INITIALIZATION ========== (sin cambios)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p>Error crítico.</p>'; return; }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

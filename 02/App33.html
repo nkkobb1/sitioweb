@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo de Cuentos Infantiles</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #ff6b6b;
+            --color-secondary: #4ecdc4;
+            --color-accent-1: #ffe66d;
+            --color-accent-2: #7bdff2;
+            --color-dark: #2d334a;
+            --color-light: #f7f7f7;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.12);
+            --shadow-lg: 0 10px 20px rgba(0,0,0,0.15);
+            --border-radius: 12px;
+            --transition-normal: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f9f7f4;
+            background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffcdd2' fill-opacity='0.2'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+        }
+
+        .navbar {
+            background-color: white;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .logo {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+
+        /* Title List Styling */
+        #title-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .title-item {
+            background-color: white;
+            padding: 1.5rem 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-align: center;
+            font-weight: 600;
+            color: var(--color-dark);
+            border: 2px solid transparent;
+            display: flex; /* Use flex for alignment */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+            min-height: 80px; /* Ensure a minimum height */
+        }
+
+        .title-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-secondary);
+        }
+
+        /* Modal Styling */
+        #story-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+            overflow-y: auto; /* Allow scrolling if modal overflows */
+        }
+
+        #story-modal.active {
+            display: flex;
+        }
+
+        .modal-content-wrapper {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh; /* Limit height */
+            overflow-y: auto; /* Scroll inside the modal content */
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex; /* Use flex for internal layout */
+            flex-direction: column; /* Stack elements vertically */
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #eee;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: var(--transition-normal);
+            z-index: 10; /* Ensure it's above content */
+        }
+        .modal-close-btn:hover {
+            background-color: #ddd;
+            color: #333;
+            transform: scale(1.1);
+        }
+
+        #modal-image-container {
+            width: 100%;
+            height: 250px; /* Adjusted height */
+            background-color: #f0f0f0;
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+         #modal-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none; /* Hide image initially */
+         }
+         #modal-image-container .spinner { /* Spinner for image loading */
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--color-secondary);
+            animation: spin 1s ease infinite;
+            display: none; /* Hide spinner initially */
+         }
+         #modal-image-container .placeholder-icon {
+             font-size: 3rem;
+             color: #ccc;
+             display: none; /* Hide placeholder icon initially */
+         }
+
+
+        #modal-content {
+            line-height: 1.7;
+            color: #444;
+            white-space: pre-wrap; /* Preserve line breaks from API */
+            flex-grow: 1; /* Allow text content to take available space */
+            overflow-y: auto; /* Allow text itself to scroll if very long */
+            max-height: calc(90vh - 350px); /* Adjust based on other elements' heights */
+        }
+        #modal-content p {
+            margin-bottom: 1em; /* Add space between paragraphs if using <p> */
+        }
+
+        /* Loading Indicator */
+        #modal-loading {
+            text-align: center;
+            padding: 3rem 0;
+        }
+        .loading-spinner-modal {
+            width: 60px;
+            height: 60px;
+            border: 6px solid var(--color-accent-1);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        #modal-loading p {
+            font-weight: 600;
+            color: var(--color-dark);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error message styling */
+        .error-msg {
+            background-color: #fff0f0; /* Lighter red */
+            color: #c53030; /* Darker red */
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #f5c6cb; /* Red border */
+            margin-top: 1rem;
+        }
+         .error-msg i {
+             margin-right: 0.5rem;
+         }
+
+         /* Hide content areas initially or during loading */
+         .content-hidden {
+             display: none;
+         }
+
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <nav class="navbar mb-8">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="logo text-2xl sm:text-3xl">
+                    <i class="fas fa-book-open mr-2"></i> Mundo de Cuentos
+                </h1>
+            </div>
+             <!-- Simplified Nav -->
+             <div class="hidden md:flex space-x-6">
+                <a href="#" class="hover:text-pink-500 font-semibold">Inicio</a>
+                <a href="#" class="hover:text-pink-500 font-semibold">Sobre Nosotros</a>
+            </div>
+            <div class="md:hidden">
+                <button class="text-gray-600 focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 pb-24">
+        <!-- Hero section -->
+        <section class="mb-12 text-center">
+            <h1 class="text-4xl sm:text-5xl text-gray-800 mb-4">Elige un Título y Descubre la Magia</h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">Haz clic en un título para que la inteligencia artificial cree un cuento único para ti.</p>
+        </section>
+
+        <!-- Title List -->
+        <section class="mb-16">
+            <h2 class="text-2xl sm:text-3xl mb-6 font-bold">
+                <i class="fas fa-list text-pink-500 mr-2"></i>
+                Títulos Disponibles
+            </h2>
+            <div id="title-list">
+                <!-- Titles will be inserted here by JavaScript -->
+                 <p id="titles-loading" class="text-gray-500 col-span-full text-center">Cargando títulos...</p>
+            </div>
+        </section>
+
+        <!-- Benefits section (optional, kept from previous) -->
+        <section class="mb-16 bg-white rounded-2xl p-8 shadow-md">
+            <h2 class="text-2xl sm:text-3xl mb-6 font-bold text-center">
+                <i class="fas fa-star text-yellow-500 mr-2"></i>
+                Beneficios de la Lectura
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div class="benefit-card p-6 bg-blue-50 rounded-xl"> <h3 class="text-xl font-bold mb-3 text-blue-700"><i class="fas fa-brain mr-2"></i> Imaginación</h3> <p class="text-gray-700">Fomenta la creatividad y la capacidad de imaginar mundos nuevos.</p> </div>
+                 <div class="benefit-card p-6 bg-green-50 rounded-xl"> <h3 class="text-xl font-bold mb-3 text-green-700"><i class="fas fa-comments mr-2"></i> Lenguaje</h3> <p class="text-gray-700">Enriquece el vocabulario y mejora la comprensión lectora.</p> </div>
+                 <div class="benefit-card p-6 bg-red-50 rounded-xl"> <h3 class="text-xl font-bold mb-3 text-red-700"><i class="fas fa-heart mr-2"></i> Valores</h3> <p class="text-gray-700">Transmite lecciones importantes sobre la vida y la convivencia.</p> </div>
+                 <div class="benefit-card p-6 bg-purple-50 rounded-xl"> <h3 class="text-xl font-bold mb-3 text-purple-700"><i class="fas fa-hands-helping mr-2"></i> Vínculos</h3> <p class="text-gray-700">Fortalece la conexión entre padres e hijos al compartir la lectura.</p> </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Story Modal -->
+    <div id="story-modal">
+        <div class="modal-content-wrapper">
+            <button class="modal-close-btn" id="modal-close">&times;</button>
+
+            <!-- Loading Indicator -->
+            <div id="modal-loading">
+                <div class="loading-spinner-modal"></div>
+                <p>Generando tu cuento mágico...</p>
+            </div>
+
+            <!-- Content Area (hidden initially) -->
+            <div id="modal-story-content-area" class="content-hidden">
+                <h2 id="modal-title" class="text-3xl font-bold mb-4 text-center text-color-primary"></h2>
+                <div id="modal-image-container">
+                    <div class="spinner"></div> <!-- Spinner for image loading -->
+                    <i class="fas fa-image placeholder-icon"></i> <!-- Placeholder if image fails -->
+                    <img id="modal-image" alt="Ilustración del cuento" />
+                </div>
+                <div id="modal-content">
+                    <!-- Story text goes here -->
+                </div>
+                <div id="modal-error" class="error-msg content-hidden">
+                     <i class="fas fa-exclamation-triangle"></i>
+                     <span id="modal-error-message"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2025 Mundo de Cuentos Infantiles - Cuentos generados con IA por Pollinations.ai</p>
+        </div>
+    </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+
+        // --- Expanded List of Predefined Titles ---
+        const predefinedTitles = [
+            "El león que no sabía rugir", "La mariposa de alas de cristal", "El robot que soñaba con ser oveja",
+            "El misterio del jardín flotante", "La nube que quería ser lluvia", "El pequeño topo explorador",
+            "La aventura del lápiz mágico", "El oso que perdió su abrazo", "La estrella que cayó al mar",
+            "El secreto de la concha cantante", "El árbol de los susurros", "Los zapatos bailarines",
+            "El fantasma que tenía miedo a la oscuridad", "La galleta astronauta", "El río que fluía hacia arriba",
+            "El dragón de papel", "La niña que hablaba con los animales", "El sombrero pensador",
+            "Aventura en la ciudad de caramelo", "El gigante de buen corazón", "La llave olvidada",
+            "El pingüino que quería volar", "La sopa de letras mágicas", "El reloj que daba abrazos",
+            "Viaje al centro de una flor", "El monstruo debajo de la cama amigable", "La carrera de tortugas",
+            "El caballero que rescató a un dragón", "La luna de queso y los ratones", "El faro solitario",
+            "La casa hecha de nubes", "El eco perdido", "La jirafa con cuello corto",
+            "El niño que pintó el silencio", "El tesoro escondido en un bostezo", "La varita que hacía cosquillas",
+            "El duende zapatero y las zapatillas brillantes", "El pirata que buscaba amigos", "La isla de los juguetes perdidos",
+            "El camaleón que no podía cambiar de color", "La puerta secreta en el árbol", "El gato que maullaba canciones",
+            "La bruja que hacía pociones de risa", "El ogro vegetariano", "El hada sin alas",
+            "El misterio de las huellas de purpurina", "El sol que se quedó dormido", "La bufanda interminable",
+            "El muñeco de nieve que no se derretía", "El genio de la botella de zumo", "El último unicornio del bosque",
+            "La sirena que coleccionaba botones", "El viaje de la gota de agua", "El espantapájaros bailarín",
+            "La semilla que quería ser estrella", "El puente de arcoíris", "El murciélago que amaba el sol",
+            "El caracol velocista", "La biblioteca secreta de los sueños", "El susurro del viento",
+            "La montaña que roncaba", "El caballero miedoso", "La princesa mecánica",
+            "El bosque de los árboles al revés", "El espejo que mostraba recuerdos", "El calcetín perdido y su aventura",
+            "La cometa que atrapó una nube", "El búho que sabía demasiado", "El jardín de las estatuas vivientes",
+            "El pez que nadaba en el aire", "La máquina de hacer amigos", "El secreto del viejo molino",
+            "La oruga que se convirtió en avión", "El fantasma Friolero", "La llave de la felicidad",
+            "El concierto de los animales", "La nube con forma de dragón", "El inventor de abrazos",
+            "La playa de arena de colores", "El misterio de la luna menguante", "El chef que cocinaba nubes",
+            "El perro que perseguía arcoíris", "La flor que cantaba ópera", "El viaje en burbuja de jabón",
+            "El mago distraído", "La niña hecha de estrellas", "El secreto de la caja de música",
+            "El castor constructor de castillos", "La sombra juguetona", "El río de chocolate",
+            "El monstruo de las cosquillas", "La aventura del botón perdido", "El bosque silencioso",
+            "La lámpara que contaba historias", "El pájaro que pintaba el cielo", "El niño que podía volar en sueños",
+            "La tienda de objetos mágicos", "El secreto de las luciérnagas", "El tren de medianoche",
+            "La ardilla que guardaba risas", "El pozo de los deseos", "La isla flotante",
+            "El zorro astuto y el cuervo vanidoso", "La zanahoria gigante", "El misterio del reloj parado",
+            "El dragón tímido", "La casa del árbol encantada", "El lápiz que dibujaba la verdad",
+            "La ciudad bajo el mar", "El gigante amable y el ratón", "La noche en que las estrellas bailaron",
+            "El gato con botas voladoras", "La búsqueda del color perdido", "El árbol genealógico mágico",
+            "El robot jardinero", "La aventura en el desván", "El secreto del gnomo del jardín",
+            "La pluma que escribía sola", "El valle de los ecos", "El misterio del cuadro que cambiaba",
+            "El oso polar que tenía frío", "La sirena terrestre", "El viaje al país de Jauja",
+            "La nube triste", "El niño que coleccionaba palabras", "El secreto de la montaña hueca",
+            "El cartero de los sueños", "La gallina de los huevos de oro (y chocolate)", "El misterio de la sopa desaparecida",
+            "El domador de nubes", "La máquina del tiempo averiada", "El bosque de cristal",
+            "El rey que no sabía reír", "La aventura de la hoja viajera", "El secreto del farolero",
+            "El extraterrestre perdido", "La panadería mágica", "El misterio del muñeco parlante",
+            "El perro guardián de las estrellas", "La fuente de la juventud (para juguetes)", "El laberinto de setas gigantes",
+            "El duende de la suerte", "La carrera de obstáculos de animales", "El secreto de la isla invisible",
+            "El inventor de juegos", "La biblioteca ambulante", "El misterio del fantasma hambriento",
+            "El pingüino detective", "La fórmula de la invisibilidad", "El bosque susurrante al anochecer",
+            "El hada madrina moderna", "La competición de castillos de arena", "El secreto del viejo pirata",
+            "El niño que encogió", "La ciudad de los pájaros", "El misterio de la música silenciosa",
+            "El caballero de la brillante armadura (de cartón)", "La alfombra voladora desobediente", "El bosque de los dulces",
+            "El genio despistado", "La búsqueda del arcoíris nocturno", "El secreto del lago helado",
+            "El robot emocional", "La escuela de magia para animales", "El misterio del ladrón de colores",
+            "El oso astronauta", "La pócima para hablar con las plantas", "El valle escondido",
+            "El hada de los dientes olvidadiza", "La expedición al volcán de helado", "El secreto del libro cerrado",
+            "El niño invisible", "La ciudad flotante", "El misterio del eco burlón",
+            "El caballero que prefería leer", "La escoba voladora con GPS", "El jardín submarino",
+            "El gigante jardinero", "La carrera hacia el fin del mundo (del parque)", "El secreto de la estrella fugaz",
+            "El robot chef", "La academia de superhéroes", "El misterio de los calcetines desapareados",
+            "El perro surfista", "La flauta mágica desafinada", "El bosque encantado en invierno"
+        ];
+
+        const textApiConfig = {
+            model: "mistral", // o "openai", "google", etc.
+            systemPrompt: "Eres un escritor experto en cuentos infantiles cortos (aproximadamente 200-400 palabras), creativos, con lenguaje sencillo, personajes entrañables y llenos de valores positivos como la amistad, la valentía, la honestidad o la imaginación. Escribe un cuento completo basado únicamente en el siguiente título:",
+            timeoutSeconds: 45 // Añadir un timeout para la API de texto
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
+        const modalImage = document.getElementById('modal-image');
+        const modalImageSpinner = modalImageContainer.querySelector('.spinner');
+        const modalImagePlaceholder = modalImageContainer.querySelector('.placeholder-icon');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ==========
+
+        /**
+         * Generates the Pollinations Text API URL.
+         */
+        function createTextApiUrl(prompt, config) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({
+                model: config.model,
+                system: encodedSystem,
+            });
+            return `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+        }
+
+        /**
+         * Fetches story text from Pollinations Text API with timeout.
+         */
+        async function fetchStoryText(title) {
+            const url = createTextApiUrl(title, textApiConfig);
+            console.log("Fetching text from:", url);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), textApiConfig.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId); // Clear timeout if fetch completes
+
+                if (!response.ok) {
+                    let errorBody = "Error desconocido";
+                    try { errorBody = await response.text(); } catch (_) {}
+                    throw new Error(`Error HTTP ${response.status}.`); // Simpler error message
+                }
+                const text = await response.text();
+                if (!text || text.trim().length < 50 || text.toLowerCase().includes("cannot fulfill")) {
+                    console.warn("API returned potentially invalid response:", text);
+                    throw new Error("La IA no pudo generar un cuento para este título.");
+                }
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId); // Clear timeout on error too
+                console.error("Error fetching story text:", error);
+                if (error.name === 'AbortError') {
+                     throw new Error(`La generación del cuento tardó demasiado tiempo (más de ${textApiConfig.timeoutSeconds} segundos).`);
+                }
+                // Throw a more generic user-friendly error for other issues
+                throw new Error(`No se pudo contactar al servicio de generación de cuentos. Inténtalo de nuevo más tarde.`);
+            }
+        }
+
+        /**
+         * Generates the Pollinations Image API URL.
+         */
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = {
+                seed: Math.floor(Math.random() * 10000000),
+                width: 800,
+                height: 600,
+                nologo: true
+            };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "cuento infantil colorido";
+            const enhancedPrompt = `colorful children's book illustration style of ${safePromptText}, simple background, kid-friendly, cheerful, digital art, bright colors, cute characters, no text`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}`;
+            if (settings.nologo) url += '&nologo=true';
+            return url;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+
+        function showModal() {
+            storyModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent body scroll when modal is open
+        }
+
+        function hideModal() {
+            storyModal.classList.remove('active');
+            document.body.style.overflow = ''; // Re-enable body scroll
+            resetModalState();
+        }
+
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'block';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.textContent = '';
+             modalImage.src = '';
+             modalImage.style.display = 'none';
+             modalImageSpinner.style.display = 'none';
+             modalImagePlaceholder.style.display = 'none';
+             modalImageContainer.style.display = 'flex'; // Ensure container is visible for spinner/placeholder
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+
+        /**
+         * Shuffles array in place using Fisher-Yates algorithm.
+         * @param {Array} array Array to shuffle.
+         */
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+
+        /**
+         * Displays the list of predefined titles in random order.
+         */
+        function displayTitles() {
+            if (!titleListContainer || !titlesLoading) return;
+
+            // --- Shuffle the titles before displaying ---
+            const shuffledTitles = shuffleArray([...predefinedTitles]); // Shuffle a copy
+
+            titleListContainer.innerHTML = ''; // Clear previous content/loading message
+            titlesLoading.style.display = 'none'; // Hide loading message
+
+            if (shuffledTitles.length === 0) {
+                titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay títulos disponibles.</p>';
+                return;
+            }
+
+            shuffledTitles.forEach(title => {
+                const div = document.createElement('div');
+                div.className = 'title-item';
+                div.textContent = title;
+                div.setAttribute('data-title', title);
+                div.addEventListener('click', () => handleTitleClick(title));
+                titleListContainer.appendChild(div);
+            });
+        }
+
+        /**
+         * Handles clicking on a title. Fetches and displays the story.
+         */
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+
+            try {
+                // 1. Fetch Story Text
+                const storyText = await fetchStoryText(title);
+
+                // 2. Display Text & Prepare for Image
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.textContent = storyText;
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalImageSpinner.style.display = 'block'; // Show image loading spinner
+
+                // 3. Fetch and Display Image
+                const imageUrl = createPollinationsImageUrl(title);
+
+                 if (imageUrl) {
+                     modalImage.onload = () => {
+                         modalImageSpinner.style.display = 'none';
+                         modalImagePlaceholder.style.display = 'none';
+                         modalImage.style.display = 'block';
+                     };
+                     modalImage.onerror = () => {
+                         console.error("Error loading image for title:", title);
+                         modalImageSpinner.style.display = 'none';
+                         modalImagePlaceholder.style.display = 'block'; // Show placeholder icon on error
+                         modalImage.style.display = 'none';
+                     };
+                     // Setting src starts the loading process
+                     modalImage.src = imageUrl;
+                 } else {
+                     // If URL creation failed
+                     console.error("Could not create image URL for title:", title);
+                     modalImageSpinner.style.display = 'none';
+                     modalImagePlaceholder.style.display = 'block';
+                 }
+
+            } catch (error) {
+                // Handle errors from fetchStoryText
+                console.error("Failed to display story:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `${error.message}`; // Display the specific error message
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display the error
+                modalImageContainer.style.display = 'none'; // Hide image area on text error
+                modalContent.textContent = ''; // Clear content area if text failed
+            }
+        }
+
+
+        // ========== INITIALIZATION ==========
+
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn) {
+                 console.error("Initialization failed: Critical modal or title list elements missing.");
+                 document.body.innerHTML = '<p style="padding: 2rem; text-align: center; color: red;">Error crítico al cargar la página. Faltan elementos esenciales.</p>';
+                 return;
+            }
+            displayTitles(); // Populate the list of titles (now shuffled)
+            modalCloseBtn.addEventListener('click', hideModal);
+
+             // Close modal if clicking outside the content area
+             storyModal.addEventListener('click', (event) => {
+                 if (event.target === storyModal) {
+                     hideModal();
+                 }
+             });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+
+</body>
+</html>

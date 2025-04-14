@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrevistas Imaginarias - Diálogos IA</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts: Playfair Display for elegance, Inter for readability -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #f59e0b; /* Amber/Gold */
+            --color-secondary: #6b7280; /* Gray */
+            --color-background: #312e81; /* Indigo Dark */
+            --color-background-alt: #4338ca; /* Indigo Medium */
+            --color-text: #e5e7eb; /* Light Gray */
+            --color-text-darker: #9ca3af; /* Medium Gray */
+            --color-modal-bg: #1e1b4b; /* Very Dark Indigo */
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.15);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.2);
+            --border-radius: 6px;
+            --transition-normal: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+             /* Subtle pattern background */
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        h1, h2, h3, .logo {
+            font-family: 'Playfair Display', serif;
+        }
+        .logo {
+            color: var(--color-primary);
+        }
+        h1.page-title {
+             color: var(--color-primary);
+             text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+         h2.section-title {
+             color: var(--color-text);
+             border-bottom: 2px solid var(--color-secondary);
+             padding-bottom: 0.5rem;
+             display: inline-block;
+         }
+
+        .navbar {
+            background-color: var(--color-modal-bg); /* Darker nav */
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 1px solid var(--color-secondary);
+        }
+
+        /* Title List Styling */
+        #title-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 1.25rem; /* Slightly increased gap */
+        }
+
+        .title-item {
+            background-color: var(--color-background-alt); /* Medium indigo */
+            padding: 1.25rem 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-align: center;
+            font-weight: 600;
+            color: var(--color-text);
+            border: 1px solid var(--color-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 70px;
+        }
+
+        .title-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-primary);
+            background-color: #4f46e5; /* Brighter indigo */
+        }
+
+        /* Generate More Button */
+        #generate-more-btn {
+             grid-column: 1 / -1;
+             background-color: var(--color-primary);
+             color: var(--color-background); /* Dark text on bright button */
+             padding: 0.7rem 1.4rem;
+             border: none;
+             border-radius: var(--border-radius);
+             font-family: 'Inter', sans-serif;
+             font-weight: 600;
+             cursor: pointer;
+             transition: var(--transition-normal);
+             margin-top: 1.5rem;
+             box-shadow: var(--shadow-sm);
+        }
+        #generate-more-btn:hover:not(:disabled) {
+             background-color: #fcd34d; /* Lighter Amber */
+             box-shadow: var(--shadow-md);
+             transform: translateY(-1px);
+        }
+         #generate-more-btn:disabled {
+             background-color: var(--color-secondary);
+             color: var(--color-text-darker);
+             cursor: not-allowed;
+             opacity: 0.7;
+         }
+         #generate-more-btn .fa-sync-alt {
+             color: var(--color-background);
+         }
+
+
+        /* Modal Styling */
+        #story-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(30, 27, 75, 0.9); /* Darker overlay */
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+
+        #story-modal.active {
+            display: flex;
+        }
+
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--color-secondary);
+            padding: 2rem; /* More padding */
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--color-secondary);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.4rem;
+            color: var(--color-background);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-normal);
+            z-index: 10;
+        }
+        .modal-close-btn:hover {
+            background-color: var(--color-primary);
+            color: white;
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        /* --- Modal Content Order & SCROLL FIX --- */
+        #modal-title { /* Title */
+             color: var(--color-primary);
+             text-align: center;
+             margin-bottom: 1.5rem;
+             flex-shrink: 0; /* Does not shrink */
+             font-size: 1.75rem; /* Larger title */
+        }
+
+        #modal-content { /* Text container - Scrolls */
+            line-height: 1.7; /* More line spacing */
+            color: var(--color-text);
+            white-space: pre-wrap;
+            overflow-y: auto;      /* <<< Scroll applied HERE */
+            margin-bottom: 1.5rem; /* Space before image */
+            padding-right: 15px;  /* Space for scrollbar */
+            flex-grow: 1;          /* <<< Takes available space */
+            min-height: 0;         /* <<< Crucial for flex overflow */
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-modal-bg);
+        }
+         #modal-content::-webkit-scrollbar { width: 10px; }
+         #modal-content::-webkit-scrollbar-track { background: var(--color-modal-bg); border-radius: 5px;}
+         #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: 5px; border: 2px solid var(--color-modal-bg); }
+         #modal-content p:not(:last-child) { margin-bottom: 1em; } /* Space for potential <p> tags */
+         /* Styling for dialogue: Interviewer (I) and Subject (S) */
+         #modal-content strong { /* Assume speaker tags are wrapped in <strong> */
+             color: var(--color-primary);
+             display: block;
+             margin-bottom: 0.2em;
+         }
+
+
+        #modal-image-container { /* Image container - Fixed height */
+            width: 100%;
+            height: 220px; /* Adjusted height */
+            background-color: #111827; /* Darker background */
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--color-secondary);
+            flex-shrink: 0;       /* <<< Does NOT grow or shrink */
+        }
+         #modal-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Contain might be better for portraits/objects */
+            display: none;
+         }
+         #modal-image-container .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border-left-color: var(--color-primary);
+            animation: spin 1s linear infinite;
+            display: none;
+         }
+         #modal-image-container .placeholder-icon {
+             font-size: 2.5rem;
+             color: var(--color-secondary);
+             display: none;
+         }
+
+
+        /* Loading Indicator */
+        #modal-loading {
+            text-align: center;
+            padding: 3rem 0;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(30, 27, 75, 0.95); /* Slightly darker */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            border-radius: var(--border-radius);
+        }
+        .loading-spinner-modal {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--color-secondary);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        #modal-loading p {
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error message styling */
+        .error-msg {
+            background-color: rgba(220, 38, 38, 0.1); /* Red tint */
+            color: #fca5a5; /* Lighter Red Text */
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #dc2626; /* Red border */
+            margin-top: 1rem;
+            text-align: center;
+            flex-shrink: 0; /* Don't shrink */
+        }
+         .error-msg i {
+             margin-right: 0.5rem;
+         }
+
+         .content-hidden {
+             display: none;
+         }
+
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <nav class="navbar mb-10">
+        <div class="container mx-auto px-4 py-3 flex justify-center items-center"> <!-- Centered Logo -->
+            <div class="flex items-center">
+                <h1 class="logo text-3xl sm:text-4xl">
+                    <i class="fas fa-comments mr-2"></i> Entrevistas Imaginarias
+                </h1>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 pb-16">
+        <!-- Hero section -->
+        <section class="mb-12 text-center">
+            <h1 class="page-title text-5xl sm:text-6xl mb-4">Diálogos Inesperados</h1>
+            <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">¿Qué diría la Luna? ¿O un bolígrafo olvidado? Elige un sujeto y la IA iniciará la conversación.</p>
+        </section>
+
+        <!-- Title List Container -->
+        <section class="mb-10">
+            <h2 class="section-title text-3xl sm:text-4xl mb-6 text-center mx-auto">
+                <i class="fas fa-microphone-alt text-amber-400 mr-2"></i>
+                Sujetos de Entrevista
+            </h2>
+            <div id="title-list">
+                 <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Buscando entrevistados...</p>
+            </div>
+            <div id="generate-more-container" class="text-center mt-8">
+                <button id="generate-more-btn">
+                     <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                    Sugerir Más Entrevistas
+                 </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Story Modal -->
+    <div id="story-modal">
+        <div class="modal-content-wrapper">
+            <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+            <!-- Loading Indicator -->
+            <div id="modal-loading">
+                <div class="loading-spinner-modal"></div>
+                <p>Preparando la entrevista...</p>
+            </div>
+
+            <!-- Content Area -->
+            <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <!-- Title -->
+                <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                <!-- Text Content (Scrollable) -->
+                <div id="modal-content" class="text-base md:text-lg">
+                    <!-- Interview dialogue will be placed here -->
+                </div>
+                 <!-- Image Container (Fixed height, at bottom) -->
+                <div id="modal-image-container">
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <img id="modal-image" alt="Representación del entrevistado" />
+                </div>
+                 <!-- Error Display Area -->
+                <div id="modal-error" class="error-msg content-hidden">
+                     <i class="fas fa-exclamation-triangle"></i>
+                     <span id="modal-error-message"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-indigo-900 text-indigo-300 py-5 mt-12">
+        <div class="container mx-auto px-4 text-center text-xs">
+            <p>Diálogos generados por inteligencia artificial. Toda entrevista es puramente ficticia.</p>
+            <p class="mt-1">© 2025 Entrevistas Imaginarias</p>
+        </div>
+    </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+
+        // --- Expanded Interview Subject Titles (>150) ---
+        const predefinedTitles = [
+            "Entrevista con Leonardo da Vinci", "Entrevista con Cleopatra", "Entrevista con Albert Einstein",
+            "Entrevista con Marie Curie", "Entrevista con William Shakespeare", "Entrevista con Isaac Newton",
+            "Entrevista con Juana de Arco", "Entrevista con Nikola Tesla", "Entrevista con Genghis Khan",
+            "Entrevista con Platón", "Entrevista con Amelia Earhart", "Entrevista con Vincent van Gogh",
+            "Entrevista con Mozart", "Entrevista con Beethoven", "Entrevista con Ada Lovelace",
+            "Entrevista con Charles Darwin", "Entrevista con Galileo Galilei", "Entrevista con Nelson Mandela",
+            "Entrevista con Frida Kahlo", "Entrevista con Martin Luther King Jr.", "Entrevista con Hedy Lamarr",
+            "Entrevista con Sun Tzu", "Entrevista con Hipatia de Alejandría", "Entrevista con Marco Polo",
+            "Entrevista con Sócrates", "Entrevista con Ramsés II", "Entrevista con Carl Sagan",
+            "Entrevista con Edgar Allan Poe", "Entrevista con Jane Austen", "Entrevista con Mary Shelley",
+
+            "Entrevista con un Gato Callejero", "Entrevista con un Perro Sabio", "Entrevista con un Delfín Filósofo",
+            "Entrevista con un Cuervo Mensajero", "Entrevista con una Hormiga Obrera", "Entrevista con un Búho Nocturno",
+            "Entrevista con un Oso Pardo Hibernando", "Entrevista con un Zorro Astuto", "Entrevista con un Águila Solitaria",
+            "Entrevista con una Abeja Reina", "Entrevista con un Lobo Alfa", "Entrevista con un Caballo Salvaje",
+            "Entrevista con un Elefante con Memoria", "Entrevista con una Tortuga Centenaria", "Entrevista con un Pingüino Emperador",
+            "Entrevista con un Colibrí Veloz", "Entrevista con una Araña Tejedora", "Entrevista con un Pulpo Inteligente",
+            "Entrevista con una Ballena Azul Cantante", "Entrevista con un Perezoso Tranquilo", "Entrevista con un Camaleón Cambiante",
+            "Entrevista con un Escarabajo Pelotero", "Entrevista con un Koala Dormilón", "Entrevista con una Serpiente Misteriosa",
+            "Entrevista con un Murciélago Eco-localizador", "Entrevista con un Gusano de Seda", "Entrevista con una Medusa Inmortal (Turritopsis)",
+            "Entrevista con un Ornitorrinco Inusual", "Entrevista con una Luciérnaga Brillante", "Entrevista con el último Dodo (Espíritu)",
+
+            "Entrevista con la Luna", "Entrevista con el Sol", "Entrevista con el Viento", "Entrevista con el Mar",
+            "Entrevista con una Montaña Antigua", "Entrevista con un Río caudaloso", "Entrevista con una Nube pasajera",
+            "Entrevista con la Lluvia", "Entrevista con el Fuego de una Hoguera", "Entrevista con un Árbol Milenario",
+            "Entrevista con una Roca paciente", "Entrevista con la Tierra misma", "Entrevista con una Estrella lejana",
+            "Entrevista con un Agujero Negro", "Entrevista con la Constelación de Orión", "Entrevista con el Eco",
+            "Entrevista con la Noche estrellada", "Entrevista con el Amanecer", "Entrevista con el Atardecer melancólico",
+            "Entrevista con un Relámpago fugaz", "Entrevista con el Arcoíris", "Entrevista con la Gravedad",
+            "Entrevista con el Tiempo", "Entrevista con el Silencio", "Entrevista con la Oscuridad",
+            "Entrevista con la Luz", "Entrevista con una Sombra juguetona", "Entrevista con el Desierto silencioso",
+            "Entrevista con la Jungla profunda", "Entrevista con el Hielo polar",
+
+            "Entrevista con un Libro Olvidado", "Entrevista con una Taza de Café", "Entrevista con un Espejo Sincero",
+            "Entrevista con un Reloj de Pared", "Entrevista con un Bolígrafo Creativo", "Entrevista con una Silla Cómoda",
+            "Entrevista con una Llave Perdida", "Entrevista con un Zapato Viajero", "Entrevista con una Moneda Antigua",
+            "Entrevista con un Semáforo Paciente", "Entrevista con una Máquina de Escribir Nostálgica", "Entrevista con un Teléfono Público Solitario",
+            "Entrevista con una Cámara Fotográfica Antigua", "Entrevista con un Juguete Roto", "Entrevista con un Calcetín Desparejado",
+            "Entrevista con una Escalera Crujiente", "Entrevista con una Puerta Misteriosa", "Entrevista con una Ventana Curiosa",
+            "Entrevista con una Lámpara de Escritorio", "Entrevista con un Mapa del Tesoro", "Entrevista con un Barco en una Botella",
+            "Entrevista con un Instrumento Musical Desafinado", "Entrevista con una Estatua del Parque", "Entrevista con un Viejo Faro Guía",
+            "Entrevista con un Puente Colgante", "Entrevista con un Ordenador Obsoleto", "Entrevista con un Robot de Cocina",
+            "Entrevista con una Inteligencia Artificial", "Entrevista con el Internet",
+
+            "Entrevista con la Imaginación", "Entrevista con la Curiosidad", "Entrevista con el Miedo",
+            "Entrevista con la Felicidad", "Entrevista con la Tristeza", "Entrevista con la Esperanza",
+            "Entrevista con la Memoria", "Entrevista con el Olvido", "Entrevista con un Sueño Recurrente",
+            "Entrevista con una Pesadilla", "Entrevista con la Inspiración", "Entrevista con la Creatividad",
+            "Entrevista con la Soledad", "Entrevista con el Amor", "Entrevista con el Odio",
+            "Entrevista con la Duda", "Entrevista con la Certeza", "Entrevista con el Destino",
+            "Entrevista con el Azar", "Entrevista con una Idea Brillante", "Entrevista con un Secreto Guardado",
+            "Entrevista con una Mentira Piadosa", "Entrevista con la Verdad Incómoda", "Entrevista con el Futuro Incierto",
+            "Entrevista con el Pasado Irrevocable", "Entrevista con el Presente Efímero", "Entrevista con la Música",
+            "Entrevista con el Color Rojo", "Entrevista con el Número Cero"
+        ];
+
+        // --- NEW: Interview themes for title generation variety ---
+        const interviewThemes = [
+            "personajes históricos de la antigüedad", "científicos famosos", "artistas del Renacimiento", "exploradores legendarios",
+            "figuras mitológicas", "líderes revolucionarios", "escritoras influyentes", "músicos clásicos",
+            "animales domésticos comunes", "grandes felinos", "aves rapaces", "insectos sociales", "criaturas marinas",
+            "animales en peligro de extinción", "mascotas parlantes", "animales del bosque", "reptiles y anfibios",
+            "objetos encontrados en un desván", "herramientas de trabajo", "instrumentos musicales", "juguetes de la infancia",
+            "muebles del hogar", "prendas de vestir", "vehículos de transporte", "comida y bebida", "libros y escritura",
+            "elementos de la naturaleza", "fenómenos meteorológicos", "cuerpos celestes", "conceptos geográficos",
+            "partes del cuerpo humano", "fuerzas físicas", "conceptos matemáticos", "abstracciones filosóficas",
+            "emociones humanas", "virtudes y defectos", "etapas de la vida", "sentidos humanos", "ideas abstractas",
+            "inventos tecnológicos", "medios de comunicación", "lugares imaginarios", "conceptos artísticos"
+        ];
+
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un escritor creativo especializado en diálogos ficticios. Escribe una entrevista corta (300-500 palabras) entre un entrevistador genérico ('Entrevistador') y el sujeto indicado en el título. Adopta la 'voz' o perspectiva del entrevistado de forma creíble e interesante, ya sea una figura histórica, un animal, un objeto o un concepto abstracto. El formato debe ser un diálogo claro (ej: 'Entrevistador: [Pregunta]', 'Sujeto: [Respuesta]'). Busca profundidad, humor o una perspectiva única. NO incluyas introducciones ni conclusiones fuera del diálogo.",
+            timeoutSeconds: 75 // Slightly longer timeout for potentially more complex generation
+        };
+
+         const titleGenerationConfig = {
+             model: "mistral",
+             systemPrompt: "Actúa como un generador de ideas conciso. Genera exactamente 15 ideas de sujetos o títulos para entrevistas imaginarias, basados en el tema proporcionado. Devuelve *solo* la lista de títulos/sujetos, uno por línea, comenzando cada uno con 'Entrevista con '. No incluyas números, guiones, introducciones ni despedidas. Cada línea debe ser solo un título de entrevista.",
+             // prompt: "...", // Prompt set dynamically
+             timeoutSeconds: 30,
+         };
+
+        // ========== DOM ELEMENTS ==========
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
+        const modalImage = document.getElementById('modal-image');
+        const modalImageSpinner = modalImageContainer.querySelector('.spinner');
+        const modalImagePlaceholder = modalImageContainer.querySelector('.placeholder-icon');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+
+        // ========== API FUNCTIONS ==========
+
+        async function fetchTextFromApi(prompt, config) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url}`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s).`);
+                 throw new Error(`Error de comunicación con la API. ${error.message}`);
+            }
+        }
+
+        async function fetchStoryText(title) { // Renamed to fetchInterviewText for clarity
+             const text = await fetchTextFromApi(title, textApiConfig);
+             // Basic validation for interview dialogue format (heuristic)
+              if (text.trim().length < 100 || !text.includes(':') || text.toLowerCase().includes("cannot fulfill")) {
+                  throw new Error("La IA no pudo generar una entrevista adecuada para este sujeto.");
+              }
+             return text;
+        }
+
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(interviewThemes) || "conceptos abstractos"; // Fallback theme
+            const specificPrompt = `Genera 15 sujetos o títulos para entrevistas imaginarias sobre ${randomTheme}`;
+            console.log("Generating titles with prompt:", specificPrompt);
+
+            const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+            const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+
+            const titles = text.split('\n')
+                               .map(line => line.replace(/^[-\d.\s*]+/, '').trim()) // Remove list markers
+                               .filter(line => line.length > 10 && line.length < 100 && line.toLowerCase().startsWith("entrevista con")); // Ensure format
+            if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de entrevistas.");
+            return titles.slice(0, 15);
+        }
+
+        /**
+         * Generates Pollinations Image URL - NO TEXT in image.
+         */
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+
+            // Extract subject from "Entrevista con [Subject]"
+            let subject = promptText.toLowerCase().replace(/^entrevista con /, '').trim();
+            let imagePrompt = `Illustration representing ${subject}`; // Default prompt
+
+            // Refine prompt based on subject type (simple heuristic)
+             if (["la luna", "el sol", "el viento", "el mar", "una montaña", "un río", "una nube", "la lluvia", "el tiempo", "la noche"].some(term => subject.includes(term))) {
+                 imagePrompt = `Artistic conceptual illustration representing ${subject}, atmospheric`;
+             } else if (["un libro", "una taza", "un espejo", "un reloj", "un bolígrafo", "una silla", "una llave", "un zapato", "una moneda", "un teléfono", "una cámara", "un juguete", "un mapa", "un instrumento"].some(term => subject.includes(term))) {
+                 imagePrompt = `Still life style illustration of ${subject}, interesting lighting`;
+             } else if (["einstein", "curie", "shakespeare", "tesla", "vinci", "cleopatra", "kahlo", "mozart", "beethoven"].some(term => subject.toLowerCase().includes(term))) {
+                  imagePrompt = `Artistic portrait style painting of ${subject}`;
+             } else if (["gato", "perro", "delfín", "cuervo", "hormiga", "búho", "oso", "zorro", "águila", "lobo", "caballo", "elefante", "tortuga", "pingüino"].some(term => subject.includes(term))) {
+                 imagePrompt = `Expressive character illustration of ${subject}`;
+             } // Add more heuristics if needed
+
+            const safePromptText = imagePrompt || `representation of ${subject}`; // Fallback
+            // STRONG negative prompt against text
+            const negativePrompt = "text, words, letters, writing, signature, watermark, label, title, caption, headline, font, typography, sign, number, logo";
+            const enhancedPrompt = `${safePromptText}, intricate details, visually interesting composition`;
+
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            const escapedNegative = encodeURIComponent(negativePrompt);
+
+            if (!escapedPrompt) return '';
+
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() {
+            if(!storyModal) return;
+            storyModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal() {
+             if(!storyModal) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            resetModalState();
+        }
+
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent || !modalImage || !modalImageSpinner || !modalImagePlaceholder || !modalImageContainer) return;
+             modalLoadingIndicator.style.display = 'flex'; // Use flex for centering
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.textContent = '';
+             modalContent.scrollTop = 0; // Reset scroll
+             modalImage.src = '';
+             modalImage.style.display = 'none';
+             modalImageSpinner.style.display = 'none';
+             modalImagePlaceholder.style.display = 'none';
+             modalImageContainer.style.display = 'flex'; // Reset container display
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) {
+            if (!arr || arr.length === 0) return null;
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+         function createTitleItem(title) {
+            const div = document.createElement('div');
+            div.className = 'title-item';
+            div.textContent = title;
+            div.setAttribute('data-title', title);
+            div.addEventListener('click', () => handleTitleClick(title));
+            return div;
+        }
+
+        function displayTitles(titles) {
+            if (!titleListContainer || !titlesLoading) return;
+            const shuffledTitles = shuffleArray([...titles]);
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (shuffledTitles.length === 0) {
+                titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No hay sujetos disponibles.</p>';
+                return;
+            }
+            shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+
+         function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.textContent = ''; // Clear previous content
+            modalImageContainer.style.display = 'none'; // Hide image area initially
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Show loading screen
+
+            try {
+                // 1. Fetch Interview Text FIRST
+                const interviewText = await fetchStoryText(title); // Using renamed function
+
+                // 2. Display Text (Hide loading, show content area)
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.textContent = interviewText; // Display the fetched text
+                modalStoryContentArea.classList.remove('content-hidden'); // Show the main content area
+                modalImageContainer.style.display = 'flex'; // Now show the image container (for spinner)
+                modalImageSpinner.style.display = 'block';  // Show image spinner
+
+                // 3. Fetch and Display Image (AFTER text is displayed)
+                const imageUrl = createPollinationsImageUrl(title); // Pass the *original* title
+                 if (imageUrl) {
+                     modalImage.onload = () => {
+                         modalImageSpinner.style.display = 'none';
+                         modalImagePlaceholder.style.display = 'none';
+                         modalImage.style.display = 'block';
+                     };
+                     modalImage.onerror = () => {
+                         console.error("Error loading image for title:", title);
+                         modalImageSpinner.style.display = 'none';
+                         modalImagePlaceholder.style.display = 'block';
+                         modalImage.style.display = 'none';
+                     };
+                     modalImage.src = imageUrl;
+                 } else {
+                     console.error("Could not create image URL for title:", title);
+                     modalImageSpinner.style.display = 'none';
+                     modalImagePlaceholder.style.display = 'block';
+                 }
+
+            } catch (error) {
+                // Handle errors from fetchInterviewText
+                console.error("Failed to display interview:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Keep area visible for error
+                modalImageContainer.style.display = 'none'; // Hide image area on text error
+                modalContent.textContent = ''; // Clear content area if text failed
+            }
+        }
+
+         async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Generando...';
+
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Gets varied titles
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                      alert("No se pudieron generar nuevas ideas en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed to generate more titles:", error);
+                 alert(`Error al generar más ideas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // Reset button text without spinner icon initially hidden
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Sugerir Más Entrevistas';
+             }
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) {
+                 console.error("Initialization failed: Critical elements missing.");
+                 document.body.innerHTML = '<p style="padding: 2rem; text-align: center; color: red;">Error crítico al cargar la página. Faltan elementos esenciales.</p>';
+                 return;
+            }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => {
+                 if (event.target === storyModal) hideModal();
+            });
+            displayTitles(predefinedTitles);
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

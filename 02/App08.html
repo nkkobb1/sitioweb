@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title -->
+    <title>Creature Lab AI - Generador Aleatorio de Monstruos | Papitas Fritas</title>
+    <!-- Meta Description (IMPORTANTE para SEO - Añadir manualmente o con CMS): -->
+    <!-- <meta name="description" content="¡Desata tu imaginación! Genera criaturas únicas y monstruos aleatorios con inteligencia artificial en Creature Lab AI de PapitasFritas.com. Obtén inspiración visual instantánea para tus proyectos creativos."> -->
+
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-color: #0f0f28; /* Slightly deeper blue/purple */
+            --primary-neon: #ff1493; /* Deep pink */
+            --secondary-neon: #00f7ff; /* Cyan */
+            --accent-neon: #f7ff00; /* Electric Yellow */
+            --error-color: #ff4d4d;
+            --text-color: #e8e8ff; /* Slightly lavender white */
+            --border-color: rgba(0, 247, 255, 0.4);
+            --glow-primary: 0 0 6px var(--primary-neon), 0 0 12px var(--primary-neon), 0 0 18px rgba(255, 20, 147, 0.6);
+            --glow-secondary: 0 0 6px var(--secondary-neon), 0 0 12px var(--secondary-neon), 0 0 18px rgba(0, 247, 255, 0.6);
+            --glow-accent: 0 0 6px var(--accent-neon), 0 0 12px var(--accent-neon);
+            --glow-error: 0 0 5px var(--error-color), 0 0 10px var(--error-color);
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Exo 2', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            line-height: 1.6; padding: 2rem; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(255, 20, 147, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(0, 247, 255, 0.15) 0%, transparent 50%),
+                var(--bg-color);
+        }
+
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 700px; /* Focused on single image */
+            margin: 20px auto; padding: 2rem 2.5rem; background: rgba(15, 15, 40, 0.8);
+            border: 1px solid var(--border-color); border-radius: 15px; backdrop-filter: blur(5px);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 247, 255, 0.1);
+            text-align: center; /* Center content by default */
+        }
+
+        /* --- Header --- */
+        header { margin-bottom: 2.5rem; }
+        /* SEO H1 */
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.8rem; color: var(--primary-neon); text-shadow: var(--glow-primary);
+            margin-bottom: 0.5rem; letter-spacing: 1px; font-weight: 700;
+        }
+        /* SEO Subtitle */
+        .subtitle {
+            font-size: 1.3rem; color: var(--secondary-neon); text-shadow: 0 0 5px var(--secondary-neon);
+            font-weight: 400; max-width: 500px; margin: 0 auto 1rem auto;
+        }
+
+        /* --- Controls --- */
+        .controls { margin-bottom: 2rem; }
+        #generateBtn {
+            padding: 1rem 2.5rem; font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 700;
+            color: var(--bg-color); background: linear-gradient(45deg, var(--accent-neon), var(--secondary-neon));
+            border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 0 12px rgba(0, 247, 255, 0.6), 0 0 12px rgba(247, 255, 0, 0.6);
+        }
+        #generateBtn:hover:not(:disabled) {
+            box-shadow: var(--glow-secondary), var(--glow-accent);
+            transform: translateY(-3px) scale(1.03);
+        }
+        #generateBtn:active:not(:disabled) { transform: translateY(0) scale(1); }
+        #generateBtn:disabled {
+            opacity: 0.6; cursor: not-allowed; background: grey; box-shadow: none;
+        }
+
+        /* --- Results Area --- */
+        .results-area { margin-top: 2rem; }
+        #generatedPromptDisplay {
+            min-height: 2.5em; /* Reserve space */
+            font-size: 1.1em; font-style: italic; color: var(--accent-neon);
+            margin-bottom: 1.5rem; padding: 10px; background: rgba(0,0,0,0.2);
+            border-radius: 5px; border: 1px dashed rgba(247, 255, 0, 0.3);
+            word-wrap: break-word; /* Wrap long prompts */
+        }
+        #imageContainer {
+            position: relative; width: 100%; max-width: 512px; /* Match image size */
+            aspect-ratio: 1 / 1; background-color: rgba(255, 255, 255, 0.02);
+            border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color);
+            margin: 0 auto; /* Center the container */
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #resultImage {
+            display: block; width: 100%; height: 100%; object-fit: cover;
+            opacity: 0; transition: opacity 0.8s ease-in-out;
+        }
+        #resultImage.loaded { opacity: 1; }
+
+        /* --- Loading / Feedback / Error States --- */
+        .feedback-area { min-height: 30px; margin-top: 1.5rem; }
+        .loading-indicator, .error-message {
+            font-size: 1.1em; padding: 10px 15px; border-radius: 5px; display: inline-block;
+        }
+        .loading-indicator { color: var(--secondary-neon); text-shadow: var(--glow-secondary); animation: pulse 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); }
+
+        /* Spinner inside image container */
+        #imageContainer.loading::before {
+            content: ''; position: absolute; width: 50px; height: 50px;
+            border: 5px solid rgba(0, 247, 255, 0.3); border-top-color: var(--secondary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        /* Hide spinner when loaded or failed */
+        #imageContainer.loaded::before, #imageContainer.error::before { display: none; }
+
+        /* Style for failed image */
+        #imageContainer.error {
+            border-color: var(--error-color); box-shadow: var(--glow-error);
+            color: var(--error-color); font-size: 0.9em; padding: 15px;
+        }
+        #imageContainer.error .error-content { /* Container for error text */
+             max-width: 90%; /* Prevent text overflow */
+             word-wrap: break-word;
+        }
+        #imageContainer .retry-info {
+             display: block; /* Newline */
+             margin-top: 8px; font-size: 0.9em; color: var(--accent-neon);
+        }
+
+        /* --- Footer --- */
+        footer { margin-top: 3rem; text-align: center; font-size: 0.9em; color: rgba(232, 232, 255, 0.6); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--primary-neon); text-shadow: 0 0 5px var(--primary-neon); }
+
+        /* --- Animations --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- Responsive --- */
+         @media (max-width: 768px) {
+            .container { padding: 1.5rem; max-width: 95%; }
+            h1 { font-size: 2.2rem; }
+            .subtitle { font-size: 1.1rem; }
+            #generateBtn { font-size: 1.1rem; padding: 0.8rem 2rem; }
+         }
+         @media (max-width: 480px) {
+             body { padding: 1rem; }
+             .container { padding: 1rem 1.5rem; }
+             h1 { font-size: 1.9rem; }
+            .subtitle { font-size: 1rem; }
+            #generateBtn { font-size: 1rem; padding: 0.7rem 1.5rem; }
+            #generatedPromptDisplay { font-size: 1em; }
+            #imageContainer.error { font-size: 0.85em; padding: 10px; }
+         }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <!-- SEO H1 -->
+            <h1>Creature Lab AI</h1>
+            <!-- SEO Subtitle -->
+            <p class="subtitle">Generador Aleatorio de Monstruos y Criaturas</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <button id="generateBtn">Generar Criatura</button>
+            </div>
+
+            <!-- Area for global feedback like 'Generating...' -->
+            <div id="feedback" class="feedback-area" aria-live="polite"></div>
+
+            <div class="results-area">
+                <div id="generatedPromptDisplay" aria-live="polite">Pulsa "Generar Criatura" para empezar...</div>
+                <div id="imageContainer">
+                    <!-- La imagen o el estado de error/carga aparecerán aquí -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        Herramienta por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | Imágenes generadas con <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const imageContainer = document.getElementById('imageContainer');
+        const feedbackDiv = document.getElementById('feedback');
+        const promptDisplay = document.getElementById('generatedPromptDisplay');
+
+        // --- Configuration ---
+        const IMAGE_WIDTH = 512;
+        const IMAGE_HEIGHT = 512;
+        const MAX_RETRIES = 2; // Max retries per image load attempt
+        const RETRY_DELAY_MS = 1500; // Delay before retrying
+        const IMAGE_LOAD_TIMEOUT_MS = 50000; // Timeout per image load attempt (50 seconds)
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+
+        // --- EXPANDED Data for Random Generation ---
+        const adjectives = [
+            // Original
+            "Ancient", "Glowing", "Mechanical", "Shadowy", "Crystalline", "Fungal", "Aquatic", "Volcanic",
+            "Spectral", "Cosmic", "Steampunk", "Mutated", "Bioluminescent", "Cybernetic", "Ethereal",
+            "Armored", "Clockwork", "Dreaming", "Glacial", "Infernal", "Symbiotic", "Gaseous", "Living-Metal",
+            "Radioactive", "Timeworn", "Plant-like", "Deep-Sea", "Star-Forged", "Obsidian", "Jungle",
+            // Added
+            "Whispering", "Corrupted", "Temporal", "Prismatic", "Gelatinous", "Skeletal", "Winged", "Invisible",
+            "Amalgamated", "Sentient", "Toxic", "Forgotten", "Runic", "Mirrored", "Magnetic", "Nocturnal",
+            "Solar-Powered", "Gravity-Defying", "Shifting", "Hulking", "Miniature", "Nomadic", "Cursed",
+            "Blessed", "Holographic", "Vaporous", "Molten", "Fractal", "Undead", "Abyssal", "Celestial",
+            "Dimensional", "Warped", "Sleeping", "Rusted", "Ornate", "Simplistic", "Camouflaged", "Hypnotic",
+            "Sound-Absorbing", "Light-Emitting", "Phase-Shifting", "Techno-Organic", "Arcane", "Swamp-Dwelling",
+            "Mountainous", "Feathered", "Scaled", "Silicon-Based", "Paper-Thin", "Origami", "Gem-Encrusted",
+            "Storm-Infused", "Void-Touched", "Echoing", "Luminous", "Petrified", "Joyful", "Melancholic",
+            "Enigmatic", "Parasitic"
+        ];
+        const creatureTypes = [
+            // Original
+            "Golem", "Drake", "Beast", "Entity", "Construct", "Horror", "Serpent", "Guardian", "Spirit",
+            "Aberration", "Swarm", "Leviathan", "Chimera", "Elemental", "Watcher", "Hunter", "Titan",
+            "Parasite", "Anomaly", "Creature", "Automaton", "Monstrosity", "Harbinger", "Shade", "Wurm",
+            "Flora-Colossus", "Nightmare", "Sprite", "Demon", "Angel",
+            // Added
+            "Basilisk", "Behemoth", "Centaur", "Cyclops", "Dryad", "Faun", "Gargoyle", "Ghoul", "Goblin",
+            "Gremlin", "Griffin", "Harpy", "Hydra", "Imp", "Kraken", "Lich", "Manticore", "Minotaur",
+            "Nymph", "Ogre", "Orc", "Phoenix", "Pixie", "Roc", "Satyr", "Siren", "Sphinx", "Sylph",
+            "Troll", "Unicorn", "Vampire", "Werewolf", "Wyvern", "Yokai", "Revenant", "Colossus", "Drider",
+            "Homunculus", "Incubus", "Succubus", "Kelpie", "Djinn", "Banshee", "Specter", "Poltergeist",
+            "Wendigo", "Yeti", "Arachnid", "Insectoid", "Reptilian", "Avian", "Mammaloid", "Plantoid",
+            "Fungoid", "Machine", "Amphibian", "Ooze", "Slime", "Primordial", "Vessel", "Idol", "Effigy",
+            "Mimic", "Collective", "Hivemind", "Deity", "Aspect", "Avatar", "Servitor"
+        ];
+        const settings = [
+            // Original
+            "in a neon jungle", "lurking in forgotten ruins", "floating in the void", "guarding a crystal cave",
+            "emerging from toxic mist", "in a cyberpunk cityscape", "on a desolate volcanic plain",
+            "beneath twin alien moons", "within a bioluminescent forest", "wandering a shattered dimension",
+            "patrolling a sky-citadel", "in the depths of an abyssal trench", "on an overgrown space station",
+            "within a storm of pure energy", "haunting ancient catacombs", "on a fungal-covered planet",
+            "inside a giant geode", "near a singularity", "in a clockwork dimension", "protecting a sacred grove",
+            "in an underwater volcano", "on a desert made of glass", "through fields of psychic energy",
+            "in a library of forgotten lore", "on the back of a colossal beast",
+            // Added
+            "inside a Dyson sphere", "on a world made of clouds", "within a collapsing star", "atop a metallic mountain",
+            "in a zero-gravity garden", "navigating an asteroid field", "in the heart of a nebula", "within a living labyrinth",
+            "on a beach of black sand", "in a petrified forest", "inside a derelict generation ship", "guarding a time portal",
+            "on the edge of reality", "within an Escher-like structure", "in a field of giant mushrooms", "amongst floating islands",
+            "in a mirrored dimension", "on a planet orbiting a black hole", "within a city carved from ice", "in a swamp of glowing ooze",
+            "during a perpetual twilight", "under a sky filled with auroras", "in a mechanical underworld", "within a simulated reality",
+            "on the shores of a lava ocean", "in a forest where trees whisper secrets", "inside a colossal, abandoned mech",
+            "during an electrical storm on a gas giant", "in a temple dedicated to entropy", "on a moon shattered into pieces",
+            "within a dimension of pure thought", "in a radioactive wasteland garden", "on a crystalline lattice structure in space",
+            "guarding the Well of Souls", "in a city built on the back of a giant turtle", "navigating a river of liquid light",
+            "inside a corrupted data stream", "on a tessellated plane", "within a forest of musical plants", "in a market of impossible items",
+            "during the convergence of realities", "in a memory palace", "on a battlefield of gods", "within a pocket dimension",
+            "near an ancient, sleeping machine", "in a sky filled with geometric shapes", "on a world with reversed gravity"
+        ];
+
+        // --- Helper Function ---
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // --- Prompt Generation ---
+        function generateRandomPrompt() {
+            const adj = getRandomElement(adjectives);
+            const type = getRandomElement(creatureTypes);
+            const setting = getRandomElement(settings);
+            // Combine them - add variations if needed (e.g., multiple adjectives)
+            // For now, keep it simple:
+            return `${adj} ${type} ${setting}`;
+        }
+
+        // --- Main Generation Logic ---
+        generateBtn.addEventListener('click', handleGeneration);
+
+        function handleGeneration() {
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generando...';
+            feedbackDiv.innerHTML = '<div class="loading-indicator">Contactando al laboratorio...</div>';
+            imageContainer.innerHTML = ''; // Clear previous image/error
+            imageContainer.classList.remove('error', 'loaded');
+            imageContainer.classList.add('loading');
+            imageContainer.dataset.retries = 0; // Reset retries for the container
+
+            const prompt = generateRandomPrompt();
+            promptDisplay.textContent = `Creando: "${prompt}"`; // Show the generated prompt
+
+            const seed = Math.floor(Math.random() * 1000000);
+            const encodedPrompt = encodeURIComponent(prompt);
+            const imageUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+            console.log(`Generando criatura con prompt: ${prompt}, Seed: ${seed}`);
+            // Initiate image loading with retry logic
+            loadImageWithRetry(imageContainer, imageUrl, prompt);
+        }
+
+        // --- Image Loading with Retry Logic ---
+        function loadImageWithRetry(container, imageUrl, prompt) {
+            let timeoutId;
+
+            // Create the image element for this attempt
+            const img = document.createElement('img');
+            img.id = 'resultImage'; // Assign ID for styling
+            img.alt = `Criatura generada por IA: ${prompt}`; // Alt text
+
+            // Prepare container (ensure loading state is visually correct)
+            container.innerHTML = ''; // Clear previous content (like error messages)
+            container.classList.add('loading');
+            container.classList.remove('error', 'loaded');
+            container.appendChild(img); // Add the new image element
+
+            img.onload = () => {
+                clearTimeout(timeoutId); // Clear the timeout
+                container.classList.remove('loading', 'error');
+                container.classList.add('loaded');
+                img.classList.add('loaded'); // For opacity transition
+                console.log(`Imagen cargada con éxito para: "${prompt}"`);
+                checkCompletion(true); // Mark as success
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId); // Clear the timeout
+                console.error(`Error cargando imagen final para "${prompt}": ${imageUrl}`);
+                handleImageLoadFailure(container, img, imageUrl, prompt, 'Error de carga');
+            };
+
+            // Set the src *after* attaching listeners
+            img.src = imageUrl;
+
+            // Set a timeout for this specific load attempt
+            timeoutId = setTimeout(() => {
+                if (container.classList.contains('loading')) { // Check if still loading
+                    console.warn(`Timeout de carga para "${prompt}": ${imageUrl}`);
+                    img.src = ''; // Stop trying to load the timed-out image
+                    handleImageLoadFailure(container, img, imageUrl, prompt, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        // --- Failure Handling ---
+        function handleImageLoadFailure(container, img, imageUrl, prompt, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                const attempt = currentRetries + 1;
+                console.log(`Reintentando carga para "${prompt}" (Intento: ${attempt}/${MAX_RETRIES})...`);
+
+                // Show retry indicator WITHIN the container
+                container.classList.remove('loading', 'loaded');
+                container.classList.add('error');
+                container.innerHTML = `
+                    <div class="error-content">
+                        ${reason} para: "${prompt}"
+                        <span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span>
+                    </div>`;
+
+                // Use setTimeout for delay before retry (with backoff)
+                setTimeout(() => {
+                    loadImageWithRetry(container, imageUrl, prompt); // Retry loading
+                }, RETRY_DELAY_MS * Math.pow(2, currentRetries)); // Optional exponential backoff
+
+            } else {
+                // Max retries reached, mark as permanent error
+                console.error(`Máximos reintentos alcanzados para "${prompt}". Desistiendo.`);
+                container.classList.remove('loading', 'loaded');
+                container.classList.add('error');
+                container.innerHTML = `
+                    <div class="error-content">
+                        Error final (${reason}) al generar: "${prompt}"
+                        <span class="retry-info">No se pudo cargar la imagen después de ${MAX_RETRIES} intentos.</span>
+                    </div>`;
+                checkCompletion(false); // Mark as failure
+            }
+        }
+
+        // --- Completion Check ---
+        function checkCompletion(success) {
+            feedbackDiv.innerHTML = ''; // Clear global loading message
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generar Otra Criatura';
+
+            if (!success) {
+                 // Optional: show global error message if needed, though error is in the container
+                 // feedbackDiv.innerHTML = '<div class="error-message">Falló la generación final.</div>';
+                 console.log("Generación final fallida.");
+            } else {
+                 console.log("Generación completada con éxito.");
+                 // Could add a success feedback message if desired
+                 // feedbackDiv.innerHTML = '<div class="success-message">¡Criatura Generada!</div>';
+            }
+        }
+
+         // Optional: Preconnect
+         document.addEventListener('DOMContentLoaded', () => {
+              const preconnectLink = document.createElement('link');
+              preconnectLink.rel = 'preconnect';
+              preconnectLink.href = 'https://image.pollinations.ai';
+              document.head.appendChild(preconnectLink);
+         });
+
+    </script>
+
+</body>
+</html>

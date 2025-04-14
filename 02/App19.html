@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO -->
+    <title>Narrative Character Forge - Generador Visual de Personajes IA | PapitasFritas.com</title>
+    <meta name="description" content="Crea visualizaciones únicas de personajes para tus historias con IA. Describe apariencia, rol, edad y personalidad en PapitasFritas.com y obtén inspiración visual instantánea.">
+
+    <style>
+        /* --- Base, Fonts & Variables --- */
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Lato:wght@300;400;700&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6; /* Light background */
+            --container-bg: #ffffff;
+            --primary-text: #2c3e50; /* Darker text for contrast */
+            --secondary-text: #596e79;
+            --accent-color: #4a90e2; /* A calm blue accent */
+            --accent-hover: #3a7ac0;
+            --error-color: #e74c3c;
+            --border-color: #dce4e1;
+            --shadow-color: rgba(44, 62, 80, 0.1);
+            --disabled-color: #bdc3c7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            line-height: 1.7;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- Layout & Main Container --- */
+        .forge-container {
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem 3rem;
+            width: 100%;
+            max-width: 1100px; /* Wider layout for side-by-side */
+            display: flex;
+            gap: 3rem; /* Space between form and results/history */
+            flex-wrap: wrap; /* Allow stacking on smaller screens */
+        }
+
+        .form-section {
+            flex: 1 1 400px; /* Takes up space, minimum 400px */
+        }
+
+        .results-history-section {
+            flex: 1 1 500px; /* Takes up slightly more space */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Typography & Header --- */
+        h1 {
+            font-family: 'Merriweather', serif;
+            color: var(--primary-text);
+            text-align: center;
+            margin-bottom: 0.5em;
+            font-size: 2.2rem;
+            font-weight: 700;
+            width: 100%; /* Span full width before flex layout */
+        }
+
+        .subtitle {
+            font-family: 'Lato', sans-serif;
+            color: var(--secondary-text);
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 300;
+            width: 100%;
+        }
+
+        h2 {
+            font-family: 'Merriweather', serif;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            font-weight: 400;
+        }
+
+        /* --- Form Elements --- */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 700;
+            color: var(--primary-text);
+            font-size: 0.95rem;
+        }
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Lato', sans-serif;
+            font-size: 1rem;
+            color: var(--primary-text);
+            background-color: #fdfdfd;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* --- Generate Button --- */
+        #generate-btn {
+            display: block; /* Center button */
+            width: 100%;
+            margin-top: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Lato', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.2);
+        }
+        #generate-btn:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
+        }
+        #generate-btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(74, 144, 226, 0.2);
+        }
+        #generate-btn:disabled {
+            background-color: var(--disabled-color);
+            cursor: wait;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* --- Results Area --- */
+        #results-area {
+            margin-bottom: 2rem; /* Space before history */
+            padding: 1.5rem;
+            background-color: #f8fafa;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            min-height: 300px; /* Ensure space even when empty */
+            display: flex; /* Use flex for centering content */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center; /* Center text feedback */
+        }
+        #image-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px; /* Max width for the image display */
+            aspect-ratio: 1 / 1;
+            background-color: var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 0 auto 1rem auto; /* Center horizontally */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #result-image {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+        }
+        #result-image.loaded { opacity: 1; }
+        #prompt-display {
+            font-size: 0.85rem;
+            color: var(--secondary-text);
+            margin-top: 1rem;
+            font-style: italic;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+
+        /* Loading/Error states for Image Container */
+        .image-loading-message, .image-error-message {
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+        .image-loading-message { color: var(--secondary-text); }
+        .image-error-message { color: var(--error-color); font-weight: bold; }
+        .image-container.loading::before { /* Spinner */
+            content: ''; position: absolute; width: 40px; height: 40px;
+            border: 4px solid rgba(74, 144, 226, 0.2); border-top-color: var(--accent-color);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        .image-container.error {
+            background-color: rgba(231, 76, 60, 0.05);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        .image-container.error::before { display: none; }
+        .retry-info { font-size: 0.8em; color: var(--accent-color); margin-top: 5px; }
+
+        /* Global Feedback Area (Optional, if needed) */
+        #feedback-area {
+            min-height: 25px; /* Reserve space */
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+        .error-global { color: var(--error-color); font-weight: bold; }
+        .loading-global { color: var(--accent-color); animation: pulse 1.5s infinite ease-in-out; }
+
+        /* --- History Section --- */
+        #history-area { max-height: 400px; overflow-y: auto; padding-right: 10px; /* For scrollbar */ }
+        .history-list { list-style: none; padding: 0; }
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--container-bg); /* Ensure it's opaque over potential body bg */
+            transition: background-color 0.2s ease;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-item:hover { background-color: #f8fafa; }
+        .history-thumbnail {
+            width: 60px; height: 60px;
+            border-radius: 4px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid var(--border-color);
+            cursor: pointer; /* Indicate clickability */
+        }
+        .history-details { flex-grow: 1; }
+        .history-prompt {
+            font-size: 0.85rem;
+            color: var(--secondary-text);
+            margin-bottom: 0.3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Limit to 2 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .history-actions button {
+            background: none; border: 1px solid var(--accent-color); color: var(--accent-color);
+            padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; transition: background-color 0.2s, color 0.2s;
+        }
+        .history-actions button:hover { background-color: var(--accent-color); color: white; }
+
+        /* --- Footer --- */
+        footer {
+            margin-top: 3rem; text-align: center; font-size: 0.9em;
+            color: var(--secondary-text); width: 100%;
+        }
+        footer a { color: var(--accent-color); text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+        /* --- Animations --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* --- Responsive --- */
+        @media (max-width: 992px) {
+            .forge-container { flex-direction: column; gap: 2rem; }
+            .form-section, .results-history-section { flex-basis: auto; /* Reset flex basis */ }
+            #results-area { min-height: 250px; }
+            #image-container { max-width: 350px; }
+             h1 { font-size: 2rem; }
+             h2 { font-size: 1.4rem; }
+        }
+        @media (max-width: 768px) {
+             body { padding: 1rem; }
+             .forge-container { padding: 1.5rem; }
+             h1 { font-size: 1.8rem; }
+             .subtitle { font-size: 1rem; }
+             #image-container { max-width: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Narrative Character Forge</h1>
+    <p class="subtitle">Genera inspiración visual para tus personajes con IA</p>
+
+    <div class="forge-container">
+
+        <section class="form-section">
+            <h2>Describe tu Personaje</h2>
+            <form id="character-form">
+                <div class="form-group">
+                    <label for="appearance">Apariencia y Vestimenta:</label>
+                    <textarea id="appearance" name="appearance" placeholder="Ej: Cabello plateado largo y trenzado, ojos verdes penetrantes, túnica de viajero desgastada, botas altas de cuero, lleva un amuleto de obsidiana..." rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="profession">Profesión o Rol Principal:</label>
+                    <input type="text" id="profession" name="profession" placeholder="Ej: Mago ermitaño, Detective cyberpunk, Panadera alegre, Caballero caído">
+                </div>
+
+                <div class="form-group">
+                    <label for="age">Grupo de Edad:</label>
+                    <select id="age" name="age">
+                        <option value="">(Opcional)</option>
+                        <option value="child">Niño/a</option>
+                        <option value="teenager">Adolescente</option>
+                        <option value="young adult">Adulto Joven</option>
+                        <option value="adult">Adulto</option>
+                        <option value="middle-aged">Edad Media</option>
+                        <option value="elderly">Anciano/a</option>
+                    </select>
+                </div>
+
+                 <div class="form-group">
+                    <label for="personality">Rasgo de Personalidad Clave:</label>
+                    <input type="text" id="personality" name="personality" placeholder="Ej: Valiente, Melancólico, Cínico, Optimista, Misterioso">
+                </div>
+
+                <div class="form-group">
+                    <label for="setting">Estilo/Género (Opcional):</label>
+                    <input type="text" id="setting" name="setting" placeholder="Ej: Fantasía épica, Ciencia ficción oscura, Steampunk, Realista moderno">
+                </div>
+
+                <button type="submit" id="generate-btn">Forjar Personaje</button>
+            </form>
+        </section>
+
+        <section class="results-history-section">
+            <!-- Area para la imagen generada -->
+            <h2>Resultado Visual</h2>
+            <div id="results-area">
+                 <div id="image-container">
+                    <!-- Mensajes de carga/error aparecerán aquí -->
+                 </div>
+                 <p id="prompt-display"></p>
+            </div>
+             <div id="feedback-area"></div> <!-- Global feedback -->
+
+            <!-- Area para el historial -->
+            <h2>Historial de Creaciones</h2>
+            <div id="history-area">
+                <ul id="history-list" class="history-list">
+                    <!-- Items de historial se añadirán aquí -->
+                    <li style="text-align: center; color: var(--secondary-text); padding: 1rem;">El historial aparecerá aquí.</li>
+                </ul>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        Herramienta por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | Imágenes generadas con <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- Element References ---
+        const characterForm = document.getElementById('character-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const resultsArea = document.getElementById('results-area');
+        const imageContainer = document.getElementById('image-container');
+        const resultImage = document.createElement('img'); // Create image element once
+              resultImage.id = 'result-image';
+              resultImage.alt = 'Personaje generado por IA'; // Default alt
+        const promptDisplay = document.getElementById('prompt-display');
+        const feedbackArea = document.getElementById('feedback-area');
+        const historyList = document.getElementById('history-list');
+
+        // --- Configuration ---
+        const IMAGE_WIDTH = 1024; // Higher Quality
+        const IMAGE_HEIGHT = 1024;
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500;
+        const IMAGE_LOAD_TIMEOUT_MS = 60000; // Increase timeout for potentially larger images
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const MAX_HISTORY = 10; // Max items in history
+
+        // --- State ---
+        let isLoading = false;
+        let lastGeneratedPrompt = null; // To track prompt changes for seed logic
+        let characterHistory = []; // Array to store { prompt, imageUrl, timestamp }
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+            renderHistory();
+            clearResultArea(); // Set initial state
+             // Preconnect for potential speedup
+             const preconnectLink = document.createElement('link'); preconnectLink.rel = 'preconnect'; preconnectLink.href = 'https://image.pollinations.ai'; document.head.appendChild(preconnectLink);
+        });
+
+        // --- Event Listeners ---
+        characterForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission
+            handleGeneration();
+        });
+
+        // --- Core Generation Logic ---
+        function handleGeneration() {
+            if (isLoading) return;
+
+            const inputs = gatherInputs();
+            if (!inputs.appearance) {
+                showFeedback('error', 'Por favor, describe la apariencia del personaje.');
+                return;
+            }
+
+            const currentPrompt = constructPrompt(inputs);
+            let seed = Math.floor(Math.random() * 1000000);
+
+            // Re-generation logic: If prompt is the same as last time, force a new seed.
+            if (currentPrompt === lastGeneratedPrompt) {
+                console.log("Prompt sin cambios, generando nueva seed.");
+                 // Seed already randomized above, this log is just for clarity
+            } else {
+                console.log("Nuevo prompt o primera generación.");
+                 // Use the already generated random seed
+            }
+
+            lastGeneratedPrompt = currentPrompt; // Store the *current* prompt
+
+            const encodedPrompt = encodeURIComponent(currentPrompt);
+            const requestUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+            setLoadingState(true, "Forjando personaje...");
+            promptDisplay.textContent = `Prompt: ${currentPrompt}`; // Show prompt being used
+            promptDisplay.style.display = 'block';
+
+            console.log(`Solicitando imagen para: "${currentPrompt}" con Seed: ${seed}`);
+
+             // --- Fetch the image URL (simpler fetch) ---
+             fetch(requestUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP ${response.status}`);
+                    }
+                    // Pollinations redirects, response.url is the final image URL
+                    console.log(`Recibida URL final: ${response.url}`);
+                    return response.url;
+                })
+                .then(finalImageUrl => {
+                    // --- Start Image Loading with Retry Logic ---
+                    loadImageWithRetry(finalImageUrl, currentPrompt);
+                })
+                .catch(error => {
+                    console.error("Fetch inicial fallido:", error);
+                    showImageError(`Error de API: ${error.message}`);
+                    setLoadingState(false); // Ensure loading state stops on initial fetch error
+                });
+        }
+
+        // --- Input & Prompt ---
+        function gatherInputs() {
+            return {
+                appearance: document.getElementById('appearance').value.trim(),
+                profession: document.getElementById('profession').value.trim(),
+                age: document.getElementById('age').value,
+                personality: document.getElementById('personality').value.trim(),
+                setting: document.getElementById('setting').value.trim(),
+            };
+        }
+
+        function constructPrompt(inputs) {
+            let prompt = inputs.appearance; // Start with the core description
+            if (inputs.profession) prompt += `, ${inputs.profession}`;
+            if (inputs.age) prompt += `, ${mapAgeToTerm(inputs.age)}`; // Use descriptive terms
+            if (inputs.personality) prompt += `, ${inputs.personality}`;
+            if (inputs.setting) prompt += `, (${inputs.setting} style)`; // Add style context
+            // Maybe add some quality tags by default
+            prompt += ", detailed portrait, high quality, character concept art";
+            return prompt.replace(/, ,/g, ','); // Clean up potential double commas
+        }
+
+        function mapAgeToTerm(ageValue) {
+            const map = {
+                'child': 'child', 'teenager': 'teenager', 'young adult': 'young adult',
+                'adult': 'adult', 'middle-aged': 'middle-aged', 'elderly': 'elderly'
+            };
+            return map[ageValue] || '';
+        }
+
+        // --- Image Loading & Retry Logic (Adapted from App04.html) ---
+        function loadImageWithRetry(imageUrl, promptForHistory) {
+            let timeoutId;
+            imageContainer.innerHTML = ''; // Clear previous content (error/placeholder)
+            imageContainer.classList.add('loading');
+            imageContainer.classList.remove('error');
+            resultImage.src = ''; // Clear previous image src
+            resultImage.classList.remove('loaded');
+            resultImage.alt = `Personaje generado por IA: ${promptForHistory.substring(0, 100)}...`; // Update alt text
+
+            const currentRetries = parseInt(imageContainer.dataset.retries || 0);
+            if (currentRetries > 0) {
+                 showImageLoading(`Reintentando carga (${currentRetries}/${MAX_RETRIES})...`);
+            } else {
+                 showImageLoading("Cargando imagen...");
+            }
+
+
+            resultImage.onload = () => {
+                clearTimeout(timeoutId);
+                imageContainer.classList.remove('loading', 'error');
+                imageContainer.innerHTML = ''; // Clear loading message
+                imageContainer.appendChild(resultImage); // Add the image element
+                resultImage.classList.add('loaded');
+                setLoadingState(false);
+                console.log("Imagen cargada con éxito.");
+                addHistoryItem(promptForHistory, imageUrl); // Add to history on success
+            };
+
+            resultImage.onerror = () => {
+                clearTimeout(timeoutId);
+                console.error(`Error cargando imagen final: ${imageUrl}`);
+                handleImageLoadFailure(imageUrl, promptForHistory, 'Error de carga');
+            };
+
+            // Set the src *after* attaching listeners
+            resultImage.src = imageUrl;
+
+            timeoutId = setTimeout(() => {
+                if (imageContainer.classList.contains('loading')) {
+                    console.warn(`Timeout de carga para: ${imageUrl}`);
+                    resultImage.src = ''; // Stop trying to load
+                    handleImageLoadFailure(imageUrl, promptForHistory, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageLoadFailure(imageUrl, promptForHistory, reason) {
+            const currentRetries = parseInt(imageContainer.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                const attempt = currentRetries + 1;
+                imageContainer.dataset.retries = attempt;
+                console.log(`Reintentando carga (Intento: ${attempt}/${MAX_RETRIES})...`);
+
+                // Show retry indicator WITHIN the container
+                imageContainer.classList.remove('loading'); // Remove spinner for message
+                imageContainer.classList.add('error'); // Indicate issue
+                showImageError(`${reason}. <span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span>`);
+
+                setTimeout(() => {
+                    loadImageWithRetry(imageUrl, promptForHistory); // Retry loading
+                }, RETRY_DELAY_MS * Math.pow(2, currentRetries)); // Optional: Exponential backoff
+
+            } else {
+                console.error("Máximos reintentos alcanzados. Desistiendo.");
+                imageContainer.classList.remove('loading');
+                imageContainer.classList.add('error');
+                showImageError(`Error final: ${reason}. No se pudo cargar la imagen.`);
+                setLoadingState(false); // Ensure loading stops
+            }
+        }
+
+        // --- UI Updates ---
+        function setLoadingState(loading, message = null) {
+            isLoading = loading;
+            generateBtn.disabled = loading;
+            generateBtn.textContent = loading ? 'Forjando...' : 'Forjar Personaje';
+
+            feedbackArea.innerHTML = ''; // Clear previous global feedback
+            if (loading && message) {
+                feedbackArea.className = 'loading-global';
+                feedbackArea.textContent = message;
+            } else if (!loading) {
+                 feedbackArea.className = '';
+                 feedbackArea.textContent = ''; // Clear on success/final error
+            }
+
+            // Don't clear the image area immediately on loading, wait for fetch result
+            if (!loading) {
+                // Reset retries count for the container for the next generation
+                 imageContainer.dataset.retries = 0;
+            }
+        }
+
+        function showFeedback(type, message) {
+            feedbackArea.innerHTML = ''; // Clear previous
+            feedbackArea.className = type === 'error' ? 'error-global' : ''; // Only use global for errors for now
+            feedbackArea.textContent = message;
+        }
+
+         function showImageLoading(message) {
+             imageContainer.innerHTML = `<div class="image-loading-message">${message}</div>`;
+             imageContainer.classList.add('loading');
+             imageContainer.classList.remove('error');
+         }
+
+        function showImageError(message) {
+            imageContainer.innerHTML = `<div class="image-error-message">${message}</div>`;
+            imageContainer.classList.remove('loading');
+            imageContainer.classList.add('error');
+            promptDisplay.style.display = 'block'; // Keep prompt visible even on error
+        }
+
+        function clearResultArea() {
+             imageContainer.innerHTML = '<div style="color: var(--secondary-text); font-size: 0.9rem;">La imagen generada aparecerá aquí.</div>'; // Placeholder text
+             imageContainer.classList.remove('loading', 'error');
+             resultImage.src = '';
+             resultImage.classList.remove('loaded');
+             promptDisplay.style.display = 'none'; // Hide prompt area initially
+             feedbackArea.innerHTML = ''; // Clear global feedback too
+             imageContainer.dataset.retries = 0; // Reset retries
+        }
+
+
+        // --- History Logic ---
+        function addHistoryItem(prompt, imageUrl) {
+            const timestamp = Date.now();
+            const newItem = { prompt, imageUrl, timestamp };
+
+            // Add to the beginning and limit size
+            characterHistory.unshift(newItem);
+            if (characterHistory.length > MAX_HISTORY) {
+                characterHistory.pop();
+            }
+
+            saveHistory();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = ''; // Clear current list
+
+            if (characterHistory.length === 0) {
+                historyList.innerHTML = '<li style="text-align: center; color: var(--secondary-text); padding: 1rem;">El historial está vacío.</li>';
+                return;
+            }
+
+            characterHistory.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+
+                const img = document.createElement('img');
+                img.src = item.imageUrl;
+                img.alt = `Historial: ${item.prompt.substring(0, 50)}...`;
+                img.className = 'history-thumbnail';
+                img.title = "Clic para ver prompt completo"; // Tooltip
+                img.addEventListener('click', () => alert(`Prompt Completo:\n\n${item.prompt}`)); // Simple alert for now
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'history-details';
+
+                const promptP = document.createElement('p');
+                promptP.className = 'history-prompt';
+                promptP.textContent = item.prompt;
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'history-actions';
+                /* // Optional: Add a re-generate button later
+                 const regenButton = document.createElement('button');
+                 regenButton.textContent = 'Re-generar';
+                 regenButton.addEventListener('click', () => {
+                     // Logic to re-populate form or directly regenerate with new seed
+                     console.log("Regenerar:", item.prompt);
+                 });
+                 actionsDiv.appendChild(regenButton);
+                */
+                const removeButton = document.createElement('button');
+                 removeButton.textContent = 'Quitar';
+                 removeButton.title = "Quitar del historial"
+                 removeButton.addEventListener('click', (e) => {
+                     e.stopPropagation(); // Prevent li hover effects if needed
+                     removeHistoryItem(index);
+                 });
+                 actionsDiv.appendChild(removeButton);
+
+
+                detailsDiv.appendChild(promptP);
+                detailsDiv.appendChild(actionsDiv);
+
+                li.appendChild(img);
+                li.appendChild(detailsDiv);
+
+                historyList.appendChild(li);
+            });
+        }
+
+         function removeHistoryItem(index) {
+             if (index >= 0 && index < characterHistory.length) {
+                 characterHistory.splice(index, 1);
+                 saveHistory();
+                 renderHistory();
+             }
+         }
+
+
+        function saveHistory() {
+            try {
+                localStorage.setItem('characterForgeHistory', JSON.stringify(characterHistory));
+            } catch (e) {
+                console.warn("No se pudo guardar el historial en localStorage:", e);
+            }
+        }
+
+        function loadHistory() {
+            try {
+                const savedHistory = localStorage.getItem('characterForgeHistory');
+                if (savedHistory) {
+                    characterHistory = JSON.parse(savedHistory);
+                } else {
+                    characterHistory = [];
+                }
+            } catch (e) {
+                console.error("Error al cargar el historial desde localStorage:", e);
+                characterHistory = [];
+            }
+        }
+
+
+    </script>
+
+</body>
+</html>

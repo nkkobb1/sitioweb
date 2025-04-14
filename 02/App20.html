@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO -->
+    <title>AI Story Weaver - Creador de Cuentos Infantiles con IA | PapitasFritas.com</title>
+    <meta name="description" content="¡Crea historias infantiles mágicas y personalizadas con ilustraciones únicas! Introduce tu idea y deja que nuestra IA teja un cuento corto ilustrado. Perfecto para niños y padres en PapitasFritas.com.">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-gradient-start: #1a1c2c; --bg-gradient-end: #0d0e1a; --primary-glow: #ff69b4; /* Hot pink */
+            --secondary-glow: #00f0ff; /* Cyan */ --accent-color: #f0e68c; /* Khaki/Gold */
+            --text-color: #e8e8e8; --text-dark: #222; --error-color: #ff4d4d;
+            --glow-primary-soft: 0 0 8px rgba(255, 105, 180, 0.6), 0 0 15px rgba(255, 105, 180, 0.4);
+            --glow-secondary-soft: 0 0 8px rgba(0, 240, 255, 0.6), 0 0 15px rgba(0, 240, 255, 0.4);
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.2);
+            --font-heading: 'Chewy', cursive; --font-body: 'Poppins', sans-serif;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body); background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end)); color: var(--text-color);
+            line-height: 1.7; padding: 25px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+        }
+        /* --- Main Container --- */
+        .container {
+            width: 100%; max-width: 900px; margin: 20px auto; padding: 30px 40px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 15px; backdrop-filter: blur(8px); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+        }
+        /* --- Header --- */
+        header { margin-bottom: 30px; }
+        h1 {
+            font-family: var(--font-heading); font-size: clamp(2.5rem, 6vw, 3.5rem); /* Responsive font size */
+            color: var(--primary-glow); text-shadow: var(--glow-primary-soft); margin-bottom: 10px; letter-spacing: 1px;
+        }
+        .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.2rem); color: var(--secondary-glow); text-shadow: 0 0 5px var(--secondary-glow);
+            font-weight: 300; max-width: 600px; margin: 0 auto 25px auto;
+        }
+        /* --- Controls --- */
+        .controls { margin-bottom: 30px; }
+        .controls label { display: block; font-weight: 600; color: var(--secondary-glow); margin-bottom: 10px; font-size: 1.1rem; }
+        #promptInput {
+            width: 100%; background-color: rgba(0, 0, 0, 0.3); border: 1px solid var(--secondary-glow);
+            border-radius: 8px; padding: 12px 15px; color: var(--text-color); font-family: var(--font-body);
+            font-size: 1rem; min-height: 60px; resize: vertical; transition: all 0.3s ease; margin-bottom: 15px;
+        }
+        #promptInput:focus { outline: none; border-color: var(--primary-glow); box-shadow: 0 0 10px rgba(255, 105, 180, 0.5); }
+        #generateBtn {
+            font-family: var(--font-heading); font-size: 1.3rem; padding: 10px 30px; border-radius: 50px; /* Rounded button */
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow)); color: var(--text-dark);
+            border: none; cursor: pointer; transition: all 0.3s ease; font-weight: 400; letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), var(--glow-primary-soft);
+        }
+        #generateBtn:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5), var(--glow-primary-soft), var(--glow-secondary-soft); }
+        #generateBtn:active:not(:disabled) { transform: translateY(0) scale(1); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); }
+        #generateBtn:disabled { background: #555; color: #999; cursor: wait; opacity: 0.7; box-shadow: none; }
+        /* --- Feedback Area --- */
+        #feedback { min-height: 25px; margin-top: 15px; font-weight: 400; }
+        .loading-text { color: var(--accent-color); animation: pulse 1.5s infinite ease-in-out; }
+        .error-text { color: var(--error-color); background-color: rgba(255, 77, 77, 0.1); padding: 5px 10px; border-radius: 5px; display: inline-block; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        /* --- Story Output --- */
+        .story-output {
+            display: grid; grid-template-columns: 1fr; /* Default to single column */
+            gap: 25px; margin-top: 30px; background: rgba(0,0,0, 0.15); padding: 20px; border-radius: 10px;
+             border: 1px solid rgba(0, 240, 255, 0.1);
+             text-align: left; /* Align text left */
+             opacity: 0; transition: opacity 0.5s ease-in-out; /* Fade in */
+             min-height: 150px; /* Ensure it has some height even when empty */
+        }
+         .story-output.visible {
+             opacity: 1;
+         }
+        /* On wider screens, use two columns */
+        @media (min-width: 768px) {
+            .story-output { grid-template-columns: 1fr 1fr; }
+            #storyTextContainer { grid-column: 1 / 2; padding: 10px; /* Add padding around text box */ }
+            #imageDisplay { grid-column: 2 / 3; }
+        }
+        @media (max-width: 767px) { /* Stack on mobile */
+             #storyTextContainer { padding: 0; /* Remove extra padding on mobile */ }
+        }
+
+        #storyTextContainer h2 {
+             font-family: var(--font-heading); color: var(--accent-color); margin-bottom: 15px; font-size: 1.6rem;
+             text-align: center; /* Center the "Tu Cuento Mágico" title */
+        }
+        /* --- Enhanced Story Text Styling --- */
+        #storyText {
+             background: rgba(10, 10, 30, 0.65); /* Slightly more opaque background */
+             padding: 20px 25px; /* More padding */
+             border-radius: 8px;
+             font-size: 1.1rem; /* Slightly larger font */
+             line-height: 1.9; /* Increased line height for paragraph separation */
+             white-space: pre-wrap; /* CRUCIAL: Respects line breaks from API */
+             min-height: 150px; /* Increased min-height */
+             text-align: justify; /* Justify text like a book */
+             hyphens: auto; /* Allow hyphenation for better justification */
+             border: 1px solid rgba(0, 240, 255, 0.15); /* Subtle border */
+             box-shadow: inset 0 0 10px rgba(0,0,0, 0.3); /* Soft inner shadow */
+             color: var(--text-color); /* Ensure text color is set */
+        }
+        #imageDisplay { display: flex; flex-direction: column; align-items: center; }
+         #imageDisplay h2 {
+             font-family: var(--font-heading); color: var(--accent-color); margin-bottom: 15px; font-size: 1.6rem;
+             text-align: center;
+         }
+        #imageContainer {
+            width: 100%; max-width: 400px; /* Limit image max width */
+             aspect-ratio: 1 / 1; background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; overflow: hidden; border: 1px solid rgba(0, 240, 255, 0.2);
+            display: flex; justify-content: center; align-items: center; position: relative;
+            box-shadow: var(--shadow-light); margin: 0 auto; /* Center container */
+        }
+        #storyImage { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        #storyImage.loaded { opacity: 1; }
+        /* Loading/Error state inside image container */
+        .image-status { position: absolute; text-align: center; padding: 10px; z-index: 1; /* Ensure it's above the img */ }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid rgba(0, 240, 255, 0.3); border-top-color: var(--secondary-glow);
+            border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 5px auto; /* Center spinner */
+        }
+        .error-icon { font-size: 2rem; color: var(--error-color); margin-bottom: 5px; } /* Simple X or similar */
+        .status-text { font-size: 0.9rem; color: var(--text-color); background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 3px; }
+        .error-text-container { color: var(--error-color); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- History Section --- */
+        .history-section { margin-top: 40px; width: 100%; }
+        .history-section h2 {
+            font-family: var(--font-heading); color: var(--accent-color); margin-bottom: 15px; font-size: 1.6rem; border-bottom: 1px solid rgba(240, 230, 140, 0.3); padding-bottom: 5px;
+        }
+        #historyList { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; background: rgba(0,0,0, 0.1); border-radius: 5px; padding: 10px; }
+        #historyList li {
+            background: rgba(255, 255, 255, 0.08); margin-bottom: 8px; padding: 8px 12px; border-radius: 5px;
+            cursor: pointer; transition: background-color 0.3s, color 0.3s; font-size: 0.95rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            border-left: 3px solid var(--secondary-glow);
+        }
+        #historyList li:hover { background-color: rgba(0, 240, 255, 0.2); color: var(--secondary-glow); }
+        #historyList li:empty { display: none; } /* Hide empty items if localStorage fails */
+         #historyList li.no-history { font-style: italic; cursor: default; border-left: none; background: none; }
+
+
+        /* --- Footer --- */
+        footer { margin-top: 40px; font-size: 0.9em; color: rgba(224, 224, 224, 0.6); }
+        footer a { color: var(--secondary-glow); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--primary-glow); text-shadow: var(--glow-primary-soft); }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 767px) {
+            .container { padding: 20px; }
+            #storyTextContainer, #imageDisplay { grid-column: 1 / -1; } /* Stack on mobile */
+            #imageContainer { max-width: 100%; } /* Allow image to take full width */
+        }
+        @media (max-width: 480px) {
+            body { padding: 15px; }
+            .container { padding: 15px; }
+            h1 { font-size: 2rem; }
+            .subtitle { font-size: 0.9rem; }
+            #generateBtn { font-size: 1.1rem; padding: 8px 25px; }
+            #storyText { font-size: 1rem; padding: 15px 20px; line-height: 1.8; } /* Adjust for smaller screens */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI Story Weaver</h1>
+            <p class="subtitle">¡Crea cuentos mágicos con texto e imágenes generados por IA!</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <label for="promptInput">Escribe tu idea para un cuento:</label>
+                <textarea id="promptInput" placeholder="Ej: Un conejo inventor que construye una máquina del tiempo..." rows="3"></textarea>
+                <button id="generateBtn">Tejer Historia</button>
+            </div>
+
+            <div id="feedback" aria-live="polite"></div>
+
+            <div class="story-output" id="storyOutput">
+                <div id="storyTextContainer" style="display: none;"> <!-- Hide initially -->
+                     <h2>Tu Cuento Mágico</h2>
+                     <div id="storyText"></div>
+                </div>
+                <div id="imageDisplay" style="display: none;"> <!-- Hide initially -->
+                    <h2>Ilustración</h2>
+                    <div id="imageContainer">
+                        <img id="storyImage" src="" alt="Ilustración generada por IA para la historia">
+                        <!-- Status indicators will be injected here by JS -->
+                    </div>
+                 </div>
+            </div>
+
+             <div class="history-section">
+                <h2>Historias Anteriores</h2>
+                <ul id="historyList">
+                    <!-- History items will be loaded here -->
+                 </ul>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | For <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const feedbackDiv = document.getElementById('feedback');
+        const storyOutput = document.getElementById('storyOutput');
+        const storyTextContainer = document.getElementById('storyTextContainer');
+        const storyTextDiv = document.getElementById('storyText');
+        const imageDisplay = document.getElementById('imageDisplay');
+        const imageContainer = document.getElementById('imageContainer');
+        const storyImage = document.getElementById('storyImage');
+        const historyList = document.getElementById('historyList');
+
+        // --- Configuration ---
+        const TEXT_API_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 1024; // High quality
+        const IMAGE_HEIGHT = 1024;
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500;
+        const IMAGE_LOAD_TIMEOUT_MS = 60000; // Increased timeout for potentially larger images
+        const HISTORY_KEY = 'aiStoryWeaverHistory_papitasfritas';
+        const MAX_HISTORY = 10; // Max number of history items
+
+        // --- State ---
+        let storyHistory = [];
+        let currentImageUrl = null; // To track the image being loaded
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', () => handleGeneration());
+        historyList.addEventListener('click', handleHistoryClick); // Uses the MODIFIED function below
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
+        // --- Core Generation Logic ---
+        async function handleGeneration(promptOverride = null) {
+            const userPrompt = promptOverride || promptInput.value.trim();
+            if (!userPrompt) {
+                showFeedback('error', '¡Necesitamos una idea para empezar el cuento!');
+                return;
+            }
+
+            // --- UI Reset and Loading State ---
+            clearPreviousResults();
+            showFeedback('loading', 'Tejiendo tu historia mágica...');
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Creando...';
+            storyOutput.classList.remove('visible');
+            storyTextContainer.style.display = 'none';
+            imageDisplay.style.display = 'none';
+
+
+            try {
+                // --- 1. Generate Story Text ---
+                showFeedback('loading', 'Escribiendo el cuento...');
+                const generatedStory = await generateStoryText(userPrompt);
+                storyTextDiv.textContent = generatedStory; // Use textContent for security
+                storyTextContainer.style.display = 'block'; // Show text container
+                storyOutput.classList.add('visible'); // Make output area visible
+
+                // --- 2. Generate Image ---
+                showFeedback('loading', 'Creando la ilustración...');
+                imageDisplay.style.display = 'flex'; // Show image container section
+                updateImageContainerStatus('loading'); // Show spinner
+
+                // Construct a prompt for the image based on the user's idea
+                const imagePrompt = `${userPrompt}, colorful children's book illustration, magical, vibrant, detailed`;
+                const finalImageUrl = await generateStoryImageUrl(imagePrompt);
+                currentImageUrl = finalImageUrl; // Track the URL we intend to load
+
+                // --- 3. Load Image with Retry ---
+                await loadImageWithRetry(finalImageUrl, imagePrompt);
+
+                // --- 4. Success: Add to History ---
+                // Make sure we save the *final* URL that loaded successfully
+                addToHistory(userPrompt, generatedStory, currentImageUrl);
+                showFeedback('', ''); // Clear feedback on success
+
+            } catch (error) {
+                console.error("Error during generation:", error);
+                showFeedback('error', `¡Oh no! Algo salió mal: ${error.message}`);
+                // If image failed but text succeeded, the text will remain visible.
+                if (error.message.toLowerCase().includes('imagen') || error.message.toLowerCase().includes('image')) {
+                    updateImageContainerStatus('error', 'No se pudo cargar la imagen.');
+                     // Add to history even if image failed, but without an imageUrl
+                     const currentStory = storyTextDiv.textContent; // Get the story that was generated
+                     if (currentStory) {
+                         addToHistory(userPrompt, currentStory, null); // Save with null image URL
+                     }
+                } else {
+                    // General error, hide potentially incomplete output
+                     clearPreviousResults();
+                }
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Tejer Historia';
+            }
+        }
+
+        // --- API Call: Text Generation ---
+        async function generateStoryText(userPrompt) {
+            const instruction = "IMPORTANT: Write a short children's story based ONLY on the following idea. Respond ONLY with the story text itself. Do NOT include any introduction, conclusion, comments, or conversational text before or after the story.";
+            const fullPrompt = `${instruction}\n\nStory Idea: "${userPrompt}"`; // Clear separation for the AI
+            const url = `${TEXT_API_URL}${encodeURIComponent(fullPrompt)}`;
+            console.log("Requesting Text with instruction:", url);
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                     let errorBody = `Error ${response.status}`;
+                     try { errorBody = await response.text(); } catch (e) { /* ignore */ }
+                     throw new Error(`API de texto falló: ${errorBody}`);
+                }
+                const text = await response.text();
+                console.log("Received Text:", text);
+                return text.trim();
+            } catch (error) {
+                console.error("Text API fetch error:", error);
+                throw new Error(`No se pudo generar el texto (${error.message})`);
+            }
+        }
+
+
+        // --- API Call: Get Image URL ---
+        async function generateStoryImageUrl(prompt) {
+            const seed = Math.floor(Math.random() * 1000000);
+            const url = `${IMAGE_API_URL}${encodeURIComponent(prompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true&style=cinematic`;
+            console.log("Requesting Image URL:", url);
+             try {
+                 const response = await fetch(url);
+                 if (!response.ok) {
+                     throw new Error(`Error ${response.status} al obtener la URL de la imagen.`);
+                 }
+                 console.log("Received Final Image URL:", response.url);
+                 return response.url;
+             } catch (error) {
+                 console.error("Image API fetch error:", error);
+                 throw new Error('No se pudo obtener la URL de la imagen.');
+             }
+        }
+
+        // --- Image Loading with Retries ---
+        function loadImageWithRetry(imageUrl, altText) {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+
+                function attemptLoad() {
+                    if (imageUrl !== currentImageUrl) {
+                        console.log("Image URL changed during load attempt, cancelling old load.");
+                        reject(new Error("Generación cancelada por nueva solicitud."));
+                        return;
+                    }
+
+                    let timeoutId;
+                    storyImage.src = ''; // Clear previous src
+                    storyImage.alt = altText;
+                    storyImage.classList.remove('loaded');
+
+                    updateImageContainerStatus('loading', `Cargando... Intento ${attempts + 1}`);
+
+                    storyImage.onload = () => {
+                        clearTimeout(timeoutId);
+                        if (imageUrl === currentImageUrl) { // Final check
+                             console.log("Image loaded successfully:", imageUrl);
+                            storyImage.classList.add('loaded');
+                             updateImageContainerStatus('loaded');
+                            resolve();
+                        } else {
+                             console.log("Image loaded, but it's for a previous request. Ignoring.");
+                         }
+                    };
+
+                    storyImage.onerror = () => {
+                        clearTimeout(timeoutId);
+                         if (imageUrl !== currentImageUrl) {
+                            console.log("Image error, but it's for a previous request. Ignoring.");
+                            return;
+                        }
+                        console.error(`Error loading image (Attempt ${attempts + 1}): ${imageUrl}`);
+                        handleFailure('Error de carga');
+                    };
+
+                    // Set src *after* listeners are attached
+                    storyImage.src = imageUrl;
+
+                    // Timeout for this attempt
+                    timeoutId = setTimeout(() => {
+                         if (imageUrl !== currentImageUrl) {
+                             console.log("Image timeout, but it's for a previous request. Ignoring.");
+                            return;
+                        }
+                        if (!storyImage.complete || storyImage.naturalWidth === 0 || storyImage.naturalHeight === 0) {
+                            console.warn(`Image load timeout or invalid image (Attempt ${attempts + 1}): ${imageUrl}`);
+                            storyImage.src = ''; // Stop loading
+                            handleFailure('Timeout o imagen inválida');
+                        } else {
+                             console.log("Timeout fired but image seems loaded, ignoring timeout.");
+                         }
+                    }, IMAGE_LOAD_TIMEOUT_MS);
+                } // end attemptLoad
+
+                function handleFailure(reason) {
+                    attempts++;
+                    if (attempts <= MAX_RETRIES) {
+                        console.log(`Retrying image load in ${RETRY_DELAY_MS / 1000}s...`);
+                         updateImageContainerStatus('retrying', `${reason}. Reintentando ${attempts}/${MAX_RETRIES}...`);
+                        setTimeout(attemptLoad, RETRY_DELAY_MS);
+                    } else {
+                        console.error(`Max retries reached for image: ${imageUrl}`);
+                         updateImageContainerStatus('error', `Error final: ${reason}`);
+                        reject(new Error('No se pudo cargar la imagen después de varios intentos.'));
+                    }
+                }
+
+                attemptLoad(); // Start the first attempt
+            });
+        }
+
+         // --- UI Update Functions ---
+         function updateImageContainerStatus(status, message = '') {
+            if (!imageContainer.contains(storyImage)) {
+                 imageContainer.appendChild(storyImage);
+            }
+             const existingStatus = imageContainer.querySelector('.image-status');
+             if (existingStatus) {
+                 existingStatus.remove();
+             }
+            let statusDiv = document.createElement('div');
+            statusDiv.className = 'image-status';
+            switch (status) {
+                case 'loading':
+                     statusDiv.innerHTML = `<div class="spinner"></div><div class="status-text">${message || 'Cargando ilustración...'}</div>`;
+                     imageContainer.appendChild(statusDiv);
+                     storyImage.style.opacity = '0';
+                     break;
+                case 'retrying':
+                     statusDiv.innerHTML = `<div class="spinner"></div><div class="status-text">${message}</div>`;
+                     imageContainer.appendChild(statusDiv);
+                     storyImage.style.opacity = '0';
+                    break;
+                case 'error':
+                     statusDiv.innerHTML = `<div class="error-icon">⚠️</div><div class="status-text error-text-container">${message || 'Error al cargar'}</div>`;
+                     imageContainer.appendChild(statusDiv);
+                     storyImage.style.opacity = '0';
+                     break;
+                 case 'loaded':
+                     storyImage.style.opacity = '1';
+                    break;
+                 case 'idle':
+                 default:
+                    storyImage.style.opacity = '0';
+                    if (!imageContainer.contains(storyImage)) {
+                         imageContainer.appendChild(storyImage);
+                    }
+                    break;
+            }
+        }
+
+        function showFeedback(type, message) {
+            feedbackDiv.innerHTML = ''; // Clear previous
+            if (message) {
+                const el = document.createElement('span');
+                el.textContent = message;
+                el.className = type === 'error' ? 'error-text' : type === 'loading' ? 'loading-text' : '';
+                feedbackDiv.appendChild(el);
+            }
+        }
+
+        function clearPreviousResults() {
+            storyTextDiv.textContent = '';
+            storyImage.src = '';
+            storyImage.alt = 'Ilustración generada por IA';
+            storyImage.classList.remove('loaded');
+            updateImageContainerStatus('idle');
+            currentImageUrl = null;
+            storyOutput.classList.remove('visible');
+            storyTextContainer.style.display = 'none';
+            imageDisplay.style.display = 'none';
+        }
+
+        // --- History Management ---
+        function addToHistory(prompt, story, imageUrl) {
+            // Check if the prompt already exists (case-insensitive check might be better)
+            const existingIndex = storyHistory.findIndex(item => item.prompt.toLowerCase() === prompt.toLowerCase());
+
+             const historyItem = { prompt, story, imageUrl: imageUrl || null }; // Ensure null if no URL
+
+             if (existingIndex > -1) {
+                 // Prompt exists, update it (move to top)
+                 storyHistory.splice(existingIndex, 1); // Remove old entry
+                 storyHistory.unshift(historyItem); // Add updated entry to the beginning
+                 console.log("Updated existing history item:", prompt);
+             } else {
+                 // New prompt, add to beginning
+                 storyHistory.unshift(historyItem);
+                 // Ensure history doesn't exceed max size
+                 if (storyHistory.length > MAX_HISTORY) {
+                     storyHistory.pop(); // Remove the oldest item
+                 }
+                 console.log("Added new item to history:", prompt);
+             }
+
+            saveHistory();
+            renderHistory();
+        }
+
+        function saveHistory() {
+            try {
+                // Filter out any potentially invalid items before saving
+                const validHistory = storyHistory.filter(item => item && item.prompt && typeof item.story === 'string');
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(validHistory));
+            } catch (e) {
+                console.error("Could not save history to localStorage:", e);
+            }
+        }
+
+        function loadHistory() {
+            try {
+                const storedHistory = localStorage.getItem(HISTORY_KEY);
+                if (storedHistory) {
+                    // Add validation when loading
+                    const parsedHistory = JSON.parse(storedHistory);
+                    storyHistory = parsedHistory.filter(item => item && item.prompt && typeof item.story === 'string');
+                } else {
+                    storyHistory = [];
+                }
+            } catch (e) {
+                console.error("Could not load history from localStorage:", e);
+                storyHistory = [];
+            }
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = ''; // Clear existing list
+            if (storyHistory.length === 0) {
+                 const li = document.createElement('li');
+                 li.textContent = "Aún no has creado ninguna historia.";
+                 li.className = 'no-history';
+                 historyList.appendChild(li);
+             } else {
+                 storyHistory.forEach((item, index) => {
+                    if (item && item.prompt) {
+                        const li = document.createElement('li');
+                        li.textContent = item.prompt;
+                        li.dataset.index = index;
+                        historyList.appendChild(li);
+                    }
+                 });
+             }
+        }
+
+        // --- MODIFIED History Click Handler ---
+        async function handleHistoryClick(event) { // Mark as async
+            if (event.target.tagName === 'LI' && event.target.dataset.index) {
+                const index = parseInt(event.target.dataset.index, 10);
+                const selectedItem = storyHistory[index];
+
+                // Validate the selected item thoroughly
+                if (selectedItem && selectedItem.prompt && typeof selectedItem.story === 'string') {
+                    console.log("Loading from history:", selectedItem.prompt);
+
+                    // 1. UI Reset & Set Prompt
+                    clearPreviousResults();
+                    promptInput.value = selectedItem.prompt;
+                    showFeedback('', '');
+                    generateBtn.disabled = true; // Disable button while loading history
+                    generateBtn.textContent = 'Cargando...';
+
+                    // 2. Display Saved Story Text
+                    storyTextDiv.textContent = selectedItem.story;
+                    storyTextContainer.style.display = 'block';
+
+                    // 3. Attempt to Load Saved Image (if URL exists)
+                    if (selectedItem.imageUrl) {
+                        imageDisplay.style.display = 'flex';
+                        currentImageUrl = selectedItem.imageUrl; // Track the specific URL
+
+                        try {
+                             updateImageContainerStatus('loading', 'Cargando imagen del historial...');
+                             // Use a specific alt text for history images
+                             await loadImageWithRetry(selectedItem.imageUrl, `Ilustración del historial para: ${selectedItem.prompt}`);
+                             // Success status is handled within loadImageWithRetry
+                         } catch (error) {
+                             console.error("Error reloading image from history:", error);
+                             // Show error within the image container
+                             updateImageContainerStatus('error', 'No se pudo recargar la imagen.');
+                         }
+                    } else {
+                        // No image URL saved for this item
+                        imageDisplay.style.display = 'none';
+                        console.log("No image URL found in this history item.");
+                    }
+
+                    // 4. Make the whole output visible
+                    storyOutput.classList.add('visible');
+
+                    // 5. Re-enable button
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Tejer Historia';
+
+                } else {
+                    console.warn("Invalid history item clicked:", index, selectedItem);
+                    showFeedback('error', 'No se pudo cargar el elemento del historial.');
+                    // Optionally, remove the invalid item?
+                    // storyHistory.splice(index, 1);
+                    // saveHistory();
+                    // renderHistory();
+                }
+            }
+        }
+
+    </script>
+
+</body>
+</html>

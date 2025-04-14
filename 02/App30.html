@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept Navigator AI - Exploración Profunda | PapitasFritas.com</title>
+    <!-- <meta name="description" content="Pega texto, explora conceptos clave y prerrequisitos con IA. Profundiza en temas relacionados de forma interactiva e ilimitada. Herramienta por PapitasFritas.com."> -->
+    <style>
+        /* --- Fonts & Base Styles (Unchanged) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        :root {
+            --bg-color: #1a1d2e; --card-bg: #2a2f45; --text-color: #e0e0e5; --text-muted: #a0a0b0; --heading-color: #ffffff; --accent-color: #4f8ff7; --accent-hover: #3a7bf0; --secondary-accent: #8a5cf5; --secondary-hover: #7a4cf0; --prereq-color: #20c997; --prereq-hover: #1ba881; --border-color: #3a4161; --shadow-color: rgba(0, 0, 0, 0.2); --error-color: #f05a5a; --loading-color: var(--accent-color); --success-color: #34d399; --inline-detail-bg: rgba(255, 255, 255, 0.04); --related-topic-bg: rgba(79, 143, 247, 0.1); --related-topic-hover-bg: rgba(79, 143, 247, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2rem; line-height: 1.6; transition: background-color 0.3s, color 0.3s; }
+        .container { width: 100%; max-width: 1000px; margin: auto; display: flex; flex-direction: column; gap: 2.5rem; }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 2rem 2.5rem; box-shadow: 0 6px 25px var(--shadow-color); border: 1px solid var(--border-color); transition: background-color 0.3s, border-color 0.3s; }
+        .input-card h2 { font-weight: 600; color: var(--heading-color); font-size: 1.7rem; text-align: center; margin-bottom: 1.5rem; }
+        #text-input { width: 100%; min-height: 200px; padding: 1rem 1.2rem; font-family: 'Poppins', sans-serif; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: rgba(255,255,255,0.05); color: var(--text-color); resize: vertical; transition: border-color 0.3s, box-shadow 0.3s; margin-bottom: 1.5rem; }
+        #text-input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(79, 143, 247, 0.2); background-color: rgba(255,255,255,0.08); }
+        .analyze-button-container { text-align: center; }
+        #analyze-btn { font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px; padding: 12px 45px; color: #fff; background: linear-gradient(45deg, var(--accent-color), var(--secondary-accent)); border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(79, 143, 247, 0.2), 0 5px 15px rgba(138, 92, 245, 0.2); }
+        #analyze-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 20px rgba(79, 143, 247, 0.3), 0 8px 20px rgba(138, 92, 245, 0.3); }
+        #analyze-btn:disabled { background: #555; cursor: wait; box-shadow: none; transform: none; }
+
+        #results-area { display: none; }
+        .results-header { margin-bottom: 2rem; text-align: center; }
+        #summary-text { font-size: 1.1rem; color: var(--text-muted); font-style: italic; margin-bottom: 1rem; }
+        #topic-image-container { width: 100%; max-width: 350px; aspect-ratio: 16 / 9; background-color: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; margin: 0 auto 2rem auto; position: relative; border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; }
+        #topic-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.7s ease-in-out; }
+        #topic-image.loaded { opacity: 1; }
+        #topic-image-container.loading::before { content: ''; position: absolute; width: 30px; height: 30px; border: 3px solid rgba(79, 143, 247, 0.3); border-top-color: var(--loading-color); border-radius: 50%; animation: spin 1s linear infinite; z-index: 1; }
+        #topic-image-container.failed { background-color: rgba(240, 90, 90, 0.1); border-color: var(--error-color); color: var(--error-color); font-size: 0.85em; padding: 5px; text-align: center; }
+        #topic-image-container.failed::before { display: none; }
+
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5rem; }
+        .results-column h3 { font-weight: 600; font-size: 1.4rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
+        #key-concepts-column h3 { color: var(--secondary-accent); }
+        #prerequisites-column h3 { color: var(--prereq-color); }
+
+        #key-concepts-list, #prerequisites-list { list-style: none; padding: 0; }
+        #key-concepts-list li, #prerequisites-list li { margin-bottom: 0.8rem; border-radius: 8px; overflow: hidden; transition: background-color 0.3s; background-color: transparent; /* Start transparent */ }
+        .term-button { display: block; width: 100%; padding: 0.9rem 1.3rem; font-size: 1rem; text-align: left; background: none; border: none; border-left: 4px solid transparent; color: var(--text-color); cursor: pointer; transition: background-color 0.3s, border-left-color 0.3s, transform 0.2s; font-family: 'Poppins', sans-serif; }
+        .concept-button { border-left-color: var(--secondary-accent); }
+        .prereq-button { border-left-color: var(--prereq-color); }
+        .term-button:hover { transform: translateX(4px); }
+        .concept-button:hover { background-color: rgba(138, 92, 245, 0.1); }
+        .prereq-button:hover { background-color: rgba(32, 201, 151, 0.1); }
+        li.active { background-color: var(--inline-detail-bg); } /* Apply bg to active li */
+        li.active .term-button { transform: translateX(4px); }
+        li.active .concept-button { border-left-color: var(--secondary-hover); }
+        li.active .prereq-button { border-left-color: var(--prereq-hover); }
+
+        .term-details {
+            padding: 0.5rem 1.3rem 1.3rem 1.7rem; /* Indent */ margin-top: -4px; border-top: 1px solid var(--border-color); display: none; /* Controlled by JS/active class */
+            max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.5s ease-out, opacity 0.5s ease-out, padding 0.5s ease-out;
+        }
+        li.active .term-details { display: block; max-height: 700px; /* Increased height for more content */ opacity: 1; }
+        .term-details .details-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; margin-top: 0.8rem; }
+        .term-details .details-header h5 { font-weight: 600; font-size: 1rem; color: var(--heading-color); margin: 0; }
+        .term-details .back-button { font-size: 0.85rem; background-color: var(--accent-color); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; display: none; /* Shown dynamically */ }
+        .term-details .back-button:hover { background-color: var(--accent-hover); }
+        .term-details .explanation-content { font-size: 0.95rem; color: var(--text-muted); line-height: 1.7; min-height: 2em; margin-bottom: 1rem; }
+        .term-details .related-topics-title { font-weight: 600; font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.7rem; color: var(--text-color); }
+        .term-details .related-topics-list { list-style: none; padding: 0; margin: 0; }
+        /* Style for clickable related topic buttons */
+        .term-details .related-topic-button {
+            display: block; width: 100%; text-align: left; font-size: 0.9rem; color: var(--accent-color); background-color: var(--related-topic-bg); border: 1px solid var(--border-color); border-radius: 5px; padding: 0.5rem 0.8rem; margin-bottom: 0.4rem; cursor: pointer; transition: background-color 0.2s, color 0.2s;
+        }
+        .term-details .related-topic-button:hover { background-color: var(--related-topic-hover-bg); color: var(--accent-hover); }
+        .term-details .loading-placeholder, .term-details .error-placeholder { font-style: italic; color: var(--text-muted); display: block; padding: 0.5rem 0; }
+
+        #feedback-area { /* Unchanged */ }
+        footer { /* Unchanged */ }
+        @keyframes spin { /* Unchanged */ }
+        @keyframes pulse-text { /* Unchanged */ }
+        @media (max-width: 768px) { /* Unchanged */ }
+        @media (max-width: 480px) { /* Unchanged */ }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Input Card -->
+        <section class="card input-card">
+             <h2>Concept Navigator AI</h2>
+             <form id="analysis-form">
+                 <label for="text-input" style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-muted);">Pega aquí el texto que quieres analizar:</label>
+                 <textarea id="text-input" placeholder="Escribe o pega un texto sobre un tema nuevo..." required></textarea>
+                 <div class="analyze-button-container">
+                     <button type="button" id="analyze-btn">Analizar Texto</button>
+                 </div>
+             </form>
+             <div id="feedback-area"></div>
+         </section>
+
+        <!-- Results Area (Initially Hidden) -->
+        <section class="card results-card" id="results-area">
+            <div class="results-header">
+                <p id="summary-text"></p>
+                <div id="topic-image-container"></div>
+            </div>
+            <div class="results-grid">
+                <div class="results-column" id="key-concepts-column">
+                    <h3><span role="img" aria-label="llave">🔑</span> Conceptos Clave</h3>
+                    <ul id="key-concepts-list"></ul>
+                </div>
+                <div class="results-column" id="prerequisites-column">
+                    <h3><span role="img" aria-label="libro">📚</span> Conocimientos Previos Sugeridos</h3>
+                    <ul id="prerequisites-list"></ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+         Concept Navigator AI por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | APIs por <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const textInput = document.getElementById('text-input');
+        const feedbackArea = document.getElementById('feedback-area');
+        const resultsArea = document.getElementById('results-area');
+        const summaryTextEl = document.getElementById('summary-text');
+        const topicImageContainer = document.getElementById('topic-image-container');
+        const keyConceptsList = document.getElementById('key-concepts-list');
+        const prerequisitesList = document.getElementById('prerequisites-list');
+
+        // --- Configuration ---
+        const TEXT_API_BASE_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 512; const IMAGE_HEIGHT = 288;
+        const MAX_RETRIES = 2; const RETRY_DELAY_MS = 1500;
+        const API_TIMEOUT_MS = 60000; const IMAGE_LOAD_TIMEOUT_MS = 45000;
+        const MIN_RELATED_TOPICS = 5; // User request
+
+        // --- Language Detection Keywords (Unchanged) ---
+        const ENGLISH_KEYWORDS = ['the', 'is', 'are', 'and', 'of', 'in', 'it', 'on', 'with', 'for', 'as', 'to', 'at', 'by', 'from', 'that', 'this'];
+
+        // --- State ---
+        let currentLanguage = 'es'; // Store detected language globally for context
+
+        // --- Event Listeners ---
+        analyzeBtn.addEventListener('click', handleAnalysis);
+        // Use event delegation for term clicks (both initial and related)
+        keyConceptsList.addEventListener('click', handleDelegatedTermClick);
+        prerequisitesList.addEventListener('click', handleDelegatedTermClick);
+
+
+        // --- Core Analysis Logic ---
+        async function handleAnalysis() {
+             const inputText = textInput.value.trim();
+             if (!inputText) { showFeedback('error', 'Por favor, introduce algún texto.'); return; }
+
+             clearResults();
+             showFeedback('loading', 'Analizando texto y generando conexiones...');
+             analyzeBtn.disabled = true; analyzeBtn.textContent = 'Analizando...';
+
+             currentLanguage = detectLanguage(inputText); // Store globally
+             const langInstruction = currentLanguage === 'en' ? 'Provide the response in English.' : 'Proporciona la respuesta en español.';
+             console.log(`Detected language: ${currentLanguage}`);
+
+             try {
+                 const conceptsPrompt = `Analyze the text below. Identify main key concepts. List ONLY the concepts, each on a new line. No bullets/numbers.\n${langInstruction}\n\nText:\n"${inputText}"`;
+                 const summaryPrompt = `Provide a very brief (1-2 sentence) summary of the main topic in the text below.\n${langInstruction}\n\nText:\n"${inputText}"`;
+
+                 // Fetch concepts and summary in parallel
+                 const [conceptsResult, summaryResult] = await Promise.allSettled([
+                     fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(conceptsPrompt), { isText: true, timeout: API_TIMEOUT_MS }),
+                     fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(summaryPrompt), { isText: true, timeout: 30000 })
+                 ]);
+
+                 let concepts = [];
+                 if (conceptsResult.status === 'fulfilled') {
+                     concepts = conceptsResult.value.split('\n').map(c => c.trim()).filter(c => c.length > 1 && !/^\s*$/.test(c) && !c.toLowerCase().includes("key concepts") && !c.toLowerCase().startsWith("here are"));
+                     console.log("Identified Concepts:", concepts);
+                 } else {
+                     throw new Error("Error al identificar conceptos clave: " + conceptsResult.reason.message);
+                 }
+
+                 if (concepts.length === 0) throw new Error("No se pudieron identificar conceptos clave.");
+
+                 // Fetch Prerequisites based on identified concepts
+                 const prereqPrompt = `Based on these key concepts: [${concepts.join(', ')}]. What prerequisite topics are helpful? List ONLY the topics, each on a new line. No bullets/numbers.\n${langInstruction}`;
+                 const prereqText = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(prereqPrompt), { isText: true, timeout: API_TIMEOUT_MS });
+                 const prerequisites = prereqText.split('\n').map(p => p.trim()).filter(p => p.length > 1 && !/^\s*$/.test(p) && !p.toLowerCase().includes("prerequisite") && !p.toLowerCase().startsWith("here are"));
+                 console.log("Suggested Prerequisites:", prerequisites);
+
+                 // Process Summary
+                  summaryTextEl.textContent = summaryResult.status === 'fulfilled' ? (cleanApiResponse(summaryResult.value) || 'Resumen no disponible.') : 'Error al obtener resumen.';
+
+
+                 displayResults(concepts, prerequisites); // Display lists
+                 resultsArea.style.display = 'block';
+                 showFeedback('success', 'Análisis completado.');
+
+                 const imageTopic = concepts.slice(0, 3).join(', ') || 'abstract concept visualization';
+                 fetchAndDisplayTopicImage(imageTopic); // Fetch image
+
+             } catch (error) {
+                 console.error("Error during text analysis:", error);
+                 showFeedback('error', `Error: ${error.message || "No se pudo completar el análisis."}`);
+                 clearResults();
+             } finally {
+                 analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar Texto';
+                 if (!feedbackArea.querySelector('.success-message') && feedbackArea.querySelector('.loading-message')) { showFeedback('', ''); }
+             }
+        }
+
+        // --- Language Detection (Unchanged) ---
+        function detectLanguage(text) { /* ... */ const words = text.toLowerCase().split(/\s+/); let e = 0; const s = Math.min(words.length, 50); for (let i = 0; i < s; i++) { if (ENGLISH_KEYWORDS.includes(words[i])) { e++; } } return (e / s) > 0.1 ? 'en' : 'es'; }
+
+        // --- Display Logic (MODIFIED) ---
+        function displayResults(concepts, prerequisites) {
+            keyConceptsList.innerHTML = '';
+            prerequisitesList.innerHTML = '';
+
+            const createListItem = (term, type) => {
+                const li = document.createElement('li');
+                const button = document.createElement('button');
+                button.className = `term-button ${type}-button`;
+                button.textContent = term;
+                button.dataset.term = term; // Store the term itself
+                button.dataset.type = type;
+                button.dataset.isInitial = "true"; // Mark this as an initial button
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'term-details';
+                // Store initial term info for back navigation later
+                detailsDiv.dataset.initialTerm = term;
+                detailsDiv.dataset.initialType = type;
+                // Structure for dynamic content
+                detailsDiv.innerHTML = `
+                    <div class="details-header">
+                        <h5 class="details-term-title"></h5>
+                        <button class="back-button" style="display: none;">&larr; Volver</button>
+                    </div>
+                    <div class="explanation-section">
+                        <!-- Explanation Loads Here -->
+                        <div class="explanation-content"></div>
+                    </div>
+                    <div class="related-topics-section">
+                        <h5 class="related-topics-title">Temas Relacionados</h5>
+                         <!-- Related Topics Load Here -->
+                        <ul class="related-topics-list"></ul>
+                    </div>`;
+
+                li.appendChild(button);
+                li.appendChild(detailsDiv);
+                return li;
+            };
+
+            concepts.forEach(concept => {
+                keyConceptsList.appendChild(createListItem(concept, 'concept'));
+            });
+            prerequisites.forEach(prereq => {
+                prerequisitesList.appendChild(createListItem(prereq, 'prereq'));
+            });
+        }
+
+        // --- Topic Image Logic (Unchanged) ---
+        async function fetchAndDisplayTopicImage(imageTopic) { /* ... */ const c = topicImageContainer; c.innerHTML = ''; c.className = 'topic-image-container loading'; const p = `Abstract visualization "${imageTopic}", knowledge graph, digital theme`; const s = Math.floor(Math.random() * 1e6); const u = `${IMAGE_API_BASE_URL}${encodeURIComponent(p)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${s}&nologo=true`; try { const i = document.createElement('img'); i.id = 'topic-image'; i.alt = `Imagen: ${imageTopic}`; let l = false; const t = setTimeout(() => { if (!l) throw new Error("Timeout"); }, IMAGE_LOAD_TIMEOUT_MS); i.onload = () => { l = true; clearTimeout(t); c.appendChild(i); c.className = 'topic-image-container loaded'; i.classList.add('loaded'); }; i.onerror = () => { l = true; clearTimeout(t); throw new Error("Load error"); }; i.src = u; } catch (e) { console.error("Img Error:", e); c.className = 'topic-image-container failed'; c.innerHTML = `Imagen no disponible.`; } }
+
+
+        // --- NEW: Delegated Click Handler ---
+        function handleDelegatedTermClick(event) {
+            const termButton = event.target.closest('.term-button'); // Click on initial term
+            const relatedTopicButton = event.target.closest('.related-topic-button'); // Click on a related topic
+
+            if (termButton && termButton.dataset.isInitial === "true") {
+                handleInitialTermClick(termButton);
+            } else if (relatedTopicButton) {
+                handleRelatedTopicClick(relatedTopicButton);
+            }
+        }
+
+        // --- NEW: Handle Click on Initial Term ---
+        function handleInitialTermClick(button) {
+            const listItem = button.closest('li');
+            const detailsDiv = listItem.querySelector('.term-details');
+            const term = button.dataset.term;
+            const termType = button.dataset.type;
+
+            if (!listItem || !detailsDiv) return;
+
+            const isActive = listItem.classList.contains('active');
+
+            // Close all other active items
+            document.querySelectorAll('#key-concepts-list li.active, #prerequisites-list li.active').forEach(activeLi => {
+                if (activeLi !== listItem) activeLi.classList.remove('active');
+            });
+
+            if (isActive) {
+                listItem.classList.remove('active');
+            } else {
+                listItem.classList.add('active');
+                // Load details for the *initial* term
+                loadTermDetails(term, termType, detailsDiv, true); // true indicates it's the initial load
+            }
+        }
+
+        // --- NEW: Handle Click on Related Topic ---
+        function handleRelatedTopicClick(button) {
+             const relatedTerm = button.dataset.term;
+             const detailsDiv = button.closest('.term-details'); // Find the parent details container
+             const parentListItem = detailsDiv.closest('li'); // Find the top-level list item
+
+             if (!relatedTerm || !detailsDiv || !parentListItem) return;
+
+             // Keep the main list item active
+             if (!parentListItem.classList.contains('active')) {
+                 parentListItem.classList.add('active');
+             }
+
+             // Load details for the *related* term within the SAME detailsDiv
+             loadTermDetails(relatedTerm, 'related', detailsDiv, false); // false indicates it's not initial
+        }
+
+
+        // --- MODIFIED: Load Term Details (Handles Both Initial and Related) ---
+        async function loadTermDetails(term, termType, detailsContainer, isInitialLoad) {
+            const explanationContentEl = detailsContainer.querySelector('.explanation-content');
+            const relatedTopicsListEl = detailsContainer.querySelector('.related-topics-list');
+            const detailsTermTitleEl = detailsContainer.querySelector('.details-term-title');
+            const backButton = detailsContainer.querySelector('.back-button');
+
+            // Update title and show loading states
+            detailsTermTitleEl.textContent = `Explorando: ${term}`;
+            explanationContentEl.innerHTML = `<span class="loading-placeholder">Buscando explicación...</span>`;
+            relatedTopicsListEl.innerHTML = `<li class="loading-placeholder">Buscando temas relacionados...</li>`;
+
+            // Show/Hide Back button
+            if (isInitialLoad) {
+                backButton.style.display = 'none';
+                detailsContainer.dataset.currentTerm = term; // Store current for potential back nav
+                detailsContainer.dataset.parentTerm = ""; // No parent for initial
+            } else {
+                backButton.style.display = 'inline-block';
+                // Store the term we are navigating *from* as the parent
+                detailsContainer.dataset.parentTerm = detailsContainer.dataset.currentTerm || detailsContainer.dataset.initialTerm;
+                detailsContainer.dataset.currentTerm = term; // Update current term
+                // Add or update listener for back button
+                backButton.onclick = () => handleBackNavigation(detailsContainer); // Use arrow func to pass container
+            }
+
+            // Fetch data
+            const langInstruction = currentLanguage === 'en' ? 'Provide response in English.' : 'Proporciona respuesta en español.';
+            const explanationPrompt = `Brief (2-4 sentences) definition/explanation of "${term}". ${langInstruction} Clear and concise.`;
+            const relatedTopicsPrompt = `List ${MIN_RELATED_TOPICS} or more relevant topics/concepts closely related to "${term}". List ONLY the topics, each on a new line. No bullets/numbers.\n${langInstruction}`;
+
+            try {
+                const [explanationResult, relatedTopicsResult] = await Promise.allSettled([
+                    fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(explanationPrompt), { isText: true, timeout: 30000 }),
+                    fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(relatedTopicsPrompt), { isText: true, timeout: 30000 })
+                ]);
+
+                // Display Explanation
+                if (explanationResult.status === 'fulfilled') {
+                    explanationContentEl.textContent = cleanApiResponse(explanationResult.value) || 'Explicación no disponible.';
+                } else {
+                    console.error(`Expl Error (${term}):`, explanationResult.reason);
+                    explanationContentEl.innerHTML = `<span class="error-placeholder">Error al obtener explicación.</span>`;
+                }
+
+                // Display Related Topics (as buttons)
+                if (relatedTopicsResult.status === 'fulfilled') {
+                    const topics = relatedTopicsResult.value.split('\n')
+                                     .map(t => t.trim())
+                                     .filter(t => t.length > 1 && !/^\s*$/.test(t) && !t.toLowerCase().includes("related topics") && !t.toLowerCase().startsWith("here are"));
+                    if (topics.length > 0) {
+                        relatedTopicsListEl.innerHTML = topics.map(topic => `
+                            <li>
+                                <button class="related-topic-button" data-term="${topic.replace(/"/g, '&quot;')}"> <!-- Handle potential quotes -->
+                                    ${topic} &rarr;
+                                </button>
+                            </li>`).join('');
+                    } else {
+                        relatedTopicsListEl.innerHTML = `<li>No se encontraron temas relacionados.</li>`;
+                    }
+                } else {
+                     console.error(`Related Topics Error (${term}):`, relatedTopicsResult.reason);
+                     relatedTopicsListEl.innerHTML = `<li class="error-placeholder">Error al obtener temas.</li>`;
+                }
+
+            } catch (error) { // Catch errors from Promise.allSettled setup itself (unlikely)
+                console.error(`General fetch error for ${term}:`, error);
+                explanationContentEl.innerHTML = `<span class="error-placeholder">Error inesperado.</span>`;
+                relatedTopicsListEl.innerHTML = `<li class="error-placeholder">Error inesperado.</li>`;
+            }
+        }
+
+        // --- NEW: Handle Back Navigation ---
+        function handleBackNavigation(detailsContainer) {
+            const parentTerm = detailsContainer.dataset.parentTerm;
+            const initialTerm = detailsContainer.dataset.initialTerm;
+             const initialType = detailsContainer.dataset.initialType; // Get initial type
+
+            if (parentTerm) {
+                 // Load details for the parent term
+                 console.log("Navigating back to:", parentTerm);
+                 loadTermDetails(parentTerm, 'related', detailsContainer, parentTerm === initialTerm); // Check if parent IS the initial term
+            } else {
+                // If no parent, we are at the top level, load the initial term details
+                console.log("Navigating back to initial:", initialTerm);
+                 loadTermDetails(initialTerm, initialType, detailsContainer, true);
+            }
+        }
+
+
+        // --- Text API Fetch (Unchanged) ---
+        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) { /* ... */ const { isText = false, timeout = API_TIMEOUT_MS } = options; const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), timeout); try { console.log(`Fetching: ${url.substring(0,100)}...`); const response = await fetch(url, { signal: controller.signal }); clearTimeout(timeoutId); if (!response.ok) { throw new Error(`HTTP error ${response.status}`); } return isText ? await response.text() : response; } catch (error) { clearTimeout(timeoutId); if (error.name === 'AbortError') { throw new Error("Timeout API"); } if (retries > 0 && (error.message.includes('HTTP error 5') || error.message.includes('Failed to fetch'))) { console.warn(`Fetch failed, retrying...`, error); await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS)); return fetchWithRetry(url, options, retries - 1); } else { throw error; } } }
+
+
+        // --- Utility Functions (Unchanged) ---
+        function cleanApiResponse(text) { /* ... */ let c = text ? text.trim() : ''; if (c.startsWith('"') && c.endsWith('"')) c = c.substring(1, c.length - 1); return c; }
+        function clearResults() { /* ... */ feedbackArea.innerHTML = ''; resultsArea.style.display = 'none'; summaryTextEl.textContent = ''; topicImageContainer.innerHTML = ''; topicImageContainer.className = 'topic-image-container'; keyConceptsList.innerHTML = ''; prerequisitesList.innerHTML = ''; }
+        function showFeedback(type, message) { /* ... */ feedbackArea.innerHTML = ''; if (message) { const m = document.createElement('div'); m.textContent = message; m.className = `${type}-message`; feedbackArea.appendChild(m); } }
+        function resetUI() { /* ... */ analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analizar Texto'; if (feedbackArea.querySelector('.loading-message')) { feedbackArea.innerHTML = ''; } }
+
+        // --- Preconnect (Unchanged) ---
+        document.addEventListener('DOMContentLoaded', () => { ['https://text.pollinations.ai', 'https://image.pollinations.ai'].forEach(url => { const link = document.createElement('link'); link.rel = 'preconnect'; link.href = url; document.head.appendChild(link); }); });
+
+    </script>
+
+</body>
+</html>

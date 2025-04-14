@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sagas de la Mitología Nórdica</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes temáticas (Ejemplo: Cinzel Decorative para títulos, Merriweather para cuerpo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Mitología Nórdica --- */
+        :root {
+            --color-primary: #854d0e; /* Marrón Roble/Ámbar (Tierra, Madera) */
+            --color-secondary: #166534; /* Verde Bosque Profundo */
+            --color-background: #1f2937; /* Gris Pizarra Oscuro (Noche, Piedra) */
+            --color-text: #d1d5db; /* Gris Claro (Niebla, Plata) */
+            --color-text-muted: #9ca3af; /* Gris Medio */
+            --color-modal-bg: #374151; /* Gris Acero Oscuro */
+            --color-border: #4b5563; /* Borde Gris Plomo */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.15);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.15);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.25), 0 4px 6px -4px rgb(0 0 0 / 0.2);
+            --border-radius: 5px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Merriweather', serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        /* Fuente temática para logo/título */
+        h1.logo, h1.page-title { font-family: 'Cinzel Decorative', serif; font-weight: 700; color: var(--color-primary); letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        h2.section-title, #modal-title { font-family: 'Cinzel Decorative', serif; font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); font-size: 1.9rem; /* Ligeramente más pequeño que terror */ }
+        .navbar { background-color: rgba(31, 41, 55, 0.85); backdrop-filter: blur(4px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.4rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.4rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 75px; font-family: 'Merriweather', serif; font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: 0 0 12px rgba(133, 77, 14, 0.4); /* Sombra ámbar */ border-color: var(--color-primary); color: var(--color-primary); background-color: #4b5563; /* Gris un poco más claro */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: #ffffff; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Merriweather', serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #a16207; box-shadow: 0 0 10px rgba(133, 77, 14, 0.6); }
+        #generate-more-btn:disabled { background-color: #4b5563; color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.92); /* Overlay muy oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 2.2rem 2.5rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: #4b5563; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; transform: rotate(180deg); }
+        #modal-title { text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.4; }
+        #modal-content {
+            line-height: 1.8;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 10px 1.5rem 10px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) #4b5563; /* Scrollbar temático */
+        }
+        #modal-content::-webkit-scrollbar { width: 10px; }
+        #modal-content::-webkit-scrollbar-track { background: #4b5563; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #4b5563; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: #a3a3a3; font-style: italic; } /* Énfasis sutil */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Cinzel Decorative', serif; margin-top: 2.1em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-secondary); border-bottom: none; } /* Verde para H3 */
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; font-family: 'Merriweather', serif; }
+        /* Imagen insertada al final */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2.5rem auto 1rem auto; border: 2px solid var(--color-border); border-radius: var(--border-radius); }
+        /* Placeholder/spinner de imagen final */
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(31, 41, 55, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 65px; height: 65px; border: 7px solid #4b5563; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.8rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.3rem; font-family: 'Merriweather', serif; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #581c87; /* Fondo error violeta oscuro (magia fallida?) */ color: #f3e8ff; /* Texto claro */ padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #a855f7; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-800">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                  <i class="fas fa-hammer text-xl sm:text-2xl text-gray-400 mr-4 transform -rotate-15"></i> <!-- Mjolnir -->
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     Sagas Nórdicas
+                 </h1>
+                 <i class="fas fa-book-dead text-xl sm:text-2xl text-gray-400 ml-4 transform rotate-15"></i> <!-- Edda? -->
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Ecos de Asgard y Midgard</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">Sumérgete en los mitos, dioses y leyendas de la era vikinga. Elige una saga o concepto para desvelar sus secretos...</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-compass text-amber-600 mr-2"></i> <!-- Vegvisir? -->
+                 Explora los Nueve Reinos...
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Consultando las runas...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Invocar Más Leyendas
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Tejiendo la historia...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - Imagen al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- Imagen y placeholder/spinner se añadirán aquí -->
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Relatos basados en las Eddas y Sagas, interpretados y generados por IA con fines educativos y de entretenimiento.</p>
+              <p class="mt-1">Que los dioses guíen tu exploración.</p>
+              <p class="mt-2">© 2025 Sagas Nórdicas</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Dioses Aesir Principales
+            "Odín: El Padre de Todo y Dios de la Sabiduría", "El Sacrificio de Odín: El Ojo Perdido y las Runas", "Odín y sus Cuervos: Hugin y Munin", "Odín y sus Lobos: Geri y Freki", "Sleipnir: El Caballo de Ocho Patas de Odín", "Gungnir: La Lanza Infalible de Odín", "Odín como Dios de la Guerra y la Muerte", "Odín como Maestro del Seidr y la Magia", "El Trono Hliðskjálf: La Visión de Odín", "Odín en el Ragnarök: Enfrentando a Fenrir",
+            "Thor: Dios del Trueno, la Fuerza y la Protección", "Mjölnir: El Martillo de Thor", "Megingjörð: El Cinturón de Fuerza de Thor", "Járngreipr: Los Guantes de Hierro de Thor", "Las Cabras de Thor: Tanngrisnir y Tanngnjóstr", "Las Aventuras de Thor: Viaje a Utgard-Loki", "Thor contra la Serpiente del Mundo, Jörmungandr", "La Pesca de Jörmungandr por Thor", "El Robo del Martillo de Thor (Þrymskviða)", "Thor en el Ragnarök: La Batalla Final contra Jörmungandr", "Bilskirnir: El Salón de Thor en Asgard",
+            "Loki: El Dios Embaucador y Cambiaformas", "Los Orígenes de Loki: ¿Aesir o Jotun?", "La Ambivalencia de Loki: Ayudante y Adversario de los Dioses", "Loki y la Construcción de las Murallas de Asgard", "Loki y el Nacimiento de Sleipnir", "Los Hijos de Loki y Angrboða: Fenrir, Jörmungandr y Hel", "El Rapto de Idunn y las Manzanas de la Juventud", "Loki y el Collar Brisingamen", "La Muerte de Baldr: El Papel Crucial de Loki", "La Lokasenna: Loki Insulta a los Dioses", "El Castigo de Loki: Atado bajo el Veneno", "Loki en el Ragnarök: Liderando las Huestes del Caos", "Nari y Váli: Los Otros Hijos de Loki",
+            "Frigg: Reina de los Aesir y Diosa del Hogar", "Fensalir: El Salón de Frigg", "Frigg como Diosa de la Maternidad y el Matrimonio", "El Conocimiento del Destino de Frigg", "Frigg y el Juramento para Proteger a Baldr", "El Dolor de Frigg por la Muerte de Baldr", "Las Doncellas de Frigg: Fulla, Gná y Hlín", "Diferencias y Similitudes entre Frigg y Freyja",
+            "Tyr: Dios de la Guerra, el Honor y la Justicia", "El Sacrificio de Tyr: La Mano Perdida ante Fenrir", "Tyr como Dios Precursor de Odín", "El Papel de Tyr en el Thing (Asamblea)", "Tyr en el Ragnarök",
+            "Heimdallr: El Guardián Blanco de Asgard", "Gjallarhorn: El Cuerno de Heimdallr", "Himinbjörg: La Morada de Heimdallr junto a Bifröst", "La Vista y Oído Agudos de Heimdallr", "Heimdallr como Padre de la Humanidad (Rigsthula)", "La Enemistad entre Heimdallr y Loki", "Heimdallr en el Ragnarök: La Batalla contra Loki",
+            "Baldr: El Dios Luminoso, Amado por Todos", "Breidablik: El Salón Puro de Baldr", "La Belleza y Bondad de Baldr", "Los Sueños Premonitorios de Baldr", "La Muerte de Baldr a Manos de Höðr (Instigado por Loki)", "El Funeral de Baldr y el Barco Hringhorni", "Nanna: La Esposa de Baldr", "El Intento Fallido de Rescatar a Baldr de Helheim", "El Regreso de Baldr tras el Ragnarök",
+            "Höðr: El Dios Ciego y Hermano de Baldr", "El Papel Involuntario de Höðr en la Muerte de Baldr", "La Venganza de Váli sobre Höðr", "El Destino de Höðr tras el Ragnarök",
+            "Víðarr: El Dios Silencioso, Vengador de Odín", "El Zapato Mágico de Víðarr", "La Morada de Víðarr: Landviði", "Víðarr en el Ragnarök: Matando a Fenrir",
+            "Váli: Hijo de Odín y Vengador de Baldr", "El Rápido Crecimiento de Váli", "Váli Mata a Höðr", "El Destino de Váli tras el Ragnarök",
+            "Bragi: Dios de la Poesía y la Elocuencia", "Idunn: La Esposa de Bragi", "Bragi en los Banquetes de Asgard", "El Origen del Hidromiel de la Poesía (Relacionado con Bragi?)",
+            "Idunn: Guardiana de las Manzanas de la Eterna Juventud", "El Rapto de Idunn por el Gigante Þjazi", "La Importancia de las Manzanas de Idunn para los Dioses",
+            "Forseti: Dios de la Justicia y la Reconciliación", "Glitnir: El Salón Brillante de Forseti", "Forseti como Mediador de Disputas",
+            "Ullr: Dios del Invierno, la Caza y los Juramentos", "Los Esquís o Raquetas de Nieve de Ullr", "El Escudo de Ullr como Barco", "Ydalir: La Morada de Ullr", "La Importancia de los Juramentos sobre el Anillo de Ullr",
+            "Hermóðr: El Mensajero Veloz de los Dioses", "El Viaje de Hermóðr a Helheim para rescatar a Baldr", "El Caballo de Odín, Sleipnir, usado por Hermóðr",
+            // Dioses Vanir Principales
+            "Njörðr: Dios del Mar, el Viento y la Riqueza", "Nóatún: La Morada de Njörðr", "La Estancia de Njörðr en Asgard como Rehén", "El Matrimonio Infeliz de Njörðr y Skaði", "Njörðr como Padre de Freyr y Freyja",
+            "Freyr: Dios de la Fertilidad, la Prosperidad y el Sol", "Alfheim: El Reino de Freyr", "Skíðblaðnir: El Barco Mágico de Freyr", "Gullinbursti: El Jabalí Dorado de Freyr", "La Espada Mágica de Freyr (y su pérdida por Gerðr)", "Freyr y la Giganta Gerðr: Una Historia de Amor", "El Papel de Skírnir, el Sirviente de Freyr", "Freyr en el Ragnarök: Luchando contra Surtr sin su espada", "Freyr como Ancestro de Reyes Suecos",
+            "Freyja: Diosa del Amor, la Belleza, la Fertilidad y la Guerra", "Fólkvangr: El Campo de Freyja y su Salón Sessrúmnir", "Freyja y la Mitad de los Caídos en Batalla", "El Collar Brísingamen: La Joya de Freyja", "El Carro de Gatos de Freyja", "Freyja como Maestra del Seidr", "La Búsqueda de Freyja por su Esposo Óðr", "La Capa de Plumas de Halcón de Freyja", "Freyja y su Jabalí Hildisvíni", "Confusiones entre Freyja y Frigg",
+            "Skaði: Diosa de la Caza, el Invierno y las Montañas", "Los Orígenes Jotun de Skaði", "La Venganza de Skaði por la Muerte de su Padre Þjazi", "La Elección de Marido de Skaði: Escogiendo por los Pies", "El Matrimonio y Separación de Skaði y Njörðr", "Þrymheimr: La Antigua Morada de Þjazi, Hogar de Skaði", "La Relación de Skaði con Ullr",
+            "Kvasir: El Ser Más Sabio, Nacido de la Saliva de los Dioses", "El Asesinato de Kvasir por los Enanos Fjalar y Galar", "La Creación del Hidromiel de la Poesía a partir de la Sangre de Kvasir",
+            "Gullveig: La Misteriosa Figura que Desató la Guerra Aesir-Vanir", "Los Intentos Fallidos de Matar a Gullveig", "¿Es Gullveig otra forma de Freyja?",
+            "Hoenir: El Dios Indeciso", "El Intercambio de Rehenes: Hoenir y Mimir van a Vanaheim", "La Dependencia de Hoenir en Mimir",
+            // Gigantes (Jotnar)
+            "Ymir: El Primer Ser y Ancestro de los Gigantes", "El Nacimiento de Ymir en Ginnungagap", "La Vaca Audhumla y el Origen de Búri", "El Asesinato de Ymir por Odín, Vili y Vé", "La Creación del Mundo a partir del Cuerpo de Ymir",
+            "Los Gigantes de Hielo (Hrimthursar)", "Jötunheimr: El Reino de los Gigantes", "La Constante Amenaza de los Gigantes para los Dioses", "Þjazi: El Gigante que Raptó a Idunn", "Þrymr: El Gigante que Robó el Martillo de Thor", "Hrungnir: El Gigante Derrotado por Thor en un Duelo", "Geirröd: El Gigante que Intentó Matar a Thor", "Útgarða-Loki: El Astuto Rey Gigante", "Hymir: El Gigante con el que Thor fue a Pescar",
+            "Los Gigantes de Fuego (Muspelheim)", "Surtr: El Líder de los Gigantes de Fuego", "Muspelheim: El Reino de Fuego", "La Espada Llameante de Surtr", "El Papel de Surtr en el Ragnarök: Destruyendo el Mundo",
+            "Angrboða: La Giganta Madre de Monstruos (con Loki)", "Gerðr: La Bella Giganta Esposa de Freyr", "Bestla: Madre de Odín, Vili y Vé", "Hyrrokkin: La Giganta que Lanzó el Barco Funerario de Baldr", "Skrymir: El Gigante Ilusorio del Viaje de Thor",
+            // Otras Criaturas y Seres
+            "Los Enanos (Dvergar): Maestros Artesanos", "Svartálfaheimr / Niðavellir: El Mundo Subterráneo de los Enanos", "La Creación de los Enanos a partir de los Gusanos de Ymir", "Fjalar y Galar: Los Enanos Asesinos de Kvasir", "Brokkr y Sindri (Eitri): Forjadores de Mjölnir, Draupnir y Gullinbursti", "Los Hijos de Ivaldi: Creadores de Gungnir, Skidbladnir y el Cabello de Sif", "Andvari: El Enano y su Anillo Maldito", "Alvíss: El Enano Engañado por Thor", "La Codicia de los Enanos por el Oro",
+            "Los Elfos (Álfar): Seres de Luz y Oscuridad", "Álfheimr: El Reino de los Elfos de la Luz", "Ljósálfar (Elfos de la Luz): Belleza y Magia", "Dökkálfar (Elfos Oscuros): ¿Enanos o Elfos Subterráneos?", "La Relación entre Elfos y Fertilidad (Veneración)", "Völundr (Wayland el Herrero): Un Elfo Famoso?",
+            "Las Nornas: Tejedoras del Destino", "Urðr (Pasado), Verðandi (Presente), Skuld (Futuro)", "El Pozo de Urðr (Urðarbrunnr) junto a Yggdrasil", "El Poder de las Nornas sobre Dioses y Mortales", "Las Nornas Regando el Árbol del Mundo",
+            "Las Valquirias: Doncellas Escogedoras de los Caídos", "El Papel de las Valquirias en el Campo de Batalla", "Las Valquirias Sirviendo Hidromiel en el Valhalla", "Brynhildr: Una Valquiria Famosa y su Trágico Destino", "Los Nombres de las Valquirias y sus Significados", "La Relación de las Valquirias con Odín y Freyja",
+            "Fenrir: El Lobo Monstruoso destinado a Matar a Odín", "El Crecimiento Aterrador de Fenrir en Asgard", "Los Intentos Fallidos de Atar a Fenrir", "Gleipnir: La Cinta Mágica que Ató a Fenrir", "El Sacrificio de la Mano de Tyr", "La Liberación de Fenrir en el Ragnarök", "La Muerte de Odín a Fauces de Fenrir", "La Venganza de Víðarr sobre Fenrir",
+            "Jörmungandr: La Serpiente de Midgard que Rodea el Mundo", "El Lanzamiento de Jörmungandr al Mar por Odín", "El Crecimiento Descomunal de Jörmungandr", "El Encuentro de Thor y Jörmungandr en la Pesca", "El Encuentro de Thor y Jörmungandr en la Fortaleza de Útgarða-Loki", "La Batalla Final entre Thor y Jörmungandr en el Ragnarök",
+            "Hel: Gobernante del Reino de los Muertos y Hija de Loki", "Helheim: El Reino Frío y Sombrío de los Muertos (No Deshonrosos)", "La Apariencia Mitad Viva, Mitad Muerta de Hel", "Éljúðnir: El Salón de Hel", "El Perro Guardián Garmr", "El Papel de Hel en la Detención de Baldr", "Hel en el Ragnarök",
+            "Los Einherjar: Los Guerreros Elegidos de Odín en el Valhalla", "La Vida de los Einherjar: Entrenamiento y Banquete Eterno", "El Cocinero Andhrímnir y el Caldero Eldhrímnir", "El Jabalí Sæhrímnir", "La Cabra Heiðrún y su Hidromiel", "El Papel de los Einherjar en el Ragnarök",
+            "Níðhöggr: El Dragón que Roe las Raíces de Yggdrasil", "La Rivalidad entre Níðhöggr y el Águila de Yggdrasil", "La Ardilla Ratatöskr: Mensajera de Insultos",
+            "Garmr: El Perro Guardián de Helheim", "El Aullido de Garmr como Señal del Ragnarök", "La Batalla entre Garmr y Tyr en el Ragnarök",
+            "Los Draugr: Muertos Vivientes Vengativos", "Características y Poderes de los Draugr", "Cómo Derrotar a un Draugr", "Historias Famosas de Draugr en las Sagas",
+            "Los Trols: Criaturas Peligrosas y a Menudo Estúpidas", "Diferencias entre Trols y Gigantes", "Los Trols en el Folclore Escandinavo Posterior",
+            // Los Nueve Reinos y Cosmología
+            "Los Nueve Reinos: Una Visión General de la Cosmología Nórdica", "Yggdrasil: El Árbol del Mundo que Conecta los Reinos", "Las Raíces de Yggdrasil y los Tres Pozos (Urðr, Mímir, Hvergelmir)", "El Águila Sin Nombre en la Cima de Yggdrasil", "Veðrfölnir: El Halcón sobre el Águila", "Los Ciervos que Comen las Hojas de Yggdrasil",
+            "Asgard: El Reino de los Dioses Aesir", "Valhalla: El Salón de los Caídos de Odín", "Vingólf: El Salón de las Diosas", "Bifröst: El Puente Arcoíris Guardado por Heimdallr", "Las Murallas de Asgard: Construidas por un Gigante", "Idavoll: La Llanura Central de Asgard",
+            "Midgard: El Reino de los Humanos", "La Creación de los Primeros Humanos: Ask y Embla", "La Protección de Midgard por Thor", "La Ubicación de Midgard en el Cosmos", "Midgard como Campo de Batalla Final en el Ragnarök",
+            "Jötunheimr: El Mundo de los Gigantes", "Las Fortalezas de los Gigantes: Útgarðr", "Paisajes de Jötunheimr: Montañas, Bosques Oscuros, Hielo",
+            "Vanaheimr: El Reino de los Dioses Vanir", "La Guerra Aesir-Vanir y la Unificación", "La Naturaleza Fértil de Vanaheimr",
+            "Álfheimr: El Reino de los Elfos de la Luz", "La Belleza y Luminosidad de Álfheimr", "Freyr como Gobernante de Álfheimr",
+            "Svartálfaheimr / Niðavellir: El Mundo Subterráneo de los Enanos/Elfos Oscuros", "Las Forjas y Minas de Svartálfaheimr",
+            "Helheim: El Reino de los Muertos Comunes", "El Río Gjöll y el Puente Gjallarbrú", "La Guardiana Móðguðr", "Las Puertas de Hel (Helgrind)", "Niflhel: La Parte Más Profunda de Helheim",
+            "Muspelheim: El Reino del Fuego Eterno", "Los Hijos de Muspell", "El Origen del Fuego en la Creación",
+            "Niflheim: El Reino de la Niebla y el Hielo Primordial", "Hvergelmir: El Pozo Hirviente", "El Origen del Hielo en la Creación", "Ginnungagap: El Vacío Primordial entre Niflheim y Muspelheim",
+            // Mitos y Eventos Clave
+            "El Mito de la Creación Nórdica: De Ginnungagap a Midgard", "La Guerra entre los Aesir y los Vanir", "El Rapto y Recuperación de las Manzanas de Idunn", "El Robo del Hidromiel de la Poesía por Odín", "La Construcción de las Murallas de Asgard y el Engaño de Loki", "El Viaje de Thor a la Tierra de los Gigantes (Útgarða-Loki)", "La Muerte de Baldr: La Tragedia Central de los Mitos", "El Castigo de Loki: Atado hasta el Ragnarök", "La Lokasenna: La Cena de las Discordias", "El Mito de Gefjun y la Creación de Selandia",
+            "Ragnarök: El Crepúsculo de los Dioses", "Las Señales del Ragnarök: Fimbulvetr, Traiciones, Desastres Naturales", "La Liberación de Fenrir y Loki", "El Avance de los Gigantes de Hielo y Fuego", "La Batalla en la Llanura de Vígríðr", "Las Muertes Clave: Odín vs Fenrir, Thor vs Jörmungandr, Freyr vs Surtr, Heimdallr vs Loki, Tyr vs Garmr", "La Destrucción del Mundo por Surtr", "La Supervivencia: Víðarr, Váli, Móði, Magni, Baldr, Höðr", "La Nueva Tierra Renacida: Gimlé", "Líf y Lífþrasir: La Nueva Humanidad",
+            // Sagas y Literatura
+            "La Edda Poética: Colección de Poemas Mitológicos y Heroicos", "Völuspá: La Profecía de la Vidente", "Hávamál: Las Palabras del Altísimo (Odín)", "Skírnismál: El Viaje de Skírnir", "Lokasenna: La Discusión de Loki", "Þrymskviða: El Cantar de Thrym", "Vafþrúðnismál: La Discusión con Vafþrúðnir", "Grímnismál: La Balada de Grímnir",
+            "La Edda Prosaica (de Snorri Sturluson)", "Gylfaginning: El Engaño de Gylfi", "Skáldskaparmál: El Lenguaje de la Poesía (Kennings, Heiti)", "Háttatal: Lista de Metros Poéticos",
+            "La Saga Völsunga: La Historia de Sigurd y el Dragón Fafnir", "Sigurd (Siegfried): El Héroe Matador de Dragones", "El Anillo de Andvari y su Maldición", "Brynhildr: La Valquiria Dormida", "Gunnar y Högni: Los Hermanos Nibelungos", "Gudrun: La Esposa de Sigurd", "La Espada Gram",
+            "Otras Sagas Islandesas Relevantes (Ej. Saga de Egil Skallagrímson, Saga de Njál)", "El Papel de las Sagas como Fuente Histórica y Literaria",
+            // Objetos y Artefactos Mágicos
+            "Mjölnir: El Martillo de Thor, Símbolo de Poder", "Gungnir: La Lanza de Odín que Nunca Falla", "Draupnir: El Anillo de Oro de Odín que se Multiplica", "Skíðblaðnir: El Barco de Freyr que Cabe en un Bolsillo", "Gjallarhorn: El Cuerno de Heimdallr que Anuncia el Ragnarök", "Brísingamen: El Collar Deslumbrante de Freyja", "Gleipnir: La Cinta Irrompible que Ató a Fenrir", "Las Manzanas de la Eterna Juventud de Idunn", "El Hidromiel de la Poesía: Fuente de Inspiración", "Naglfar: El Barco Hecho de Uñas de Muertos", "Hliðskjálf: El Trono de Odín desde donde Todo se Ve", "El Zapato de Víðarr", "El Yelmo del Terror (Ægishjálmur)",
+            // Runas y Magia
+            "Las Runas: Origen Divino y Usos", "El Futhark Antiguo y el Futhark Joven", "Odín Descubriendo las Runas en Yggdrasil", "Las Runas como Herramienta de Adivinación", "Las Runas en la Magia (Galdr)", "Seiðr: La Forma Chamánica de Magia Nórdica", "Freyja como Maestra de Seidr", "Odín Aprendiendo Seidr", "Las Völvas: Mujeres Practicantes de Seidr y Profetisas", "La Naturaleza del Destino (Wyrd / Örlög) en la Creencia Nórdica", "Spá: El Arte de la Profecía",
+            // Conceptos Culturales y Sociales
+            "El Valhalla vs. Helheim vs. Fólkvangr: Destinos del Más Allá", "El Concepto de Honor en la Sociedad Vikinga", "La Importancia de la Hospitalidad", "El Thing: La Asamblea Legal y Política", "Blót: El Ritual de Sacrificio Nórdico", "Duelos y Holmgang", "Flyting: La Competencia Ritual de Insultos", "Berserkers y Úlfhéðnar: Guerreros Feroz", "La Estructura Social: Jarls, Karls, Thralls", "El Papel de las Mujeres en la Era Vikinga y la Mitología", "Kennings y Heiti: El Lenguaje Poético de los Skalds", "La Relación entre Mito e Historia en la Era Vikinga", "La Cristianización de Escandinavia y el Declive del Paganismo Nórdico", "Supervivencia de la Mitología Nórdica en el Folclore", "Influencia de la Mitología Nórdica en la Cultura Moderna (Literatura, Cine, Música, Juegos)",
+            // Comparaciones y Conexiones
+            "Mitología Nórdica vs. Mitología Griega/Romana", "Influencias Germánicas Comunes en la Mitología Nórdica e Inglesa Antigua (Beowulf)", "Conexiones entre Personajes: ¿Woden es Odín?", "Arquetipos Universales en los Mitos Nórdicos"
+        ];
+        const norseThemes = [
+            "Dioses Aesir", "Dioses Vanir", "Jotnar (Gigantes)", "Criaturas Míticas Nórdicas", "Los Nueve Reinos", "Yggdrasil y la Cosmología", "Mitos de la Creación", "Ragnarök", "Sagas Heroicas (Völsunga)", "Edda Poética", "Edda Prosaica", "Runas y Magia Nórdica (Seidr)", "Objetos Mágicos", "Valquirias y el Valhalla", "El Destino (Nornas)", "La Era Vikinga y sus Mitos", "Loki el Embaucador", "Aventuras de Thor", "Sabiduría de Odín", "Relaciones entre Dioses y Gigantes"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un skald (poeta y narrador) de la antigua Escandinavia, un erudito versado en las Eddas y las sagas. Tu tarea es relatar y explicar conceptos, personajes, mitos o lugares de la mitología nórdica de forma vívida, detallada y respetuosa con las fuentes (menciona las Eddas o sagas relevantes de forma general si aplica). Evoca la atmósfera de la era vikinga, la grandeza de los dioses, la ferocidad de las bestias y la inevitabilidad del destino (wyrd). Usa un lenguaje rico y descriptivo, pero claro para un público moderno interesado. Estructura tu relato lógicamente. El objetivo es una narración/explicación de aproximadamente 1200-1300 palabras. Basa tu conocimiento únicamente en el siguiente tema nórdico:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de mitología. Genera exactamente 15 temas clave sobre Mitología Nórdica (dioses, reinos, mitos, criaturas, conceptos, sagas), adecuados para ser explicados detalladamente. Devuelve *solo* la lista de temas, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios funcionales)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor del texto + imagen final
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios funcionales)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`Los Nornas interrumpieron la conexión (>${config.timeoutSeconds}s). Inténtalo de nuevo.`);
+                throw new Error(`Error al consultar los reinos divinos: ${error.message}`);
+            }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo tejer una saga adecuada o suficientemente detallada para este tema.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+            const randomTheme = getRandomElement(norseThemes) || "leyendas nórdicas esenciales";
+            const specificPrompt = `Genera 15 temas clave sobre ${randomTheme}`;
+            console.log("Generating titles with prompt:", specificPrompt);
+            const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+            const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+            const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 10 && line.length < 150);
+            if (titles.length < 5) throw new Error("No se pudieron invocar suficientes leyendas.");
+            return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a MITOLOGÍA NÓRDICA
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Norse mythology landscape";
+            // Prompt enfocado en atmósfera, símbolos, naturaleza nórdica.
+            const enhancedPrompt = `Atmospheric digital painting inspired by the Norse Mythology concept: '${safePromptText}'. Focus on mood, runes, epic landscapes (fjords, dark forests, icy plains, Asgard), mythological creatures or symbols. Style of Alan Lee or Johan Egerkrans. Avoid text.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            // Negative prompt para evitar elementos indeseados.
+            const negativePrompt = "text, words, title, labels, letters, captions, writing, numbers, diagrams, charts, graphs, UI, interface, menu, buttons, watermark, signature, photograph, happy cartoon, modern setting, clear faces unless specified";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Keep just in case
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { /* ... */ if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { /* ... */
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+         }
+        function resetModalState() { /* ... */
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear previous text and image
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios funcionales)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]);
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">Los Nueve Reinos parecen vacíos...</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        // *** MODIFIED: handleTitleClick to append image inside #modal-content *** (Lógica idéntica a versión anterior)
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // 1. Fetch y formato de texto
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 2. Ocultar carga, mostrar texto PRIMERO
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                 // 3. *** RESET SCROLL *** después de que el texto sea visible
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // 4. Preparar y añadir placeholder/spinner DENTRO de #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Forjando visión rúnica...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // 5. Crear y añadir el elemento imagen (empieza a cargar)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visión mítica de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">La visión se ha perdido en la niebla.</p>
+                    `;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir la imagen al final del contenido
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al invocar la visión.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Consultando a las Nornas...'; // Thematic text
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("Las Nornas no revelaron más leyendas por ahora."); // Thematic text
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al invocar leyendas: ${error.message}`); // Thematic text
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Invocar Más Leyendas'; // Thematic text
+             }
+         }
+
+        // ========== INITIALIZATION ========== (Sin cambios funcionales)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p style="color: var(--color-primary); font-size: 2em; text-align: center; padding-top: 5em; font-family: \'Cinzel Decorative\';">¡El Bifröst se ha roto! Fallo crítico al iniciar.</p>'; return; } // Thematic error
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Fondos de Pantalla con IA | PapitasFritas.com</title>
+  <meta name="description" content="Genera fondos de pantalla únicos con IA. Selecciona modelo, aspect ratio, y obtén inspiración en vivo.">
+  <style>
+    /* Reset y base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --bg-primary: #12141a;
+      --bg-secondary: #1c1f2a;
+      --bg-tertiary: #282c3a;
+      --accent-1: #00f0ff;
+      --accent-2: #ff00aa;
+      --text-light: #f0f4f8;
+      --font-main: 'Roboto', sans-serif;
+      --font-display: 'Exo 2', sans-serif;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Roboto:wght@300;400&display=swap');
+
+    body {
+      background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+      color: var(--text-light);
+      font-family: var(--font-main);
+      padding: 1rem;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 1rem;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    header h1 {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+    }
+    
+    /* Sección Generador */
+    #generator {
+      background-color: var(--bg-tertiary);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      margin-bottom: 2rem;
+    }
+    
+    .input-group {
+      margin-bottom: 1rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    
+    textarea, select {
+      width: 100%;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    button {
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--accent-1);
+      color: var(--bg-primary);
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    
+    button:hover {
+      background-color: var(--accent-2);
+      transform: scale(1.03);
+    }
+    
+    #aspectRatioSelector {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    
+    /* Aseguramos texto claro en los botones */
+    #aspectRatioSelector button {
+      flex: 1;
+      max-width: 120px;
+      background-color: var(--bg-secondary);
+      padding: 0.6rem;
+      border: 2px solid transparent;
+      transition: box-shadow 0.3s ease, border 0.3s ease;
+      color: var(--text-light);
+    }
+    
+    #aspectRatioSelector button.active {
+      border: 2px solid var(--accent-1);
+      box-shadow: 0 0 8px var(--accent-1);
+    }
+    
+    /* Vista Previa */
+    #previewContainer {
+      position: relative;
+      text-align: center;
+      margin-bottom: 1rem;
+      min-height: 300px; /* Altura mínima para que se note la preview */
+    }
+    
+    #wallpaperPreview {
+      display: block;
+      max-width: 100%;
+      margin: 0 auto;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      background-color: #000;
+    }
+    
+    #wallpaperPreview.loaded {
+      opacity: 1;
+    }
+    
+    #loadingSpinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.2rem;
+      display: none;
+      color: var(--accent-1);
+    }
+    
+    #loadingSpinner.visible {
+      display: block;
+    }
+    
+    #previewMessage {
+      margin-top: 1rem;
+      text-align: center;
+      color: var(--accent-2);
+    }
+    
+    #downloadBtn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      background-color: var(--accent-1);
+      color: var(--bg-primary);
+      text-decoration: none;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #downloadBtn.visible {
+      opacity: 1;
+    }
+    
+    /* Sección Historial */
+    #historySection {
+      background-color: var(--bg-tertiary);
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      margin-bottom: 2rem;
+    }
+    
+    #historySection h2 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    #historyGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.5rem;
+      padding: 0.5rem;
+      overflow-x: auto;
+    }
+    
+    .image-container {
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      background-color: #000;
+      transition: transform 0.3s ease;
+    }
+    
+    .image-container:hover {
+      transform: scale(1.02);
+    }
+    
+    .result-image {
+      width: 100%;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .result-image.loaded {
+      opacity: 1;
+    }
+    
+    .image-info-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--text-light);
+      font-size: 0.8rem;
+      padding: 0.4rem;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .image-container:hover .image-info-overlay {
+      opacity: 1;
+    }
+    
+    /* Sección Inspiración en Vivo (al final) */
+    #inspirationFeed {
+      background-color: var(--bg-tertiary);
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      margin-bottom: 2rem;
+    }
+    
+    #inspirationFeed h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    
+    #feedStatus {
+      text-align: center;
+      margin-bottom: 0.5rem;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+    
+    #inspirationFeedGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+    }
+    
+    /* Modal */
+    #imageModal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #modalContent {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 90%;
+      max-height: 90%;
+      overflow-y: auto;
+      text-align: center;
+    }
+    
+    #modalImage {
+      max-width: 100%;
+      border-radius: 4px;
+    }
+    
+    #modalDetails {
+      margin-top: 1rem;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    
+    #modalDetails p {
+      margin-bottom: 0.5rem;
+    }
+    
+    #closeModalBtn {
+      margin-top: 1rem;
+      background-color: var(--accent-2);
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      #aspectRatioSelector {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Generador de Fondos de Pantalla con IA</h1>
+    </header>
+    
+    <!-- Sección Generador -->
+    <section id="generator">
+      <div class="input-group">
+        <label for="promptInput">Idea (Prompt):</label>
+        <textarea id="promptInput" rows="2" placeholder="Ingresa tu idea aquí..."></textarea>
+      </div>
+      
+      <div id="aspectRatioSelector">
+        <button data-ratio="16:9" data-w="1920" data-h="1080" class="active">16:9</button>
+        <button data-ratio="4:3" data-w="1600" data-h="1200">4:3</button>
+        <button data-ratio="1:1" data-w="1080" data-h="1080">1:1</button>
+      </div>
+      
+      <div class="input-group">
+        <label for="modelSelect">Selecciona Modelo:</label>
+        <select id="modelSelect">
+          <option value="turbo">Turbo</option>
+          <option value="flux">Flux</option>
+          <option value="classic">Classic</option>
+          <option value="vanguard">Vanguard</option>
+        </select>
+      </div>
+      
+      <div class="input-group" style="text-align:center;">
+        <button id="generateBtn">Generar Wallpaper</button>
+        <span id="loadingSpinner">Cargando...</span>
+        <p id="previewMessage"></p>
+      </div>
+      
+      <div id="previewContainer">
+        <img id="wallpaperPreview" alt="Vista previa del wallpaper">
+        <a id="downloadBtn" href="#" download>Descargar Imagen</a>
+      </div>
+    </section>
+    
+    <!-- Sección Historial Local -->
+    <section id="historySection">
+      <h2>Historial Local</h2>
+      <div id="historyGrid"></div>
+      <div style="text-align:center; margin-top:1rem;">
+        <button id="clearHistoryBtn">Borrar Historial</button>
+      </div>
+    </section>
+    
+    <!-- Sección Inspiración en Vivo (última) -->
+    <section id="inspirationFeed">
+      <h2>Inspiración en Vivo</h2>
+      <p id="feedStatus">Conectando...</p>
+      <div id="inspirationFeedGrid"></div>
+    </section>
+    
+    <!-- Modal -->
+    <div id="imageModal">
+      <div id="modalContent">
+        <img id="modalImage" alt="Detalle de la imagen">
+        <div id="modalDetails">
+          <p><strong>Prompt:</strong> <span id="modalPrompt"></span></p>
+          <p><strong>Modelo:</strong> <span id="modalModel"></span></p>
+          <p><strong>Seed:</strong> <span id="modalSeed"></span></p>
+          <p><a id="modalImageUrl" href="#" target="_blank">Ver imagen en nueva pestaña</a></p>
+        </div>
+        <div style="margin-top:1rem;">
+          <button id="closeModalBtn" onclick="closeModal()">Cerrar</button>
+          <button onclick="usePromptFromModal()">Usar este prompt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Elementos del DOM
+    const promptInput = document.getElementById('promptInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const wallpaperPreview = document.getElementById('wallpaperPreview');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const previewMessage = document.getElementById('previewMessage');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const aspectRatioSelector = document.getElementById('aspectRatioSelector');
+    const modelSelect = document.getElementById('modelSelect');
+    const historyGrid = document.getElementById('historyGrid');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const inspirationFeedGrid = document.getElementById('inspirationFeedGrid');
+    const feedStatus = document.getElementById('feedStatus');
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalPrompt = document.getElementById('modalPrompt');
+    const modalModel = document.getElementById('modalModel');
+    const modalSeed = document.getElementById('modalSeed');
+    const modalImageUrl = document.getElementById('modalImageUrl');
+    
+    let currentAspectRatio = { ratio: "16:9", w: 1920, h: 1080 };
+    let wallpaperHistory = JSON.parse(localStorage.getItem('wallpaperHistory')) || [];
+    let generationInProgress = false;
+    let eventSource = null;
+    const MAX_FEED_ITEMS = 20;
+    const FEED_KEYWORDS = ['wallpaper', 'background', 'landscape', 'abstract', 'space', 'nature', 'pattern', 'texture'];
+    
+    // Placeholder en caso de error en carga
+    const fallbackImage = "https://via.placeholder.com/1920x1080.png?text=Wallpaper+Preview";
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      addEventListeners();
+      loadHistory();
+      updateAspectRatioSelection(aspectRatioSelector.querySelector('button[data-ratio="16:9"]'));
+      connectToFeed();
+    });
+    
+    function handleGeneration() {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        alert('Ingresa un prompt para generar el wallpaper.');
+        return;
+      }
+      if (generationInProgress) return;
+      
+      generationInProgress = true;
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Generando...';
+      loadingSpinner.classList.add('visible');
+      previewMessage.textContent = '';
+      
+      // Reiniciamos la vista previa para forzar la recarga
+      wallpaperPreview.classList.remove('loaded');
+      wallpaperPreview.src = "";
+      
+      const selectedModel = modelSelect.value;
+      const seed = Math.floor(Math.random() * 1000000);
+      const width = currentAspectRatio.w;
+      const height = currentAspectRatio.h;
+      const encodedPrompt = encodeURIComponent(prompt);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=${selectedModel}&seed=${seed}&width=${width}&height=${height}&nologo=true`;
+      
+      console.log("Generando imagen:", imageUrl);
+      
+      loadImage(imageUrl)
+        .then(() => {
+          wallpaperPreview.src = imageUrl;
+          // Cuando cargue la imagen, se ejecuta onload (ver loadImage interno)
+          wallpaperPreview.onload = () => {
+            wallpaperPreview.classList.add('loaded');
+            downloadBtn.href = imageUrl;
+            downloadBtn.download = `wallpaper_${prompt.substring(0,20).replace(/\s+/g, '_')}_${seed}.png`;
+            downloadBtn.classList.add('visible');
+            saveToHistory({ prompt, model: selectedModel, seed, width, height, imageUrl });
+          }
+        })
+        .catch((error) => {
+          console.error("Error cargando imagen:", error);
+          previewMessage.textContent = error.message;
+          wallpaperPreview.src = fallbackImage;
+          wallpaperPreview.onload = () => {
+            wallpaperPreview.classList.add('loaded');
+            downloadBtn.href = fallbackImage;
+            downloadBtn.download = "fallback.png";
+            downloadBtn.classList.add('visible');
+          }
+        })
+        .finally(() => {
+          loadingSpinner.classList.remove('visible');
+          generateBtn.disabled = false;
+          generateBtn.textContent = 'Generar Wallpaper';
+          generationInProgress = false;
+        });
+    }
+    
+    // Función simplificada para "precargar" la imagen
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        let timeoutId = setTimeout(() => {
+          img.onload = null;
+          img.onerror = null;
+          reject(new Error('Timeout al cargar la imagen.'));
+        }, 60000);
+    
+        img.onload = () => {
+          clearTimeout(timeoutId);
+          resolve();
+        };
+        img.onerror = () => {
+          clearTimeout(timeoutId);
+          reject(new Error('No se pudo cargar la imagen de la API.'));
+        };
+        img.src = src;
+      });
+    }
+    
+    function connectToFeed() {
+      if (eventSource) eventSource.close();
+      updateFeedStatus('Conectando...');
+      eventSource = new EventSource('https://image.pollinations.ai/feed');
+    
+      eventSource.onopen = () => updateFeedStatus('Feed activo.');
+      eventSource.onerror = () => {
+        updateFeedStatus('Feed desconectado. Reintentando...');
+        setTimeout(connectToFeed, 5000);
+      };
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.imageURL && data.prompt && data.model && isPotentialWallpaper(data.prompt)) {
+            addFeedItem(data);
+          }
+        } catch (e) {
+          console.error("Error parseando feed:", e);
+        }
+      };
+    }
+    
+    function updateFeedStatus(text) {
+      feedStatus.textContent = text;
+    }
+    
+    function isPotentialWallpaper(prompt) {
+      const lowerPrompt = prompt.toLowerCase();
+      return FEED_KEYWORDS.some(kw => lowerPrompt.includes(kw)) &&
+             !lowerPrompt.includes('person') && !lowerPrompt.includes('portrait') && !lowerPrompt.includes('selfie');
+    }
+    
+    function addFeedItem(data) {
+      const container = document.createElement('div');
+      container.className = 'image-container';
+      container.dataset.prompt = data.prompt;
+      container.dataset.model = data.model || 'N/A';
+      container.dataset.seed = data.seed || 'N/A';
+      container.dataset.imageUrl = data.imageURL;
+    
+      const img = document.createElement('img');
+      img.className = 'result-image';
+      img.alt = `Feed: ${data.prompt.substring(0,30)}...`;
+      img.onload = () => img.classList.add('loaded');
+      img.onerror = () => container.remove();
+      img.src = data.imageURL;
+    
+      const overlay = document.createElement('div');
+      overlay.className = 'image-info-overlay';
+      overlay.textContent = data.prompt;
+    
+      container.appendChild(img);
+      container.appendChild(overlay);
+      container.addEventListener('click', () => openModal(container));
+    
+      inspirationFeedGrid.insertBefore(container, inspirationFeedGrid.firstChild);
+      while (inspirationFeedGrid.children.length > MAX_FEED_ITEMS) {
+        inspirationFeedGrid.removeChild(inspirationFeedGrid.lastChild);
+      }
+    }
+    
+    function addEventListeners() {
+      generateBtn.addEventListener('click', handleGeneration);
+      
+      promptInput.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleGeneration();
+        }
+      });
+      
+      aspectRatioSelector.addEventListener('click', (e) => {
+        if(e.target.tagName === 'BUTTON'){
+          updateAspectRatioSelection(e.target);
+        }
+      });
+      
+      clearHistoryBtn.addEventListener('click', clearHistory);
+      
+      window.addEventListener('click', (event) => {
+        if(event.target == imageModal) closeModal();
+      });
+      window.addEventListener('keydown', (event) => {
+        if(event.key === 'Escape') closeModal();
+      });
+    }
+    
+    function updateAspectRatioSelection(selectedButton) {
+      aspectRatioSelector.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+      selectedButton.classList.add('active');
+      currentAspectRatio = {
+        ratio: selectedButton.dataset.ratio,
+        w: parseInt(selectedButton.dataset.w),
+        h: parseInt(selectedButton.dataset.h)
+      };
+      console.log("Aspect Ratio seleccionado:", currentAspectRatio);
+    }
+    
+    function saveToHistory(item) {
+      if (!wallpaperHistory.some(h => h.imageUrl === item.imageUrl)) {
+        wallpaperHistory.unshift(item);
+        if(wallpaperHistory.length > 10) {
+          wallpaperHistory.pop();
+        }
+        localStorage.setItem('wallpaperHistory', JSON.stringify(wallpaperHistory));
+        renderHistoryItem(item, true);
+      }
+    }
+    
+    function loadHistory() {
+      historyGrid.innerHTML = "";
+      wallpaperHistory.forEach(item => renderHistoryItem(item, false));
+    }
+    
+    function renderHistoryItem(item, prepend = false) {
+      const container = document.createElement('div');
+      container.className = 'image-container';
+      container.style.aspectRatio = `${item.width || 16} / ${item.height || 9}`;
+      container.dataset.prompt = item.prompt;
+      container.dataset.model = item.model;
+      container.dataset.seed = item.seed;
+      container.dataset.imageUrl = item.imageUrl;
+      
+      const img = document.createElement('img');
+      img.className = 'result-image';
+      img.alt = `Historial: ${item.prompt.substring(0,30)}...`;
+      img.onload = () => img.classList.add('loaded');
+      img.src = item.imageUrl;
+      
+      container.appendChild(img);
+      container.addEventListener('click', () => openModal(container));
+      
+      if(prepend){
+        historyGrid.insertBefore(container, historyGrid.firstChild);
+        if(historyGrid.children.length > 10){
+          historyGrid.removeChild(historyGrid.lastChild);
+        }
+      } else {
+        historyGrid.appendChild(container);
+      }
+    }
+    
+    function clearHistory() {
+      if(confirm('¿Seguro que deseas borrar el historial local?')){
+        wallpaperHistory = [];
+        localStorage.removeItem('wallpaperHistory');
+        historyGrid.innerHTML = "";
+      }
+    }
+    
+    // Modal
+    function openModal(container) {
+      modalImage.src = container.dataset.imageUrl;
+      modalPrompt.textContent = container.dataset.prompt;
+      modalModel.textContent = container.dataset.model;
+      modalSeed.textContent = container.dataset.seed;
+      modalImageUrl.href = container.dataset.imageUrl;
+      imageModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal() {
+      imageModal.style.display = 'none';
+      document.body.style.overflow = '';
+      modalImage.src = "";
+    }
+    
+    function usePromptFromModal() {
+      promptInput.value = modalPrompt.textContent;
+      closeModal();
+      promptInput.focus();
+    }
+    
+    addEventListeners();
+  </script>
+</body>
+</html>

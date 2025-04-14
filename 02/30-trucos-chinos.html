@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia de Trucos Matemáticos Chinos</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        body {
+    /* font-family: 'Comic Sans MS', cursive, sans-serif; */ /* Comenta o elimina la anterior */
+    font-family: 'Nunito', sans-serif; /* <-- Aplica la nueva fuente */
+    background-color: #f0f8ff;
+     /* ... otros estilos ... */
+}
+        }
+        .trick-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            background: white;
+            border-radius: 1rem; /* Bordes más redondeados */
+            overflow: hidden; /* Para que el borde afecte a la imagen/icono si la hubiera */
+        }
+        .trick-card:hover {
+            transform: translateY(-8px) scale(1.02); /* Efecto más pronunciado */
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        .hidden { /* Asegurarnos que hidden realmente oculte */
+            display: none !important;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            position: relative; /* Para el texto interior */
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50; /* Verde progreso */
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .star-rating .star {
+            color: #ccc; /* Estrellas grises por defecto */
+            font-size: 24px;
+            cursor: default; /* No son clickables aquí */
+            transition: color 0.3s ease;
+        }
+        .star-rating .star.active {
+            color: #FFD700; /* Amarillo dorado para activas */
+        }
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 15px;
+            opacity: 0.8;
+            animation: fall 4s linear infinite;
+            z-index: 100;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-20px) rotateZ(0deg); }
+            100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
+        }
+        .dragon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: auto; /* Ajustar altura automáticamente */
+            z-index: 1000;
+            cursor: pointer;
+            animation: float 3s infinite ease-in-out;
+            content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🐉</text></svg>'); /* Emoji dragón como SVG */
+        }
+         .dragon-message {
+            position: fixed;
+            bottom: 130px; /* Above the dragon */
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            font-size: 0.9rem;
+            max-width: 200px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none; /* Para que no interfiera con clics */
+        }
+        .dragon-message.show {
+            opacity: 1;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .category-btn, .category-filter-btn {
+            transition: all 0.3s ease;
+            min-width: 120px; /* Ancho mínimo */
+            text-align: center;
+        }
+        .category-btn:hover, .category-filter-btn:hover:not(.active) {
+            transform: scale(1.05) rotate(-2deg); /* Pequeña rotación al pasar el ratón */
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+         .category-filter-btn.active {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+         }
+
+        .question-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .question-card.correct {
+             border-color: #4CAF50; /* Borde verde si correcto */
+             background-color: #e8f5e9; /* Fondo verde claro */
+        }
+        .question-card.incorrect {
+            border-color: #f44336; /* Borde rojo si incorrecto */
+            background-color: #ffebee; /* Fondo rojo claro */
+        }
+        .answer-btn {
+            transition: all 0.2s ease;
+            border: 2px solid #ddd; /* Borde por defecto */
+        }
+        .answer-btn:hover {
+            transform: scale(1.03);
+            border-color: #aaa;
+        }
+        .answer-btn.selected {
+             border-color: #60a5fa !important; /* Borde azul al seleccionar */
+             background-color: #eff6ff !important;
+        }
+        .answer-btn.correct {
+            background-color: #4CAF50 !important;
+            border-color: #388e3c !important;
+            color: white !important;
+            transform: scale(1.05);
+        }
+        .answer-btn.incorrect {
+            background-color: #f44336 !important;
+            border-color: #d32f2f !important;
+            color: white !important;
+            opacity: 0.7; /* Hacerlo un poco transparente */
+        }
+        /* Estilo para deshabilitar botones */
+        .answer-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none; /* No escalar cuando está deshabilitado */
+        }
+        .nav-item {
+            position: relative;
+            cursor: pointer;
+            padding-bottom: 8px; /* Espacio para la línea */
+            transition: color 0.3s ease;
+        }
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            bottom: 0; /* Posiciona la línea justo debajo */
+            left: 50%; /* Centrar la línea */
+            transform: translateX(-50%);
+            background-color: #FF6B6B; /* Color coral */
+            border-radius: 1.5px;
+            transition: width 0.3s ease;
+        }
+        .nav-item:hover::after, .nav-item.active::after {
+            width: 80%; /* Ancho de la línea activa/hover */
+        }
+        .nav-item:hover {
+            color: #fce7f3; /* Color más claro al pasar el ratón */
+        }
+
+        /* Personalización para pequeños dispositivos */
+        @media (max-width: 640px) {
+            .trick-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .nav-item {
+                padding: 8px 10px; /* Ajustar padding en móvil */
+                font-size: 0.9rem;
+            }
+             .dragon {
+                width: 80px;
+                bottom: 10px;
+                right: 10px;
+            }
+             .dragon-message {
+                 bottom: 100px;
+                 right: 10px;
+                 font-size: 0.8rem;
+             }
+             h1 { font-size: 1.8rem; } /* Ajustar tamaño de título */
+             h2 { font-size: 1.5rem; }
+             h3 { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body class="bg-blue-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl"> <!-- Max-width ampliado -->
+        <!-- Cabecera -->
+        <header class="bg-gradient-to-r from-red-500 via-yellow-500 to-red-500 rounded-xl p-6 shadow-lg mb-8 sticky top-0 z-50">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0 text-white">
+                     <!-- Icono simple de ábaco o similar -->
+                    <svg class="w-10 h-10 md:w-12 md:h-12 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M12 14h.01M15 17h.01M9 14h.01M4 7h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z"></path></svg>
+                    <h1 class="text-2xl md:text-4xl font-bold">Academia de Trucos Matemáticos</h1>
+                </div>
+                <nav class="flex flex-wrap justify-center space-x-1 md:space-x-4">
+                    <button id="btnHome" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full active">Inicio</button>
+                    <button id="btnTricks" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full">Trucos</button>
+                    <button id="btnStats" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full">Estadísticas</button>
+                    <button id="btnAbout" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full">Sobre Nosotros</button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <main>
+            <!-- Sección de bienvenida (Inicio) -->
+            <section id="welcome" class="mb-16">
+                <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-yellow-400">
+                    <h2 class="text-3xl font-bold text-purple-700 mb-4 text-center">¡Hola, joven explorador matemático! 👋</h2>
+                    <p class="text-lg mb-6 text-gray-700 text-center">¿Listo para descubrir secretos súper rápidos para resolver cuentas? ¡Como por arte de magia! ✨ Aquí aprenderás trucos geniales que usaban sabios en China hace mucho, mucho tiempo.</p>
+
+                    <div class="text-center mb-10">
+                        <button id="start-learning-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 text-xl">
+                            ¡Empezar la Aventura! <i class="fas fa-rocket ml-2"></i>
+                        </button>
+                    </div>
+
+                    <div class="mt-10 border-t pt-6">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-4 text-center">Tu progreso hasta ahora:</h3>
+                        <div class="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-10 text-center">
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-sm w-full md:w-auto min-w-[180px]">
+                                <p class="text-lg font-semibold text-gray-600">Trucos Aprendidos</p>
+                                <p class="text-4xl font-bold text-green-600" id="home-tricks-mastered">0/30</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-sm w-full md:w-auto min-w-[180px]">
+                                <p class="text-lg font-semibold text-gray-600">Estrellas Ganadas <i class="fas fa-star text-yellow-400"></i></p>
+                                <p class="text-4xl font-bold text-yellow-500" id="home-stars-earned">0</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-sm w-full md:w-auto min-w-[180px]">
+                                <p class="text-lg font-semibold text-gray-600">Ejercicios Hechos</p>
+                                <p class="text-4xl font-bold text-blue-600" id="home-exercises-completed">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Lista de Trucos -->
+             <section id="trick-list" class="mb-16 hidden">
+                <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-blue-400">
+                    <h2 class="text-3xl font-bold text-blue-700 mb-6 text-center">Elige un Truco Mágico para Aprender 🧙‍♂️</h2>
+                     <!-- Filtros de Categoría -->
+                    <div class="flex flex-wrap justify-center gap-3 mb-8">
+                        <button class="category-filter-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full active" data-category="all">Todos</button>
+                        <button class="category-filter-btn bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-full" data-category="multiplication">Multiplicación <i class="fas fa-times ml-1"></i></button>
+                        <button class="category-filter-btn bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded-full" data-category="addition">Sumas/Restas <i class="fas fa-plus-minus ml-1"></i></button>
+                         <button class="category-filter-btn bg-green-100 hover:bg-green-200 text-green-800 font-bold py-2 px-4 rounded-full" data-category="mental">Cálculo Mental <i class="fas fa-brain ml-1"></i></button>
+                        <button class="category-filter-btn bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-2 px-4 rounded-full" data-category="patterns">Patrones <i class="fas fa-puzzle-piece ml-1"></i></button>
+                        <button class="category-filter-btn bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-full" data-category="advanced">Avanzados <i class="fas fa-infinity ml-1"></i></button>
+                         <!-- Añadir más categorías si es necesario -->
+                    </div>
+                    <div id="trick-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 trick-grid">
+                        <!-- Las tarjetas de trucos se cargarán aquí -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Detalle del Truco y Práctica -->
+             <section id="trick-detail" class="mb-16 hidden">
+                 <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-green-400">
+                    <button id="back-to-list-btn" class="mb-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                        <i class="fas fa-arrow-left mr-2"></i> Volver a la Lista
+                    </button>
+                    <div id="trick-detail-content">
+                        <!-- El contenido del truco (explicación) se carga aquí -->
+                    </div>
+                    <div id="practice-section" class="mt-8 border-t pt-6 hidden">
+                         <h3 class="text-2xl font-bold text-green-700 mb-4 text-center">¡Hora de Practicar! 🧠</h3>
+                         <div id="question-container" class="bg-gray-50 p-6 rounded-lg shadow-inner mb-4">
+                             <!-- La pregunta actual se carga aquí -->
+                         </div>
+                         <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                             <!-- Las opciones de respuesta se cargan aquí -->
+                         </div>
+                         <div id="feedback-container" class="text-center font-bold mb-4 h-6">
+                             <!-- Mensajes de feedback (correcto/incorrecto) -->
+                         </div>
+                         <div class="flex justify-center space-x-4">
+                             <button id="check-answer-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 hidden">Revisar Respuesta</button>
+                            <button id="next-question-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 hidden">Siguiente <i class="fas fa-arrow-right ml-1"></i></button>
+                         </div>
+                    </div>
+                     <div id="practice-results" class="mt-8 border-t pt-6 text-center hidden">
+                         <h3 class="text-2xl font-bold text-purple-700 mb-4">¡Terminaste la práctica! 🎉</h3>
+                         <p class="text-xl mb-2">Tu resultado:</p>
+                         <p class="text-3xl font-bold mb-4"><span id="score-correct">0</span> de <span id="score-total">0</span> correctas</p>
+                         <div class="star-rating flex justify-center text-4xl mb-6" id="result-stars">
+                             <!-- Las estrellas de resultado se mostrarán aquí -->
+                         </div>
+                         <p id="result-message" class="text-lg mb-6 font-semibold"></p>
+                         <button id="back-to-trick-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full transition duration-300">Volver al Truco</button>
+                     </div>
+                     <div id="start-practice-area" class="text-center mt-8 border-t pt-6">
+                         <button id="start-practice-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 text-xl">
+                             ¡Probar este truco! <i class="fas fa-pencil-alt ml-2"></i>
+                         </button>
+                     </div>
+                </div>
+            </section>
+
+            <!-- Sección de estadísticas -->
+            <section id="stats" class="mb-16 hidden">
+                 <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-purple-400">
+                    <h2 class="text-3xl font-bold text-purple-700 mb-6 text-center">Tu Tablero de Avance 🏆</h2>
+
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-2">Progreso General</h3>
+                        <div class="progress-bar">
+                            <div id="overall-progress" class="progress-fill">0%</div>
+                        </div>
+                        <p class="text-right text-gray-600"><span id="overall-progress-text">0</span>% de trucos aprendidos (<span id="stats-tricks-mastered">0</span>/30)</p>
+                        <p class="text-right text-gray-600"><i class="fas fa-star text-yellow-400"></i> Total Estrellas: <span id="stats-stars-earned" class="font-bold">0</span></p>
+                         <p class="text-right text-gray-600"><i class="fas fa-check text-green-500"></i> Ejercicios Completados: <span id="stats-exercises-completed" class="font-bold">0</span></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <!-- Progreso por Categoría -->
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                            <h4 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Progreso por Tipo de Truco</h4>
+                             <!-- Ejemplo de barra de progreso por categoría -->
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Multiplicación Mágica <i class="fas fa-times text-red-500"></i></p>
+                                <div class="progress-bar">
+                                    <div id="multiplication-progress" class="progress-fill bg-red-500" style="width: 0%;">0%</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Sumas y Restas <i class="fas fa-plus-minus text-blue-500"></i></p>
+                                <div class="progress-bar">
+                                    <div id="addition-progress" class="progress-fill bg-blue-500" style="width: 0%;">0%</div>
+                                </div>
+                            </div>
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Cálculo Mental <i class="fas fa-brain text-green-500"></i></p>
+                                <div class="progress-bar">
+                                    <div id="mental-progress" class="progress-fill bg-green-500" style="width: 0%;">0%</div>
+                                </div>
+                            </div>
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Patrones Numéricos <i class="fas fa-puzzle-piece text-yellow-500"></i></p>
+                                <div class="progress-bar">
+                                    <div id="patterns-progress" class="progress-fill bg-yellow-500" style="width: 0%;">0%</div>
+                                </div>
+                            </div>
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Avanzados <i class="fas fa-infinity text-purple-500"></i></p>
+                                <div class="progress-bar">
+                                    <div id="advanced-progress" class="progress-fill bg-purple-500" style="width: 0%;">0%</div>
+                                </div>
+                            </div>
+                            <!-- Añadir más categorías si es necesario -->
+                        </div>
+
+                         <!-- Logros -->
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                            <h4 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Tus Medallas <i class="fas fa-medal text-yellow-600"></i></h4>
+                            <div id="achievements-container" class="space-y-3">
+                                 <!-- Los logros se cargarán aquí -->
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="first_trick">
+                                    <div class="mr-4 text-2xl"><i class="fas fa-star text-gray-400"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-600">Primer Paso</p>
+                                        <p class="text-sm text-gray-500">Completa tu primer truco.</p>
+                                    </div>
+                                </div>
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="five_tricks">
+                                    <div class="mr-4 text-2xl"><i class="fas fa-award text-gray-400"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-600">Aprendiz Veloz</p>
+                                        <p class="text-sm text-gray-500">Completa 5 trucos diferentes.</p>
+                                    </div>
+                                </div>
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="fifteen_tricks">
+                                    <div class="mr-4 text-2xl"><i class="fas fa-medal text-gray-400"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-600">Experto Calculista</p>
+                                        <p class="text-sm text-gray-500">Completa 15 trucos diferentes.</p>
+                                    </div>
+                                </div>
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="all_tricks">
+                                     <div class="mr-4 text-2xl"><i class="fas fa-trophy text-gray-400"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-600">Maestro de los Trucos</p>
+                                        <p class="text-sm text-gray-500">¡Completa todos los trucos!</p>
+                                    </div>
+                                </div>
+                                 <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="perfect_score">
+                                     <div class="mr-4 text-2xl"><i class="fas fa-check-double text-gray-400"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-600">¡Perfecto!</p>
+                                        <p class="text-sm text-gray-500">Consigue 3 estrellas en un truco.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-6 border-t pt-6">
+                         <button id="reset-progress-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full transition duration-300 transform hover:scale-105">
+                             <i class="fas fa-undo mr-2"></i> Reiniciar Todo el Progreso
+                        </button>
+                        <p class="text-sm text-gray-500 mt-2">¡Cuidado! Esto borrará todas tus estrellas y logros.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Sobre Nosotros -->
+            <section id="about" class="mb-16 hidden">
+                 <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-red-400">
+                    <h2 class="text-3xl font-bold text-red-700 mb-6 text-center">Nuestra Aventura Matemática 🗺️</h2>
+
+                    <div class="mb-8 text-center">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🏮</text></svg>" alt="Linterna China" class="w-24 h-24 mx-auto mb-4">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-4">¿Quiénes somos?</h3>
+                        <p class="text-lg text-gray-700 mb-4 leading-relaxed max-w-3xl mx-auto">
+                            Somos un grupo de amigos que ama las matemáticas y cree que pueden ser súper divertidas, ¡como un juego! 🧩 Inspirados por los increíbles métodos de cálculo de la antigua China, creamos esta academia para compartir esos secretos contigo. Queremos que te sientas como un detective descubriendo pistas numéricas.
+                        </p>
+                        <p class="text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto">
+                            Nuestra misión es mostrarte que las mates no son solo números aburridos, sino una aventura llena de trucos y sorpresas. ¡Con un poco de práctica, te convertirás en un verdadero ninja de los números! 🥷🔢
+                        </p>
+                    </div>
+
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-4 text-center">¿Por qué aprender estos trucos? 🤔</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-blue-50 p-5 rounded-lg shadow-sm border-l-4 border-blue-400">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-bolt text-blue-500 text-2xl mr-3"></i>
+                                    <h4 class="font-bold text-lg text-blue-800">¡Más Rápido que una Calculadora!</h4>
+                                </div>
+                                <p class="text-gray-700">Resolverás cuentas en tu cabeza súper rápido, ¡impresionarás a tus amigos!</p>
+                            </div>
+                            <div class="bg-green-50 p-5 rounded-lg shadow-sm border-l-4 border-green-400">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-brain text-green-500 text-2xl mr-3"></i>
+                                    <h4 class="font-bold text-lg text-green-800">Entrena tu Cerebro</h4>
+                                </div>
+                                <p class="text-gray-700">Es como hacer gimnasia para tu mente, ¡la harás más fuerte y ágil!</p>
+                            </div>
+                            <div class="bg-yellow-50 p-5 rounded-lg shadow-sm border-l-4 border-yellow-400">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-thumbs-up text-yellow-500 text-2xl mr-3"></i>
+                                    <h4 class="font-bold text-lg text-yellow-800">Adiós al Miedo a las Mates</h4>
+                                </div>
+                                <p class="text-gray-700">Verás que las matemáticas pueden ser fáciles y hasta divertidas. ¡Confía en ti!</p>
+                            </div>
+                            <div class="bg-red-50 p-5 rounded-lg shadow-sm border-l-4 border-red-400">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-puzzle-piece text-red-500 text-2xl mr-3"></i>
+                                    <h4 class="font-bold text-lg text-red-800">Entiende Cómo Funcionan los Números</h4>
+                                </div>
+                                <p class="text-gray-700">Descubrirás patrones secretos y entenderás mejor el "por qué" de las cuentas.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-10 border-t pt-6">
+                         <p class="text-lg text-gray-700">¿Listo para seguir explorando?</p>
+                        <button id="about-to-tricks-btn" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full transition duration-300">
+                             ¡Ver más Trucos! <i class="fas fa-wand-magic-sparkles ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Pie de página simple -->
+        <footer class="text-center text-gray-500 text-sm mt-12 pb-4">
+            Hecho con <i class="fas fa-heart text-red-500"></i> y <i class="fas fa-brain text-blue-500"></i> para los futuros maestros matemáticos.
+        </footer>
+
+        <!-- Mascota Dragón -->
+        <div class="dragon" id="dragon-mascot"></div>
+        <div class="dragon-message" id="dragon-message-box">¡Hola! Soy Long, tu guía dragón. ¡Vamos a aprender mates!</div>
+
+        <!-- Contenedor para confeti -->
+        <div id="confetti-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></div>
+
+    </div> <!-- Fin del container -->
+
+    <script>
+        // --- Datos de los Trucos ---
+        const tricks = [
+             {
+                id: 'trick1',
+                title: 'Multiplicación Vertical y en Cruz',
+                category: 'multiplication',
+                difficulty: 1, // 1: Fácil, 2: Medio, 3: Difícil
+                icon: 'fas fa-arrows-up-down', // Icono representativo
+                description: 'Una forma genial de multiplicar números grandes dibujando líneas.',
+                explanation: `
+                    <p class="mb-4 text-lg">¡Imagina que los números son bailarines! Vamos a hacer que bailen juntos para multiplicar.</p>
+                    <p class="mb-2 font-semibold">Para multiplicar, por ejemplo, 23 x 14:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Paso 1: Multiplica hacia abajo (vertical).</span><br>
+                           Multiplica los números de la derecha: 3 x 4 = 12. Escribe el 2 y recuerda el 1 (como un tesoro escondido).</li>
+                        <li><span class="font-bold text-blue-600">Paso 2: Multiplica cruzado y suma.</span><br>
+                           Ahora cruza los caminos: (2 x 4) + (3 x 1) = 8 + 3 = 11. ¡No olvides sumar el tesoro (1)! 11 + 1 = 12. Escribe el 2 y guarda el nuevo tesoro (1).</li>
+                        <li><span class="font-bold text-green-600">Paso 3: Multiplica hacia abajo (vertical) a la izquierda.</span><br>
+                           Multiplica los números de la izquierda: 2 x 1 = 2. Suma el último tesoro: 2 + 1 = 3. Escribe el 3.</li>
+                        <li><span class="font-bold text-purple-600">¡El resultado!</span><br>
+                           Junta los números que escribiste: 322. ¡Así que 23 x 14 = 322!</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-yellow-100 p-3 rounded">Es como seguir un mapa secreto: ¡abajo, cruzado, abajo!</p>
+                `,
+                practice: [
+                    { question: '¿Cuánto es 12 x 31?', options: ['372', '362', '472', '312'], correctAnswer: '372', hint: 'Recuerda: abajo (2x1), cruzado (1x1 + 2x3), abajo (1x3).' },
+                    { question: 'Calcula 41 x 22.', options: ['802', '902', '882', '912'], correctAnswer: '902', hint: 'Paso 1: 1x2=2. Paso 2: (4x2)+(1x2)=10 (escribes 0, llevas 1). Paso 3: 4x2=8 + 1 = 9.' },
+                    { question: '¿Cuál es el resultado de 53 x 11?', options: ['583', '573', '683', '553'], correctAnswer: '583', hint: '¡Cuidado con llevarte números!' }
+                ]
+            },
+            {
+                id: 'trick2',
+                title: 'Método de la Rejilla (Lattice)',
+                category: 'multiplication',
+                difficulty: 2,
+                icon: 'fas fa-border-all',
+                description: 'Multiplica dibujando una cajita con líneas diagonales. ¡Muy visual!',
+                explanation: `
+                    <p class="mb-4 text-lg">¡Vamos a usar una ventana mágica para multiplicar! Para 42 x 35:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Dibuja la caja:</span> Haz un cuadrado o rectángulo y divídelo. Como son dos números de 2 cifras, haz una caja de 2x2 (4 cuadraditos).</li>
+                        <li><span class="font-bold text-blue-600">Escribe los números:</span> Pon el 4 y el 2 arriba (uno en cada columna). Pon el 3 y el 5 al lado derecho (uno en cada fila).</li>
+                        <li><span class="font-bold text-green-600">Dibuja las diagonales:</span> En cada cuadradito, dibuja una línea de la esquina de arriba-derecha a la de abajo-izquierda. ¡Parecen toboganes!</li>
+                        <li><span class="font-bold text-yellow-600">Multiplica en cada caja:</span>
+                            <ul class="list-disc list-inside ml-4">
+                                <li>Arriba a la izquierda: 4 x 3 = 12 (escribe 1 arriba del tobogán, 2 abajo).</li>
+                                <li>Arriba a la derecha: 2 x 3 = 6 (escribe 0 arriba, 6 abajo).</li>
+                                <li>Abajo a la izquierda: 4 x 5 = 20 (escribe 2 arriba, 0 abajo).</li>
+                                <li>Abajo a la derecha: 2 x 5 = 10 (escribe 1 arriba, 0 abajo).</li>
+                            </ul>
+                        </li>
+                        <li><span class="font-bold text-purple-600">Suma por los caminos diagonales:</span> Empezando desde abajo a la derecha, suma los números que están entre las líneas diagonales:
+                            <ul class="list-disc list-inside ml-4">
+                                <li>Camino 1 (abajo-derecha): Solo hay un 0. Escribe 0.</li>
+                                <li>Camino 2 (en medio): 6 + 1 + 0 = 7. Escribe 7.</li>
+                                <li>Camino 3 (en medio): 0 + 2 + 2 = 4. Escribe 4.</li>
+                                <li>Camino 4 (arriba-izquierda): Solo hay un 1. Escribe 1.</li>
+                            </ul>
+                        </li>
+                         <li><span class="font-bold text-orange-600">Lee el resultado:</span> Lee los números que escribiste de izquierda a derecha y de arriba a abajo: 1470. ¡Así que 42 x 35 = 1470!</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-green-100 p-3 rounded">¡Es como un rompecabezas numérico en una ventana!</p>
+                     <div class="mt-4 flex justify-center">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Lattice_multiplication_animation.gif/220px-Lattice_multiplication_animation.gif" alt="Método Rejilla Animado" class="rounded border shadow"/>
+                     </div>
+                 `,
+                practice: [
+                    { question: 'Usando la rejilla, calcula 23 x 16.', options: ['368', '358', '268', '378'], correctAnswer: '368', hint: 'Dibuja una caja 2x2, multiplica cada par, y suma las diagonales.' },
+                    { question: '¿Cuánto es 51 x 47 con el método de la rejilla?', options: ['2397', '2387', '2497', '2377'], correctAnswer: '2397', hint: 'Recuerda poner 0 si el resultado de la multiplicación es de una sola cifra (ej: 1x7 = 07).' },
+                    { question: 'Resultado de 64 x 82 usando la rejilla:', options: ['5248', '5428', '5284', '4248'], correctAnswer: '5248', hint: '¡Suma con cuidado las diagonales! A veces hay que llevarse números.' }
+                ]
+            },
+            {
+                id: 'trick3',
+                title: 'Truco del "Faltante a 100"',
+                category: 'multiplication',
+                difficulty: 2,
+                icon: 'fas fa-arrows-left-right-to-line',
+                description: 'Multiplica números cerquita de 100 muy, muy rápido.',
+                explanation: `
+                    <p class="mb-4 text-lg">Este truco es genial para números como 97 o 94, ¡los que están casi en 100!</p>
+                    <p class="mb-2 font-semibold">Vamos a multiplicar 97 x 94:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">¿Cuánto les falta para 100?</span><br>
+                           A 97 le faltan 3 para ser 100 (100 - 97 = 3). <br>
+                           A 94 le faltan 6 para ser 100 (100 - 94 = 6).</li>
+                        <li><span class="font-bold text-blue-600">Resta cruzado:</span> Puedes hacer una de estas dos restas (¡dan lo mismo!): <br>
+                            97 - 6 (lo que le falta al otro número) = 91 <br>
+                            o <br>
+                            94 - 3 (lo que le falta al otro número) = 91. <br>
+                           ¡Este es el <span class="font-bold">primer trozo</span> de tu respuesta!</li>
+                        <li><span class="font-bold text-green-600">Multiplica lo que faltaba:</span><br>
+                           Multiplica los números que encontraste en el paso 1: 3 x 6 = 18. <br>
+                            ¡Este es el <span class="font-bold">segundo trozo</span> de tu respuesta! Asegúrate que tenga <span class="font-bold">dos cifras</span> (si es necesario, añade un 0 delante).</li>
+                        <li><span class="font-bold text-purple-600">¡Une los trozos!</span><br>
+                           Pon el primer trozo (91) y luego el segundo (18): 9118. <br>
+                           ¡Así que 97 x 94 = 9118!</li>
+                    </ol>
+                     <p class="mt-4 text-lg bg-blue-100 p-3 rounded"><span class="font-bold">Importante:</span> Si al multiplicar lo que falta (paso 3) te da un número de una sola cifra (como 2x3=6), tienes que escribirlo con un cero delante: 06. Por ejemplo, 98 x 97: falta 2 y 3. Resta cruzada: 98-3=95. Multiplica lo que falta: 2x3=6. Resultado: 95<span class="font-bold text-red-600">06</span>.</p>
+                `,
+                practice: [
+                    { question: '¿Cuánto es 96 x 95?', options: ['9120', '9110', '9020', '9210'], correctAnswer: '9120', hint: 'Faltan 4 y 5. Resta 96-5 ó 95-4. Multiplica 4x5.' },
+                    { question: 'Calcula 99 x 92.', options: ['9108', '9008', '9118', '9180'], correctAnswer: '9108', hint: 'Faltan 1 y 8. Resta cruzado. Multiplica 1x8... ¡recuerda el 0!' },
+                    { question: '¿Cuál es el resultado de 91 x 93?', options: ['8463', '8453', '8563', '8363'], correctAnswer: '8463', hint: 'Faltan 9 y 7. Resta cruzado: 91-7 ó 93-9. Multiplica 9x7.' }
+                ]
+            },
+             {
+                id: 'trick4',
+                title: 'Multiplicar por 11 Fácilmente',
+                category: 'multiplication',
+                difficulty: 1,
+                icon: 'fas fa-1',
+                description: 'Un truco súper veloz para multiplicar cualquier número de dos cifras por 11.',
+                explanation: `
+                    <p class="mb-4 text-lg">¡Multiplicar por 11 es casi como magia!</p>
+                    <p class="mb-2 font-semibold">Vamos a multiplicar 35 x 11:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Separa los números:</span> Imagina que el 3 y el 5 se separan un poquito, dejando un espacio en medio: 3 _ 5.</li>
+                        <li><span class="font-bold text-blue-600">Suma los dos números:</span> Suma los dígitos originales: 3 + 5 = 8.</li>
+                        <li><span class="font-bold text-green-600">Pon la suma en el medio:</span> Coloca ese 8 en el espacio que dejaste: 3 <span class="font-bold text-blue-600">8</span> 5.</li>
+                        <li><span class="font-bold text-purple-600">¡Listo!</span> ¡El resultado es 385! Así de fácil: 35 x 11 = 385.</li>
+                    </ol>
+                    <p class="mt-4 text-lg font-semibold">¿Y si la suma es mayor que 9?</p>
+                    <p class="mb-2 text-lg">¡Buena pregunta! Por ejemplo, 67 x 11:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li>Separa: 6 _ 7.</li>
+                        <li>Suma: 6 + 7 = 13. ¡Oh, oh! Es de dos cifras.</li>
+                        <li><span class="font-bold text-orange-600">Lleva el 1:</span> Deja el 3 (la unidad del 13) en el medio y "llevas" el 1 (la decena del 13) para sumarlo al primer número (el 6).</li>
+                        <li>Suma lo que llevas: 6 + 1 = 7.</li>
+                        <li><span class="font-bold text-purple-600">Forma el número final:</span> El primer número ahora es 7, el del medio es 3, y el último es 7. ¡El resultado es 737! Así que 67 x 11 = 737.</li>
+                    </ol>
+                     <p class="mt-4 text-lg bg-yellow-100 p-3 rounded">¡Es como abrir un sándwich, meter el relleno (la suma) y a veces ajustar el pan de arriba!</p>
+                `,
+                practice: [
+                    { question: '¿Cuánto es 42 x 11?', options: ['462', '4211', '452', '472'], correctAnswer: '462', hint: 'Separa 4 y 2. Suma 4+2=6. Pon el 6 en medio.' },
+                    { question: 'Calcula 81 x 11.', options: ['891', '8111', '881', '981'], correctAnswer: '891', hint: 'Separa 8 y 1. Suma 8+1=9. El resultado es 891.' },
+                    { question: '¿Cuál es el resultado de 75 x 11?', options: ['725', '825', '7511', '815'], correctAnswer: '825', hint: 'Suma 7+5=12. Pon el 2 en medio y suma el 1 al 7 (7+1=8). Resultado: 825.' }
+                ]
+            },
+             {
+                id: 'trick5',
+                title: 'Multiplicar Números que Acaban en 5',
+                category: 'multiplication',
+                difficulty: 1,
+                icon: 'fas fa-5',
+                description: 'Un atajo para multiplicar números iguales que terminan en 5 (como 35 x 35).',
+                explanation: `
+                    <p class="mb-4 text-lg">Este truco es especial para multiplicar un número que acaba en 5... ¡por sí mismo! Como calcular 35 x 35 o 75 x 75.</p>
+                    <p class="mb-2 font-semibold">Vamos a calcular 35 x 35:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Mira el número sin el 5:</span> En 35, si quitamos el 5, nos queda el 3.</li>
+                        <li><span class="font-bold text-blue-600">Multiplícalo por el siguiente número:</span> ¿Qué número sigue después del 3? ¡El 4! Multiplica 3 x 4 = 12. <br> ¡Este es el <span class="font-bold">primer trozo</span> de tu respuesta!</li>
+                        <li><span class="font-bold text-green-600">Añade "25" al final:</span> ¡Siempre, siempre, siempre! Pega el número 25 al final de lo que calculaste antes (12).</li>
+                        <li><span class="font-bold text-purple-600">¡El resultado!</span> Juntamos 12 y 25, y nos da 1225. <br> ¡Así que 35 x 35 = 1225!</li>
+                    </ol>
+                    <p class="mt-4 text-lg font-semibold">Otro ejemplo rápido: 75 x 75</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li>Sin el 5, tenemos el 7.</li>
+                        <li>El número siguiente al 7 es el 8. Multiplica 7 x 8 = 56.</li>
+                        <li>Añade "25" al final.</li>
+                         <li>¡Resultado: 5625! (75 x 75 = 5625)</li>
+                    </ol>
+                     <p class="mt-4 text-lg bg-pink-100 p-3 rounded">¡Es como si el número sin el 5 llamara a su vecino para jugar (multiplicar) y el 25 siempre se uniera a la fiesta al final!</p>
+                `,
+                practice: [
+                    { question: '¿Cuánto es 25 x 25?', options: ['425', '625', '525', '725'], correctAnswer: '625', hint: 'Número sin el 5 es 2. Siguiente es 3. Multiplica 2x3 y añade 25.' },
+                    { question: 'Calcula 65 x 65.', options: ['3625', '4225', '4925', '3025'], correctAnswer: '4225', hint: 'Número sin el 5 es 6. Siguiente es 7. 6x7=42. Añade 25.' },
+                    { question: '¿Cuál es el resultado de 95 x 95?', options: ['9025', '8125', '10025', '9525'], correctAnswer: '9025', hint: 'Número sin el 5 es 9. Siguiente es 10. 9x10=90. Añade 25.' }
+                ]
+            },
+            // --- Placeholder para los siguientes trucos (mismos que antes) ---
+             { id: 'trick6', title: 'Doblado y Mitad', category: 'multiplication', difficulty: 1, icon: 'fas fa-arrows-rotate', description: 'Multiplica doblando un número y partiendo el otro a la mitad.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick7', title: 'Técnica del Suplemento a 10 o 100', category: 'addition', difficulty: 1, icon: 'fas fa-circle-plus', description: 'Usa lo que falta para llegar a 10 o 100 para sumar o restar más fácil.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick8', title: 'Cuadrados Rápidos cerca de 100', category: 'mental', difficulty: 2, icon: 'fas fa-square', description: 'Calcula el cuadrado de números cercanos a 100 con un truco.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick9', title: 'Uso de Identidades Algebraicas', category: 'mental', difficulty: 3, icon: 'fas fa-superscript', description: 'Usa fórmulas como (a+b)² para calcular mentalmente.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick10', title: 'Descomposición en Sumas', category: 'multiplication', difficulty: 1, icon: 'fas fa-diagram-project', description: 'Separa números en partes (47 = 40+7) para multiplicar más fácil.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick11', title: 'Cálculo Rápido de Porcentajes', category: 'mental', difficulty: 1, icon: 'fas fa-percent', description: 'Convierte porcentajes a fracciones simples (25% = 1/4).', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick12', title: 'Complemento 9 para Verificar', category: 'advanced', difficulty: 2, icon: 'fas fa-check-circle', description: 'Usa el número 9 para revisar si tus cuentas están bien.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick13', title: 'Suma de Series Consecutivas', category: 'patterns', difficulty: 2, icon: 'fas fa-arrow-trend-up', description: 'Suma rápido números en fila (1+2+3...+10).', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick14', title: 'Estimación y Redondeo', category: 'mental', difficulty: 1, icon: 'fas fa-bullseye', description: 'Adivina un resultado cercano redondeando números grandes.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick15', title: 'Cálculo Mental de Potencias de 2', category: 'patterns', difficulty: 1, icon: 'fas fa-2', description: 'Recuerda fácil cuánto es 2, 4, 8, 16, 32...', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick16', title: 'Cálculo Mental con Números Redondos', category: 'addition', difficulty: 1, icon: 'fas fa-circle-dot', description: 'Suma o resta fácil redondeando y luego ajustando.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick17', title: 'Identificación de Patrones Numéricos', category: 'patterns', difficulty: 2, icon: 'fas fa-magnifying-glass-chart', description: 'Encuentra secuencias escondidas en los números.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick18', title: 'Uso del Ábaco (Concepto)', category: 'advanced', difficulty: 2, icon: 'fas fa-calculator', description: 'Entiende cómo funciona el ábaco para calcular rápido.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick19', title: 'División con Ábaco (Concepto)', category: 'advanced', difficulty: 3, icon: 'fas fa-divide', description: 'Una idea de cómo dividir usando el ábaco.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick20', title: 'Técnica del Doble y Suma', category: 'multiplication', difficulty: 1, icon: 'fas fa-angles-up', description: 'Multiplica doblando y sumando.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick21', title: 'Multiplicación por Escalonamiento', category: 'multiplication', difficulty: 2, icon: 'fas fa-stairs', description: 'Divide un número en "escalones" para multiplicar.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick22', title: 'Aproximación de Raíces Cuadradas', category: 'mental', difficulty: 3, icon: 'fas fa-square-root-variable', description: 'Un método simple para acercarte a la raíz cuadrada.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick23', title: 'Fracciones: Suma y Resta Simplificada', category: 'addition', difficulty: 2, icon: 'fas fa-chart-pie', description: 'Formas fáciles de sumar y restar fracciones.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick24', title: 'Teorema Chino del Resto (Idea)', category: 'advanced', difficulty: 3, icon: 'fas fa-lightbulb', description: 'Una idea sobre un famoso teorema chino para resolver acertijos.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick25', title: 'Técnica de "Residuo" para Comprobaciones', category: 'advanced', difficulty: 2, icon: 'fas fa-recycle', description: 'Usa los "restos" de las divisiones para verificar resultados.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick26', title: 'Multiplicación de Números Similares', category: 'multiplication', difficulty: 2, icon: 'fas fa-equals', description: 'Un truco cuando multiplicas números muy cercanos entre sí.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick27', title: 'Método de las Fracciones Chinas (Idea)', category: 'advanced', difficulty: 3, icon: 'fas fa-hourglass-half', description: 'Una forma antigua de escribir fracciones.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick28', title: '"Cortar y Pegar" Números', category: 'multiplication', difficulty: 1, icon: 'fas fa-scissors', description: 'Separa números en partes, multiplica y junta.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick29', title: 'Resolución Rápida de Ecuaciones Simples', category: 'mental', difficulty: 2, icon: 'fas fa-scale-balanced', description: 'Trucos para encontrar la \'x\' en ecuaciones fáciles.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+             { id: 'trick30', title: 'Cálculo Rápido de Áreas (Concepto)', category: 'mental', difficulty: 1, icon: 'fas fa-draw-polygon', description: 'Calcula áreas de figuras simples mentalmente.', explanation: '<p class="text-center text-gray-500 italic py-4">Explicación pendiente... ¡Pronto estará lista!</p>', practice: [] },
+        ];
+
+        // --- Estado de la Aplicación ---
+        let currentTrickId = null;
+        let currentQuestionIndex = 0;
+        let currentScore = 0;
+        let practiceQuestions = [];
+        let selectedAnswer = null;
+        let progressData = {
+            completedTricks: [], // array of trick IDs
+            trickStars: {}, // { trickId: stars (0-3) }
+            totalStars: 0,
+            exercisesCompleted: 0,
+            achievements: [] // array of achievement IDs
+        };
+
+        // --- Selectores de DOM (Definidos dentro de DOMContentLoaded para asegurar existencia) ---
+        let sections = {};
+        let navButtons = {};
+        let trickListContainer, trickDetailContent, practiceSection, questionContainer, optionsContainer;
+        let feedbackContainer, checkAnswerBtn, nextQuestionBtn, practiceResults, scoreCorrectSpan;
+        let scoreTotalSpan, resultStarsContainer, resultMessage, startPracticeBtn, startPracticeArea;
+        let backToListBtn, backToTrickBtn, categoryFilterBtns, confettiContainer, dragonMascot;
+        let dragonMessageBox, resetProgressBtn, startLearningBtn, aboutToTricksBtn;
+
+        // --- Funciones de Navegación y UI ---
+
+        function showSection(sectionId) {
+             // console.log(`Intentando mostrar sección: ${sectionId}`); // Log para depuración
+             Object.values(sections).forEach((section, index) => {
+                 if(section) { // Verificar que el elemento exista
+                     const currentId = Object.keys(sections)[index];
+                     if (currentId === sectionId) {
+                         section.classList.remove('hidden');
+                         // console.log(`Mostrando: ${currentId}`);
+                     } else {
+                         section.classList.add('hidden');
+                         // console.log(`Ocultando: ${currentId}`);
+                     }
+                 } else {
+                     console.error(`Elemento de sección no encontrado para el índice ${index}`);
+                 }
+            });
+
+            Object.values(navButtons).forEach(btn => {
+                 if (btn) btn.classList.remove('active');
+                 else console.error("Un botón de navegación no fue encontrado");
+            });
+
+            let activeBtn = null;
+            if (sectionId === 'welcome' && navButtons.home) activeBtn = navButtons.home;
+            else if ((sectionId === 'trickList' || sectionId === 'trickDetail') && navButtons.tricks) activeBtn = navButtons.tricks;
+            else if (sectionId === 'stats' && navButtons.stats) activeBtn = navButtons.stats;
+            else if (sectionId === 'about' && navButtons.about) activeBtn = navButtons.about;
+
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            } else if (sectionId !== 'trickDetail'){ // No marcar nada activo si estamos en detalle (mantiene activo 'Trucos')
+                 console.warn(`Botón activo no encontrado o no aplicable para la sección: ${sectionId}`);
+            }
+
+
+            // Lógicas adicionales al mostrar secciones
+            if (sectionId === 'trickList') {
+                 displayTrickList(); // Regenerar lista por si hubo cambios
+            }
+            if (sectionId === 'stats') {
+                updateStatsUI();
+            }
+            if (sectionId === 'welcome') {
+                updateWelcomeStats();
+            }
+
+             // Solo hacer scroll si no estamos mostrando un detalle de truco (para evitar saltos al volver)
+             if (sectionId !== 'trickDetail') {
+                 window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll suave al inicio
+             }
+        }
+
+        function setupNavigation() {
+            // Asegurarse que los botones existen antes de añadir listeners
+            if (navButtons.home) navButtons.home.addEventListener('click', () => showSection('welcome'));
+            if (navButtons.tricks) navButtons.tricks.addEventListener('click', () => showSection('trickList'));
+            if (navButtons.stats) navButtons.stats.addEventListener('click', () => showSection('stats'));
+            if (navButtons.about) navButtons.about.addEventListener('click', () => showSection('about'));
+            if (startLearningBtn) startLearningBtn.addEventListener('click', () => showSection('trickList'));
+            if (aboutToTricksBtn) aboutToTricksBtn.addEventListener('click', () => showSection('trickList'));
+            if (backToListBtn) backToListBtn.addEventListener('click', () => showSection('trickList'));
+
+            if (backToTrickBtn) backToTrickBtn.addEventListener('click', () => {
+                 if (practiceResults) practiceResults.classList.add('hidden');
+                 if (practiceSection) practiceSection.classList.add('hidden');
+                 if (startPracticeArea) startPracticeArea.classList.remove('hidden');
+                 if (trickDetailContent) trickDetailContent.classList.remove('hidden');
+            });
+
+            // Filtros de categoría
+             if (categoryFilterBtns) {
+                categoryFilterBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const category = btn.dataset.category;
+                        displayTrickList(category);
+                    });
+                });
+            } else {
+                 console.error("Botones de filtro de categoría no encontrados.");
+            }
+        }
+
+        // --- Funciones de Trucos y Práctica ---
+
+        function getTrickById(id) {
+            return tricks.find(trick => trick.id === id);
+        }
+
+         function displayTrickList(filterCategory = 'all') {
+             if (!trickListContainer) {
+                 console.error("Contenedor de lista de trucos no encontrado.");
+                 return;
+             }
+            trickListContainer.innerHTML = ''; // Limpiar lista actual
+            const filteredTricks = filterCategory === 'all'
+                ? tricks
+                : tricks.filter(trick => trick.category === filterCategory);
+
+            if (filteredTricks.length === 0) {
+                 trickListContainer.innerHTML = `<p class="text-center text-gray-500 col-span-full">No hay trucos en esta categoría todavía... ¡pero pronto habrá más!</p>`;
+                 // Asegurarse que los botones de filtro reflejen la selección vacía
+                 updateCategoryFilterButtons(filterCategory);
+                 return;
+            }
+
+            filteredTricks.forEach(trick => {
+                const stars = progressData.trickStars[trick.id] || 0;
+                const isCompleted = progressData.completedTricks.includes(trick.id);
+                const card = document.createElement('div');
+                // Clases base
+                card.className = `trick-card p-5 shadow-md hover:shadow-xl border border-gray-200 flex flex-col justify-between transition duration-300`;
+                // Añadir clase de completado si aplica
+                 if (isCompleted) {
+                     card.classList.add('bg-green-50', 'border-green-200');
+                 } else {
+                     card.classList.add('bg-white');
+                 }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center mb-3">
+                             <i class="${trick.icon || 'fas fa-star'} text-2xl mr-3 ${getCategoryColorClass(trick.category, 'text')}"></i>
+                            <h3 class="text-xl font-bold text-gray-800">${trick.title}</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4 text-sm">${trick.description}</p>
+                    </div>
+                    <div class="flex justify-between items-center mt-auto pt-3 border-t ${isCompleted ? 'border-green-200' : 'border-gray-200'}">
+                         <div class="star-rating text-lg">
+                            ${[1, 2, 3].map(i => `<i class="star ${i <= stars ? 'active fas' : 'far'} fa-star"></i>`).join('')}
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-1 rounded ${getCategoryColorClass(trick.category, 'bg')} ${getCategoryColorClass(trick.category, 'text')} opacity-80 capitalize">${trick.category || 'General'}</span>
+                     </div>
+                `;
+                card.addEventListener('click', () => showTrickDetail(trick.id));
+                trickListContainer.appendChild(card);
+            });
+
+            updateCategoryFilterButtons(filterCategory);
+        }
+
+         function updateCategoryFilterButtons(activeCategory) {
+             if (!categoryFilterBtns) return;
+             categoryFilterBtns.forEach(btn => {
+                 btn.classList.remove('active', 'bg-blue-500', 'text-white', 'ring-2', 'ring-blue-300');
+                 // Estilo inactivo base (dependiendo de su color original)
+                 if (btn.dataset.category === 'all') {
+                     btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-gray-300');
+                 } else {
+                     const category = btn.dataset.category;
+                     btn.classList.add(getCategoryColorClass(category, 'bg'), getCategoryColorClass(category, 'text').replace('text-', 'hover:bg-').replace('-800', '-200')); // Ej: bg-red-100 text-red-800 hover:bg-red-200
+                 }
+
+                 // Estilo activo
+                 if (btn.dataset.category === activeCategory) {
+                     btn.classList.add('active', 'bg-blue-500', 'text-white', 'ring-2', 'ring-blue-300');
+                     // Remover clases de estilo inactivo para evitar conflictos
+                     btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-gray-300');
+                     const category = btn.dataset.category;
+                     if (category !== 'all') {
+                         btn.classList.remove(getCategoryColorClass(category, 'bg'), getCategoryColorClass(category, 'text').replace('text-', 'hover:bg-').replace('-800', '-200'));
+                     }
+                 }
+             });
+         }
+
+        function getCategoryColorClass(category, type = 'bg') {
+             const colors = {
+                 multiplication: { bg: 'bg-red-100', text: 'text-red-800' },
+                 addition: { bg: 'bg-blue-100', text: 'text-blue-800' },
+                 mental: { bg: 'bg-green-100', text: 'text-green-800' },
+                 patterns: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+                 advanced: { bg: 'bg-purple-100', text: 'text-purple-800' },
+                 default: { bg: 'bg-gray-100', text: 'text-gray-800'}
+             };
+             return (colors[category] || colors.default)[type];
+        }
+
+
+         function showTrickDetail(trickId) {
+            currentTrickId = trickId;
+            const trick = getTrickById(trickId);
+            if (!trick || !trickDetailContent) {
+                 console.error("Truco o contenedor de detalle no encontrado.");
+                 return;
+            }
+
+            trickDetailContent.innerHTML = `
+                <div class="flex items-center mb-4">
+                    <i class="${trick.icon || 'fas fa-star'} text-3xl mr-4 ${getCategoryColorClass(trick.category, 'text')}"></i>
+                    <h2 class="text-3xl font-bold text-gray-800">${trick.title}</h2>
+                 </div>
+                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                    ${trick.explanation}
+                </div>
+            `;
+
+            // Resetear y mostrar/ocultar secciones de práctica/resultados
+            if (practiceSection) practiceSection.classList.add('hidden');
+            if (practiceResults) practiceResults.classList.add('hidden');
+            if (trickDetailContent) trickDetailContent.classList.remove('hidden'); // Asegurarse que la explicación sea visible
+
+             if (startPracticeArea) {
+                 if (trick.practice && trick.practice.length > 0) {
+                     startPracticeArea.classList.remove('hidden'); // Mostrar botón "Probar este truco"
+                     if (startPracticeBtn) {
+                          // Clonar y reemplazar el botón para eliminar listeners anteriores
+                          const oldBtn = startPracticeBtn;
+                          const newBtn = oldBtn.cloneNode(true);
+                          oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+                          startPracticeBtn = newBtn; // Actualizar referencia
+                          startPracticeBtn.addEventListener('click', () => startPractice(trickId));
+                     } else {
+                         console.error("Botón 'startPracticeBtn' no encontrado.");
+                     }
+                 } else {
+                     startPracticeArea.classList.add('hidden'); // Ocultar si no hay práctica
+                     trickDetailContent.innerHTML += '<p class="mt-6 text-center text-gray-500 italic">¡Este truco es más conceptual, no tiene ejercicios de práctica directa!</p>';
+                 }
+             } else {
+                 console.error("Área 'startPracticeArea' no encontrada.");
+             }
+
+            showSection('trickDetail');
+            // Scroll suave hacia el inicio del detalle del truco
+             if (trickDetailContent) {
+                trickDetailContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+         function startPractice(trickId) {
+            const trick = getTrickById(trickId);
+            if (!trick || !trick.practice || trick.practice.length === 0) return;
+
+            practiceQuestions = [...trick.practice]; // Copiar preguntas
+            practiceQuestions.sort(() => Math.random() - 0.5); // Desordenar preguntas
+
+            currentQuestionIndex = 0;
+            currentScore = 0;
+            selectedAnswer = null;
+
+            // Ocultar explicación y botón de inicio, mostrar sección de práctica
+            if (trickDetailContent) trickDetailContent.classList.add('hidden');
+            if (startPracticeArea) startPracticeArea.classList.add('hidden');
+            if (practiceSection) practiceSection.classList.remove('hidden');
+            if (practiceResults) practiceResults.classList.add('hidden'); // Ocultar resultados anteriores
+
+            displayQuestion();
+             // Scroll suave hacia el inicio de la sección de práctica
+             if (practiceSection) {
+                 practiceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+             }
+        }
+
+         function displayQuestion() {
+             if (currentQuestionIndex >= practiceQuestions.length) {
+                 finishPractice();
+                 return;
+             }
+            if (!questionContainer || !optionsContainer || !feedbackContainer || !checkAnswerBtn || !nextQuestionBtn) {
+                 console.error("Elementos de la UI de práctica no encontrados.");
+                 return;
+            }
+
+            const questionData = practiceQuestions[currentQuestionIndex];
+            questionContainer.innerHTML = `
+                <p class="text-xl font-semibold mb-2">Pregunta ${currentQuestionIndex + 1} de ${practiceQuestions.length}:</p>
+                <p class="text-2xl">${questionData.question}</p>
+                ${questionData.hint ? `<p class="text-sm text-gray-500 mt-2"><i class="fas fa-lightbulb mr-1 text-yellow-400"></i> Pista: ${questionData.hint}</p>` : ''}
+             `;
+             questionContainer.className = 'bg-gray-50 p-6 rounded-lg shadow-inner mb-4 question-card'; // Resetear clases
+
+            optionsContainer.innerHTML = '';
+            // Desordenar opciones
+            const options = [...questionData.options].sort(() => Math.random() - 0.5);
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow transition duration-200 w-full text-left text-lg'; // Tamaño texto aumentado
+                button.textContent = option;
+                button.dataset.answer = option;
+                button.onclick = () => selectAnswer(button);
+                optionsContainer.appendChild(button);
+            });
+
+             feedbackContainer.textContent = '';
+             feedbackContainer.className = 'text-center font-bold mb-4 h-6'; // Resetear clases feedback
+             nextQuestionBtn.classList.add('hidden');
+             checkAnswerBtn.classList.remove('hidden');
+             checkAnswerBtn.disabled = true; // Deshabilitado hasta que se seleccione una respuesta
+             selectedAnswer = null; // Resetear respuesta seleccionada
+         }
+
+         function selectAnswer(button) {
+             if (!optionsContainer || !checkAnswerBtn) return;
+             // Deseleccionar otros botones
+             optionsContainer.querySelectorAll('.answer-btn').forEach(btn => {
+                 btn.classList.remove('selected', 'border-blue-500', 'bg-blue-100');
+                 btn.classList.add('bg-white', 'hover:bg-gray-100');
+                 btn.style.borderColor = ''; // Resetear borde explícitamente
+                 btn.style.backgroundColor = ''; // Resetear fondo explícitamente
+             });
+             // Seleccionar el actual
+             button.classList.add('selected');
+             // Aplicar estilos directamente para asegurar prioridad sobre Tailwind a veces
+             button.style.borderColor = '#60a5fa'; // Borde azul
+             button.style.backgroundColor = '#eff6ff'; // Fondo azul claro
+
+             button.classList.remove('bg-white', 'hover:bg-gray-100');
+             selectedAnswer = button.dataset.answer;
+             checkAnswerBtn.disabled = false; // Habilitar botón de revisar
+         }
+
+         // Reasignar el evento onclick para checkAnswerBtn dentro de DOMContentLoaded o una función llamada desde allí
+         function setupPracticeButtons() {
+             if (checkAnswerBtn) {
+                 checkAnswerBtn.onclick = () => {
+                     if (!selectedAnswer || !optionsContainer || !feedbackContainer || !checkAnswerBtn || !nextQuestionBtn || !questionContainer) {
+                          console.error("Faltan elementos para revisar respuesta.");
+                          return;
+                     };
+
+                     const questionData = practiceQuestions[currentQuestionIndex];
+                     const correctAnswer = questionData.correctAnswer;
+                     const isCorrect = selectedAnswer === correctAnswer;
+
+                     // Deshabilitar todos los botones de opción
+                     optionsContainer.querySelectorAll('.answer-btn').forEach(btn => {
+                         btn.disabled = true;
+                         btn.onclick = null; // Remover evento
+                         btn.classList.remove('hover:bg-gray-100', 'selected');
+                         btn.style.borderColor = ''; // Resetear borde
+                         btn.style.backgroundColor = ''; // Resetear fondo
+
+                         if (btn.dataset.answer === correctAnswer) {
+                             btn.classList.add('correct'); // Marcar la correcta
+                             btn.innerHTML += ' <i class="fas fa-check ml-2"></i>';
+                         } else if (btn.dataset.answer === selectedAnswer) {
+                             btn.classList.add('incorrect'); // Marcar la incorrecta seleccionada
+                             btn.innerHTML += ' <i class="fas fa-times ml-2"></i>';
+                         }
+                     });
+
+                     if (isCorrect) {
+                         currentScore++;
+                         feedbackContainer.textContent = '¡Correcto! 😄';
+                         feedbackContainer.className = 'text-center font-bold mb-4 h-6 text-green-600';
+                         questionContainer.classList.add('correct');
+                     } else {
+                         feedbackContainer.textContent = `¡Ups! La respuesta correcta era ${correctAnswer}. 🤔`;
+                         feedbackContainer.className = 'text-center font-bold mb-4 h-6 text-red-600';
+                         questionContainer.classList.add('incorrect');
+                     }
+
+                     checkAnswerBtn.classList.add('hidden');
+                     nextQuestionBtn.classList.remove('hidden');
+                 };
+             } else {
+                  console.error("Botón checkAnswerBtn no encontrado durante la configuración.");
+             }
+
+             if (nextQuestionBtn) {
+                 nextQuestionBtn.onclick = () => {
+                    currentQuestionIndex++;
+                    displayQuestion();
+                 };
+             } else {
+                 console.error("Botón nextQuestionBtn no encontrado durante la configuración.");
+             }
+         }
+
+
+         function finishPractice() {
+             if (!practiceSection || !practiceResults || !scoreCorrectSpan || !scoreTotalSpan || !resultStarsContainer || !resultMessage) {
+                 console.error("Elementos de resultados de práctica no encontrados.");
+                 return;
+             }
+            practiceSection.classList.add('hidden');
+            practiceResults.classList.remove('hidden');
+
+            scoreCorrectSpan.textContent = currentScore;
+            scoreTotalSpan.textContent = practiceQuestions.length;
+
+            const percentage = practiceQuestions.length > 0 ? (currentScore / practiceQuestions.length) * 100 : 0;
+            let stars = 0;
+             if (percentage >= 90) stars = 3; // 90%+ para 3 estrellas
+             else if (percentage >= 50) stars = 2; // 50%-89% para 2 estrellas
+             else if (currentScore > 0) stars = 1; // Al menos 1 correcta para 1 estrella
+             else stars = 0; // 0 estrellas si no hay aciertos
+
+            resultStarsContainer.innerHTML = [1, 2, 3]
+                .map(i => `<i class="star ${i <= stars ? 'active fas' : 'far'} fa-star mx-1"></i>`)
+                .join('');
+
+             let message = '';
+             if (stars === 3) {
+                 message = '¡Increíble! ¡Eres un Maestro del Truco! ✨';
+                 triggerConfetti(); // ¡Fiesta!
+             } else if (stars === 2) {
+                 message = '¡Muy bien hecho! ¡Sigue practicando! 👍';
+             } else if (stars === 1) {
+                 message = '¡Buen intento! ¡La práctica hace al maestro! 💪';
+             } else {
+                  message = '¡No te rindas! Vuelve a intentarlo. 💡';
+             }
+             resultMessage.textContent = message;
+
+             // Actualizar progreso
+             updateProgress(currentTrickId, stars);
+             // Scroll suave a los resultados
+             practiceResults.scrollIntoView({ behavior: 'smooth', block: 'center' });
+         }
+
+         // --- Funciones de Progreso y Estadísticas ---
+
+         function loadProgress() {
+             try {
+                 const savedProgress = localStorage.getItem('mathTricksProgress');
+                 if (savedProgress) {
+                     progressData = JSON.parse(savedProgress);
+                     // Asegurarse que todas las propiedades existen por si se actualiza la app
+                     progressData.completedTricks = progressData.completedTricks || [];
+                     progressData.trickStars = progressData.trickStars || {};
+                     progressData.totalStars = progressData.totalStars || 0;
+                     progressData.exercisesCompleted = progressData.exercisesCompleted || 0;
+                     progressData.achievements = progressData.achievements || [];
+                 }
+             } catch (e) {
+                 console.error("Error cargando el progreso desde localStorage:", e);
+                 // Resetear a valores por defecto si hay error
+                 progressData = { completedTricks: [], trickStars: {}, totalStars: 0, exercisesCompleted: 0, achievements: [] };
+             }
+             // Siempre actualiza la UI después de cargar o resetear
+              updateWelcomeStats();
+              // updateStatsUI(); // Se actualiza al visitar la sección
+         }
+
+         function saveProgress() {
+             try {
+                 localStorage.setItem('mathTricksProgress', JSON.stringify(progressData));
+             } catch (e) {
+                 console.error("Error guardando el progreso en localStorage:", e);
+             }
+         }
+
+         function updateProgress(trickId, starsEarned) {
+             let newStarsAdded = 0;
+             // Marcar como completado si no lo estaba
+             if (!progressData.completedTricks.includes(trickId)) {
+                 progressData.completedTricks.push(trickId);
+             }
+
+             // Actualizar estrellas (guardar la mejor puntuación)
+             const currentStars = progressData.trickStars[trickId] || 0;
+             const newBestStars = Math.max(currentStars, starsEarned);
+
+            // Sumar solo la diferencia de estrellas nuevas al total
+             newStarsAdded = newBestStars - currentStars;
+             progressData.totalStars += newStarsAdded;
+             progressData.trickStars[trickId] = newBestStars;
+
+             // Incrementar contador de ejercicios completados (sesiones de práctica)
+             progressData.exercisesCompleted++;
+
+             // Comprobar logros
+             checkAchievements(newStarsAdded > 0 && newBestStars === 3); // Pasar info si se consiguió 3 estrellas ahora
+
+             saveProgress();
+             updateWelcomeStats(); // Actualizar stats en la página de inicio también
+         }
+
+         function checkAchievements(justGotPerfectScore = false) {
+            const completedCount = progressData.completedTricks.length;
+            let newAchievement = false;
+
+            // Logro: Primer truco
+            if (completedCount >= 1 && !progressData.achievements.includes('first_trick')) {
+                progressData.achievements.push('first_trick');
+                newAchievement = true;
+                showAchievementNotification('¡Primer Paso!', 'Completaste tu primer truco.');
+            }
+             // Logro: 5 trucos
+            if (completedCount >= 5 && !progressData.achievements.includes('five_tricks')) {
+                progressData.achievements.push('five_tricks');
+                newAchievement = true;
+                 showAchievementNotification('¡Aprendiz Veloz!', 'Completaste 5 trucos diferentes.');
+            }
+             // Logro: 15 trucos
+            if (completedCount >= 15 && !progressData.achievements.includes('fifteen_tricks')) {
+                progressData.achievements.push('fifteen_tricks');
+                newAchievement = true;
+                 showAchievementNotification('¡Experto Calculista!', 'Completaste 15 trucos diferentes.');
+            }
+             // Logro: Todos los trucos
+            if (completedCount === tricks.length && !progressData.achievements.includes('all_tricks')) {
+                progressData.achievements.push('all_tricks');
+                newAchievement = true;
+                 showAchievementNotification('¡Maestro de los Trucos!', '¡Completaste TODOS los trucos!');
+            }
+             // Logro: Puntuación perfecta (3 estrellas), solo notificar si se acaba de conseguir
+            if (justGotPerfectScore && !progressData.achievements.includes('perfect_score')) {
+                progressData.achievements.push('perfect_score');
+                newAchievement = true;
+                 showAchievementNotification('¡Perfecto!', 'Conseguiste 3 estrellas en un truco.');
+            }
+
+            if (newAchievement) {
+                 saveProgress();
+                 // Actualizar UI de logros si la sección de stats está visible
+                 if (sections.stats && !sections.stats.classList.contains('hidden')) {
+                     updateStatsUI();
+                 }
+            }
+        }
+
+         function showAchievementNotification(title, message) {
+             console.log(`%c🏆 Logro Desbloqueado: ${title} - ${message}`, 'color: gold; font-weight: bold; font-size: 1.1em;');
+             showDragonMessage(`¡Logro! ${title}`);
+             // Podría añadirse aquí una notificación visual más elaborada
+         }
+
+         function updateWelcomeStats() {
+             // Verificar que los elementos existan antes de actualizar
+            const elemTricks = document.getElementById('home-tricks-mastered');
+            const elemStars = document.getElementById('home-stars-earned');
+            const elemExercises = document.getElementById('home-exercises-completed');
+
+            if (elemTricks) elemTricks.textContent = `${progressData.completedTricks.length}/${tricks.length}`;
+            if (elemStars) elemStars.textContent = progressData.totalStars;
+            if (elemExercises) elemExercises.textContent = progressData.exercisesCompleted;
+         }
+
+         function updateStatsUI() {
+             // Verificar existencia de elementos de estadísticas
+             const elemStatsTricks = document.getElementById('stats-tricks-mastered');
+             const elemStatsStars = document.getElementById('stats-stars-earned');
+             const elemStatsExercises = document.getElementById('stats-exercises-completed');
+             const overallProgressBar = document.getElementById('overall-progress');
+             const overallProgressText = document.getElementById('overall-progress-text');
+             const achievementsContainer = document.getElementById('achievements-container');
+
+             if (!elemStatsTricks || !elemStatsStars || !elemStatsExercises || !overallProgressBar || !overallProgressText || !achievementsContainer) {
+                 console.error("Faltan elementos en la UI de estadísticas.");
+                 return;
+             }
+
+             const completedCount = progressData.completedTricks.length;
+             const totalTricks = tricks.length;
+             const overallPercentage = totalTricks > 0 ? Math.round((completedCount / totalTricks) * 100) : 0;
+
+             // Stats generales
+             elemStatsTricks.textContent = `${completedCount}/${totalTricks}`;
+             elemStatsStars.textContent = progressData.totalStars;
+             elemStatsExercises.textContent = progressData.exercisesCompleted;
+
+             overallProgressBar.style.width = `${overallPercentage}%`;
+             overallProgressBar.textContent = `${overallPercentage}%`;
+             overallProgressText.textContent = overallPercentage;
+
+             // Progreso por categoría
+             const categories = [...new Set(tricks.map(t => t.category))];
+             categories.forEach(category => {
+                 if (!category) return; // Saltar si alguna categoría es undefined/null
+                 const categoryTricks = tricks.filter(t => t.category === category);
+                 const completedInCategory = categoryTricks.filter(t => progressData.completedTricks.includes(t.id)).length;
+                 const categoryPercentage = categoryTricks.length > 0 ? Math.round((completedInCategory / categoryTricks.length) * 100) : 0;
+                 const progressBar = document.getElementById(`${category}-progress`);
+                 if (progressBar) {
+                     progressBar.style.width = `${categoryPercentage}%`;
+                     progressBar.textContent = `${categoryPercentage}%`;
+                 } else {
+                     // console.warn(`Barra de progreso no encontrada para categoría: ${category}`);
+                 }
+             });
+
+             // Actualizar logros visualmente
+             const achievementItems = achievementsContainer.querySelectorAll('.achievement-item');
+             achievementItems.forEach(item => {
+                 const achievementId = item.dataset.id;
+                 if (progressData.achievements.includes(achievementId)) {
+                     item.classList.remove('opacity-50', 'bg-gray-200');
+                     item.classList.add('opacity-100', 'bg-yellow-100', 'shadow-sm');
+                     const icon = item.querySelector('i');
+                     if (icon) {
+                         icon.classList.remove('text-gray-400');
+                         icon.classList.add('text-yellow-500');
+                     }
+                 } else {
+                      item.classList.add('opacity-50', 'bg-gray-200');
+                      item.classList.remove('opacity-100', 'bg-yellow-100', 'shadow-sm');
+                      const icon = item.querySelector('i');
+                      if (icon) {
+                         icon.classList.add('text-gray-400');
+                         icon.classList.remove('text-yellow-500');
+                      }
+                 }
+             });
+         }
+
+         function resetProgress() {
+             if (confirm('¿Estás seguro de que quieres borrar TODO tu progreso? ¡No podrás recuperarlo!')) {
+                 progressData = {
+                     completedTricks: [],
+                     trickStars: {},
+                     totalStars: 0,
+                     exercisesCompleted: 0,
+                     achievements: []
+                 };
+                 saveProgress();
+                 loadProgress(); // Recargar y actualizar UI
+                 displayTrickList(); // Actualizar lista de trucos
+                 showSection('welcome'); // Volver al inicio
+                 showDragonMessage('¡Progreso reiniciado! Una nueva aventura comienza.');
+                 console.log("Progreso reiniciado.");
+             }
+         }
+
+
+        // --- Funciones Adicionales (Confeti, Dragón) ---
+
+        function triggerConfetti() {
+             if (!confettiContainer) return;
+            confettiContainer.innerHTML = ''; // Limpiar confeti anterior
+            const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800'];
+            for (let i = 0; i < 100; i++) { // Lanza 100 piezas de confeti
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.position = 'fixed'; // Usar fixed para que caiga desde arriba siempre
+                confetti.style.top = `${Math.random() * -20 - 5}vh`; // Empezar un poco fuera de la pantalla arriba
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.opacity = `${Math.random() * 0.5 + 0.5}`; // Opacidad variable
+                const size = Math.random() * 8 + 6; // Tamaño base
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size * (Math.random() * 0.5 + 1)}px`; // Ligeramente rectangular
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                 // Animación revisada
+                 confetti.animate([
+                     { transform: `translateY(0vh) rotate(${Math.random() * 360}deg)`, opacity: 1 },
+                     { transform: `translateY(110vh) rotate(${Math.random() * 720 + 360}deg)`, opacity: 0 }
+                 ], {
+                     duration: Math.random() * 3000 + 4000, // Duración variable entre 4 y 7 segundos
+                     easing: 'linear',
+                     delay: Math.random() * 1000 // Retraso inicial variable
+                 }).onfinish = () => confetti.remove(); // Eliminar al terminar
+
+                confettiContainer.appendChild(confetti);
+            }
+        }
+
+        let dragonMessageTimeout;
+        function showDragonMessage(message, duration = 5000) {
+             if (!dragonMessageBox) return;
+            clearTimeout(dragonMessageTimeout); // Cancela el timeout anterior si existe
+            dragonMessageBox.textContent = message;
+            dragonMessageBox.classList.add('show');
+            // Ocultar mensaje después de la duración especificada
+            dragonMessageTimeout = setTimeout(() => {
+                dragonMessageBox.classList.remove('show');
+            }, duration);
+        }
+
+
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', () => {
+             console.log("DOM Cargado. Iniciando aplicación...");
+
+             // Inicializar selectores de DOM aquí, ahora que el DOM está listo
+             sections = {
+                 welcome: document.getElementById('welcome'),
+                 trickList: document.getElementById('trick-list'),
+                 trickDetail: document.getElementById('trick-detail'),
+                 stats: document.getElementById('stats'),
+                 about: document.getElementById('about')
+             };
+             navButtons = {
+                 home: document.getElementById('btnHome'),
+                 tricks: document.getElementById('btnTricks'),
+                 stats: document.getElementById('btnStats'),
+                 about: document.getElementById('btnAbout')
+             };
+             trickListContainer = document.getElementById('trick-list-container');
+             trickDetailContent = document.getElementById('trick-detail-content');
+             practiceSection = document.getElementById('practice-section');
+             questionContainer = document.getElementById('question-container');
+             optionsContainer = document.getElementById('options-container');
+             feedbackContainer = document.getElementById('feedback-container');
+             checkAnswerBtn = document.getElementById('check-answer-btn');
+             nextQuestionBtn = document.getElementById('next-question-btn');
+             practiceResults = document.getElementById('practice-results');
+             scoreCorrectSpan = document.getElementById('score-correct');
+             scoreTotalSpan = document.getElementById('score-total');
+             resultStarsContainer = document.getElementById('result-stars');
+             resultMessage = document.getElementById('result-message');
+             startPracticeBtn = document.getElementById('start-practice-btn');
+             startPracticeArea = document.getElementById('start-practice-area');
+             backToListBtn = document.getElementById('back-to-list-btn');
+             backToTrickBtn = document.getElementById('back-to-trick-btn');
+             categoryFilterBtns = document.querySelectorAll('.category-filter-btn');
+             confettiContainer = document.getElementById('confetti-container');
+             dragonMascot = document.getElementById('dragon-mascot');
+             dragonMessageBox = document.getElementById('dragon-message-box');
+             resetProgressBtn = document.getElementById('reset-progress-btn'); // ID Corregido
+             startLearningBtn = document.getElementById('start-learning-btn');
+             aboutToTricksBtn = document.getElementById('about-to-tricks-btn');
+
+             // Verificar si algún selector principal falló
+             if (!sections.welcome || !navButtons.home || !startLearningBtn || !resetProgressBtn) {
+                 console.error("¡Error crítico! No se encontraron elementos esenciales del DOM. La aplicación podría no funcionar.");
+                 alert("Error al cargar la página. Por favor, recarga.");
+                 return; // Detener inicialización si faltan elementos clave
+             }
+
+            loadProgress();
+            setupNavigation(); // Configurar listeners principales
+            setupPracticeButtons(); // Configurar listeners de botones de práctica
+             displayTrickList(); // Mostrar la lista de trucos inicialmente (estará oculta por showSection)
+            showSection('welcome'); // Mostrar bienvenida al cargar
+             showDragonMessage("¡Bienvenido a la Academia! Soy Long. ¡Vamos a aprender!", 6000); // Mensaje inicial más largo
+
+             // Listener para el botón de reset
+             if (resetProgressBtn) {
+                 resetProgressBtn.addEventListener('click', resetProgress);
+             }
+
+             // Listener para el dragón
+             if (dragonMascot) {
+                 dragonMascot.addEventListener('click', () => {
+                     const messages = [
+                         "¡Las mates son divertidas!", "Sigue practicando.", "¡Eres un gran matemático!",
+                         "Descubre los secretos de los números.", "¡Rápido como un dragón!",
+                         "¿Necesitas ayuda? ¡Revisa la explicación!", "¿Ya viste tus estadísticas?"
+                     ];
+                     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                     showDragonMessage(randomMessage);
+                 });
+             }
+
+             console.log("Aplicación inicializada correctamente.");
+        });
+
+    </script>
+</body>
+</html>

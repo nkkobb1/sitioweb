@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivo de Misterios: Historias de Detectives</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Bitter para títulos, Lato para cuerpo -->
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Historias de Detectives --- */
+        :root {
+            --color-primary: #c0a172; /* Oro viejo / Latón apagado */
+            --color-secondary: #4a5568; /* Gris pizarra */
+            --color-background: #2d3748; /* Azul grisáceo oscuro */
+            --color-text: #e2e8f0; /* Gris muy claro (casi blanco) */
+            --color-text-muted: #a0aec0; /* Gris medio */
+            --color-modal-bg: #1a202c; /* Gris casi negro para el modal */
+            --color-border: #4a5568; /* Borde gris pizarra */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15); /* Sombras sutiles para fondo oscuro */
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+            --border-radius: 6px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        /* Títulos con fuente Bitter */
+        h1.logo, h1.page-title, h2.section-title, #modal-title { font-family: 'Bitter', serif; font-weight: 700; }
+        h1.logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-text); }
+        h2.section-title { color: var(--color-primary); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.6rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: rgba(26, 32, 44, 0.85); backdrop-filter: blur(4px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+        .title-item {
+            background-color: var(--color-modal-bg);
+            padding: 1.25rem 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-align: center;
+            font-weight: 600;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 75px;
+            font-family: 'Lato', sans-serif;
+            border-left: 4px solid var(--color-secondary); /* Detalle de borde */
+        }
+        .title-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background-color: #2d3748; /* Fondo ligeramente más claro al pasar */
+            border-left-color: var(--color-primary);
+        }
+        #generate-more-btn {
+            grid-column: 1 / -1;
+            background-color: var(--color-primary);
+            color: #1a202c; /* Texto oscuro para contraste */
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Bitter', serif; /* Fuente de título para botón */
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            margin-top: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow-sm);
+        }
+        #generate-more-btn:hover:not(:disabled) { background-color: #dab98a; /* Oro más claro */ box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: var(--color-secondary); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: #1a202c; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.88); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 2.5rem 3rem; /* Más padding */
+            max-width: 1000px; /* Más ancho para texto */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 18px; right: 18px; background: var(--color-secondary); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-modal-bg); transform: rotate(180deg); }
+        #modal-title { font-size: 2.2rem; text-align: center; margin-bottom: 2rem; flex-shrink: 0; padding: 0 1.5rem; line-height: 1.35; }
+        #modal-content {
+            line-height: 1.85; /* Interlineado generoso */
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 15px 2rem 15px; /* Padding inferior para espacio post-imagen */
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) #2d3748; /* Scrollbar temático */
+        }
+        #modal-content::-webkit-scrollbar { width: 11px; }
+        #modal-content::-webkit-scrollbar-track { background: #2d3748; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #2d3748; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; font-family: 'Bitter', serif; } /* Destacados con Bitter */
+        #modal-content em { color: #b0c4de; /* Azul acero claro para énfasis */ font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Bitter', serif; margin-top: 2.4em; margin-bottom: 1.2em; color: var(--color-primary); border-bottom: 1px solid var(--color-secondary); padding-bottom: 0.6em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.7em; }
+        #modal-content h2 { font-size: 1.5em; }
+        #modal-content h3 { font-size: 1.3em; color: var(--color-text); }
+        #modal-content h4 { font-size: 1.15em; color: var(--color-text-muted); border-bottom: none; }
+        /* Estilo para la imagen insertada al final del contenido */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 3rem auto 1.5rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); filter: sepia(20%) contrast(90%); /* Efecto sutil */ }
+        /* Estilo para el placeholder/spinner de la imagen final */
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; margin: 3rem auto 1.5rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(255, 255, 255, 0.15); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 32, 44, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 65px; height: 65px; border: 7px solid var(--color-secondary); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.8rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.4rem; font-family: 'Bitter', serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #5f3a3a; /* Fondo error rojo/marrón oscuro */ color: #fed7d7; /* Texto claro */ padding: 1.4rem; border-radius: var(--border-radius); border: 1px solid #e53e3e; margin-top: 2rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.8rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-800">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-12">
+         <div class="container mx-auto px-4 py-5 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                  <i class="fas fa-search text-3xl mr-4 text-yellow-600 transform -rotate-15"></i> <!-- Lupa -->
+                 <h1 class="logo text-4xl sm:text-5xl">
+                     Archivo de Misterios
+                 </h1>
+                  <i class="fas fa-fingerprint text-3xl ml-4 text-yellow-600 transform rotate-15"></i> <!-- Huella -->
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-16 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-6">Descifrando Enigmas Clásicos</h1>
+             <p class="text-xl text-gray-300 mb-10 max-w-4xl mx-auto">Sumérgete en el mundo de la deducción, el suspense y la investigación. Selecciona un detective, una historia o un concepto para abrir el expediente.</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-12">
+             <h2 class="section-title text-3xl sm:text-4xl mb-10 text-center mx-auto">
+                 <i class="fas fa-folder-open text-yellow-600 mr-3"></i> <!-- Carpeta -->
+                 Expedientes Disponibles
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Consultando archivos...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-10">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Pistas
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Analizando el caso...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-3xl md:text-4xl font-bold mb-6 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - Image appended here -->
+                 <div id="modal-content" class="text-lg md:text-xl">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- Image and placeholder appended via JS -->
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-8 mt-16 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Análisis generados por IA con fines informativos y de apreciación literaria del género detectivesco.</p>
+              <p class="mt-1">Las interpretaciones son subjetivas. Disfrute de la investigación.</p>
+              <p class="mt-3">© 2025 Archivo de Misterios</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+             // Sherlock Holmes (Doyle)
+            "Sherlock Holmes: El Detective Consultor Arquetípico", "Estudio en Escarlata (A Study in Scarlet, 1887)", "El Signo de los Cuatro (The Sign of the Four, 1890)", "Las Aventuras de Sherlock Holmes (The Adventures of Sherlock Holmes, 1892)", "Un Escándalo en Bohemia (A Scandal in Bohemia)", "La Liga de los Pelirrojos (The Red-Headed League)", "Un Caso de Identidad (A Case of Identity)", "El Misterio del Valle Boscombe (The Boscombe Valley Mystery)", "Las Cinco Pepitas de Naranja (The Five Orange Pips)", "El Hombre del Labio Torcido (The Man with the Twisted Lip)", "El Carbunclo Azul (The Adventure of the Blue Carbuncle)", "La Banda de Lunares (The Adventure of the Speckled Band)", "El Dedo Pulgar del Ingeniero (The Adventure of the Engineer's Thumb)", "El Aristócrata Solterón (The Adventure of the Noble Bachelor)", "La Diadema de Berilos (The Adventure of the Beryl Coronet)", "El Misterio de Copper Beeches (The Adventure of the Copper Beeches)", "Las Memorias de Sherlock Holmes (The Memoirs of Sherlock Holmes, 1894)", "Estrella de Plata (Silver Blaze)", "La Cara Amarilla (The Adventure of the Yellow Face)", "El Oficinista del Corredor de Bolsa (The Adventure of the Stockbroker's Clerk)", "La Corbeta 'Gloria Scott' (The Adventure of the Gloria Scott)", "El Ritual de los Musgrave (The Adventure of the Musgrave Ritual)", "El Hacendado de Reigate (The Adventure of the Reigate Squire)", "El Jorobado (The Adventure of the Crooked Man)", "El Paciente Interno (The Adventure of the Resident Patient)", "El Intérprete Griego (The Adventure of the Greek Interpreter)", "El Tratado Naval (The Adventure of the Naval Treaty)", "El Problema Final (The Final Problem)", "El Perro de los Baskerville (The Hound of the Baskervilles, 1902)", "El Regreso de Sherlock Holmes (The Return of Sherlock Holmes, 1905)", "La Casa Deshabitada (The Adventure of the Empty House)", "El Constructor de Norwood (The Adventure of the Norwood Builder)", "Los Bailarines (The Adventure of the Dancing Men)", "El Ciclista Solitario (The Adventure of the Solitary Cyclist)", "El Colegio Priory (The Adventure of the Priory School)", "Peter el Negro (The Adventure of Black Peter)", "Charles Augustus Milverton (The Adventure of Charles Augustus Milverton)", "Los Seis Napoleones (The Adventure of the Six Napoleons)", "Los Tres Estudiantes (The Adventure of the Three Students)", "Las Gafas de Oro (The Adventure of the Golden Pince-Nez)", "El Tres Cuartos Desaparecido (The Adventure of the Missing Three-Quarter)", "La Granja Abbey (The Adventure of the Abbey Grange)", "La Segunda Mancha (The Adventure of the Second Stain)", "El Valle del Terror (The Valley of Fear, 1915)", "Su Última Reverencia (His Last Bow, 1917)", "El Pabellón Wisteria (The Adventure of Wisteria Lodge)", "La Caja de Cartón (The Adventure of the Cardboard Box)", "El Círculo Rojo (The Adventure of the Red Circle)", "Los Planos del Bruce-Partington (The Adventure of the Bruce-Partington Plans)", "El Detective Moribundo (The Adventure of the Dying Detective)", "La Desaparición de Lady Frances Carfax (The Disappearance of Lady Frances Carfax)", "La Pata del Diablo (The Adventure of the Devil's Foot)", "Su Última Reverencia (His Last Bow - The War Service of Sherlock Holmes)", "El Archivo de Sherlock Holmes (The Case-Book of Sherlock Holmes, 1927)", "El Cliente Ilustre (The Adventure of the Illustrious Client)", "El Soldado de la Piel Descolorida (The Adventure of the Blanched Soldier)", "La Piedra de Mazarino (The Adventure of the Mazarin Stone)", "Los Tres Gabletes (The Adventure of the Three Gables)", "El Vampiro de Sussex (The Adventure of the Sussex Vampire)", "Los Tres Garrideb (The Adventure of the Three Garridebs)", "El Problema del Puente de Thor (The Problem of Thor Bridge)", "El Hombre que Trepaba (The Adventure of the Creeping Man)", "La Melena de León (The Adventure of the Lion's Mane)", "La Inquilina del Velo (The Adventure of the Veiled Lodger)", "Shoscombe Old Place (The Adventure of Shoscombe Old Place)", "El Fabricante de Colores Retirado (The Adventure of the Retired Colourman)",
+            // Hercule Poirot (Agatha Christie)
+            "Hercule Poirot: Orden y Método", "El Misterioso Caso de Styles (The Mysterious Affair at Styles, 1920)", "Asesinato en el Campo de Golf (Murder on the Links, 1923)", "Poirot Investiga (Poirot Investigates, 1924)", "El Asesinato de Roger Ackroyd (The Murder of Roger Ackroyd, 1926)", "El Misterio del Tren Azul (The Mystery of the Blue Train, 1928)", "Peligro Inminente (Peril at End House, 1932)", "La Muerte de Lord Edgware (Lord Edgware Dies / Thirteen at Dinner, 1933)", "Asesinato en el Orient Express (Murder on the Orient Express, 1934)", "Tragedia en Tres Actos (Three Act Tragedy / Murder in Three Acts, 1934)", "Muerte en las Nubes (Death in the Clouds / Death in the Air, 1935)", "El Misterio de la Guía de Ferrocarriles (The A.B.C. Murders, 1936)", "Cartas sobre la Mesa (Cards on the Table, 1936)", "Muerte en Mesopotamia (Murder in Mesopotamia, 1936)", "Muerte en el Nilo (Death on the Nile, 1937)", "El Testigo Mudo (Dumb Witness / Poirot Loses a Client, 1937)", "Cita con la Muerte (Appointment with Death, 1938)", "Navidades Trágicas (Hercule Poirot's Christmas / Murder for Christmas / A Holiday for Murder, 1938)", "El Asesinato de Sadie (Sad Cypress, 1940)", "Un Cadáver en la Biblioteca (The Body in the Library, 1942) - **ERRATA: Es de Miss Marple**", "La Muerte Visita al Dentista (One, Two, Buckle My Shoe / The Patriotic Murders / An Overdose of Death, 1940)", "Maldad Bajo el Sol (Evil Under the Sun, 1941)", "Cinco Cerditos (Five Little Pigs / Murder in Retrospect, 1942)", "Sangre en la Piscina (The Hollow / Murder after Hours, 1946)", "Los Trabajos de Hércules (The Labours of Hercules, 1947)", "Pleamares de la Vida (Taken at the Flood / There is a Tide..., 1948)", "La Señora McGinty ha Muerto (Mrs McGinty's Dead / Blood Will Tell, 1952)", "Después del Funeral (After the Funeral / Funerals are Fatal, 1953)", "Asesinato en la Calle Hickory (Hickory Dickory Dock / Hickory Dickory Death, 1955)", "El Templete de Nasse House (Dead Man's Folly, 1956)", "Un Gato en el Palomar (Cat Among the Pigeons, 1959)", "Los Relojes (The Clocks, 1963)", "La Tercera Muchacha (Third Girl, 1966)", "Las Manzanas (Hallowe'en Party, 1969)", "Los Elefantes Pueden Recordar (Elephants Can Remember, 1972)", "Telón: El Último Caso de Poirot (Curtain: Poirot's Last Case, 1975)",
+            // Miss Marple (Agatha Christie)
+            "Miss Marple: La Observadora Astuta", "Asesinato en la Vicaría (The Murder at the Vicarage, 1930)", "Miss Marple y Trece Problemas / Los Trece Problemas (The Thirteen Problems / The Tuesday Club Murders, 1932)", "Un Cadáver en la Biblioteca (The Body in the Library, 1942)", "El Caso de los Anónimos (The Moving Finger, 1942)", "Se Anuncia un Asesinato (A Murder is Announced, 1950)", "El Truco de los Espejos (They Do It with Mirrors / Murder with Mirrors, 1952)", "Un Puñado de Centeno (A Pocket Full of Rye, 1953)", "El Tren de las 4:50 (4.50 from Paddington / What Mrs McGillicuddy Saw!, 1957)", "El Espejo se Rajó de Lado a Lado (The Mirror Crack'd from Side to Side / The Mirror Crack'd, 1962)", "Misterio en el Caribe (A Caribbean Mystery, 1964)", "En el Hotel Bertram (At Bertram's Hotel, 1965)", "Némesis (Nemesis, 1971)", "Un Crimen Dormido (Sleeping Murder: Miss Marple's Last Case, 1976)",
+            // Hardboiled / Noir Detectives
+            "Sam Spade (Dashiell Hammett)", "El Halcón Maltés (The Maltese Falcon, 1930)", "Philip Marlowe (Raymond Chandler)", "El Sueño Eterno (The Big Sleep, 1939)", "Adiós, Muñeca (Farewell, My Lovely, 1940)", "La Ventana Siniestra (The High Window, 1942)", "La Dama del Lago (The Lady in the Lake, 1943)", "La Hermana Menor (The Little Sister, 1949)", "El Largo Adiós (The Long Goodbye, 1953)", "Playback (1958)", "Lew Archer (Ross Macdonald)", "The Moving Target / Harper (1949)", "The Drowning Pool (1950)", "The Way Some People Die (1951)", "The Ivory Grin / Marked for Murder (1952)", "Find a Victim (1954)", "The Barbarous Coast (1956)", "The Doomsters (1958)", "The Galton Case (1959)", "The Wycherly Woman (1961)", "The Zebra-Striped Hearse (1962)", "The Chill (1964)", "The Far Side of the Dollar (1965)", "Black Money (1966)", "The Instant Enemy (1968)", "The Goodbye Look (1969)", "The Underground Man (1971)", "Sleeping Beauty (1973)", "The Blue Hammer (1976)", "Mike Hammer (Mickey Spillane)", "Yo, el Jurado (I, the Jury, 1947)", "Bésame, Mortal (Kiss Me, Deadly, 1952)", "Travis McGee (John D. MacDonald)", "The Deep Blue Good-by (1964)", "Nightmare in Pink (1964)", "A Purple Place for Dying (1964)", "The Quick Red Fox (1964)", "A Deadly Shade of Gold (1965)", "Bright Orange for the Shroud (1965)", "Darker than Amber (1966)", "One Fearful Yellow Eye (1966)", "Pale Gray for Guilt (1968)", "The Girl in the Plain Brown Wrapper (1968)", "Dress Her in Indigo (1969)", "The Long Lavender Look (1970)", "A Tan and Sandy Silence (1971)", "The Scarlet Ruse (1973)", "The Turquoise Lament (1973)", "The Dreadful Lemon Sky (1975)", "The Empty Copper Sea (1978)", "The Green Ripper (1979)", "Free Fall in Crimson (1981)", "Cinnamon Skin (1982)", "The Lonely Silver Rain (1985)", "Continental Op (Dashiell Hammett)", "Cosecha Roja (Red Harvest, 1929)", "La Maldición de los Dain (The Dain Curse, 1929)",
+            // Otros Detectives Clásicos / Golden Age
+            "C. Auguste Dupin (Edgar Allan Poe)", "Los Crímenes de la Calle Morgue (The Murders in the Rue Morgue, 1841)", "El Misterio de Marie Rogêt (The Mystery of Marie Rogêt, 1842)", "La Carta Robada (The Purloined Letter, 1844)", "Father Brown (G.K. Chesterton)", "La Inocencia del Padre Brown (The Innocence of Father Brown, 1911)", "La Sabiduría del Padre Brown (The Wisdom of Father Brown, 1914)", "Lord Peter Wimsey (Dorothy L. Sayers)", "El Cadáver con Anteojos (Whose Body?, 1923)", "Los Nueve Sastres (The Nine Tailors, 1934)", "Nero Wolfe (Rex Stout)", "Fer-de-Lance (1934)", "La Liga de los Hombres Asustados (The League of Frightened Men, 1935)", "Ellery Queen (Ellery Queen - Dannay/Lee)", "El Misterio del Sombrero Romano (The Roman Hat Mystery, 1929)", "Inspector Maigret (Georges Simenon)", "Pietr el Letón (Pietr-le-Letton, 1931)", "El Perro Canelo (Le Chien jaune, 1931)", "Perry Mason (Erle Stanley Gardner)", "El Caso de las Garras de Terciopelo (The Case of the Velvet Claws, 1933)", "Inspector Roderick Alleyn (Ngaio Marsh)", "Un Hombre Yacía Muerto (A Man Lay Dead, 1934)", "Albert Campion (Margery Allingham)", "El Crimen de Black Dudley (The Crime at Black Dudley, 1929)",
+            // Detectives Modernos / Contemporáneos
+            "Kinsey Millhone (Sue Grafton)", "'A' de Adulterio ('A' is for Alibi, 1982)", "'B' de Bestias ('B' is for Burglar, 1985)", "'C' de Cadáver ('C' is for Corpse, 1986)", "(Continuar hasta Y)", "V.I. Warshawski (Sara Paretsky)", "Indemnity Only (1982)", "Deadlock (1984)", "Killing Orders (1985)", "Adam Dalgliesh (P.D. James)", "Cubrirle el Rostro (Cover Her Face, 1962)", "Mortaja para un Ruiseñor (A Mind to Murder, 1963)", "Sangre Inocente (Innocent Blood, 1980) - **ERRATA: No es de Dalgliesh**", "Intrigas y Deseos (Devices and Desires, 1989)", "Muerte en el Seminario (Death in Holy Orders, 2001)", "La Sala del Crimen (The Murder Room, 2003)", "Muerte de un Forense (The Private Patient, 2008)", "Cordelia Gray (P.D. James)", "No Apto para Mujeres (An Unsuitable Job for a Woman, 1972)", "La Calavera bajo la Piel (The Skull Beneath the Skin, 1982)", "Inspector Morse (Colin Dexter)", "Último Autobús a Woodstock (Last Bus to Woodstock, 1975)", "Inspector Rebus (Ian Rankin)", "Nudos y Cruces (Knots and Crosses, 1987)", "Kurt Wallander (Henning Mankell)", "Asesinos sin Rostro (Mördare utan ansikte, 1991)", "Los Perros de Riga (Hundarna i Riga, 1992)", "La Leona Blanca (Den vita lejoninnan, 1993)", "El Hombre Sonriente (Mannen som log, 1994)", "La Falsa Pista (Villospår, 1995)", "La Quinta Mujer (Den femte kvinnan, 1996)", "Pisando los Talones (Steget efter, 1997)", "Cortafuegos (Brandvägg, 1998)", "La Pirámide (Pyramiden, 1999)", "El Hombre Inquieto (Den orolige mannen, 2009)", "Harry Bosch (Michael Connelly)", "El Eco Negro (The Black Echo, 1992)", "Hielo Negro (The Black Ice, 1993)", "La Rubia de Hormigón (The Concrete Blonde, 1994)", "El Último Coyote (The Last Coyote, 1995)", "Pasaje al Paraíso (Trunk Music, 1997)", "El Vuelo del Ángel (Angels Flight, 1999)", "Más Oscuro que la Noche (A Darkness More Than Night, 2001)", "Ciudad de Huesos (City of Bones, 2002)", "Luz Perdida (Lost Light, 2003)", "Cauces de Maldad (The Narrows, 2004)", "El Último Reducto (The Closers, 2005)", "Echo Park (2006)", "El Observatorio (The Overlook, 2007)", "Nueve Dragones (Nine Dragons, 2009)", "Cuesta Abajo (The Drop, 2011)", "La Caja Negra (The Black Box, 2012)", "La Habitación en Llamas (The Burning Room, 2014)", "Del Otro Lado (The Crossing, 2015)", "El Lado Oscuro del Adiós (The Wrong Side of Goodbye, 2016)", "Las Dos Caras de la Verdad (Two Kinds of Truth, 2017)", "Noche Sagrada (Dark Sacred Night, 2018)", "Fuego Nocturno (The Night Fire, 2019)", "Las Horas Oscuras (The Dark Hours, 2021)", "Estrella del Desierto (Desert Star, 2022)", "Easy Rawlins (Walter Mosley)", "El Demonio Vestido de Azul (Devil in a Blue Dress, 1990)", "Una Muerte Roja (A Red Death, 1991)", "Mariposa Blanca (White Butterfly, 1992)", "Marlowe Negro (Black Betty, 1994)", "Un Perro Amarillo (A Little Yellow Dog, 1996)", "Precious Ramotswe (Alexander McCall Smith)", "La Primera Agencia de Detectives de Señoras (The No. 1 Ladies' Detective Agency, 1998)", "Lágrimas de Jirafa (Tears of the Giraffe, 2000)", "Lincoln Rhyme (Jeffery Deaver)", "El Coleccionista de Huesos (The Bone Collector, 1997)", "El Bailarín de la Muerte (The Coffin Dancer, 1998)", "La Silla Vacía (The Empty Chair, 2000)", "Lisbeth Salander (Stieg Larsson / David Lagercrantz)", "Los Hombres que no Amaban a las Mujeres (Män som hatar kvinnor, 2005)", "La Chica que Soñaba con una Cerilla y un Bidón de Gasolina (Flickan som lekte med elden, 2006)", "La Reina en el Palacio de las Corrientes de Aire (Luftslottet som sprängdes, 2007)", "Lo que no te Mata te Hace más Fuerte (Det som inte dödar oss, 2015)", "El Hombre que Perseguía su Sombra (Mannen som sökte sin skugga, 2017)", "La Chica que Vivió Dos Veces (Hon som måste dö, 2019)", "Temperance Brennan (Kathy Reichs)", "Déjà Dead (1997)", "Dave Robicheaux (James Lee Burke)", "The Neon Rain (1987)", "Heaven's Prisoners (1988)", "Black Cherry Blues (1989)", "Stephanie Plum (Janet Evanovich)", "Uno por Dinero (One for the Money, 1994)",
+            // Novelas Clásicas de Misterio / Hitos del Género
+            "La Piedra Lunar (The Moonstone, 1868) - Wilkie Collins", "La Dama de Blanco (The Woman in White, 1859) - Wilkie Collins", "El Misterio de Edwin Drood (The Mystery of Edwin Drood, 1870) - Charles Dickens (Inconclusa)", "El Caso Lerouge (L'Affaire Lerouge, 1866) - Émile Gaboriau", "Monsieur Lecoq (1868) - Émile Gaboriau", "El Fantasma de la Ópera (Le Fantôme de l'Opéra, 1910) - Gaston Leroux (Misterio/Gótico)", "El Misterio del Cuarto Amarillo (Le Mystère de la Chambre Jaune, 1907) - Gaston Leroux", "Trent's Last Case (1913) - E.C. Bentley", "Los Treinta y Nueve Escalones (The Thirty-Nine Steps, 1915) - John Buchan (Espionaje/Thriller)", "El Hombre Delgado (The Thin Man, 1934) - Dashiell Hammett", "La Hija del Tiempo (The Daughter of Time, 1951) - Josephine Tey", "Anatomía de un Asesinato (Anatomy of a Murder, 1958) - Robert Traver", "El Espía que Surgió del Frío (The Spy Who Came in from the Cold, 1963) - John le Carré", "El Día del Chacal (The Day of the Jackal, 1971) - Frederick Forsyth", "El Nombre de la Rosa (Il nome della rosa, 1980) - Umberto Eco", "Gorky Park (1981) - Martin Cruz Smith", "Presunto Inocente (Presumed Innocent, 1987) - Scott Turow", "El Silencio de los Corderos (The Silence of the Lambs, 1988) - Thomas Harris (Thriller/Terror)", "Mystic River (2001) - Dennis Lehane", "La Sombra del Viento (2001) - Carlos Ruiz Zafón (Misterio/Gótico moderno)", "Perdida (Gone Girl, 2012) - Gillian Flynn", "La Chica del Tren (The Girl on the Train, 2015) - Paula Hawkins",
+            // Conceptos, Subgéneros y Tropos
+            "La Edad de Oro de la Ficción Detectivesca (Golden Age)", "Las Reglas del 'Fair Play' en el Misterio", "El Misterio de Habitación Cerrada (Locked-Room Mystery)", "El Whodunit: Estructura y Convenciones", "Ficción Hardboiled: Orígenes y Características", "El Detective Privado (Private Investigator) como Arquetipo", "Film Noir: Orígenes Cinematográficos y Literarios", "La Femme Fatale en el Noir", "El Procedimiento Policial (Police Procedural)", "El Cozy Mystery: Encanto y Fórmulas", "El Thriller Legal", "El Thriller Psicológico", "Misterio Histórico: Combinando Géneros", "El Sleuth Amateur: Detectives por Accidente", "El Uso de Pistas Falsas (Red Herrings)", "La Gran Revelación Final", "Ciencia Forense en la Ficción Detectivesca", "El Legado de Edgar Allan Poe en el Género", "El Impacto de Sherlock Holmes", "La Influencia de Agatha Christie", "La Revolución del Hardboiled (Hammett, Chandler)", "El 'British Noir' vs. 'American Noir'", "True Crime y su Relación con la Ficción", "Scandinavian Noir (Nordic Noir): Temas y Estilo", "El Anti-Héroe en la Ficción Detectivesca", "El Papel del Escenario y la Atmósfera", "La Evolución de la Mujer Detective", "Misterio y Suspense: Diferencias Clave", "Pulp Magazines y la Ficción Detectivesca Popular"
+        ];
+        const detectiveThemes = [
+            "detectives de la Edad de Oro", "ficción hardboiled", "cozy mysteries", "procedimientos policiales", "misterios de habitación cerrada", "novelas de Sherlock Holmes", "casos de Hercule Poirot", "misterios de Miss Marple", "detectives privados icónicos", "thrillers legales", "thrillers psicológicos", "Nordic Noir", "autores clave del misterio", "el legado de Edgar Allan Poe", "la figura del detective amateur", "el papel de la femme fatale", "misterios históricos", "detectives femeninas pioneras", "la evolución del género detectivesco", "True Crime y ficción", "el whodunit clásico"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un erudito literario y crítico especializado en ficción detectivesca y de misterio. Tu tarea es analizar en profundidad al detective, historia, novela o concepto proporcionado. Describe los elementos clave de la trama (evitando spoilers cruciales si es una obra de ficción), pero céntrate en el análisis del personaje principal (si aplica), estilo narrativo, temas centrales (justicia, verdad, moralidad, orden vs caos), contexto histórico-social, innovaciones genéricas, uso de convenciones (pistas, deducción, sospechosos, giros), atmósfera y legado. Si es un concepto o subgénero, defínelo y explícalo con ejemplos notables. Utiliza un lenguaje culto, analítico y perspicaz, adecuado para lectores interesados en el género. El objetivo es un ensayo bien estructurado de aproximadamente 1200-1300 palabras. Basa tu análisis únicamente en el siguiente título:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un archivo de misterios. Genera exactamente 15 nombres de detectives famosos, títulos de novelas/cuentos clásicos de misterio, o conceptos clave del género detectivesco, adecuados para un análisis detallado. Devuelve *solo* la lista de títulos/conceptos, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor de texto y futura imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios funcionales)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía o incompleta.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                throw new Error(`Error de comunicación con la API: ${error.message}`);
+            }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo generar un análisis adecuado o suficientemente detallado para este expediente.");
+               }
+             return text;
+        }
+        async function fetchGeneratedTitles() { /* ... */
+             const randomTheme = getRandomElement(detectiveThemes) || "figuras clave del misterio";
+             const specificPrompt = `Genera 15 expedientes (detectives, novelas, conceptos) sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes pistas nuevas.");
+             return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a DETECTIVES
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "classic detective story atmosphere";
+             // Prompt ENFOCADO en atmósfera noir/misterio, evitar texto.
+             const enhancedPrompt = `Atmospheric scene inspired by detective fiction or the concept of '${safePromptText}'. Film noir style, dramatic shadows and light, vintage elements (old office, typewriter, fedora, magnifying glass, foggy street, clues). Mysterious, evocative, painterly. Avoid text.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             // NEGATIVE PROMPT: Evitar texto, logos, caras muy definidas si no se piden, etc.
+             const negativePrompt = "text, words, book cover, labels, letters, captions, writing, numbers, diagrams, charts, graphs, UI, interface, menu, buttons, watermark, signature, multiple panels, collage, clear happy faces, bright daylight scene, modern technology, color photograph";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear text and appended image
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios funcionales)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]);
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No hay expedientes disponibles.</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        // *** handleTitleClick *** (Sin cambios funcionales, lógica de imagen al final se mantiene)
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // 1. Fetch y formatea texto
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 2. Oculta carga, muestra texto PRIMERO
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                // 3. *** RESET SCROLL *** después de que el texto esté visible
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // 4. Prepara y añade placeholder/spinner DENTRO de #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-file-image placeholder-icon"></i> <!-- Icono de imagen archivo -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Revelando evidencia visual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Al final del texto
+
+                // 5. Crea y añade elemento <img> (empieza a cargar)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Evidencia visual conceptual para ${title}`;
+                imgElement.style.display = 'none'; // Oculta hasta cargar
+
+                imgElement.onload = () => {
+                    console.log("Evidencia visual cargada.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error cargando evidencia visual para:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Evidencia no encontrada.</p>
+                    `;
+                };
+
+                // Obtiene URL y asigna src DESPUÉS de añadir handlers
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añade img al final
+                } else {
+                     console.error("No se pudo crear URL de evidencia para:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-times-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error generando URL de evidencia.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Fallo al mostrar expediente:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error en el caso: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Limpia contenido parcial
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... Adaptado texto temático ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando pistas...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("No se encontraron nuevas pistas en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Fallo generando pistas:", error);
+                 alert(`Error al buscar pistas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Pistas';
+             }
+         }
+
+
+        // ========== INITIALIZATION ========== (Sin cambios funcionales)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p style="color: #e53e3e; font-size: 2em; text-align: center; padding-top: 5em; font-family: Bitter, serif;">¡Caso perdido! Fallo crítico al inicializar el archivo.</p>'; return; } // Error temático
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

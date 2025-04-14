@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title -->
+    <title>Generador de Moodboards IA - ConceptGrid AI | Papitas Fritas</title>
+    <!-- <meta name="description" content="Crea moodboards visuales instantáneos con IA. Introduce tus ideas o palabras clave y ConceptGrid AI genera un collage de imágenes inspiradoras. Perfecto para creativos y diseñadores en PapitasFritas.com."> -->
+    <style>
+        /* Estilos CSS (SIN CAMBIOS respecto a la versión anterior de ConceptGrid AI) */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap');
+        :root {
+            --bg-color: #0a0a1a; --primary-neon: #ff00ff; --secondary-neon: #00ffff; --accent-neon: #39ff14; --error-neon: #ff4d4d;
+            --text-color: #e0e0e0; --border-color: rgba(0, 255, 255, 0.5); --glow-primary: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon), 0 0 15px var(--primary-neon);
+            --glow-secondary: 0 0 5px var(--secondary-neon), 0 0 10px var(--secondary-neon), 0 0 15px var(--secondary-neon); --glow-accent: 0 0 5px var(--accent-neon), 0 0 10px var(--accent-neon), 0 0 15px var(--accent-neon);
+            --glow-error: 0 0 5px var(--error-neon), 0 0 10px var(--error-neon);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Rajdhani', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 2rem; line-height: 1.6; background-image: linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px); background-size: 25px 25px;
+        }
+        .container {
+            background-color: rgba(10, 10, 30, 0.85); padding: 2rem 3rem; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+            width: 100%; max-width: 950px; backdrop-filter: blur(6px); text-align: center;
+        }
+        h1 { font-family: 'Orbitron', sans-serif; color: var(--primary-neon); text-shadow: var(--glow-primary); margin-bottom: 0.5em; font-size: 2.5rem; letter-spacing: 2px; }
+        .subtitle { color: var(--secondary-neon); margin-bottom: 2rem; font-weight: 400; font-size: 1.2rem; }
+        .input-section label { display: block; margin-bottom: 0.8rem; color: var(--secondary-neon); font-weight: 600; text-align: left; }
+        #tags-input {
+            width: 100%; padding: 0.8rem 1rem; margin-bottom: 1.5rem; background-color: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-color); border-radius: 5px;
+            color: var(--text-color); font-family: 'Rajdhani', sans-serif; font-size: 1rem; min-height: 80px; resize: vertical; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #tags-input:focus { outline: none; border-color: var(--primary-neon); box-shadow: var(--glow-primary); }
+        #generate-button {
+            background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon)); color: var(--bg-color); border: none; padding: 0.8rem 2rem; font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem; font-weight: 700; border-radius: 5px; cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, opacity 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            margin-top: 1rem; box-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        #generate-button:hover:not(:disabled) { transform: scale(1.05); box-shadow: var(--glow-primary), var(--glow-secondary); }
+        #generate-button:active:not(:disabled) { transform: scale(1); }
+        #generate-button:disabled { cursor: wait; opacity: 0.7; background: grey; box-shadow: none; }
+        #loading-indicator, #error-message { margin-top: 1.5rem; padding: 0.8rem; border-radius: 5px; display: none; font-weight: 600; text-align: center; }
+        #loading-indicator { color: var(--accent-neon); border: 1px dashed var(--accent-neon); animation: pulse 1.5s infinite ease-in-out; }
+        #error-message { color: var(--error-neon); background-color: rgba(255, 77, 77, 0.1); border: 1px solid var(--error-neon); }
+        #image-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; width: 100%; }
+        .image-container {
+            position: relative; border: 1px solid var(--border-color); border-radius: 5px; overflow: hidden; box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; background-color: rgba(10, 10, 30, 0.6); aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; text-align: center; /* Center text for errors */
+        }
+        .image-container.failed { cursor: not-allowed; }
+        .image-container:hover:not(.failed) { transform: translateY(-5px); box-shadow: var(--glow-secondary); }
+        .image-container img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s ease-in-out; position: absolute; top: 0; left: 0; pointer-events: none; }
+        .image-container img.loaded { opacity: 1; pointer-events: auto; }
+        .tag-caption { position: absolute; bottom: 0; left: 0; width: 100%; background-color: rgba(0, 0, 0, 0.7); color: var(--text-color); font-size: 0.8rem; padding: 3px 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 2; opacity: 0; transition: opacity 0.5s ease-in-out; }
+        .image-container.img-loaded .tag-caption { opacity: 1; }
+        /* Spinner inside image container */
+        .image-container.loading::before {
+            content: ''; position: absolute; width: 30px; height: 30px; border: 3px solid rgba(0, 255, 255, 0.3); border-top-color: var(--secondary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 3;
+        }
+        /* Hide spinner when loaded or failed */
+        .image-container.img-loaded::before, .image-container.failed::before { display: none; }
+        /* Error state styling */
+        .image-container.failed { border-color: var(--error-neon); box-shadow: var(--glow-error); color: var(--error-neon); font-size: 0.85em; padding: 5px; }
+        .image-container.failed img { opacity: 0; display: none; } /* Hide broken image */
+        .retry-info { font-size: 0.9em; color: var(--secondary-neon); margin-top: 5px; }
+
+        footer { margin-top: 3rem; font-size: 0.9rem; color: rgba(224, 224, 224, 0.6); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: text-shadow 0.3s; }
+        footer a:hover { text-shadow: var(--glow-secondary); }
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(3px); }
+        #lightbox.active { display: flex; }
+        #lightbox img { display: block; max-width: 90%; max-height: 90%; object-fit: contain; border: 2px solid var(--secondary-neon); box-shadow: var(--glow-secondary); }
+        #lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5rem; color: var(--text-color); cursor: pointer; line-height: 1; transition: color 0.3s, text-shadow 0.3s; text-shadow: 0 0 5px rgba(0, 0, 0, 0.7); }
+        #lightbox .close-btn:hover { color: var(--primary-neon); text-shadow: var(--glow-primary); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (max-width: 768px) { .container { padding: 1.5rem; } h1 { font-size: 2rem; } .subtitle { font-size: 1.1rem; } #image-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; } .tag-caption { font-size: 0.75rem; } }
+        @media (max-width: 480px) { body { padding: 1rem; } .container { padding: 1rem; } h1 { font-size: 1.8rem; } .subtitle { font-size: 1rem; } #generate-button { font-size: 1rem; padding: 0.7rem 1.5rem; } #image-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; } #lightbox .close-btn { top: 15px; right: 20px; font-size: 2rem; } .tag-caption { font-size: 0.7rem; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ConceptGrid AI</h1>
+        <p class="subtitle">Visualiza tus Ideas con Múltiples Imágenes AI</p>
+        <div class="input-section">
+            <label for="tags-input">Introduce tus conceptos o palabras clave (separadas por comas):</label>
+            <textarea id="tags-input" placeholder="Ej: Bosque lluvioso, Noche estrellada, Ciudad futurista, Gato durmiendo, Taza de café..." rows="3"></textarea>
+        </div>
+        <button id="generate-button">Generar Moodboard</button>
+        <div id="loading-indicator">Generando moodboard...</div>
+        <div id="error-message"></div>
+        <div id="image-grid"></div>
+    </div>
+
+    <div id="lightbox">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="Imagen Ampliada">
+    </div>
+
+    <footer>
+        Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | Desarrollado para <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- Element References ---
+        const tagsInput = document.getElementById('tags-input');
+        const generateButton = document.getElementById('generate-button');
+        const imageGrid = document.getElementById('image-grid');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.querySelector('#lightbox .close-btn');
+
+        // --- Configuration (Adopted from App04.html) ---
+        const MAX_TAGS = 10;
+        const IMAGE_WIDTH = 512;
+        const IMAGE_HEIGHT = 512;
+        const MAX_RETRIES = 2; // Max retries per image load
+        const RETRY_DELAY_MS = 1500; // Delay before retrying (milliseconds)
+        const IMAGE_LOAD_TIMEOUT_MS = 45000; // Timeout per image load attempt (45 seconds)
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+
+        // --- Lógica de Generación del Moodboard ---
+        generateButton.addEventListener('click', handleGeneration);
+        tagsInput.addEventListener('keypress', (event) => {
+             // Allow Enter key submission (optional)
+            // if (event.key === 'Enter' && !event.shiftKey) {
+            //     event.preventDefault(); // Prevent newline in textarea
+            //     handleGeneration();
+            // }
+        });
+
+        function handleGeneration() {
+            const rawTags = tagsInput.value.trim();
+            if (!rawTags) {
+                showError("Por favor, introduce al menos una palabra clave o concepto.");
+                return;
+            }
+            const tags = rawTags.split(',')
+                                .map(tag => tag.trim())
+                                .filter(tag => tag.length > 0);
+            if (tags.length === 0) {
+                showError("No se encontraron palabras clave válidas.");
+                return;
+            }
+            if (tags.length > MAX_TAGS) {
+                showError(`Demasiadas palabras clave. Introduce un máximo de ${MAX_TAGS}.`);
+                return;
+            }
+
+            clearResults();
+            showLoading(true, tags.length); // Pass total count for loading message
+            generateButton.disabled = true;
+            generateButton.textContent = 'Generando...';
+
+            let imagesInitiated = 0;
+
+            tags.forEach((tag, index) => {
+                imagesInitiated++;
+                const seed = Math.floor(Math.random() * 100000);
+                const encodedPrompt = encodeURIComponent(tag);
+                // URL for the initial request to Pollinations
+                const requestUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+                // Create container immediately
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'image-container loading'; // Start as loading
+                imageContainer.dataset.tag = tag; // Store tag for potential error messages
+                imageContainer.dataset.retries = 0; // Initialize retries
+
+                // Add Caption
+                const caption = document.createElement('div');
+                caption.classList.add('tag-caption');
+                caption.textContent = tag;
+                imageContainer.appendChild(caption);
+
+                // Append container to grid
+                imageGrid.appendChild(imageContainer);
+
+                // --- Initiate Fetch (Simpler, no built-in retry loop) ---
+                console.log(`Solicitando [${index+1}/${tags.length}] Tag: "${tag}" URL: ${requestUrl}`);
+                fetch(requestUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            // Handle HTTP errors from the initial request
+                             throw new Error(`HTTP error ${response.status}`);
+                        }
+                        // IMPORTANT: Pollinations redirects, response.url is the *final* image URL
+                        console.log(`Recibida URL final para "${tag}": ${response.url}`);
+                        return response.url;
+                    })
+                    .then(finalImageUrl => {
+                        // --- Start Image Loading with Retry Logic ---
+                        loadImageWithRetry(imageContainer, finalImageUrl, tag);
+                    })
+                    .catch(error => {
+                        // Handle failure of the *initial* fetch request
+                        console.error(`Fetch inicial fallido para "${tag}":`, error);
+                        handleInitialFetchFailure(imageContainer, tag, error.message);
+                         checkAllImagesDone(tags.length); // Check completion status
+                    });
+            });
+
+            // Initial check (might not be needed if checkAllImagesDone is robust)
+            // checkAllImagesDone(tags.length);
+        }
+
+        // --- NEW: Image Loading Logic with Retries (Adapted from App04.html) ---
+        function loadImageWithRetry(container, imageUrl, tag) {
+            let timeoutId;
+
+            // Create the image element for this attempt
+            const img = document.createElement('img');
+            // Alt text for SEO and accessibility
+            img.alt = `Imagen generada por IA para: ${tag}`;
+
+            // Clear previous state (like error messages) before loading
+            container.classList.add('loading');
+            container.classList.remove('failed', 'img-loaded');
+            // Remove previous error/retry messages if any
+            const existingErrorDiv = container.querySelector('.error-content');
+             if (existingErrorDiv) existingErrorDiv.remove();
+             // Ensure caption remains
+             const caption = container.querySelector('.tag-caption');
+             container.innerHTML = ''; // Clear container except for data attributes
+             if(caption) container.appendChild(caption); // Re-add caption
+             container.appendChild(img); // Add the new image element
+
+
+            img.onload = () => {
+                clearTimeout(timeoutId); // Clear the timeout
+                container.classList.remove('loading', 'failed');
+                container.classList.add('img-loaded'); // Add class for loaded state & caption visibility
+                img.classList.add('loaded'); // Add class for image opacity transition
+                container.addEventListener('click', () => openLightbox(imageUrl)); // Add lightbox click listener ONCE on success
+                console.log(`Imagen cargada con éxito para "${tag}"`);
+                checkAllImagesDone(parseInt(loadingIndicator.dataset.total) || 0); // Check if all are done
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId); // Clear the timeout
+                console.error(`Error cargando imagen final para "${tag}": ${imageUrl}`);
+                handleImageLoadFailure(container, img, imageUrl, tag, 'Error de carga');
+            };
+
+            // Set the src *after* attaching listeners
+            img.src = imageUrl;
+
+            // Set a timeout for this specific load attempt
+            timeoutId = setTimeout(() => {
+                // If it's still loading after the timeout, trigger failure
+                if (container.classList.contains('loading')) {
+                    console.warn(`Timeout de carga para "${tag}": ${imageUrl}`);
+                    img.src = ''; // Stop trying to load the timed-out image
+                    handleImageLoadFailure(container, img, imageUrl, tag, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageLoadFailure(container, img, imageUrl, tag, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                const attempt = currentRetries + 1;
+                console.log(`Reintentando carga para "${tag}" (Intento: ${attempt}/${MAX_RETRIES})...`);
+
+                // Show retry indicator WITHIN the container
+                container.classList.remove('loading'); // Temporarily remove loading
+                container.classList.add('failed'); // Indicate an issue occurred
+                // Clear previous content, add error message
+                const caption = container.querySelector('.tag-caption'); // Preserve caption
+                container.innerHTML = '';
+                if(caption) container.appendChild(caption);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-content'; // Class for potential specific styling
+                errorDiv.innerHTML = `${reason}<br><span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span>`;
+                container.appendChild(errorDiv);
+
+
+                // Use setTimeout for delay before retry
+                setTimeout(() => {
+                    loadImageWithRetry(container, imageUrl, tag); // Retry loading
+                }, RETRY_DELAY_MS * Math.pow(2, currentRetries)); // Exponential backoff
+
+            } else {
+                // Max retries reached, mark as permanent error
+                console.error(`Máximos reintentos alcanzados para "${tag}". Desistiendo.`);
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                 const caption = container.querySelector('.tag-caption'); // Preserve caption
+                 container.innerHTML = '';
+                 if(caption) container.appendChild(caption);
+                 const errorDiv = document.createElement('div');
+                 errorDiv.className = 'error-content';
+                 errorDiv.textContent = `Error final: ${reason}`;
+                 container.appendChild(errorDiv);
+
+                checkAllImagesDone(parseInt(loadingIndicator.dataset.total) || 0); // Check if others finished
+            }
+        }
+
+        function handleInitialFetchFailure(container, tag, reason) {
+            // Called when the very first fetch fails definitively
+             container.classList.remove('loading');
+             container.classList.add('failed');
+             const caption = container.querySelector('.tag-caption'); // Preserve caption
+             container.innerHTML = '';
+             if(caption) container.appendChild(caption);
+             const errorDiv = document.createElement('div');
+             errorDiv.className = 'error-content';
+             errorDiv.textContent = `Error API: ${reason}`;
+             container.appendChild(errorDiv);
+        }
+
+
+        // --- NEW: Completion Check (Adopted from App04.html) ---
+        function checkAllImagesDone(totalExpected) {
+            if (!totalExpected) return; // Avoid check if total isn't known yet
+
+            const containers = imageGrid.querySelectorAll('.image-container');
+
+            // We need exactly totalExpected containers, and none should be in 'loading' state
+            if (containers.length < totalExpected) {
+                // Still waiting for some fetch requests to even initiate loading
+                // Update loading indicator if needed
+                const currentDoneOrFailed = Array.from(containers).filter(c => !c.classList.contains('loading')).length;
+                loadingIndicator.textContent = `Generando moodboard (${currentDoneOrFailed}/${totalExpected})...`;
+                return;
+            }
+
+
+            const allAccountedFor = Array.from(containers).every(
+                cont => !cont.classList.contains('loading') // Either loaded ('img-loaded') or failed ('failed')
+            );
+
+             // Update loading count one last time before potentially hiding it
+             const successfulCount = imageGrid.querySelectorAll('.image-container.img-loaded').length;
+             loadingIndicator.textContent = `Generando moodboard (${successfulCount}/${totalExpected})...`;
+
+
+            if (allAccountedFor) {
+                showLoading(false); // Hide global loading message
+                generateButton.disabled = false;
+                generateButton.textContent = 'Generar Moodboard';
+
+                // Count errors for final feedback
+                const errorCount = imageGrid.querySelectorAll('.image-container.failed').length;
+                if (errorCount > 0 && errorCount === totalExpected) {
+                     showError(`Error: No se pudo generar ninguna imagen para el moodboard.`);
+                } else if (errorCount > 0) {
+                    showError(`Completado con ${errorCount} error(es). Se generaron ${totalExpected - errorCount} imágenes.`, true);
+                } else {
+                    // Optional: Global success message
+                    // showFeedback('success', '¡Moodboard generado con éxito!'); // (Use a different function if needed)
+                    console.log("¡Moodboard generado con éxito!");
+                }
+            }
+        }
+
+
+        // --- Funciones Auxiliares UI (Adaptadas) ---
+        function showLoading(isLoading, total = 0) {
+            if (isLoading) {
+                 loadingIndicator.style.display = 'block';
+                 loadingIndicator.textContent = `Generando moodboard (0/${total})...`;
+                 loadingIndicator.dataset.total = total; // Store total count
+            } else {
+                 loadingIndicator.style.display = 'none';
+                 delete loadingIndicator.dataset.total; // Clear stored count
+            }
+            // Button disable logic moved to handleGeneration and checkAllImagesDone
+        }
+
+        function showError(message, isPartial = false) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.style.borderColor = isPartial ? 'var(--accent-neon)' : 'var(--error-neon)';
+            // Ensure loading stops if a definitive error is shown
+            if (loadingIndicator.style.display === 'block' && !isPartial) {
+                 showLoading(false);
+                 generateButton.disabled = false; // Re-enable button on total failure
+                 generateButton.textContent = 'Generar Moodboard';
+            }
+        }
+
+        function clearResults() {
+            imageGrid.innerHTML = '';
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+             // Clear potential previous success/error messages if using a dedicated feedback div
+             // feedbackDiv.innerHTML = '';
+        }
+
+         // --- Lightbox Functions (Unchanged) ---
+         function openLightbox(imageUrl) {
+            lightboxImg.src = imageUrl;
+            lightbox.classList.add('active');
+        }
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxImg.src = ""; // Clear src to free memory
+        }
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (event) => { if (event.target === lightbox) closeLightbox(); });
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); });
+
+        // Optional: Preconnect
+        document.addEventListener('DOMContentLoaded', () => {
+             const preconnectLink = document.createElement('link'); preconnectLink.rel = 'preconnect'; preconnectLink.href = 'https://image.pollinations.ai'; document.head.appendChild(preconnectLink);
+        });
+
+    </script>
+
+</body>
+</html>

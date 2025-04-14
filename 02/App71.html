@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panteón Digital: Mitos Griegos</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes clásicas/elegantes -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Mitología Griega --- */
+        :root {
+            --color-primary: #1976D2; /* Azul Egeo Profundo */
+            --color-secondary: #D4AF37; /* Oro Antiguo (apagado) */
+            --color-background: #FAF0E6; /* Lino / Pergamino Claro */
+            --color-text: #4E342E; /* Marrón Oscuro / Sepia */
+            --color-text-muted: #795548; /* Marrón Medio */
+            --color-modal-bg: #FFFFFF; /* Blanco Mármol para Modal */
+            --color-border: #D7CCC8; /* Borde Piedra Clara */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.07);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --border-radius: 6px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Noto Serif', serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        /* Fuente Cinzel para títulos importantes */
+        h1.logo, h1.page-title, h2.section-title, #modal-title { font-family: 'Cinzel', serif; font-weight: 700; }
+        h1.logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-text); }
+        h2.section-title { color: var(--color-primary); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.6rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: rgba(255, 255, 255, 0.85); /* Blanco semi-transparente */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .title-item {
+            background-color: var(--color-modal-bg);
+            padding: 1.5rem 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-align: center;
+            font-weight: 700; /* Noto Serif Bold */
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center; justify-content: center;
+            min-height: 75px;
+            font-family: 'Noto Serif', serif;
+        }
+        .title-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-secondary);
+            color: var(--color-primary);
+            background-color: #E3F2FD; /* Azul muy pálido hover */
+        }
+        #generate-more-btn {
+            grid-column: 1 / -1;
+            background: linear-gradient(to bottom, var(--color-primary), #1565C0); /* Gradiente azul */
+            color: white;
+            padding: 0.8rem 1.8rem; border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Cinzel', serif; font-weight: 700;
+            cursor: pointer; transition: var(--transition-normal);
+            margin-top: 2rem; text-transform: uppercase; letter-spacing: 1.5px;
+            box-shadow: var(--shadow-sm);
+        }
+        #generate-more-btn:hover:not(:disabled) {
+            background: linear-gradient(to bottom, #1E88E5, var(--color-primary));
+            box-shadow: var(--shadow-md); transform: translateY(-2px);
+        }
+        #generate-more-btn:disabled {
+            background: #B0BEC5; /* Gris neutral */
+            color: #78909c; cursor: not-allowed; opacity: 0.8;
+        }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(78, 52, 46, 0.85); /* Overlay sepia oscuro */
+            display: none; align-items: center; justify-content: center;
+            z-index: 50; padding: 1rem;
+        }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 950px; width: 95%;
+            max-height: 90vh; min-height: 350px;
+            overflow: hidden; position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex; flex-direction: column;
+        }
+        .modal-close-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: #E0E0E0; /* Gris claro botón */ border: none;
+            border-radius: 50%; width: 38px; height: 38px;
+            font-size: 1.7rem; color: var(--color-text-muted);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: var(--transition-normal); z-index: 10;
+        }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; transform: rotate(90deg); }
+        #modal-title { font-size: 2.1rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.4; }
+        #modal-content {
+            line-height: 1.85; color: var(--color-text);
+            white-space: normal; overflow-y: auto;
+            padding: 0 10px 1.5rem 10px;
+            flex-grow: 1; min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-secondary) var(--color-border); /* Scrollbar dorado */
+        }
+        #modal-content::-webkit-scrollbar { width: 10px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: #5D4037; /* Marrón un poco más oscuro para énfasis */ font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 {
+            font-family: 'Cinzel', serif; margin-top: 2.3em; margin-bottom: 1.2em;
+            color: var(--color-primary); border-bottom: 1px solid var(--color-border);
+            padding-bottom: 0.5em; font-weight: bold;
+        }
+        #modal-content h1 { font-size: 1.6em; }
+        #modal-content h2 { font-size: 1.45em; }
+        #modal-content h3 { font-size: 1.3em; color: #6D4C41; border-bottom-style: dashed; } /* Estilo diferente para H3 */
+        #modal-content h4 { font-size: 1.15em; color: var(--color-text-muted); border-bottom: none; }
+        /* Estilo para la imagen insertada al final del contenido */
+        #modal-content .final-image {
+            display: block; max-width: 75%; /* Un poco más pequeña */ height: auto;
+            margin: 3rem auto 1rem auto; /* Más margen superior */
+            border: 3px solid var(--color-secondary); /* Borde dorado */
+            border-radius: var(--border-radius);
+            padding: 5px; background-color: #fff; /* Fondo blanco detrás imagen */
+            box-shadow: var(--shadow-md);
+        }
+        /* Estilo para el placeholder/spinner de la imagen final */
+        #modal-content .image-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 150px; margin: 3rem auto 1rem auto; color: var(--color-text-muted);
+        }
+        #modal-content .image-placeholder .spinner {
+            border: 4px solid rgba(215, 204, 200, 0.5); /* Borde piedra claro semi-transparente */
+            width: 40px; height: 40px; border-radius: 50%;
+            border-left-color: var(--color-secondary); /* Dorado */
+            animation: spin 1s linear infinite; margin-bottom: 0.7rem;
+        }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3.5rem; color: var(--color-border); }
+
+        #modal-loading {
+            text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.97); /* Blanco casi opaco */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 5; border-radius: var(--border-radius);
+        }
+        .loading-spinner-modal {
+            width: 65px; height: 65px; border: 7px solid #BCAAA4; /* Marrón piedra */
+            border-top-color: var(--color-primary); /* Azul */
+            border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto;
+        }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.4rem; font-family: 'Cinzel', serif; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg {
+            background-color: #FFCDD2; /* Rojo pálido */ color: #B71C1C; /* Rojo oscuro */
+            padding: 1.3rem; border-radius: var(--border-radius);
+            border: 1px solid #E57373; margin-top: 1.5rem;
+            text-align: center; flex-shrink: 0; font-weight: bold;
+            font-family: 'Noto Serif', serif;
+        }
+        .error-msg i { margin-right: 0.8rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                  <i class="fas fa-landmark text-yellow-600 text-3xl mx-4"></i> <!-- Icono Templo/Landmark -->
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     Panteón Digital
+                 </h1>
+                 <i class="fas fa-book-open text-blue-700 text-3xl mx-4"></i> <!-- Icono Libro -->
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Mitos y Leyendas de la Antigua Grecia</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">Sumérgete en las épicas historias de dioses, héroes y monstruos que forjaron la imaginación occidental. Elige un nombre o relato para desvelar sus secretos.</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-scroll text-yellow-700 mr-3"></i> <!-- Icono Pergamino -->
+                 Consulta los Anales Mitológicos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg italic">Consultando los oráculos...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Invocar Más Mitos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Descifrando pergaminos...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-600 py-6 mt-12 border-t border-gray-300">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Relatos y explicaciones generados por IA inspirados en fuentes clásicas de la mitología griega.</p>
+              <p class="mt-1">Creado con fines educativos y de entretenimiento. Que las Musas te inspiren.</p>
+              <p class="mt-2">© 2025 Panteón Digital</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Dioses Primordiales y Titanes
+            "Caos: El Vacío Primigenio", "Gea (Gaia): La Madre Tierra", "Urano: El Padre Cielo", "Los Titanes: La Primera Generación Divina", "Cronos: El Titán del Tiempo", "Rea: La Madre de los Dioses Olímpicos", "Océano y Tetis: Titanes del Agua", "Hiperión y Tea: Titanes de la Luz", "Ceo y Febe: Titanes de la Inteligencia", "Crío y Jápeto: Otros Titanes Relevantes", "Atlas: El Titán que Sostiene los Cielos", "Prometeo: El Titán Amigo de la Humanidad", "Epimeteo: El Titán de la Reflexión Tardía", "La Titanomaquia: La Guerra entre Titanes y Olímpicos",
+            // Dioses Olímpicos Principales
+            "Zeus: Rey de los Dioses y el Cielo", "Hera: Reina de los Dioses y el Matrimonio", "Poseidón: Dios de los Mares y los Terremotos", "Hades: Dios del Inframundo", "Deméter: Diosa de la Agricultura y las Cosechas", "Hestia: Diosa del Hogar y la Familia", "Atenea: Diosa de la Sabiduría y la Guerra Estratégica", "Apolo: Dios de las Artes, la Música y la Profecía", "Ártemis: Diosa de la Caza y la Luna", "Ares: Dios de la Guerra Sangrienta", "Afrodita: Diosa del Amor y la Belleza", "Hefesto: Dios del Fuego y la Forja", "Hermes: Mensajero de los Dioses y Dios del Comercio", "Dionisio: Dios del Vino, el Éxtasis y el Teatro",
+            // Dioses Menores y Otras Deidades
+            "Perséfone: Reina del Inframundo", "Helios: El Dios Sol (pre-Apolo)", "Selene: La Diosa Luna (pre-Ártemis)", "Eos: La Diosa del Amanecer", "Iris: La Mensajera Arcoíris", "Hebe: La Diosa de la Juventud", "Ilitía: Diosa de los Partos", "Pan: Dios de los Pastores y la Naturaleza Salvaje", "Niké: Diosa de la Victoria", "Tique: Diosa de la Fortuna", "Némesis: Diosa de la Venganza y el Equilibrio", "Las Musas: Inspiradoras de las Artes (Calíope, Clío, Erató, Euterpe, Melpómene, Polimnia, Talía, Terpsícore, Urania)", "Las Moiras (Parcas): Tejedoras del Destino (Cloto, Láquesis, Átropos)", "Las Gracias (Cárites): Diosas del Encanto y la Belleza (Aglaya, Eufrósine, Talía)", "Las Horas: Diosas del Orden y las Estaciones", "Tánatos: La Personificación de la Muerte", "Hipnos: El Dios del Sueño", "Érebo y Nix: Deidades de la Oscuridad y la Noche", "Asclepio: Dios de la Medicina", "Bóreas, Noto, Euro, Céfiro: Los Dioses Viento (Anemoi)", "Circe: La Hechicera de Eea", "Calipso: La Ninfa de Ogigia", "Proteo: El Viejo Hombre del Mar", "Tritón: El Hijo de Poseidón", "Nereidas y Oceánides: Ninfas del Mar", "Dríades y Hamadríades: Ninfas de los Árboles", "Náyades: Ninfas de las Aguas Dulces", "Oréades: Ninfas de las Montañas", "Sátiros y Silenos: Compañeros de Dionisio",
+            // Héroes Griegos
+            "Heracles (Hércules): El Héroe por Excelencia", "Los Doce Trabajos de Heracles", "Teseo: El Héroe de Atenas", "Teseo y el Minotauro", "Perseo: El Asesino de Medusa", "Jasón y los Argonautas", "La Búsqueda del Vellocino de Oro", "Odiseo (Ulises): El Astuto Rey de Ítaca", "La Odisea: El Viaje de Regreso de Odiseo", "Aquiles: El Guerrero Invulnerable (casi)", "Aquiles en la Guerra de Troya", "Héctor: El Príncipe Troyano", "Paris y Helena: La Causa de la Guerra de Troya", "Agamenón: Rey de Micenas y Líder Aqueo", "Menelao: Rey de Esparta", "Áyax el Grande: El Fuerte Guerrero Aqueo", "Áyax el Menor: El Rápido Guerrero Aqueo", "Diomedes: El Valiente Héroe Aqueo", "Néstor: El Sabio Consejero", "Príamo y Hécuba: Reyes de Troya", "Casandra: La Profetisa Maldita", "Eneas: El Héroe Troyano Fundador (Vía Roma)", "Belerofonte: El Domador de Pegaso", "Belerofonte y la Quimera", "Edipo: El Rey de Tebas y su Tragedia", "El Ciclo Tebano: Layo, Yocasta, Antígona", "Cadmo: Fundador de Tebas", "Meleagro y la Caza del Jabalí de Calidón", "Atalanta: La Cazadora Veloz", "Orfeo: El Músico que Encantó al Inframundo", "Orfeo y Eurídice", "Pelops: El Héroe del Peloponeso", "Ío: La Sacerdotisa Convertida en Vaca", "Europa: La Princesa Raptor por Zeus", "Dánae: La Madre de Perseo", "Leda y el Cisne: El Engaño de Zeus", "Pirítoo: El Amigo de Teseo", "Cástor y Pólux (Los Dióscuros)", "Hipólita: Reina de las Amazonas", "Pentesilea: Reina Amazona en Troya",
+            // Monstruos y Criaturas Mitológicas
+            "El Minotauro: La Bestia del Laberinto", "Medusa: La Gorgona Petrificadora", "Las Gorgonas: Esteno, Euríale y Medusa", "Los Cíclopes: Gigantes de un Solo Ojo", "Polifemo: El Cíclope Engañado por Odiseo", "La Hidra de Lerna: La Serpiente de Múltiples Cabezas", "Cerbero: El Perro Guardián del Hades", "La Quimera: El Monstruo Híbrido", "Las Arpías: Espíritus Alados Rapaces", "Las Sirenas: Las Cantoras Mortales", "Escila y Caribdis: Peligros del Estrecho de Mesina", "El León de Nemea: La Bestia Invulnerable", "El Jabalí de Erimanto", "La Cierva de Cerinea", "Las Aves del Estínfalo", "El Toro de Creta", "Las Yeguas de Diomedes", "El Cancerbero (Error Común, es Cerbero)", "Los Centauros: Mitad Hombre, Mitad Caballo", "Quirón: El Centauro Sabio", "Neso: El Centauro Traicionero", "Los Gigantes: Hijos de Gea y Urano", "La Gigantomaquia: La Guerra entre Dioses y Gigantes", "Tifón: El Monstruo Más Terrible", "Equidna: La Madre de los Monstruos", "El Grifo: Guardián de Tesoros", "Pegaso: El Caballo Alado", "El Fénix: El Ave Inmortal", "Los Sátiros: Espíritus del Bosque", "Lamia: La Devoradora de Niños", "Empusa: El Espectro Cambiante", "Las Grayas: Las Ancianas de un Solo Ojo y Diente", "El Dragón Ladón: Guardián de las Manzanas de Oro", "El Dragón de la Cólquida: Guardián del Vellocino", "Los Lotófagos: Los Comedores de Loto", "Los Lestrigones: Los Gigantes Caníbales", "Esfinge: El Enigma de Tebas",
+            // Mitos e Historias Fundamentales
+            "El Mito de la Creación Griega (Hesíodo)", "La Separación de Urano y Gea", "El Nacimiento de Afrodita", "El Robo del Fuego por Prometeo", "La Caja de Pandora: El Origen de los Males", "El Diluvio de Deucalión y Pirra", "El Rapto de Perséfone por Hades", "El Mito de las Estaciones", "El Mito de Sísifo: El Castigo Eterno", "El Mito de Tántalo: El Suplicio Insaciable", "El Vuelo de Ícaro: La Ambición y la Caída", "Dédalo y el Laberinto de Creta", "El Mito de Narciso y Eco", "El Mito de Aracne: La Tejedora Desafiante", "El Mito del Rey Midas: El Toque de Oro", "El Juicio de Paris: El Inicio de la Discordia", "La Guerra de Troya: Resumen del Conflicto", "El Caballo de Troya: El Engaño Final", "La Caída de Troya", "El Regreso de los Héroes Aqueos (Nostoi)", "El Mito de Acteón: El Cazador Castigado", "Filemón y Baucis: La Pareja Hospitalaria", "Píramo y Tisbe: Los Amantes Trágicos", "Ganimedes: El Copero de los Dioses", "Semele: La Madre Mortal de Dionisio", "La Fundación de Atenas: Atenea vs. Poseidón", "La Fundación de Tebas por Cadmo", "Las Danaides: El Castigo de las Novias Asesinas", "Ixión: El Castigo en la Rueda de Fuego",
+            // Lugares y Conceptos Clave
+            "El Monte Olimpo: La Morada de los Dioses", "El Inframundo (Hades): Reino de los Muertos", "Tárataro: El Abismo de los Castigados", "Campos Elíseos: El Paraíso de los Héroes", "Campos de Asfódelos: La Morada de las Sombras Comunes", "El Río Estigia: El Juramento Inviolable", "El Río Aqueronte: El Río del Dolor", "El Río Leteo: El Río del Olvido", "Caronte: El Barquero del Hades", "El Oráculo de Delfos: La Voz de Apolo", "La Pitia (Pitonisa): La Sacerdotisa de Delfos", "Dodona: El Oráculo de Zeus", "Eleusis y los Misterios Eleusinos", "Ambrosía y Néctar: El Alimento de los Dioses", "Icor: La Sangre de los Dioses", "La Égida: El Escudo de Zeus y Atenea", "El Caduceo: El Báculo de Hermes", "El Tridente: El Arma de Poseidón", "El Rayo: El Arma de Zeus", "El Casco de Invisibilidad de Hades", "Las Sandalias Aladas de Hermes", "El Carro del Sol de Helios/Apolo", "El Hilo de Ariadna", "Las Manzanas de Oro de las Hespérides", "El Vellocino de Oro", "Hybris: La Desmesura Orgullosa", "Némesis: La Justicia Retributiva", "Metamorfosis en la Mitología Griega", "Culto a los Héroes", "Los Juegos Olímpicos Antiguos", "Los Juegos Píticos, Ístmicos y Nemeos", "La Hospitalidad (Xenia): Un Deber Sagrado", "Concepto de Destino (Moira/Fatum)", "Influencia de la Mitología Griega en Occidente", "Diferencias entre Mitología Griega y Romana"
+            // Añadir más según sea necesario
+        ];
+        const mythologyThemes = [
+            "Dioses Olímpicos", "Titanes y Primordiales", "Héroes Griegos", "Monstruos Mitológicos", "Mitos de Creación", "La Guerra de Troya", "La Odisea", "Los Trabajos de Heracles", "Metamorfosis", "Oráculos y Profecías", "El Inframundo", "Amoríos Divinos", "Castigos Divinos", "Criaturas Fantásticas", "Ninfas y Deidades Menores", "El Ciclo Tebano", "Jasón y los Argonautas", "Mitos Fundacionales", "Conceptos Filosóficos (Hybris, Moira)"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un erudito clásico y un narrador cautivador, experto en mitología griega. Tu tarea es relatar o explicar figuras (dioses, héroes, monstruos), historias o conceptos clave de la mitología griega. Hazlo de forma detallada, precisa (según las fuentes clásicas como Hesíodo, Homero, Ovidio), y con un estilo narrativo atractivo. Describe orígenes, atributos, relaciones familiares, hazañas principales, simbolismo y legado cultural. Si es un mito, narra la secuencia de eventos clave. Si es un concepto, explícalo con ejemplos mitológicos. El objetivo es un texto completo de aproximadamente 1200-1300 palabras. Basa tu relato/explicación únicamente en el siguiente tema:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de mitología. Genera exactamente 15 nombres de dioses, héroes, monstruos, mitos o conceptos importantes de la mitología griega, adecuados para ser explicados detalladamente. Devuelve *solo* la lista, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor del texto
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config) { /* ... Sin cambios ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                throw new Error(`Error de comunicación con la API: ${error.message}`);
+            }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... Sin cambios ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+             if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                  throw new Error("La IA no pudo generar una explicación adecuada o suficientemente detallada para este tema mitológico.");
+              }
+            return text;
+        }
+        async function fetchGeneratedTitles() { /* ... Sin cambios ... */
+             const randomTheme = getRandomElement(mythologyThemes) || "mitos griegos importantes";
+             const specificPrompt = `Genera 15 nombres o temas clave sobre ${randomTheme} de la mitología griega`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas.");
+             return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a MITOLOGÍA GRIEGA
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "ancient Greek myth scene";
+             // Prompt ENFOCADO en estilo artístico griego o atmosférico.
+             const enhancedPrompt = `Illustration inspired by the Greek myth or figure '${safePromptText}'. Style reminiscent of ancient Greek pottery (red-figure or black-figure), fresco, or classical sculpture. Atmospheric, dramatic lighting, mythological elements. Alternatively, a symbolic landscape related to the myth.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             // NEGATIVE PROMPT: Evitar modernidad, fotos, texto.
+             const negativePrompt = "text, words, labels, letters, captions, writing, numbers, diagrams, charts, graphs, UI, interface, menu, buttons, watermark, signature, multiple panels, collage, photorealistic, photograph, modern clothing, contemporary setting, 3D render, cartoon, anime";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios lógicos)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear previous text and image
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios lógicos)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]);
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay títulos disponibles.</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        // *** MODIFIED: handleTitleClick mantiene la lógica de imagen al final ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // 1. Fetch y formato de texto
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 2. Ocultar carga, mostrar texto
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                 // 3. RESET SCROLL después de mostrar texto
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // 4. Preparar y añadir placeholder/spinner DENTRO de #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-palette placeholder-icon"></i> <!-- Icono paleta -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Forjando imagen en bronce y arcilla...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Añadir al final
+
+                // 5. Crear y añadir elemento imagen (oculto inicialmente)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Representación artística de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Los dioses ocultaron la imagen.</p>
+                    `;
+                };
+
+                // Obtener URL y asignar src DESPUÉS de añadir listeners
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir img al final
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al invocar a los artesanos divinos.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Limpiar en caso de error
+            }
+        }
+
+
+        async function handleGenerateMoreTitles() { /* ... Adaptado temáticamente ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Consultando Musas...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("Las Musas no ofrecieron más inspiración en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al invocar mitos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Invocar Más Mitos';
+             }
+         }
+
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p style="color: #B71C1C; font-size: 2em; text-align: center; padding-top: 5em; font-family: \'Cinzel\', serif;">¡Caos Primigenio! Fallo al construir el Panteón Digital.</p>'; return; } // Error temático
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

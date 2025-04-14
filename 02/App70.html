@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopedia Dragon Ball Z Kai</title> <!-- Nombre más pegadizo -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes con energía -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Lato:wght@400;700&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Dragon Ball --- */
+        :root {
+            --color-primary: #f97316; /* Naranja (Gi Goku) */
+            --color-secondary: #3b82f6; /* Azul (Gi Vegeta/Cielo) */
+            --color-accent: #facc15; /* Amarillo (Super Saiyan/Esferas) */
+            --color-background: #f3f4f6; /* Gris muy claro (Nubes/Entorno limpio) */
+            --color-text: #1f2937; /* Gris oscuro/Casi negro */
+            --color-text-muted: #4b5563;
+            --color-modal-bg: #ffffff; /* Blanco */
+            --color-border: #d1d5db; /* Gris claro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px; /* Un poco más redondeado */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.6; }
+        /* Fuente Bangers para el título principal */
+        h1.logo, h1.page-title { font-family: 'Bangers', cursive; font-weight: normal; color: var(--color-primary); letter-spacing: 1px; text-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
+        /* Fuente Oswald para títulos secundarios y modales */
+        h2.section-title, #modal-title { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-secondary); padding-bottom: 0.5rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 2px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1rem 0.8rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-secondary); border: 2px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-3px) scale(1.03); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #fffbeb; /* Amarillo muy pálido */ }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-accent)); color: white; padding: 0.8rem 1.8rem; border: none; border-radius: var(--border-radius); font-family: 'Oswald', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal), transform 0.1s ease; margin-top: 2rem; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, #ea580c, #eab308); box-shadow: var(--shadow-md); transform: scale(1.02); }
+        #generate-more-btn:active:not(:disabled) { transform: scale(0.98); }
+        #generate-more-btn:disabled { background: #9ca3af; color: var(--color-text-muted); cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.85); /* Overlay oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 3px solid var(--color-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px; /* Altura mínima para pantalla de carga */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: var(--color-text-muted); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.6rem; color: var(--color-modal-bg); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); transform: rotate(180deg); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.2; color: var(--color-secondary); }
+        #modal-content {
+            line-height: 1.7;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 10px 1.5rem 10px; /* Padding inferior para espacio después de imagen */
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-border); /* Scrollbar temático */
+        }
+        #modal-content::-webkit-scrollbar { width: 10px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-secondary); font-weight: bold; }
+        #modal-content em { color: var(--color-primary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Oswald', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: bold; text-transform: uppercase; }
+        #modal-content h1 { font-size: 1.5em; color: var(--color-secondary); }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; }
+        /* Estilo para la imagen insertada al final del contenido */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 2px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); }
+        /* Estilo para el placeholder/spinner de la imagen final */
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.75rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3.5rem; color: var(--color-secondary); }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.95); /* Fondo de carga claro */ display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 70px; height: 70px; border: 7px solid var(--color-border); border-top-color: var(--color-primary); border-right-color: var(--color-secondary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-secondary); font-size: 1.4rem; font-family: 'Oswald'; text-transform: uppercase; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fee2e2; /* Fondo error rojo claro */ color: #dc2626; /* Texto rojo */ padding: 1.2rem; border-radius: var(--border-radius); border: 2px solid #f87171; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                 <i class="fas fa-star text-yellow-400 text-3xl mr-3 animate-pulse"></i> <!-- Dragon Ball -->
+                 <h1 class="logo text-4xl sm:text-5xl mx-2">
+                     Enciclopedia DBZK
+                 </h1>
+                 <i class="fas fa-dragon text-green-600 text-3xl ml-3"></i> <!-- Shenron -->
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-4">¡El Universo Dragon Ball en tus Manos!</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto">Explora perfiles detallados de tus personajes favoritos (y no tan favoritos) de toda la saga. ¡Selecciona un guerrero para ver su Ki!</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-users text-blue-600 mr-2"></i> <!-- Grupo de personas -->
+                 Selecciona un Personaje
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Buscando en la base de datos de Capsule Corp...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     ¡Invocar Más Guerreros!
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Analizando Ki...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Character profile text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                 <!-- NO HAY CONTENEDOR DE IMAGEN SEPARADO AQUÍ -->
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-600 py-6 mt-12 border-t border-gray-300">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Perfiles de personajes generados por IA basados en la vasta saga Dragon Ball. Contenido creado por fans para fans.</p>
+              <p class="mt-1">Todos los derechos de Dragon Ball pertenecen a Akira Toriyama, Bird Studio/Shueisha, Toei Animation.</p>
+              <p class="mt-2">© 2025 Enciclopedia DBZK</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Dragon Ball Original
+            "Son Goku (Kid)", "Bulma", "Krillin", "Master Roshi (Kame-Sennin)", "Yamcha", "Puar", "Oolong", "Chi-Chi (Kid)", "Ox-King (Gyumao)", "Tien Shinhan", "Chiaotzu", "Launch (Lunch)", "Mercenary Tao (Taopaipai)", "Emperor Pilaf", "Shu", "Mai", "General Blue", "Commander Red", "Staff Officer Black", "Ninja Murasaki", "Android 8 (Eighter/Hatchan)", "Korin (Karin)", "Yajirobe", "Kami (God)", "Mr. Popo", "Piccolo Daimao (King Piccolo)", "Piano", "Tambourine", "Cymbal", "Drum", "Piccolo Jr.", "Fortuneteller Baba", "Grandpa Gohan", "Monster Carrot (兎人参化)", "Bora", "Upa", "Master Shen (Tsuru-Sennin)", "Annin (Guardiana del Horno)",
+
+            // Dragon Ball Z - Saiyan Saga
+            "Son Goku (Adult)", "Son Gohan (Kid)", "Piccolo", "Vegeta (Saiyan Saga)", "Nappa", "Raditz", "Krillin (Z)", "Yamcha (Z)", "Tien Shinhan (Z)", "Chiaotzu (Z)", "King Kai (Kaio-sama)", "Bubbles", "Gregory", "Princess Snake", "Goz", "Mez",
+
+            // Dragon Ball Z - Frieza Saga
+            "Frieza (First Form)", "Frieza (Second Form)", "Frieza (Third Form)", "Frieza (Final Form)", "Frieza (100% Power)", "Captain Ginyu", "Recoome", "Burter", "Jeice", "Guldo", "Zarbon (Base & Monster Form)", "Dodoria", "Cui (Kiwi)", "Appule", "Namekian Warriors", "Nail", "Guru (Grand Elder)", "Dende (Kid)", "Moori", "Cargo", "Porunga", "Vegeta (Namek Saga)", "Gohan (Namek Saga)", "Krillin (Namek Saga)", "Bulma (Namek Saga)", "King Cold",
+
+            // Dragon Ball Z - Cell Saga (Androids/Cell Games)
+            "Future Trunks (Sword)", "Future Trunks (Super Saiyan)", "Cell (Imperfect)", "Cell (Semi-Perfect)", "Cell (Perfect)", "Cell (Super Perfect)", "Cell Juniors", "Android 16", "Android 17", "Android 18", "Dr. Gero (Android 20)", "Android 19", "Vegeta (Super Saiyan / Ascended)", "Gohan (Super Saiyan / SS2)", "Goku (Super Saiyan / Full Power)", "Piccolo (Fused with Kami)", "Krillin (Cell Saga)", "Tien Shinhan (Cell Saga)", "Yamcha (Cell Saga)", "Hercule (Mr. Satan)", "Videl (Teen)", "Sharpner", "Erasa", "King Kai (Cell Games)",
+
+            // Dragon Ball Z - Buu Saga
+            "Majin Buu (Fat Buu)", "Evil Buu (Grey Buu)", "Super Buu", "Super Buu (Gotenks Absorbed)", "Super Buu (Piccolo Absorbed)", "Super Buu (Gohan Absorbed)", "Kid Buu", "Babidi", "Dabura", "Pui Pui", "Yakon", "Supreme Kai (Shin)", "Kibito", "Old Kai (Rou Dai Kaioshin)", "Kibito Kai (Fusion)", "Goten (Kid)", "Trunks (Kid)", "Gotenks (Base, SS, SS3)", "Vegito (Base, Super Saiyan)", "Gohan (Adult / Great Saiyaman / Ultimate)", "Videl (Adult / Great Saiyaman 2)", "Majin Vegeta", "Goku (Super Saiyan 2 / SS3)", "Hercule (Buu Saga)", "Bee (The Dog)", "Good Buu (Mr. Buu)", "Uub (End of Z)",
+
+            // Dragon Ball Super - Battle of Gods / Resurrection 'F'
+            "Beerus", "Whis", "Oracle Fish", "Goku (Super Saiyan God)", "Vegeta (Super Saiyan God SS / Blue)", "Goku (Super Saiyan God SS / Blue)", "Golden Frieza", "Sorbet", "Tagoma", "Shisami", "Jaco the Galactic Patrolman", "Bulma (Super)", "Krillin (Super)", "Android 18 (Super)", "Gohan (Super)", "Piccolo (Super)", "Master Roshi (Super)", "Tien Shinhan (Super)", "Goten (Super)", "Trunks (Super)", "Marron", "Hercule (Super)", "Majin Buu (Super)", "King Vegeta (Flashback)",
+
+            // Dragon Ball Super - Universe 6 / Future Trunks Saga
+            "Champa", "Vados", "Hit", "Cabba", "Frost", "Botamo", "Magetta", "Auta Magetta", "Universe 6 Namekians (Saonel, Pirina)", "Future Trunks (Super Saiyan Rage)", "Goku Black (Base, Super Saiyan Rosé)", "Zamasu", "Fused Zamasu (Base, Half-Corrupted)", "Gowasu", "Future Mai", "Future Yajirobe", "Zen-Oh (Present)", "Zen-Oh (Future)", "Grand Priest (Daishinkan)", "Attendants/Guards of Zen-Oh", "Vegito (Super Saiyan Blue)",
+
+            // Dragon Ball Super - Tournament of Power
+            "Jiren", "Toppo (Base / God of Destruction)", "Dyspo (Base / Super Speed Mode)", "Kahseral", "Cocotte", "Kettol", "Tupper", "Zoiray", "Vuon", "Kunshi", "Caulifla (Base, SS, SS2)", "Kale (Base, Berserker/Controlled SS)", "Kefla (Base, Super Saiyan)", "Universe 7 Team (Full Roster)", "Android 17 (Super)", "Frieza (Super - Ally)", "Ribrianne", "Rozie", "Kakunsa", "Bergamo", "Lavender", "Basil (Trio de Dangers)", "Obuni", "Aniraza", "Dr. Rota", "Ganos", "Katopesla", "Gamisasaru", "Shantsa", "Monna", "Napapa", "Zircor", "Pell", "Ag", "Mulithim", "Biara", "Caway", "Dercori", "Methiop", "Nigrissi", "Pancea", "Prum", "Rabanra", "Shosa", "Zarbuto", "Koitsukai", "Panchia", "Bollarator", "Quitela (GoD U4)", "Korn (Angel U8)", "Iwne (GoD U1)", "Awamo (Angel U1)", "Heles (GoD U2)", "Sour (Angel U2)", "Mosco/Mule (GoD U3)", "Campari (Angel U3)", "Arak (GoD U5)", "Cukatail (Angel U5)", "Liquiir (GoD U8)", "Geene (GoD U12)", "Martinu (Angel U12)", "Belmod (GoD U11)", "Marcarita (Angel U11)", "Sidra (GoD U9)", "Mojito (Angel U9)", "Rumoosh (GoD U10)", "Kusu (Angel U10)",
+
+            // Dragon Ball Super - Broly Movie / Moro Arc / Granolah Arc (Manga Spoilers likely for AI)
+            "Broly (DBS)", "Cheelai", "Lemo", "Paragus (DBS)", "Gogeta (Super Saiyan / Blue)", "Kikono", "Berryblue", "Moro (Base, Powered-up, Planet-Eater, Merus-Absorbed)", "Merus", "Galactic Patrol (Members)", "Esca", "Seven-Three (OG73-i)", "Granolah", "Oatmeel", "Gas", "Elec", "Macki", "Oil", "Monaito", "Bardock (DBS Flashback / Father of Goku)", "Gine",
+
+            // Dragon Ball GT (Non-canon, but popular)
+            "Pan (GT)", "Trunks (GT)", "Goku (GT - Kid/Adult/SS4)", "Giru (Gir)", "Baby (Base, Vegeta Forms)", "General Rilldo", "Dr. Myuu", "Super Android 17", "Hell Fighter 17", "Omega Shenron (Syn Shenron)", "Nuova Shenron", "Eis Shenron", "Haze Shenron", "Oceanus Shenron", "Rage Shenron", "Naturon Shenron", "Ledgic", "Cardinal Mutchy Mutchy", "Luud", "Uub (Majuub)",
+
+            // Movie / OVA / Special Characters (Select Few)
+            "Cooler (Base / Final Form)", "Meta-Cooler", "Broly (Z - LSSJ)", "Bio-Broly", "Janemba (Fat / Super)", "Pikkon (Paikuhan)", "Tapion", "Hirudegarn", "Android 13 (Base / Super)", "Bojack", "Zangya", "Turles", "Lord Slug", "Garlic Jr. (Base / Super)", "Bardock (Z Special - Father of Goku)", "Future Gohan (History of Trunks)", "Tarble", "Abo", "Cado", "Aka",
+
+            // Fusions (Specific Mention)
+            "Gotenks", "Vegito", "Gogeta", "Kefla", "Kibito Kai", "Fused Zamasu", "Aniraza", "Majuub",
+
+            // Other Notable Characters
+            "Bulma's Parents (Dr. Brief, Panchy Brief)", "Launch (Good/Bad)", "Suno", "Arale Norimaki (Cameo)", "King Yemma", "Baba's Fighters (Fangs, See-Through, Mummy, Devilman)", "Announcer (World Martial Arts Tournament)", "Marron (Krillin's Daughter)", "Bulla (Bra)", "Monaka", "Zeno's Guards", "Icarus (Gohan's Dragon)", "Turtle", "Shapeshifting Namekians (Slug's Movie)", "Lord Chilled (Bardock Special)"
+            // Concepts
+            ,"The Saiyan Race Explained", "Namekian Biology and Culture", "The Androids and Dr. Gero's Legacy", "The Role of the Kais (Kaioshin)", "Gods of Destruction and Angels", "The Dragon Balls (Earth, Namekian, Super)", "Fusion Techniques (Potara vs. Dance)", "Super Saiyan Transformations (History & Levels)", "Ultra Instinct vs. Ultra Ego", "The Galactic Patrol", "The Multiverse Structure (DB Super)", "Power Levels: Meaning and Controversy", "The World Martial Arts Tournament (Tenkaichi Budokai)"
+        ];
+        const dragonBallThemes = [
+            "Saiyans", "Namekians", "Androids", "Gods of Destruction", "Angels", "Pride Troopers", "Frieza Force members", "Movie Villains", "Z Fighters", "Tournament of Power participants", "Characters from Dragon Ball GT", "Characters from original Dragon Ball", "Universe 6 fighters", "Red Ribbon Army members", "Kais (Kaioshin)", "Characters related to Future Trunks' timeline", "Fusions"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres la Enciclopedia de Dragon Ball Z Kai, una IA experta en todo el universo Dragon Ball (DB, Z, GT, Super, películas, manga). Tu misión es generar un perfil DETALLADO y APASIONANTE de un personaje específico para fans acérrimos. Cubre su origen, personalidad, apariencia, raza, transformaciones clave (si aplica), técnicas y habilidades especiales, nivel de poder estimado (contextualizado, evita números absolutos si no son canónicos), historia principal a través de las sagas en las que participa, relaciones importantes (familia, rivales, aliados), y su impacto general en la franquicia. Sé exhaustivo y preciso, usando un tono entretenido pero informativo. Objetivo: 1200-1300 palabras. Basa tu análisis únicamente en el siguiente personaje:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador rápido de ideas para una base de datos de Dragon Ball. Genera exactamente 15 nombres de personajes del universo Dragon Ball (pueden ser héroes, villanos, dioses, secundarios, de cualquier saga). Devuelve *solo* la lista de nombres, uno por línea. Sin números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios funcionales)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor del texto y la imagen final
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config) { /* ... Sin cambios ... */
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). El scouter debe estar averiado.`);
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { /* ... Sin cambios ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+             if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de") || text.trim().length < 200) { // Added length check
+                  throw new Error("La IA no pudo generar un perfil adecuado o suficientemente detallado para este personaje.");
+              }
+            return text;
+        }
+        async function fetchGeneratedTitles() { /* ... Sin cambios ... */
+             const randomTheme = getRandomElement(dragonBallThemes) || "personajes icónicos de Dragon Ball";
+             const specificPrompt = `Genera 15 nombres de personajes de Dragon Ball relacionados con ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 2 && line.length < 80); // Adjusted length limits
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes nombres de personajes.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a DRAGON BALL
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "powerful Z Fighter";
+             // Prompt ENFOCADO en estilo anime, dinámico, sin texto.
+             const enhancedPrompt = `Dynamic anime style character art of ${safePromptText} from Dragon Ball. Action pose, vibrant colors, energy aura optional. Focus on capturing the character's essence. Akira Toriyama style.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             // NEGATIVE PROMPT: Evitar texto, realismo, logos, etc.
+             const negativePrompt = "text, words, labels, letters, captions, writing, numbers, signature, watermark, logo, multiple characters (unless fusion like Vegito or Gotenks), realistic photo, 3D render, low quality, deformed, blurry, bad anatomy, extra limbs";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             // Basic Markdown/Common Issues Clean-up
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italics
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>'); // H4
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>'); // H3
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>'); // H2
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>'); // H1
+
+             // Handle potential list formatting (simple cases)
+             formatted = formatted.replace(/^\s*-\s+(.*)$/gm, '<li>$1</li>'); // Unordered list item
+             // Attempt to wrap consecutive LIs in ULs (might need refinement for complex cases)
+             formatted = formatted.replace(/(\<\/li\>\n*<li>)/g, '</li><li>'); // Compact LIs
+             formatted = formatted.replace(/(<li>.*<\/li>)/gs, (match) => {
+                 if (!match.trim().startsWith('<ul>') && !match.trim().endsWith('</ul>')) {
+                     return `<ul>${match}</ul>`;
+                 }
+                 return match;
+             });
+             formatted = formatted.replace(/<\/ul>\s*<ul>/g, ''); // Merge adjacent ULs
+
+             // LaTeX/MathJax-like formatting (less likely for DB, but harmless)
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−])\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Keep just in case
+
+             // Paragraph handling (split by double newline, wrap non-header/list blocks in <p>)
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 const trimmedBlock = block.trim();
+                 if (trimmedBlock.startsWith('<h') || trimmedBlock.startsWith('<ul') || trimmedBlock.startsWith('<li') || trimmedBlock.startsWith('<p class="formula">')) {
+                     return block; // Keep existing block elements
+                 }
+                 // Wrap remaining blocks in <p>, replacing single newlines with <br>
+                 let content = block.replace(/\n/g, '<br>');
+                 return `<p>${content}</p>`;
+             }).join('');
+
+             // Final cleanup of potential empty tags or extra spaces
+             formatted = formatted.replace(/<p>\s*<\/p>/g, '');
+             formatted = formatted.replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>'); // Reduce multiple breaks
+             return formatted;
+         }
+
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear previous text and image
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Funcionalidad sin cambios)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]);
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">¡Parece que Shenron no encontró personajes!</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        // *** MODIFIED: handleTitleClick to append image inside #modal-content *** (Funcionalidad sin cambios)
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = ''; // Clear previous content
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // 1. Fetch and format text
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 2. Stop loading indicator, display text FIRST
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Inject text content
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                 // 3. *** RESET SCROLL *** after text content is in and visible
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // 4. Prepare and append image placeholder/spinner WITHIN #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder'; // Class for styling
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Cargando imagen del personaje...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Add placeholder at the end
+
+                // 5. Create and append the actual image element (starts loading)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image'; // Class for styling
+                imgElement.alt = `Imagen de ${title}`;
+                imgElement.style.display = 'none'; // Hide until loaded
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove(); // Remove the placeholder
+                    imgElement.style.display = 'block'; // Show the image
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon" style="color: #ef4444;"></i> <!-- Red icon -->
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al cargar la imagen.</p>
+                    `; // Update placeholder on error
+                };
+
+                // Get URL and set src AFTER attaching handlers
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append the image element to the content
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon" style="color: #f97316;"></i> <!-- Orange icon -->
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de imagen.</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error al cargar datos de ${title}: ${error.message}`; // Thematic error
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = ''; // Clear partial content on error
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Invocando...'; // Thematic text
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none'; // Hide button temporarily
+                     appendTitles(newTitles);
+                      // Ensure button reappears *after* the list items
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block'; // Show button again
+                 } else {
+                     alert("¡Las Esferas del Dragón no respondieron! No se pudieron invocar más guerreros."); // Thematic text
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`¡Error de Invocación! ${error.message}`); // Thematic text
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> ¡Invocar Más Guerreros!'; // Thematic text
+             }
+         }
+
+        // ========== INITIALIZATION ========== (Sin cambios funcionales)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Initialization failed critically."); document.body.innerHTML = '<p style="color: red; font-size: 2em; text-align: center; padding-top: 5em;">¡KAIOSAMA! Error irrecuperable al iniciar la Enciclopedia.</p>'; return; } // Thematic error
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

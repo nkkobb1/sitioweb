@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO -->
+    <title>AI SnapCard Generator - Crea y Comparte Imágenes AI | PapitasFritas.com</title>
+    <meta name="description" content="Genera imágenes únicas de alta calidad con IA a partir de texto. Descarga la tarjeta con tu prompt o comparte un enlace directo. ¡Prueba el generador de imágenes AI en PapitasFritas.com!">
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://image.pollinations.ai">
+    <!-- html2canvas Library (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-dark: #1a1d24;
+            --bg-light: #252934;
+            --primary-accent: #00bcd4; /* Teal */
+            --secondary-accent: #e91e63; /* Pink */
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a7b8;
+            --border-color: rgba(0, 188, 212, 0.3);
+            --glow-primary: 0 0 8px rgba(0, 188, 212, 0.5), 0 0 15px rgba(0, 188, 212, 0.3);
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.2);
+            --shadow-strong: 0 8px 25px rgba(0, 0, 0, 0.3);
+            --error-color: #ff5252;
+        }
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); line-height: 1.6;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2rem;
+            background-image: radial-gradient(circle at 10% 10%, rgba(0, 188, 212, 0.05) 0%, transparent 50%),
+                              radial-gradient(circle at 90% 90%, rgba(233, 30, 99, 0.05) 0%, transparent 50%);
+        }
+        /* --- Main Container --- */
+        .container {
+            width: 100%; max-width: 700px; margin-bottom: 2rem;
+        }
+        /* --- Control Section --- */
+        .controls {
+            background-color: var(--bg-light); padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: var(--shadow-light); border: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .controls label { font-weight: 600; color: var(--primary-accent); font-size: 1.1em; }
+        #promptInput {
+            width: 100%; padding: 0.8rem 1rem; font-size: 1em; background-color: rgba(26, 29, 36, 0.8); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #promptInput:focus { outline: none; border-color: var(--primary-accent); box-shadow: var(--glow-primary); }
+        #generateBtn {
+            padding: 0.8rem 1.5rem; font-family: 'Exo 2', sans-serif; font-size: 1.1em; font-weight: 700; color: var(--bg-dark);
+            background: linear-gradient(45deg, var(--primary-accent), var(--secondary-accent)); border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0, 188, 212, 0.3), 0 4px 10px rgba(233, 30, 99, 0.3);
+        }
+        #generateBtn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 188, 212, 0.4), 0 6px 15px rgba(233, 30, 99, 0.4); }
+        #generateBtn:active:not(:disabled) { transform: translateY(0); }
+        #generateBtn:disabled { opacity: 0.6; cursor: not-allowed; background: grey; box-shadow: none; }
+
+        /* --- Card Display Area --- */
+        #card-display-area { min-height: 400px; /* Placeholder height */ display: flex; justify-content: center; align-items: center; margin-bottom: 2rem; }
+
+        /* --- Generated Card Styling --- */
+        .generated-card {
+            background-color: var(--bg-light); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-strong); border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%; max-width: 550px; /* Control card size */ display: flex; flex-direction: column; transition: transform 0.3s ease;
+        }
+        .card-image-container {
+            position: relative; width: 100%; aspect-ratio: 1 / 1; /* Square images */ background-color: rgba(0, 0, 0, 0.2); display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+        .card-image-container img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.6s ease-in; }
+        .card-image-container img.loaded { opacity: 1; }
+        .card-content { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .card-prompt-text { font-size: 0.95em; color: var(--text-secondary); word-wrap: break-word; max-height: 6em; /* Limit prompt display height */ overflow-y: auto; }
+        .card-actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem; }
+        .card-actions button {
+            font-family: 'Inter', sans-serif; font-size: 0.9em; font-weight: 600; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; transition: background-color 0.3s, color 0.3s, transform 0.2s; border: 1px solid transparent;
+        }
+        .download-btn { background-color: var(--primary-accent); color: var(--bg-dark); border-color: var(--primary-accent); }
+        .download-btn:hover { background-color: transparent; color: var(--primary-accent); }
+        .share-btn { background-color: var(--secondary-accent); color: var(--bg-dark); border-color: var(--secondary-accent); }
+        .share-btn:hover { background-color: transparent; color: var(--secondary-accent); }
+        .card-actions button:active { transform: scale(0.95); }
+
+        /* --- Loading / Error States within Card --- */
+        .card-image-container.loading::before,
+        .card-image-container.error::before {
+            content: ''; position: absolute;
+        }
+        .card-image-container.loading::before { /* Spinner */
+            width: 40px; height: 40px; border: 4px solid rgba(0, 188, 212, 0.3); border-top-color: var(--primary-accent); border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        .card-image-container.error { color: var(--error-color); text-align: center; padding: 1rem; font-size: 0.9em; }
+        .card-image-container.error::before { /* Error Icon (simple X) */
+           /* content: '✕'; font-size: 2rem; color: var(--error-color); opacity: 0.5; */
+           /* Optionally add more styling or an SVG icon */
+        }
+        .retry-info { font-size: 0.8em; opacity: 0.8; display: block; margin-top: 0.5rem; }
+
+        /* --- Global Feedback --- */
+        #feedback { min-height: 30px; text-align: center; margin-bottom: 1.5rem; font-weight: 600; }
+        .loading-indicator { color: var(--primary-accent); animation: pulseText 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: rgba(255, 82, 82, 0.1); padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--error-color); display: inline-block; }
+
+        /* --- History Section --- */
+        #history-section { width: 100%; max-width: 900px; margin-top: 3rem; }
+        #history-section h2 {
+            font-family: 'Exo 2', sans-serif; color: var(--primary-accent); text-align: center; margin-bottom: 1.5rem; font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;
+        }
+        #history-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem;
+        }
+        .history-item {
+            background-color: var(--bg-light); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-light); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; aspect-ratio: 1/1; position: relative; border: 1px solid transparent;
+        }
+        .history-item:hover { transform: scale(1.05); box-shadow: 0 0 10px var(--primary-accent); border-color: var(--primary-accent); }
+        .history-item img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        /* Add overlay/tooltip for prompt on hover? (Optional complexity) */
+
+        /* --- Footer --- */
+        footer { margin-top: 4rem; text-align: center; font-size: 0.9em; color: var(--text-secondary); }
+        footer a { color: var(--primary-accent); text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: var(--secondary-accent); }
+
+        /* --- Animations --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .container { max-width: 100%; }
+            .controls { padding: 1rem 1.5rem; }
+            .generated-card { max-width: 90%; }
+            #history-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.8rem; }
+        }
+         @media (max-width: 480px) {
+             #history-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem; }
+             .card-actions { flex-direction: column; align-items: stretch; }
+             .card-actions button { text-align: center; }
+         }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header style="text-align: center; margin-bottom: 2rem;">
+             <h1 style="font-family: 'Exo 2', sans-serif; color: var(--primary-accent); font-size: 2.2em; margin-bottom: 0.5rem;">AI SnapCard Generator</h1>
+             <p style="color: var(--text-secondary);">Genera y comparte imágenes únicas creadas por IA</p>
+        </header>
+
+        <section class="controls">
+            <label for="promptInput">Tu Idea Visual:</label>
+            <input type="text" id="promptInput" placeholder="Ej: Un astronauta surfeando en una nebulosa cósmica">
+            <button id="generateBtn">Generar SnapCard</button>
+        </section>
+
+        <div id="feedback"></div>
+
+        <section id="card-display-area">
+            <!-- La tarjeta generada aparecerá aquí -->
+             <p style="color: var(--text-secondary);">Introduce una descripción y haz clic en generar.</p>
+        </section>
+    </div>
+
+    <section id="history-section">
+        <h2>Historial Reciente</h2>
+        <div id="history-grid">
+            <!-- Las miniaturas del historial aparecerán aquí -->
+        </div>
+    </section>
+
+    <footer>
+        Herramienta por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | Imágenes por <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM References ---
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const cardDisplayArea = document.getElementById('card-display-area');
+        const feedbackDiv = document.getElementById('feedback');
+        const historyGrid = document.getElementById('history-grid');
+
+        // --- Configuration ---
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 1024; // High quality
+        const IMAGE_HEIGHT = 1024;
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500;
+        const IMAGE_LOAD_TIMEOUT_MS = 60000; // 60 seconds for potentially larger images
+        const MAX_HISTORY = 12; // Max items in history
+
+        // --- State ---
+        let history = []; // Array of { prompt, seed, imageUrl, timestamp }
+        let isLoading = false;
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        promptInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && !isLoading) {
+                handleGeneration();
+            }
+        });
+
+        // --- Core Functions ---
+        function handleGeneration() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                showFeedback('error', '¡Necesitas escribir una idea para generar la imagen!');
+                return;
+            }
+            if (isLoading) return; // Prevent multiple simultaneous requests
+
+            isLoading = true;
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generando...';
+            showFeedback('loading', 'Creando tu SnapCard...');
+            cardDisplayArea.innerHTML = ''; // Clear previous card
+
+            const seed = Math.floor(Math.random() * 1000000); // NEW SEED EVERY TIME
+            const encodedPrompt = encodeURIComponent(prompt);
+            const requestUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+            createAndLoadCard(prompt, seed, requestUrl);
+        }
+
+        function createAndLoadCard(prompt, seed, requestUrl, isFromHistory = false, existingImageUrl = null) {
+            // Create Card Structure
+            const cardElement = document.createElement('div');
+            cardElement.className = 'generated-card';
+            cardElement.dataset.prompt = prompt;
+            cardElement.dataset.seed = seed;
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'card-image-container loading'; // Start as loading
+
+            const cardContent = document.createElement('div');
+            cardContent.className = 'card-content';
+
+            const promptText = document.createElement('p');
+            promptText.className = 'card-prompt-text';
+            promptText.textContent = prompt;
+
+            const cardActions = document.createElement('div');
+            cardActions.className = 'card-actions';
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-btn';
+            downloadBtn.textContent = 'Descargar';
+            downloadBtn.disabled = true; // Disabled until image loaded
+            downloadBtn.onclick = () => handleDownload(cardElement); // Pass the card element
+
+            const shareBtn = document.createElement('button');
+            shareBtn.className = 'share-btn';
+            shareBtn.textContent = 'Compartir Link';
+            shareBtn.disabled = true; // Disabled until image loaded
+             shareBtn.onclick = (event) => handleShare(prompt, seed, event.target); // Pass button for feedback
+
+            cardActions.appendChild(downloadBtn);
+            cardActions.appendChild(shareBtn);
+            cardContent.appendChild(promptText);
+            cardContent.appendChild(cardActions);
+            cardElement.appendChild(imageContainer);
+            cardElement.appendChild(cardContent);
+
+            // Display the card structure immediately (with loading state)
+            cardDisplayArea.innerHTML = ''; // Clear placeholder or previous
+            cardDisplayArea.appendChild(cardElement);
+
+            // --- Load Image ---
+            if (isFromHistory && existingImageUrl) {
+                // If loading from history, we already have the URL
+                console.log(`Cargando desde historial: ${prompt} (Seed: ${seed})`);
+                loadImageWithRetry(imageContainer, existingImageUrl, prompt, seed, cardElement, downloadBtn, shareBtn, isFromHistory);
+            } else {
+                // If generating new, fetch the final URL first
+                 console.log(`Solicitando nueva imagen: ${prompt} (Seed: ${seed})`);
+                 fetch(requestUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+                        console.log(`Recibida URL final para "${prompt}": ${response.url}`);
+                        cardElement.dataset.imageUrl = response.url; // Store final URL on card
+                        return response.url;
+                    })
+                    .then(finalImageUrl => {
+                        loadImageWithRetry(imageContainer, finalImageUrl, prompt, seed, cardElement, downloadBtn, shareBtn, isFromHistory);
+                    })
+                    .catch(error => {
+                        console.error(`Fetch inicial fallido para "${prompt}":`, error);
+                        handleLoadFailure(imageContainer, prompt, seed, `Error API: ${error.message}`, cardElement, downloadBtn, shareBtn, 0, MAX_RETRIES, isFromHistory); // Go directly to final failure state
+                    });
+            }
+        }
+
+        function loadImageWithRetry(container, imageUrl, prompt, seed, cardElement, downloadBtn, shareBtn, isFromHistory, retryCount = 0) {
+            container.classList.add('loading');
+            container.classList.remove('error');
+            container.innerHTML = ''; // Clear previous error messages/content inside container
+
+            const img = document.createElement('img');
+            img.alt = `Imagen generada por IA para: ${prompt}`; // Accessibility
+            let timeoutId;
+
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                container.classList.remove('loading', 'error');
+                container.appendChild(img); // Add image to container
+                img.classList.add('loaded');
+                downloadBtn.disabled = false; // Enable buttons on success
+                shareBtn.disabled = false;
+                console.log(`Imagen cargada con éxito para "${prompt}" (Seed: ${seed})`);
+
+                // Add to history ONLY if it was a NEW generation
+                if (!isFromHistory) {
+                    addToHistory({ prompt, seed, imageUrl, timestamp: Date.now() });
+                }
+                resetLoadingState(); // Reset global loading state
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                console.error(`Error cargando imagen ${imageUrl} (Intento ${retryCount + 1})`);
+                handleLoadFailure(container, prompt, seed, 'Error de carga', cardElement, downloadBtn, shareBtn, retryCount, MAX_RETRIES, isFromHistory, imageUrl);
+            };
+
+            // Set src AFTER attaching listeners
+            img.src = imageUrl;
+
+            // Set timeout for this attempt
+            timeoutId = setTimeout(() => {
+                if (container.classList.contains('loading')) {
+                    img.src = ''; // Stop loading
+                    console.warn(`Timeout cargando imagen ${imageUrl} (Intento ${retryCount + 1})`);
+                    handleLoadFailure(container, prompt, seed, 'Timeout', cardElement, downloadBtn, shareBtn, retryCount, MAX_RETRIES, isFromHistory, imageUrl);
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleLoadFailure(container, prompt, seed, reason, cardElement, downloadBtn, shareBtn, currentRetries, maxRetries, isFromHistory, imageUrl = null) {
+             container.classList.remove('loading');
+             container.classList.add('error');
+
+            if (imageUrl && currentRetries < maxRetries) {
+                 // Retry logic
+                 const nextRetry = currentRetries + 1;
+                 console.log(`Reintentando carga para "${prompt}" (Intento ${nextRetry}/${maxRetries})`);
+                 container.innerHTML = `Error: ${reason}<br><span class="retry-info">Reintentando (${nextRetry}/${maxRetries})...</span>`;
+
+                 setTimeout(() => {
+                     loadImageWithRetry(container, imageUrl, prompt, seed, cardElement, downloadBtn, shareBtn, isFromHistory, nextRetry);
+                 }, RETRY_DELAY_MS * Math.pow(2, currentRetries)); // Exponential backoff
+
+             } else {
+                  // Final failure (max retries reached or initial fetch failed)
+                  console.error(`Fallo final para "${prompt}" (Seed: ${seed}): ${reason}`);
+                  container.innerHTML = `Error final: ${reason}<br>(Seed: ${seed})`;
+                  downloadBtn.disabled = true; // Keep buttons disabled
+                  shareBtn.disabled = true;
+                  resetLoadingState(); // Reset global loading state even on failure
+                  // Do not add to history on failure
+            }
+        }
+
+        function handleDownload(cardElement) {
+            if (typeof html2canvas === 'undefined') {
+                showFeedback('error', 'Error: No se pudo cargar la librería de descarga.');
+                return;
+            }
+            // Temporarily hide buttons during capture for cleaner output
+            const actions = cardElement.querySelector('.card-actions');
+            actions.style.display = 'none';
+
+            html2canvas(cardElement, {
+                useCORS: true, // Important for external images
+                allowTaint: true, // May help with CORS issues but can taint canvas
+                backgroundColor: getComputedStyle(document.body).backgroundColor // Match background
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `snapcard-${cardElement.dataset.prompt.substring(0, 20).replace(/\s+/g, '_')}-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                 // Restore buttons after capture
+                 actions.style.display = 'flex';
+                 showFeedback('success', '¡Tarjeta descargada!'); // Provide feedback
+                 setTimeout(() => showFeedback('clear'), 3000); // Clear feedback after a delay
+
+            }).catch(err => {
+                console.error('Error al descargar con html2canvas:', err);
+                showFeedback('error', 'Error al generar la descarga.');
+                 // Restore buttons even if capture fails
+                 actions.style.display = 'flex';
+            });
+        }
+
+       async function handleShare(prompt, seed, buttonElement) {
+            const shareUrl = `${API_BASE_URL}${encodeURIComponent(prompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+            try {
+                 await navigator.clipboard.writeText(shareUrl);
+                 const originalText = buttonElement.textContent;
+                 buttonElement.textContent = '¡Copiado!';
+                 setTimeout(() => { buttonElement.textContent = originalText; }, 2000);
+            } catch (err) {
+                console.error('Error al copiar al portapapeles:', err);
+                showFeedback('error', 'No se pudo copiar el enlace.');
+            }
+        }
+
+
+        // --- History Functions ---
+        function addToHistory(item) {
+             // Prevent duplicates based on image URL (might happen if Pollinations returns same URL)
+            if (history.some(histItem => histItem.imageUrl === item.imageUrl)) {
+                 return;
+             }
+            history.unshift(item); // Add to the beginning
+            if (history.length > MAX_HISTORY) {
+                history.pop(); // Remove the oldest item
+            }
+            renderHistory();
+            saveHistory(); // Persist history
+        }
+
+        function renderHistory() {
+            historyGrid.innerHTML = ''; // Clear current grid
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.title = `Prompt: ${item.prompt}\nSeed: ${item.seed}`; // Tooltip
+
+                const img = document.createElement('img');
+                img.src = item.imageUrl; // Use the already loaded image URL
+                img.alt = `Historial: ${item.prompt.substring(0, 30)}...`;
+                img.loading = 'lazy'; // Lazy load history images
+
+                historyItem.appendChild(img);
+                historyItem.addEventListener('click', () => loadFromHistory(item));
+                historyGrid.appendChild(historyItem);
+            });
+        }
+
+        function loadFromHistory(item) {
+            if (isLoading) return; // Don't load if already generating
+
+            console.log("Cargando desde el historial:", item);
+            isLoading = true; // Set loading state
+            generateBtn.disabled = true; // Disable button while loading history item
+            showFeedback('loading', 'Cargando desde historial...');
+            promptInput.value = item.prompt; // Update input field
+            createAndLoadCard(item.prompt, item.seed, null, true, item.imageUrl); // Pass existing URL
+        }
+
+        function saveHistory() {
+            try {
+                localStorage.setItem('aiSnapCardHistory', JSON.stringify(history));
+            } catch (e) {
+                console.warn("No se pudo guardar el historial en localStorage:", e);
+            }
+        }
+
+        function loadHistory() {
+            try {
+                const storedHistory = localStorage.getItem('aiSnapCardHistory');
+                if (storedHistory) {
+                    history = JSON.parse(storedHistory);
+                    renderHistory();
+                }
+            } catch (e) {
+                console.warn("No se pudo cargar el historial desde localStorage:", e);
+                history = []; // Reset history if parsing fails
+            }
+        }
+
+
+        // --- UI Feedback Functions ---
+        function showFeedback(type, message) {
+            feedbackDiv.innerHTML = ''; // Clear previous
+            if (type === 'clear') return;
+
+            const el = document.createElement('div');
+            el.textContent = message;
+            if (type === 'loading') {
+                el.className = 'loading-indicator';
+            } else if (type === 'error') {
+                el.className = 'error-message';
+            } else if (type === 'success') {
+                 // Add success styling if needed, e.g., green text
+                 el.style.color = '#4caf50'; // Example success color
+            }
+             feedbackDiv.appendChild(el);
+        }
+
+        function resetLoadingState() {
+             isLoading = false;
+             generateBtn.disabled = false;
+             generateBtn.textContent = 'Generar SnapCard';
+             showFeedback('clear'); // Clear loading message
+        }
+
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+             loadHistory(); // Load history on page load
+        });
+
+    </script>
+
+</body>
+</html>

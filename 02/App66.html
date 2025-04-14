@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conceptos de Programación Nivel Medio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Using Inter font for a modern tech feel -->
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <style>
+        /* --- Estilos Adaptados para Programación --- */
+        :root {
+            --color-primary: #3b82f6; /* Blue-600 */
+            --color-secondary: #10b981; /* Emerald-500 */
+            --color-background: #f3f4f6; /* Gray-100 */
+            --color-text: #1f2937; /* Gray-800 */
+            --color-text-muted: #6b7280; /* Gray-500 */
+            --color-modal-bg: #ffffff;
+            --color-border: #d1d5db; /* Gray-300 */
+            --color-code-bg: #1e293b; /* Slate-900 */
+            --color-code-text: #e2e8f0; /* Slate-200 */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px;
+            --transition-normal: all 0.2s ease-in-out;
+            font-family: 'Inter', sans-serif; /* Apply Inter globally */
+        }
+        @supports (font-variation-settings: normal) {
+          :root { font-family: 'Inter var', sans-serif; }
+        }
+        body { background-color: var(--color-background); color: var(--color-text); line-height: 1.65; }
+        h1, h2, h3, h4, .logo { font-weight: 600; /* Slightly bolder */ }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.5rem; display: inline-block; font-weight: 700;}
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.25rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 500; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #eff6ff; /* Light blue hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: var(--border-radius); font-weight: 600; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #2563eb; /* Darker blue */ box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #9ca3af; /* Gray-400 */ cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.8); /* Gray-900 with opacity */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 950px; /* Slightly wider for code */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 300px; /* <<< Mantenido: Altura mínima para carga */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #e5e7eb; /* Gray-200 */ border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.4rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: #d1d5db; /* Gray-300 */ color: var(--color-text); }
+        #modal-title { color: var(--color-primary); text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1.5rem; font-size: 1.7rem; font-weight: 700; line-height: 1.3; }
+        #modal-content { line-height: 1.7; color: var(--color-text); white-space: normal; overflow-y: auto; margin-bottom: 1.5rem; padding: 0 15px; flex-grow: 1; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border); }
+        #modal-content::-webkit-scrollbar { width: 8px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: 4px;}
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: 4px; border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.25em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; font-weight: 500;}
+        /* --- Estilos para Títulos dentro del Modal --- */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { margin-top: 1.8em; margin-bottom: 0.8em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.3em; font-weight: 600; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* --- NUEVO: Estilos para Bloques de Código --- */
+        #modal-content pre {
+            background-color: var(--color-code-bg);
+            color: var(--color-code-text);
+            padding: 1em;
+            border-radius: var(--border-radius);
+            overflow-x: auto; /* Permitir scroll horizontal para código largo */
+            margin: 1.5em 0;
+            font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre; /* Respetar espacios y saltos de línea */
+        }
+        #modal-content code {
+            /* Estilo para código inline si se usara `code` fuera de `pre` */
+            background-color: #e5e7eb; /* gray-200 */
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        #modal-content pre code {
+            /* Resetear estilo para `code` dentro de `pre` */
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit; /* Heredar tamaño de `pre` */
+        }
+        /* ------------------------------------------- */
+        #modal-image-container { width: 100%; height: 240px; background-color: #e5e7eb; /* Gray-200 */ border-radius: var(--border-radius); overflow: hidden; display: none; align-items: center; justify-content: center; border: 1px solid var(--color-border); flex-shrink: 0; margin-top: 1.5rem; }
+        #modal-image-container.visible { display: flex; }
+        #modal-image-container img { width: 100%; height: 100%; object-fit: contain; display: none; }
+        #modal-image-container .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; display: none; }
+        #modal-image-container .placeholder-icon { font-size: 3rem; color: #9ca3af; /* Gray-400 */ display: none; } /* Icono de código */
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid #d1d5db; /* Gray-300 */ border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.1s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-text); font-size: 1.15rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fee2e2; /* Red-100 */ color: #b91c1c; /* Red-700 */ padding: 1.1rem; border-radius: var(--border-radius); border: 1px solid #fecaca; /* Red-200 */ margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 500; }
+        .error-msg i { margin-right: 0.6rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-8">
+         <div class="container mx-auto px-4 py-3 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-code mr-2"></i>
+                     Conceptos de Programación
+                 </h1>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Explorando el Código</h1>
+             <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">Profundiza en conceptos de programación de nivel medio con explicaciones claras generadas por IA. ¡Selecciona un tema!</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-cogs text-emerald-600 mr-2"></i>
+                 Temas a Explorar
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Compilando conceptos...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Conceptos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Generando explicación...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML with code blocks) goes here -->
+                 </div>
+                  <!-- Image Container (Initially Hidden) -->
+                 <div id="modal-image-container">
+                     <div class="spinner"></div>
+                      <i class="fas fa-terminal placeholder-icon"></i> <!-- Icono Placeholder: Terminal/Code -->
+                     <img id="modal-image" alt="Visualización abstracta del concepto de programación" />
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-bug"></i> <!-- Icono de error: Bug -->
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-700 py-6 mt-12 border-t border-gray-300">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Explicaciones generadas por IA con fines educativos. La programación requiere práctica y precisión.</p>
+              <p class="mt-1">Verifica conceptos y ejemplos con documentación oficial y experimentación.</p>
+              <p class="mt-2">© 2025 Conceptos de Programación</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Estructuras de Datos
+            "¿Qué es un Árbol Binario de Búsqueda (ABB)?", "Operaciones básicas en ABB (Insertar, Buscar, Eliminar)", "Recorridos de Árboles (Preorden, Inorden, Postorden)", "Árboles AVL: Autobalanceo", "Árboles Rojo-Negro: Concepto", "Heap (Montículo): Propiedades y Usos (Heap de Mínimos/Máximos)", "Heapify: Construir un Heap", "Tablas Hash: Funcionamiento y Colisiones", "Estrategias de Resolución de Colisiones (Encadenamiento, Direccionamiento Abierto)", "Grafos: Representaciones (Matriz de Adyacencia, Lista de Adyacencia)", "Recorridos de Grafos: Búsqueda en Anchura (BFS)", "Recorridos de Grafos: Búsqueda en Profundidad (DFS)", "Algoritmo de Dijkstra para Caminos Mínimos", "Algoritmo A* (A-estrella): Búsqueda Informada", "Trie (Árbol de Prefijos): Estructura y Aplicaciones", "Skip Lists: Estructura de Datos Probabilística", "Bloom Filters: Pertenencia Aproximada",
+
+            // Algoritmos y Complejidad
+            "Análisis de Complejidad: Notación Big O", "Notaciones Omega (Ω) y Theta (Θ)", "Clases de Complejidad (P, NP, NP-Completo - Introducción)", "Algoritmos Divide y Vencerás (Ej: Mergesort, Quicksort)", "Análisis de Quicksort (Caso Promedio y Peor Caso)", "Mergesort: Implementación y Análisis", "Heapsort: Implementación y Análisis", "Algoritmos de Ordenamiento No Comparativos (Counting Sort, Radix Sort)", "Programación Dinámica: Concepto y Ejemplos (Fibonacci, Mochila)", "Memoización vs. Tabulación en Programación Dinámica", "Algoritmos Voraces (Greedy): Concepto y Ejemplos (Problema del Cambio)", "Algoritmos de Backtracking: Concepto y Ejemplos (N-Reinas)", "Algoritmos Probabilísticos (Ej: Test de Primalidad Miller-Rabin)", "Algoritmos de Aproximación",
+
+            // Programación Orientada a Objetos (POO) - Intermedio
+            "Herencia Múltiple: Ventajas y Problemas (Diamante)", "Interfaces vs. Clases Abstractas", "Polimorfismo en Detalle (Sobrecarga vs. Sobrescritura)", "Encapsulamiento y Modificadores de Acceso (public, private, protected)", "Composición sobre Herencia: Principio", "Inyección de Dependencias (DI): Concepto Básico", "Principios SOLID: Responsabilidad Única (SRP)", "Principios SOLID: Abierto/Cerrado (OCP)", "Principios SOLID: Sustitución de Liskov (LSP)", "Principios SOLID: Segregación de Interfaces (ISP)", "Principios SOLID: Inversión de Dependencias (DIP)", "Patrones de Diseño Creacionales: Singleton", "Patrones de Diseño Creacionales: Factory Method", "Patrones de Diseño Creacionales: Abstract Factory", "Patrones de Diseño Estructurales: Adapter", "Patrones de Diseño Estructurales: Decorator", "Patrones de Diseño Estructurales: Facade", "Patrones de Diseño Comportamentales: Observer", "Patrones de Diseño Comportamentales: Strategy", "Patrones de Diseño Comportamentales: Template Method",
+
+            // Programación Funcional - Conceptos
+            "Funciones Puras e Impuras", "Inmutabilidad: ¿Qué es y por qué usarla?", "Funciones de Orden Superior (Higher-Order Functions)", "Closures (Clausuras): Concepto y Usos", "Currying y Aplicación Parcial", "Map, Filter, Reduce en Detalle", "Composición de Funciones", "Recursividad y Optimización de Cola (Tail Call Optimization)", "Mónadas: Introducción Conceptual", "Lazy Evaluation (Evaluación Perezosa)",
+
+            // Asincronía y Concurrencia
+            "Programación Asíncrona: Callbacks y Callback Hell", "Promesas (Promises): Estados y Encadenamiento (.then, .catch)", "Async/Await: Sintaxis y Funcionamiento", "Event Loop: ¿Cómo funciona?", "Hilos (Threads) vs. Procesos", "Concurrencia vs. Paralelismo", "Problemas Comunes en Concurrencia: Race Conditions", "Problemas Comunes en Concurrencia: Deadlocks (Interbloqueo)", "Mecanismos de Sincronización: Mutex (Semáforos Binarios)", "Mecanismos de Sincronización: Semáforos", "Mecanismos de Sincronización: Monitores", "Actores (Modelo Actor): Concurrencia sin Estado Compartido", "Programación Reactiva: Observables y Streams",
+
+            // Memoria y Bajo Nivel
+            "Gestión de Memoria: Stack vs. Heap", "Asignación Dinámica de Memoria (malloc/free, new/delete)", "Punteros y Aritmética de Punteros (Contexto C/C++)", "Referencias vs. Punteros", "Recolector de Basura (Garbage Collection): Estrategias (Mark-and-Sweep, Conteo de Referencias)", "Memory Leaks (Fugas de Memoria): Detección y Prevención", "Endianness (Big-Endian vs. Little-Endian)", "Representación de Números (Punto Flotante IEEE 754)",
+
+            // Redes y APIs
+            "Modelo OSI vs. TCP/IP", "Protocolo HTTP: Métodos (GET, POST, PUT, DELETE)", "Códigos de Estado HTTP Comunes", "REST APIs: Principios y Diseño", "Idempotencia en APIs REST", "JSON (JavaScript Object Notation): Estructura y Uso", "XML (Extensible Markup Language): Estructura Básica", "WebSockets: Comunicación Bidireccional", "GraphQL: Alternativa a REST", "Autenticación vs. Autorización", "OAuth 2.0: Flujos Comunes (Authorization Code)", "JSON Web Tokens (JWT): Estructura y Uso", "CORS (Cross-Origin Resource Sharing)",
+
+            // Bases de Datos - Intermedio
+            "Modelo Relacional: Claves Primarias y Foráneas", "Normalización de Bases de Datos (1NF, 2NF, 3NF)", "Índices en Bases de Datos: ¿Cómo funcionan?", "Transacciones ACID (Atomicidad, Consistencia, Aislamiento, Durabilidad)", "Niveles de Aislamiento de Transacciones", "SQL JOINs (INNER, LEFT, RIGHT, FULL)", "SQL Subqueries (Subconsultas)", "SQL Agregaciones (GROUP BY, HAVING)", "Bases de Datos NoSQL: Tipos (Documental, Clave-Valor, Columna, Grafo)", "Teorema CAP (Consistencia, Disponibilidad, Tolerancia a Particiones)", "ORMs (Object-Relational Mapping): Concepto y Ventajas/Desventajas",
+
+            // Testing y Calidad
+            "Tipos de Pruebas: Unitarias, Integración, End-to-End (E2E)", "Pruebas de Caja Blanca vs. Caja Negra", "Desarrollo Guiado por Pruebas (TDD - Test-Driven Development)", "Desarrollo Guiado por Comportamiento (BDD - Behavior-Driven Development)", "Mocks, Stubs y Fakes en Pruebas Unitarias", "Cobertura de Código (Code Coverage)", "Integración Continua (CI): Conceptos", "Entrega Continua (CD): Conceptos", "Refactorización: ¿Qué es y cuándo hacerla?", "Code Smells (Malos Olores en el Código)",
+
+            // Herramientas y Ecosistema
+            "Sistemas de Control de Versiones: Git Avanzado (Rebase, Cherry-pick)", "Flujos de Trabajo en Git (Gitflow, GitHub Flow)", "Gestores de Paquetes (npm, pip, Maven, Gradle)", "Contenedores: Docker Básico", "Orquestación de Contenedores: Kubernetes Básico", "Build Tools (Webpack, Babel, Make)", "Linters y Formateadores de Código (ESLint, Prettier, Black)", "Depuración (Debugging): Técnicas y Herramientas", "Profiling: Análisis de Rendimiento",
+
+            // Seguridad
+            "Hashing vs. Cifrado (Encryption)", "Cifrado Simétrico vs. Asimétrico", "HTTPS y TLS/SSL: ¿Cómo funciona?", "Ataques Comunes: Inyección SQL", "Ataques Comunes: Cross-Site Scripting (XSS)", "Ataques Comunes: Cross-Site Request Forgery (CSRF)", "Principio de Mínimo Privilegio", "Salting de Contraseñas",
+
+            // Paradigmas y Arquitectura
+            "Arquitectura Monolítica vs. Microservicios", "Programación Orientada a Aspectos (AOP)", "Metaprogramación", "Domain-Driven Design (DDD): Conceptos Básicos", "Event Sourcing", "CQRS (Command Query Responsibility Segregation)"
+            // ... (Añadir más títulos aquí)
+        ];
+        const programmingThemes = [
+            "estructuras de datos avanzadas", "algoritmos y complejidad", "programación orientada a objetos (POO)",
+            "principios SOLID", "patrones de diseño", "programación funcional", "programación asíncrona",
+            "concurrencia y paralelismo", "gestión de memoria", "conceptos de bajo nivel", "redes y protocolos",
+            "diseño de APIs (REST, GraphQL)", "bases de datos relacionales (SQL)", "bases de datos NoSQL",
+            "testing y calidad de software", "TDD y BDD", "herramientas de desarrollo (Git, Docker)",
+            "integración y entrega continua (CI/CD)", "seguridad informática en desarrollo",
+            "arquitectura de software (microservicios)", "paradigmas de programación"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un ingeniero de software senior y educador experimentado. Tu tarea es explicar conceptos de programación de nivel medio de forma clara, precisa y práctica. Asume que el lector tiene conocimientos básicos de programación (variables, bucles, funciones, tipos de datos básicos). Explica el 'qué', el 'por qué' y el 'cómo' del concepto. Utiliza analogías claras y proporciona ejemplos de código concisos y bien comentados (preferiblemente en Python, JavaScript o Pseudocódigo, indícalo claramente con ```lenguaje). Estructura la explicación lógicamente usando párrafos, listas y subtítulos (con markdown #, ##, ###). El objetivo es una explicación completa y útil de aproximadamente 1200-1300 palabras. Basa tu explicación únicamente en el siguiente concepto de programación:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso. Genera exactamente 15 conceptos o preguntas clave sobre programación de nivel medio, adecuados para ser explicados detalladamente (ej: '¿Qué es la inyección de dependencias?', 'Explica el patrón Observer', 'Funcionamiento de async/await'). Devuelve *solo* la lista de conceptos/preguntas, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
+        const modalImage = document.getElementById('modal-image');
+        const modalImageSpinner = modalImageContainer.querySelector('.spinner');
+        const modalImagePlaceholder = modalImageContainer.querySelector('.placeholder-icon');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // --- Variable to hold the current scroll listener ---
+        let currentScrollHandler = null;
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             // Usar text.pollinations.ai para Mistral (o el modelo configurado)
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo más tarde o con otro término.`);
+                 // Añadir manejo específico para errores comunes de API si es necesario
+                 if (error.message.includes("429")) { // Too Many Requests
+                    throw new Error(`Demasiadas solicitudes a la API. Por favor, espere un momento antes de reintentar.`);
+                 }
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+        }
+        async function fetchExplanationText(conceptTitle) {
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              // Ajustar longitud mínima si es necesario, 800 es un umbral razonable para empezar
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("unable to provide") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo generar una explicación adecuada o suficientemente detallada para este concepto.");
+               }
+             return text;
+         }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(programmingThemes) || "conceptos de programación intermedios";
+             const specificPrompt = `Genera 15 conceptos o preguntas clave sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n')
+                                .map(line => line.replace(/^[-\d.\s*]+/, '').trim()) // Limpiar prefijos
+                                .filter(line => line.length > 10 && line.length < 150 && !line.toLowerCase().includes("lista de conceptos")) // Filtrar líneas vacías/cortas/largas o introducciones
+                                .map(line => line.replace(/^¿?\s*/, '').replace(/\??$/, '')); // Quitar signos de interrogación iniciales/finales opcionales
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de conceptos.");
+             return [...new Set(titles)].slice(0, 15); // Asegurar unicidad y limitar a 15
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "programming concept abstract";
+             const enhancedPrompt = `Abstract visualization of the programming concept '${safePromptText}'. Geometric shapes, data flow, logic paths, network connections, clean lines, minimalist tech aesthetic.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, code, specific syntax, labels, letters, titles, captions, writing, numbers, formulas, graphs, charts, diagrams with text, user interface, UI elements, buttons, menus, error messages, logos, brands, people, realistic photo, messy drawing";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function (with Code Block Handling) ==========
+        function formatExplanationText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+
+            // 1. Handle Code Blocks (```lang ... ``` or ``` ... ```)
+            // Use a placeholder mechanism to avoid conflicts with markdown later
+            const codeBlocks = [];
+            formatted = formatted.replace(/```(\w+)?\s*([\s\S]*?)\s*```/g, (match, lang, code) => {
+                const index = codeBlocks.push({ lang: lang || '', code: code.trim() }) - 1;
+                return `%%%CODEBLOCK${index}%%%`; // Placeholder
+            });
+
+            // 2. LaTeX-like elements (less likely but kept for robustness)
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+
+            // 3. Markdown Headings
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+
+            // 4. Markdown Bold/Italics
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Handle inline code `...` (optional, but good practice)
+            formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // 5. Handle Paragraphs (Split by double newline)
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                 // Check if it's a placeholder first
+                if (block.startsWith('%%%CODEBLOCK')) {
+                    return block; // Keep placeholder as is for now
+                }
+                // Check if it's already a heading or formula
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) {
+                    return block;
+                }
+                // Otherwise, wrap in <p> and handle internal newlines as <br>
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+
+            // 6. Restore Code Blocks
+            formatted = formatted.replace(/%%%CODEBLOCK(\d+)%%%/g, (match, indexStr) => {
+                const index = parseInt(indexStr, 10);
+                if (index >= 0 && index < codeBlocks.length) {
+                    const { lang, code } = codeBlocks[index];
+                    // Basic HTML escaping for code content to prevent XSS
+                    const escapedCode = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    const langClass = lang ? ` class="language-${lang}"` : ''; // For potential syntax highlighting libraries
+                    return `<pre><code${langClass}>${escapedCode}</code></pre>`;
+                }
+                return ''; // Should not happen
+            });
+
+            return formatted;
+        }
+
+
+        // ========== MODAL FUNCTIONS ========== (Scroll Reset logic included)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll
+            console.log("Scroll set to 0 on hideModal");
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+                console.log("Scroll listener removed on hideModal.");
+            }
+            resetModalState();
+        }
+
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent || !modalImage || !modalImageSpinner || !modalImagePlaceholder || !modalImageContainer) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Clear previous content
+             modalImage.src = '';
+             modalImage.style.display = 'none';
+             modalImageSpinner.style.display = 'none';
+             modalImagePlaceholder.style.display = 'none';
+             modalImageContainer.classList.remove('visible');
+             modalImageContainer.style.display = 'none'; // Ensure hidden
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Scroll reset and conditional image logic included)
+        function getRandomElement(arr) { if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+            if (!titleListContainer || !titlesLoading) return;
+            const shuffledTitles = shuffleArray([...titles]);
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay conceptos disponibles.</p>'; return; }
+            shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalImageContainer.style.display = 'none';
+            modalImageContainer.classList.remove('visible');
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+            }
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText); // Now handles code blocks
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Inject formatted HTML
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                // *** RESET SCROLL HERE ***
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare image (hidden)
+                modalImageSpinner.style.display = 'block';
+                const imageUrl = createPollinationsImageUrl(title);
+                 if (imageUrl) {
+                     modalImage.onload = () => { modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'none'; modalImage.style.display = 'block'; };
+                     modalImage.onerror = () => { console.error("Error loading image:", title); modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'block'; modalImage.style.display = 'none'; };
+                     modalImage.src = imageUrl;
+                 } else {
+                     console.error("Could not create image URL:", title);
+                     modalImageSpinner.style.display = 'none';
+                     modalImagePlaceholder.style.display = 'block';
+                 }
+
+                // Setup scroll listener for conditional image visibility
+                const scrollBuffer = 25; // Slightly larger buffer might be needed with code blocks potentially shifting layout
+                currentScrollHandler = () => {
+                    // Ensure modalContent exists and has dimensions before checking scroll properties
+                    if (!modalContent || modalContent.clientHeight === 0) return;
+
+                    const isScrollable = modalContent.scrollHeight > modalContent.clientHeight + 1; // +1 for safety margin
+                    const isAtBottom = (modalContent.scrollTop + modalContent.clientHeight) >= (modalContent.scrollHeight - scrollBuffer);
+
+                    if (!isScrollable || isAtBottom) {
+                         if (!modalImageContainer.classList.contains('visible')) {
+                             console.log(`Showing image. Scrollable: ${isScrollable}, At Bottom: ${isAtBottom}`);
+                             modalImageContainer.classList.add('visible');
+                             modalImageContainer.style.display = 'flex';
+                         }
+                         // Remove listener once image is shown or if content isn't scrollable
+                         if ((isScrollable || !isScrollable) && currentScrollHandler) {
+                            modalContent.removeEventListener('scroll', currentScrollHandler);
+                            currentScrollHandler = null;
+                            console.log("Scroll listener removed.");
+                         }
+                     }
+                };
+                modalContent.addEventListener('scroll', currentScrollHandler);
+                console.log("Scroll listener added.");
+                 // Check immediately in case content is not scrollable (use timeout for layout)
+                 setTimeout(currentScrollHandler, 150);
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error al cargar: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalImageContainer.style.display = 'none';
+                modalContent.innerHTML = ''; // Clear potentially broken content
+                 if (currentScrollHandler) {
+                    modalContent.removeEventListener('scroll', currentScrollHandler);
+                    currentScrollHandler = null;
+                 }
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Pensando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("No se pudieron generar nuevos conceptos en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al generar conceptos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Conceptos';
+             }
+         }
+
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p>Error crítico inicializando la aplicación.</p>'; return; }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claridad Feynman AI - Domina Conceptos | PapitasFritas.com</title>
+    <!-- <meta name="description" content="Usa la IA para aplicar la Técnica Feynman. Explica, recibe feedback estructurado, refina y profundiza tu entendimiento de forma cíclica. Herramienta por PapitasFritas.com."> -->
+    <style>
+        /* --- Fonts & Base Styles --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        :root {
+            --bg-color: #f8f9fa; /* Light Grey */
+            --card-bg: #ffffff; /* White */
+            --text-color: #212529; /* Dark Grey */
+            --text-muted: #6c757d; /* Medium Grey */
+            --heading-color: #0d1b2a; /* Dark Blue-Grey */
+            --accent-primary: #007bff; /* Bright Blue */
+            --accent-primary-hover: #0056b3;
+            --accent-secondary: #fd7e14; /* Orange (AI Feedback) */
+            --accent-success: #28a745; /* Green (Success) */
+            --border-color: #dee2e6; /* Light Border */
+            --shadow-color: rgba(0, 0, 0, 0.075);
+            --error-color: #dc3545; /* Red */
+            --font-main: 'Inter', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-main); background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2.5rem 1.5rem; line-height: 1.6;
+        }
+        .container { width: 100%; max-width: 800px; margin: auto; display: flex; flex-direction: column; gap: 2rem; }
+
+        /* --- Card Styling --- */
+        .card {
+            background-color: var(--card-bg); border-radius: 12px; padding: 2rem 2.5rem;
+            box-shadow: 0 4px 15px var(--shadow-color); border: 1px solid var(--border-color);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .card.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; height: 0; padding: 0; border: none; margin: 0; overflow: hidden; }
+
+        .header-card { text-align: center; background: none; border: none; box-shadow: none; padding-bottom: 0; }
+        .header-card h1 {
+            font-weight: 600; font-size: 2.4rem; color: var(--heading-color); margin-bottom: 0.5rem;
+        }
+        .header-card .subtitle { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 1rem auto; }
+
+        /* --- Step Styling --- */
+        .step-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); }
+        .step-number {
+            background-color: var(--accent-primary); color: white; font-weight: 600; font-size: 1rem;
+            width: 30px; height: 30px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; line-height: 1;
+        }
+        .step-header h2 { font-weight: 500; font-size: 1.4rem; color: var(--heading-color); margin: 0; }
+
+        /* Form Elements Styling */
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-muted); font-size: 0.9rem; }
+        input[type="text"], textarea {
+            width: 100%; padding: 0.8rem 1rem; font-family: var(--font-main); font-size: 1rem;
+            border: 1px solid var(--border-color); border-radius: 6px; background-color: #fff;
+            color: var(--text-color); transition: border-color 0.2s, box-shadow 0.2s; resize: vertical;
+        }
+        input[type="text"] { margin-bottom: 1.5rem; }
+        textarea { min-height: 150px; margin-bottom: 1.5rem; line-height: 1.5; }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+
+        .button-container { text-align: right; margin-top: 0.5rem; }
+        .button {
+            font-family: var(--font-main); font-weight: 500; font-size: 0.95rem; letter-spacing: 0.3px;
+            padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .button-primary { color: #fff; background-color: var(--accent-primary); }
+        .button-primary:hover:not(:disabled) { background-color: var(--accent-primary-hover); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3); }
+        .button:disabled { background-color: #adb5bd; color: #fff; cursor: wait; box-shadow: none; transform: none; }
+        .button-secondary { color: var(--text-muted); background-color: transparent; border: 1px solid var(--border-color); margin-right: 0.5rem; }
+        .button-secondary:hover:not(:disabled) { background-color: #e9ecef; border-color: #adb5bd; color: var(--text-color); }
+        .reset-button-container { text-align: center; margin-top: 1.5rem; }
+        .reset-button { font-size: 0.9rem; color: var(--text-muted); background: none; border: none; text-decoration: underline; cursor: pointer; }
+        .reset-button:hover { color: var(--error-color); }
+
+        /* AI Interaction & Feedback Formatting */
+        .ai-interaction-box { border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6; }
+        .ai-prompt { background-color: rgba(0, 123, 255, 0.05); border-left: 4px solid var(--accent-primary); }
+        .ai-feedback { background-color: rgba(253, 126, 20, 0.05); border-left: 4px solid var(--accent-secondary); }
+        .ai-success { background-color: rgba(40, 167, 69, 0.05); border-left: 4px solid var(--accent-success); color: var(--accent-success); font-weight: 500;}
+
+        .ai-feedback h4 { margin-bottom: 1rem; font-weight: 600; color: var(--heading-color); font-size: 1.1rem; }
+        .ai-feedback ul { list-style: none; padding-left: 0.5rem; margin: 0; }
+        .ai-feedback li { position: relative; padding-left: 1.8rem; margin-bottom: 0.8rem; }
+        .ai-feedback li::before { /* Custom bullet */
+            content: '⚠️'; /* Warning/Attention sign */ position: absolute; left: 0; top: 1px; font-size: 1rem; color: var(--accent-secondary);
+        }
+        .ai-feedback li strong { /* Highlighted terms */ color: var(--accent-secondary); font-weight: 600; }
+        .ai-prompt p, .ai-feedback p { margin: 0; } /* Reset paragraph margins inside boxes */
+
+        /* Read-only explanation display */
+        .explanation-display { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-muted); font-style: italic; max-height: 150px; overflow-y: auto; }
+
+        /* Loading/Error Styling */
+        #global-feedback { min-height: 2em; text-align: center; margin-top: 1rem; font-weight: 500; font-size: 0.95rem; }
+        .loading-message { color: var(--accent-primary); }
+        .error-message { color: var(--error-color); }
+        .success-message { color: var(--accent-success); } /* Might not use globally */
+
+        /* --- Icons (using simple text/emoji for now) --- */
+        .icon::before { display: inline-block; margin-right: 0.5em; }
+        .icon-start::before { content: '🚀'; }
+        .icon-analyze::before { content: '🔬'; }
+        .icon-refine::before { content: '✏️'; }
+        .icon-restart::before { content: '🔄'; }
+
+        footer { /* Unchanged */ }
+        @media (max-width: 600px) { /* Unchanged */ }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header-card">
+            <h1>Claridad Feynman <span style="color: var(--accent-primary);">AI</span></h1>
+            <p class="subtitle">Domina conceptos complejos simplificándolos paso a paso, con la ayuda de la IA.</p>
+        </header>
+
+        <!-- Step 1: Input Concept -->
+        <section class="card" id="step1-card">
+            <div class="step-header">
+                <span class="step-number">1</span>
+                <h2>Define el Concepto</h2>
+            </div>
+            <label for="concept-input">¿Qué concepto quieres aclarar hoy?</label>
+            <input type="text" id="concept-input" placeholder="Ej: Gravedad Cuántica, Machine Learning, Mitocondria...">
+            <div class="button-container">
+                <button type="button" id="start-btn" class="button button-primary icon-start">Comenzar</button>
+            </div>
+        </section>
+
+        <!-- Step 2: Explain Simply (Initially Hidden) -->
+        <section class="card hidden" id="step2-card">
+            <div class="step-header">
+                 <span class="step-number">2</span>
+                 <h2>Explícalo Simple</h2>
+            </div>
+            <div id="explain-prompt" class="ai-interaction-box ai-prompt">
+                <p>Cargando instrucciones...</p>
+            </div>
+            <label for="explanation-input">Escribe tu explicación más sencilla aquí:</label>
+            <textarea id="explanation-input" placeholder="Imagina que hablas con un niño de 10 años... claro y conciso."></textarea>
+            <div class="button-container">
+                <button type="button" id="submit-explanation-btn" class="button button-primary icon-analyze">Analizar Explicación</button>
+            </div>
+        </section>
+
+        <!-- Step 3: Feedback Display (Initially Hidden) -->
+        <section class="card hidden" id="step3-card">
+            <div class="step-header">
+                <span class="step-number">3</span>
+                <h2>Revisión de la IA</h2>
+            </div>
+            <div id="feedback-analysis" class="ai-interaction-box ai-feedback">
+                <!-- AI Feedback will load here -->
+                <p>Analizando...</p>
+            </div>
+             <div id="feedback-success" class="ai-interaction-box ai-success hidden">
+                <!-- Success message will load here -->
+            </div>
+            <div class="button-container">
+                 <!-- Buttons controlled by JS based on feedback -->
+                 <button type="button" id="refine-btn" class="button button-primary icon-refine hidden">Refinar Mi Explicación</button>
+                 <button type="button" id="finish-btn" class="button button-secondary hidden">¡Entendido! Terminar</button>
+            </div>
+        </section>
+
+         <!-- Step 4: Refine Explanation (Initially Hidden) -->
+        <section class="card hidden" id="step4-card">
+            <div class="step-header">
+                <span class="step-number">4</span>
+                <h2>Refina tu Explicación</h2>
+            </div>
+            <label>Basado en la revisión, mejora tu explicación:</label>
+            <div id="previous-explanation-display" class="explanation-display">
+                <!-- Previous explanation shown here -->
+            </div>
+            <textarea id="refined-explanation-input" placeholder="Aplica las sugerencias de la IA aquí..."></textarea>
+            <div class="button-container">
+                <button type="button" id="submit-refinement-btn" class="button button-primary icon-analyze">Re-evaluar Explicación</button>
+            </div>
+        </section>
+
+        <!-- Global Feedback -->
+        <div id="global-feedback"></div>
+
+        <!-- Reset Button Container -->
+        <div class="reset-button-container">
+            <button type="button" id="reset-btn" class="reset-button hidden">Empezar con un nuevo concepto</button>
+        </div>
+
+    </div>
+
+    <footer>
+        Claridad Feynman AI por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | APIs por <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const conceptInput = document.getElementById('concept-input');
+        const startBtn = document.getElementById('start-btn');
+        const step1Card = document.getElementById('step1-card');
+        const step2Card = document.getElementById('step2-card');
+        const explainPromptEl = document.getElementById('explain-prompt');
+        const explanationInput = document.getElementById('explanation-input');
+        const submitExplanationBtn = document.getElementById('submit-explanation-btn');
+        const step3Card = document.getElementById('step3-card');
+        const feedbackAnalysisEl = document.getElementById('feedback-analysis');
+        const feedbackSuccessEl = document.getElementById('feedback-success');
+        const refineBtn = document.getElementById('refine-btn');
+        const finishBtn = document.getElementById('finish-btn');
+        const step4Card = document.getElementById('step4-card');
+        const previousExplanationDisplay = document.getElementById('previous-explanation-display');
+        const refinedExplanationInput = document.getElementById('refined-explanation-input');
+        const submitRefinementBtn = document.getElementById('submit-refinement-btn');
+        const globalFeedback = document.getElementById('global-feedback');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // --- Configuration ---
+        const TEXT_API_BASE_URL = "https://text.pollinations.ai/";
+        const MAX_RETRIES = 2; const RETRY_DELAY_MS = 1500; const API_TIMEOUT_MS = 50000;
+        // Simple Keywords for Language Detection
+        const ENGLISH_KEYWORDS = ['the', 'is', 'are', 'and', 'of', 'in', 'it', 'on', 'with', 'for', 'as', 'to', 'at', 'by', 'from', 'that', 'this', 'what', 'how', 'why', 'explain'];
+
+        // --- State ---
+        let currentConcept = '';
+        let currentExplanation = ''; // Stores the latest explanation (initial or refined)
+        let detectedLanguage = 'es'; // Default to Spanish
+        let refinementCycle = 0;
+        const MAX_REFINEMENT_CYCLES = 5; // Limit infinite loops just in case
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', handleStartSimplification);
+        submitExplanationBtn.addEventListener('click', () => handleSubmitExplanation(explanationInput.value));
+        refineBtn.addEventListener('click', handleStartRefinement);
+        submitRefinementBtn.addEventListener('click', () => handleSubmitExplanation(refinedExplanationInput.value)); // Reuses the submit logic
+        finishBtn.addEventListener('click', resetProcess); // Finish button acts as reset for now
+        resetBtn.addEventListener('click', resetProcess);
+
+
+        // --- Core Logic ---
+        async function handleStartSimplification() {
+            currentConcept = conceptInput.value.trim();
+            if (!currentConcept) { showGlobalFeedback('error', 'Por favor, introduce un concepto.'); return; }
+
+            detectedLanguage = detectLanguage(currentConcept); // Detect language based on concept
+            console.log(`Detected Language: ${detectedLanguage}`);
+
+            disableButton(startBtn);
+            showGlobalFeedback('loading', 'Preparando el taller...');
+            refinementCycle = 0; // Reset cycle count
+
+            const langInstruction = detectedLanguage === 'en'
+                ? 'Respond ONLY with the instruction itself in English.'
+                : 'Responde SÓLO con la instrucción misma en Español.';
+            const prompt = `Genera una instrucción corta y amigable pidiendo al usuario que explique el concepto '${currentConcept}' de forma muy simple, como si fuera para un niño de 10 años. ${langInstruction}`;
+
+            try {
+                const instruction = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(prompt));
+                explainPromptEl.innerHTML = `<p>${cleanApiResponse(instruction)}</p>`;
+                activateStep(step2Card);
+                deactivateStep(step1Card);
+                showGlobalFeedback('', '');
+                resetBtn.classList.remove('hidden');
+            } catch (error) {
+                handleError(error, "Error al preparar el primer paso.");
+            } finally {
+                enableButton(startBtn);
+            }
+        }
+
+        async function handleSubmitExplanation(explanationText) {
+            currentExplanation = explanationText.trim();
+            if (!currentExplanation) {
+                showGlobalFeedback('error', 'Por favor, escribe tu explicación.');
+                return;
+            }
+
+            const submitBtn = refinementCycle === 0 ? submitExplanationBtn : submitRefinementBtn;
+            disableButton(submitBtn);
+            showGlobalFeedback('loading', 'La IA está revisando tu explicación...');
+            feedbackAnalysisEl.innerHTML = `<p>Analizando...</p>`; // Clear previous feedback
+            feedbackSuccessEl.classList.add('hidden'); // Hide success message initially
+            refineBtn.classList.add('hidden'); // Hide buttons initially
+            finishBtn.classList.add('hidden');
+
+
+            const langInstruction = detectedLanguage === 'en'
+                ? `Respond ONLY with the feedback list (or the success message) in English.`
+                : `Responde SÓLO con la lista de puntos de feedback (o el mensaje de éxito) en Español.`;
+
+            const prompt = `You are an AI assistant helping with the Feynman Technique.
+Concept: '${currentConcept}'.
+User's Explanation (target: 10-year-old):
+---
+${currentExplanation}
+---
+Analyze this explanation.
+1. Check if it's now simple and clear enough for the target audience.
+2. If YES, respond ONLY with the EXACT phrase: ¡Excelente explicación! Parece clara y simple. (or in English: Excellent explanation! It seems clear and simple.)
+3. If NO, identify 1-3 specific points (max) needing improvement (complexity, jargon, clarity, accuracy). Format ONLY these points as a bulleted list, starting each point with '* '. Be constructive.
+${langInstruction}`;
+
+
+            try {
+                const feedback = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(prompt));
+                const cleanedFeedback = cleanApiResponse(feedback);
+
+                // Check for success message
+                const successMessageES = "¡Excelente explicación! Parece clara y simple.";
+                const successMessageEN = "Excellent explanation! It seems clear and simple.";
+                 if (cleanedFeedback.includes(successMessageES) || cleanedFeedback.includes(successMessageEN)) {
+                     displayFeedback(cleanedFeedback, true); // Display success
+                     activateStep(step3Card);
+                     deactivateStep(refinementCycle === 0 ? step2Card : step4Card); // Deactivate previous step
+                 } else if (refinementCycle >= MAX_REFINEMENT_CYCLES) {
+                     displayFeedback("Hemos alcanzado el límite de refinamientos. ¡Buen progreso! Puedes intentar con otro concepto.", false, true); // Max cycles message
+                     activateStep(step3Card);
+                     deactivateStep(step4Card);
+                 }
+                 else {
+                    displayFeedback(cleanedFeedback, false); // Display feedback points
+                    activateStep(step3Card);
+                    deactivateStep(refinementCycle === 0 ? step2Card : step4Card);
+                }
+
+                showGlobalFeedback('', ''); // Clear loading message
+            } catch (error) {
+                handleError(error, "Error al obtener la revisión de la IA.");
+                displayFeedback("Hubo un problema al analizar. Inténtalo de nuevo.", false, true); // Show error in feedback area
+                activateStep(step3Card); // Keep step 3 visible to show error
+                deactivateStep(refinementCycle === 0 ? step2Card : step4Card);
+            } finally {
+                enableButton(submitBtn);
+            }
+        }
+
+        function handleStartRefinement() {
+             refinementCycle++;
+             console.log(`Starting refinement cycle: ${refinementCycle}`);
+             previousExplanationDisplay.textContent = currentExplanation; // Show previous text
+             refinedExplanationInput.value = currentExplanation; // Pre-fill for easy editing
+             activateStep(step4Card);
+             deactivateStep(step3Card);
+        }
+
+        function displayFeedback(feedbackText, isSuccess, isErrorOrLimit = false) {
+            feedbackAnalysisEl.classList.add('hidden'); // Hide normal feedback area first
+            feedbackSuccessEl.classList.add('hidden'); // Hide success area first
+            refineBtn.classList.add('hidden');
+            finishBtn.classList.add('hidden');
+
+            if (isSuccess) {
+                 feedbackSuccessEl.innerHTML = `<p>${feedbackText}</p>`;
+                 feedbackSuccessEl.classList.remove('hidden');
+                 finishBtn.classList.remove('hidden'); // Show only finish button on success
+            } else {
+                 feedbackAnalysisEl.innerHTML = ''; // Clear previous points
+                 const feedbackPoints = feedbackText.split('\n').filter(line => line.trim().startsWith('*'));
+
+                if (feedbackPoints.length > 0 && !isErrorOrLimit) {
+                     const list = document.createElement('ul');
+                     feedbackPoints.forEach(point => {
+                        const listItem = document.createElement('li');
+                        // Simple highlighting of potential keywords (can be improved)
+                        const formattedPoint = point.substring(1).trim() // Remove '*'
+                            .replace(/(\bcomplejo\b|\bcomplicado\b|\bjerga\b|\bjargon\b|\bclaro\b|\boscuro\b|\bsimple\b|\bsimplificar\b|\bdefine\b|\bexplica\b)/gi, '<strong>$1</strong>')
+                            .replace(/(\bcomplex\b|\bjargon\b|\bunclear\b|\bclear\b|\bsimple\b|\bsimplify\b|\bdefine\b|\bexplain\b)/gi, '<strong>$1</strong>');
+                        listItem.innerHTML = formattedPoint;
+                        list.appendChild(listItem);
+                    });
+                     const title = document.createElement('h4');
+                     title.textContent = detectedLanguage === 'en' ? "Points to Review:" : "Puntos a Revisar:";
+                     feedbackAnalysisEl.appendChild(title);
+                     feedbackAnalysisEl.appendChild(list);
+                     refineBtn.classList.remove('hidden'); // Show refine button if there's feedback
+                 } else {
+                    // Handle case where AI didn't provide points, or it's an error/limit message
+                    const messageParagraph = document.createElement('p');
+                    messageParagraph.textContent = isErrorOrLimit ? feedbackText : (detectedLanguage === 'en' ? "No specific points identified, but let's try refining further." : "No se identificaron puntos específicos, pero intentemos refinar más.");
+                    if(isErrorOrLimit) messageParagraph.style.color = 'var(--error-color)';
+                    feedbackAnalysisEl.appendChild(messageParagraph);
+                    // Decide if refine should be shown even if no points, maybe only if not error
+                    if (!isErrorOrLimit) refineBtn.classList.remove('hidden');
+                 }
+
+                 feedbackAnalysisEl.classList.remove('hidden');
+                 finishBtn.classList.remove('hidden'); // Always show finish button if not success
+            }
+        }
+
+
+        function resetProcess() {
+            currentConcept = '';
+            currentExplanation = '';
+            detectedLanguage = 'es';
+            refinementCycle = 0;
+            conceptInput.value = '';
+            explanationInput.value = '';
+            refinedExplanationInput.value = '';
+            previousExplanationDisplay.textContent = '';
+
+            // Hide all steps except the first
+            deactivateStep(step2Card);
+            deactivateStep(step3Card);
+            deactivateStep(step4Card);
+            activateStep(step1Card); // Show step 1
+
+            resetBtn.classList.add('hidden');
+            showGlobalFeedback('', ''); // Clear feedback
+            // Reset button states
+            enableButton(startBtn);
+            enableButton(submitExplanationBtn);
+            enableButton(submitRefinementBtn);
+        }
+
+        // --- Language Detection ---
+        function detectLanguage(text) {
+            if (!text) return 'es';
+            const words = text.toLowerCase().match(/\b(\w+)\b/g) || []; // Get words
+            if (words.length < 2) return 'es'; // Need some text to guess
+            let englishCount = 0;
+            const sampleSize = Math.min(words.length, 15); // Check first few words
+
+            for (let i = 0; i < sampleSize; i++) {
+                if (ENGLISH_KEYWORDS.includes(words[i])) {
+                    englishCount++;
+                }
+            }
+            // Simple threshold - adjust if needed
+            return (englishCount / sampleSize) >= 0.2 ? 'en' : 'es';
+        }
+
+
+        // --- UI Helper Functions ---
+        function activateStep(stepElement) { stepElement.classList.remove('hidden'); }
+        function deactivateStep(stepElement) { stepElement.classList.add('hidden'); }
+        function disableButton(button) { button.disabled = true; /* Add loading indicator? */ }
+        function enableButton(button) { button.disabled = false; }
+        function showGlobalFeedback(type, message) { globalFeedback.className = `${type}-message`; globalFeedback.textContent = message; }
+        function handleError(error, userMessage) { console.error(userMessage, error); showGlobalFeedback('error', `${userMessage} (${error.message})`); }
+
+
+        // --- API Fetch Function (Reused/Adapted) ---
+        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+            const { isText = true, timeout = API_TIMEOUT_MS } = options;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                console.log(`Fetching: ${url.substring(0, 120)}...`);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) { throw new Error(`Error HTTP ${response.status}`); }
+                const text = await response.text();
+                console.log("AI Response:", text.substring(0, 200)); // Log snippet
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') { throw new Error("Timeout API"); }
+                if (retries > 0 && (error.message.includes('HTTP 50') || error.message.includes('Failed to fetch'))) {
+                    console.warn(`Fetch fallido, reintentando... (${error.message})`);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    return fetchWithRetry(url, options, retries - 1);
+                } else { throw error; }
+            }
+        }
+
+        // --- Utility to clean API response ---
+        function cleanApiResponse(text) {
+            let cleaned = text ? String(text).trim() : '';
+            cleaned = cleaned.replace(/^"|"$/g, ''); // Remove surrounding quotes
+            // Remove common conversational fillers more aggressively
+            cleaned = cleaned.replace(/^(Okay|Sure|Here('s| is)|Certainly|Alright|Got it)[.,:!]?\s*/i, '');
+            return cleaned;
+        }
+
+        // --- Preconnect ---
+        document.addEventListener('DOMContentLoaded', () => { /* ...preconnect... */ });
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Recetas con IA Ilustradas | AI Recipe Illustrator - PapitasFritas.com</title>
+    <!-- <meta name="description" content="Crea recetas únicas y deliciosas con IA. Introduce ingredientes o ideas y obtén una receta completa con pasos ilustrados y consejos. Tu libro de cocina digital en PapitasFritas.com."> -->
+    <style>
+        /* --- ESTILOS CSS (SIN CAMBIOS RESPECTO A LA VERSIÓN ANTERIOR) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito+Sans:wght@300;400;600&display=swap');
+        :root {
+            --bg-color: #fdfaf6; --card-bg: #ffffff; --text-color: #4a4a4a; --heading-color: #8c5a44; --accent-color: #e67e22; --secondary-accent: #5d9c8a; --border-color: #e0e0e0; --shadow-color: rgba(140, 90, 68, 0.15); --error-color: #c0392b; --loading-color: #f39c12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body { font-family: 'Nunito Sans', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2rem; line-height: 1.7; }
+        .container { width: 100%; max-width: 900px; margin: auto; display: flex; flex-direction: column; gap: 2rem; }
+        .config-card, .recipe-card { background-color: var(--card-bg); border-radius: 12px; padding: 2rem 2.5rem; box-shadow: 0 6px 20px var(--shadow-color); border: 1px solid var(--border-color); }
+        .config-card h2 { font-family: 'Playfair Display', serif; color: var(--heading-color); font-size: 1.8rem; text-align: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .form-group label { display: block; font-weight: 600; color: #666; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .form-group input[type="text"], .form-group select { width: 100%; padding: 0.75rem 1rem; font-family: 'Nunito Sans', sans-serif; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; background-color: #f9f9f9; transition: border-color 0.3s, box-shadow 0.3s; }
+        .form-group input[type="text"]:focus, .form-group select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2); }
+        .generate-button-container { text-align: center; margin-top: 1rem; }
+        #generate-btn { font-family: 'Nunito Sans', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px; padding: 12px 40px; color: #fff; background-color: var(--accent-color); border: none; border-radius: 50px; cursor: pointer; transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3); }
+        #generate-btn:hover:not(:disabled) { background-color: #d35400; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(230, 126, 34, 0.4); }
+        #generate-btn:disabled { background-color: #bdc3c7; cursor: wait; box-shadow: none; }
+        /* --- NEW: History Section Styles (minimal, inherits most) --- */
+        .history-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed var(--border-color); }
+        .history-section h3 { font-family: 'Playfair Display', serif; color: var(--heading-color); font-size: 1.3rem; margin-bottom: 1rem; text-align: center; }
+        #history-list { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem; }
+        #history-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
+        #history-list li:last-child { border-bottom: none; }
+        #history-list .history-title { flex-grow: 1; margin-right: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555; }
+        #history-list button { font-size: 0.8rem; padding: 4px 10px; background-color: var(--secondary-accent); color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; margin-left: 5px; }
+        #history-list button:hover { background-color: #4a8172; }
+        .history-controls { text-align: center; }
+        #clear-history-btn { font-size: 0.9rem; padding: 6px 15px; background-color: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
+        #clear-history-btn:hover { background-color: #c0392b; }
+        #clear-history-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        /* --- End of History Styles --- */
+        .recipe-card { display: none; }
+        .recipe-header { text-align: center; margin-bottom: 2rem; }
+        #recipe-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--heading-color); margin-bottom: 0.5rem; line-height: 1.3; }
+        #recipe-description { font-size: 1.1rem; color: #555; margin-bottom: 2rem; font-style: italic; max-width: 600px; margin-left: auto; margin-right: auto;}
+        .recipe-main-content { display: grid; grid-template-columns: 1fr 2fr; gap: 2.5rem; align-items: start; }
+        #image-container { width: 100%; aspect-ratio: 4 / 3; background-color: #f0f0f0; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        #recipe-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        #recipe-image.loaded { opacity: 1; }
+        #image-container.loading::before { content: ''; position: absolute; width: 40px; height: 40px; border: 4px solid rgba(243, 156, 18, 0.3); border-top-color: var(--loading-color); border-radius: 50%; animation: spin 1s linear infinite; z-index: 1; }
+        #image-container.failed { background-color: #fdecea; border-color: var(--error-color); color: var(--error-color); font-size: 0.9em; padding: 10px; text-align: center; }
+        #image-container.failed::before { display: none; }
+        .recipe-details h3 { font-family: 'Playfair Display', serif; color: var(--heading-color); font-size: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        #ingredients-list ul, #instructions-list ol { list-style-position: inside; padding-left: 0; }
+        #ingredients-list li { margin-bottom: 0.5rem; padding-left: 1.5em; position: relative; }
+        #ingredients-list li::before { content: '•'; color: var(--accent-color); position: absolute; left: 0; font-size: 1.2em; line-height: 1.2; }
+        #instructions-list li { margin-bottom: 1rem; line-height: 1.8; counter-increment: step-counter; padding-left: 2.5em; position: relative; }
+        #instructions-list li::before { content: counter(step-counter); background-color: var(--secondary-accent); color: white; font-weight: bold; border-radius: 50%; width: 1.8em; height: 1.8em; text-align: center; line-height: 1.8em; display: inline-block; position: absolute; left: 0; top: 0; }
+        .bonus-sections { margin-top: 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; border-top: 1px dashed var(--border-color); padding-top: 2rem; }
+        .bonus-section { background-color: #fdfdfd; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; }
+        .bonus-section h4 { font-family: 'Playfair Display', serif; color: var(--secondary-accent); font-size: 1.2rem; margin-bottom: 0.8rem; }
+        .bonus-section p { font-size: 0.95rem; line-height: 1.6; min-height: 2em; }
+        #pairing-suggestion, #kitchen-tip { color: #555; }
+        #feedback-area { text-align: center; padding: 1rem; min-height: 2em; }
+        .loading-message, .error-message { padding: 10px 20px; border-radius: 6px; display: inline-block; font-weight: 600; }
+        .loading-message { color: var(--loading-color); background-color: rgba(243, 156, 18, 0.1); animation: pulse-text 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: rgba(192, 57, 43, 0.1); }
+        footer { margin-top: 3rem; font-size: 0.85rem; color: #aaa; text-align: center; }
+        footer a { color: var(--heading-color); text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: var(--accent-color); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        @media (max-width: 768px) { .recipe-main-content { grid-template-columns: 1fr; } #image-container { max-width: 400px; margin-left: auto; margin-right: auto; margin-bottom: 2rem; } .bonus-sections { grid-template-columns: 1fr; } .config-card, .recipe-card { padding: 1.5rem; } }
+        @media (max-width: 480px) { body { padding: 1rem; } .config-card, .recipe-card { padding: 1rem; } h1 { font-size: 1.8rem; } #recipe-title { font-size: 2rem; } .form-grid { grid-template-columns: 1fr; } #ingredients-list li::before { font-size: 1em; line-height: 1.4; } #instructions-list li { padding-left: 2.2em; } #instructions-list li::before { width: 1.6em; height: 1.6em; line-height: 1.6em; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Configuration Card -->
+        <section class="config-card">
+            <h2>Crea tu Receta con IA</h2>
+            <form id="recipe-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="main-ingredients">Ingredientes Principales (separados por coma)</label>
+                        <input type="text" id="main-ingredients" placeholder="Ej: Pollo, pimientos / chicken, peppers">
+                    </div>
+                    <div class="form-group">
+                        <label for="cuisine-type">Tipo de Cocina</label>
+                        <select id="cuisine-type">
+                            <option value="cualquiera">Cualquiera / Any</option>
+                            <option value="mediterránea">Mediterránea</option>
+                            <option value="asiática">Asiática / Asian</option>
+                            <option value="mexicana">Mexicana / Mexican</option>
+                            <option value="italiana">Italiana / Italian</option>
+                            <option value="india">India / Indian</option>
+                            <option value="fusión">Fusión / Fusion</option>
+                            <option value="tradicional">Tradicional / Traditional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dietary-needs">Necesidades Dietéticas</label>
+                        <select id="dietary-needs">
+                            <option value="ninguna">Ninguna / None</option>
+                            <option value="vegetariana">Vegetariana / Vegetarian</option>
+                            <option value="vegana">Vegana / Vegan</option>
+                            <option value="sin gluten">Sin Gluten / Gluten-Free</option>
+                            <option value="baja en carbohidratos">Baja en Carbohidratos / Low-Carb</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="meal-type">Tipo de Comida</label>
+                        <select id="meal-type">
+                             <option value="cualquiera">Cualquiera / Any</option>
+                            <option value="desayuno">Desayuno / Breakfast</option>
+                            <option value="almuerzo">Almuerzo / Lunch</option>
+                            <option value="cena">Cena / Dinner</option>
+                            <option value="aperitivo">Aperitivo / Appetizer</option>
+                            <option value="postre">Postre / Dessert</option>
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label for="difficulty">Dificultad</label>
+                        <select id="difficulty">
+                             <option value="cualquiera">Cualquiera / Any</option>
+                            <option value="fácil">Fácil / Easy</option>
+                            <option value="media">Media / Medium</option>
+                            <option value="difícil">Difícil / Hard</option>
+                        </select>
+                    </div>
+                     <div class="form-group">
+                        <label for="dish-type">Tipo de Plato (Opcional)</label>
+                        <input type="text" id="dish-type" placeholder="Ej: Sopa, guiso / soup, stew, cake">
+                    </div>
+                </div>
+                <div class="generate-button-container">
+                    <button type="button" id="generate-btn">Generar Receta Ilustrada</button>
+                </div>
+            </form>
+             <div id="feedback-area"></div>
+
+             <!-- NEW: History Section -->
+             <div class="history-section" id="history-section">
+                 <h3>Historial de Recetas</h3>
+                 <ul id="history-list">
+                     <!-- History items will be populated here -->
+                 </ul>
+                 <div class="history-controls">
+                     <button id="clear-history-btn" disabled>Limpiar Historial</button>
+                 </div>
+             </div>
+             <!-- End of History Section -->
+
+        </section>
+
+        <!-- Recipe Display Card (Initially Hidden) -->
+        <section class="recipe-card" id="recipe-output">
+            <header class="recipe-header">
+                <h1 id="recipe-title"></h1>
+                <p id="recipe-description"></p>
+            </header>
+            <div class="recipe-main-content">
+                <div id="image-container"></div>
+                <div class="recipe-details">
+                    <section id="ingredients-list">
+                        <h3>Ingredientes / Ingredients</h3>
+                        <ul></ul>
+                    </section>
+                    <section id="instructions-list" style="margin-top: 2rem;">
+                         <h3>Instrucciones / Instructions</h3>
+                         <ol></ol>
+                     </section>
+                </div>
+            </div>
+            <div class="bonus-sections">
+                <section class="bonus-section" id="pairing-section">
+                    <h4>Sugerencia de Maridaje / Pairing Suggestion</h4>
+                    <p id="pairing-suggestion"></p>
+                </section>
+                 <section class="bonus-section" id="tip-section">
+                     <h4>Consejo del Chef IA / AI Chef Tip</h4>
+                     <p id="kitchen-tip"></p>
+                 </section>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+         AI Recipe Illustrator por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | APIs por <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const form = document.getElementById('recipe-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const feedbackArea = document.getElementById('feedback-area');
+        const recipeOutputCard = document.getElementById('recipe-output');
+        const recipeTitleEl = document.getElementById('recipe-title');
+        const recipeDescriptionEl = document.getElementById('recipe-description');
+        const imageContainer = document.getElementById('image-container');
+        const ingredientsListEl = document.querySelector('#ingredients-list ul');
+        const instructionsListEl = document.querySelector('#instructions-list ol');
+        const pairingSuggestionEl = document.getElementById('pairing-suggestion');
+        const kitchenTipEl = document.getElementById('kitchen-tip');
+        const mainIngredientsInput = document.getElementById('main-ingredients');
+        const cuisineTypeSelect = document.getElementById('cuisine-type');
+        const dietaryNeedsSelect = document.getElementById('dietary-needs');
+        const mealTypeSelect = document.getElementById('meal-type');
+        const difficultySelect = document.getElementById('difficulty');
+        const dishTypeInput = document.getElementById('dish-type');
+        // NEW: History Elements
+        const historySection = document.getElementById('history-section');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+        // --- Configuration ---
+        const TEXT_API_BASE_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 800; const IMAGE_HEIGHT = 600;
+        const MAX_RETRIES = 2; const RETRY_DELAY_MS = 1500;
+        const API_TIMEOUT_MS = 60000; const IMAGE_LOAD_TIMEOUT_MS = 50000;
+        const HISTORY_KEY = 'aiRecipeHistory'; // localStorage key
+        const MAX_HISTORY_ITEMS = 10;
+
+        // --- Language Detection Keywords ---
+        const ENGLISH_KEYWORDS = ['chicken', 'beef', 'pork', 'fish', 'shrimp', 'pasta', 'rice', 'potato', 'tomato', 'onion', 'pepper', 'salad', 'soup', 'stew', 'cake', 'pie', 'cookie', 'bread', 'cheese', 'egg', 'chocolate', 'vanilla', 'garlic', 'basil', 'oregano'];
+        // Note: No Spanish list needed, absence of English implies Spanish default
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        clearHistoryBtn.addEventListener('click', clearHistory);
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', loadHistory); // Load history on page load
+
+        // --- Core Generation Logic ---
+        async function handleGeneration() {
+            clearRecipeOutput();
+            showFeedback('loading', 'Creando tu receta...');
+            generateBtn.disabled = true; generateBtn.textContent = 'Generando...';
+            recipeOutputCard.style.display = 'none';
+
+            const currentInputs = getCurrentInputs(); // Get all input values
+
+            if (!currentInputs.mainIngredients && !currentInputs.dishType) {
+                showFeedback('error', 'Por favor, introduce ingredientes principales o un tipo de plato.');
+                resetUI(); return;
+            }
+
+            // --- Language Detection ---
+            const detectedLanguage = detectLanguage(currentInputs.mainIngredients + ' ' + currentInputs.dishType);
+            const langInstruction = detectedLanguage === 'en' ? 'Generate the response in English language.' : 'Genera la respuesta en idioma español.';
+            console.log(`Detected language: ${detectedLanguage}`);
+
+            // --- Construct Recipe Prompt with Language Instruction ---
+            let recipePrompt = `Generate a complete recipe based on these preferences:\n`;
+            if (currentInputs.mainIngredients) recipePrompt += `- Main Ingredients: ${currentInputs.mainIngredients}\n`;
+            if (currentInputs.cuisine !== 'cualquiera') recipePrompt += `- Cuisine Style: ${currentInputs.cuisine}\n`;
+            if (currentInputs.diet !== 'ninguna') recipePrompt += `- Dietary Restriction: ${currentInputs.diet}\n`;
+            if (currentInputs.meal !== 'cualquiera') recipePrompt += `- Meal Type: ${currentInputs.meal}\n`;
+            if (currentInputs.difficulty !== 'cualquiera') recipePrompt += `- Difficulty: ${currentInputs.difficulty}\n`;
+            if (currentInputs.dishType) recipePrompt += `- Desired Dish Type: ${currentInputs.dishType}\n`;
+
+            recipePrompt += `\n${langInstruction}\n`; // Add language instruction
+            recipePrompt += `\nOutput the recipe ONLY in the following structured format, using these exact labels followed by a colon and a newline:
+TITLE:
+[Recipe Title Here]
+DESCRIPTION:
+[Short, appetizing description here (2-3 sentences max)]
+INGREDIENTS:
+- [Ingredient 1 with quantity if appropriate]
+- [Ingredient 2]
+- [...]
+INSTRUCTIONS:
+1. [Step 1]
+2. [Step 2]
+3. [...]
+
+Do not add any extra text, comments, or introductions before 'TITLE:' or after the last instruction. Be precise with the format.`;
+
+            console.log("Recipe Prompt:", recipePrompt);
+
+            try {
+                const rawRecipeText = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(recipePrompt), { isText: true, timeout: API_TIMEOUT_MS });
+                console.log("Raw Recipe Response:", rawRecipeText);
+                const parsedRecipe = parseStructuredRecipe(rawRecipeText);
+
+                if (!parsedRecipe.title || !parsedRecipe.ingredients.length || !parsedRecipe.instructions.length) {
+                     throw new Error("La IA no generó la receta en el formato esperado. Intenta ser más específico o prueba de nuevo.");
+                }
+
+                // Populate UI
+                recipeTitleEl.textContent = parsedRecipe.title;
+                recipeDescriptionEl.textContent = parsedRecipe.description;
+                ingredientsListEl.innerHTML = parsedRecipe.ingredients.map(ing => `<li>${ing}</li>`).join('');
+                instructionsListEl.innerHTML = parsedRecipe.instructions.map(step => `<li>${step}</li>`).join('');
+
+                recipeOutputCard.style.display = 'block';
+                showFeedback('', ''); // Clear loading
+
+                // Save to history *after* successful parsing
+                saveToHistory(parsedRecipe.title, currentInputs);
+
+                // Generate Image
+                const imagePrompt = `${parsedRecipe.title}, photorealistic food photography, appetizing, beautifully plated, natural light, high detail`;
+                const seed = Math.floor(Math.random() * 1000000);
+                const imageUrl = `${IMAGE_API_BASE_URL}${encodeURIComponent(imagePrompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+                loadImageWithRetry(imageUrl, parsedRecipe.title); // Load image
+
+                // Fetch Bonus Content
+                fetchBonusContent(parsedRecipe.title, currentInputs.mainIngredients, detectedLanguage);
+
+            } catch (error) {
+                console.error("Error during recipe generation or parsing:", error);
+                showFeedback('error', `Error: ${error.message || "No se pudo generar la receta."}`);
+                resetUI();
+            }
+        }
+
+        // --- Language Detection (Simple Heuristic) ---
+        function detectLanguage(text) {
+            const lowerText = text.toLowerCase();
+            for (const keyword of ENGLISH_KEYWORDS) {
+                // Use word boundaries to avoid partial matches (e.g., 'rice' in 'price')
+                const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+                if (regex.test(lowerText)) {
+                    return 'en'; // Found an English keyword
+                }
+            }
+            return 'es'; // Default to Spanish
+        }
+
+        // --- Structured Recipe Parsing (Unchanged) ---
+        function parseStructuredRecipe(rawText) {
+            const recipe = { title: '', description: '', ingredients: [], instructions: [] };
+            if (!rawText) return recipe;
+            const lines = rawText.split('\n'); let currentSection = '';
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('TITLE:')) { currentSection = 'title'; recipe.title = trimmedLine.substring(6).trim(); }
+                else if (trimmedLine.startsWith('DESCRIPTION:')) { currentSection = 'description'; recipe.description = trimmedLine.substring(12).trim(); }
+                else if (trimmedLine.startsWith('INGREDIENTS:')) { currentSection = 'ingredients'; }
+                else if (trimmedLine.startsWith('INSTRUCTIONS:')) { currentSection = 'instructions'; }
+                else if (trimmedLine) {
+                    switch (currentSection) {
+                        case 'title': recipe.title += (recipe.title ? ' ' : '') + trimmedLine; break;
+                        case 'description': recipe.description += (recipe.description ? ' ' : '') + trimmedLine; break;
+                        case 'ingredients': if (trimmedLine.startsWith('-')) { recipe.ingredients.push(trimmedLine.substring(1).trim()); } else if (recipe.ingredients.length > 0) { recipe.ingredients[recipe.ingredients.length - 1] += ' ' + trimmedLine; } break;
+                        case 'instructions': if (/^\d+\.\s*/.test(trimmedLine)) { recipe.instructions.push(trimmedLine.replace(/^\d+\.\s*/, '').trim()); } else if (recipe.instructions.length > 0) { recipe.instructions[recipe.instructions.length - 1] += ' ' + trimmedLine; } else if (currentSection === 'instructions') { recipe.instructions.push(trimmedLine); } break;
+                    }
+                }
+            }
+            return recipe;
+        }
+
+        // --- Bonus Content Fetching (Added Language) ---
+        async function fetchBonusContent(recipeTitle, mainIngredients, language) {
+            pairingSuggestionEl.textContent = 'Buscando sugerencia...';
+            kitchenTipEl.textContent = 'Buscando consejo...';
+            const langInstruction = language === 'en' ? 'Respond only with the suggestion text in English.' : 'Responde solo con el texto de la sugerencia en español.';
+            const tipLangInstruction = language === 'en' ? 'Respond only with the tip text in English (1-2 sentences max).' : 'Responde solo con el texto del consejo en español (1-2 frases máx).';
+
+            // Fetch Pairing
+            try {
+                const pairingPrompt = `Suggest a specific wine, beer, or non-alcoholic drink pairing for a dish called "${recipeTitle}" ${mainIngredients ? `with main ingredients ${mainIngredients}` : ''}. Keep the suggestion brief (1-2 sentences). ${langInstruction}`;
+                const pairing = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(pairingPrompt), { isText: true, timeout: 20000 });
+                pairingSuggestionEl.textContent = cleanApiResponse(pairing) || (language === 'en' ? 'Suggestion not found.' : 'No se encontró sugerencia.');
+            } catch (error) {
+                console.warn("Could not fetch pairing suggestion:", error);
+                pairingSuggestionEl.textContent = language === 'en' ? 'Could not get suggestion.' : 'No se pudo obtener sugerencia.';
+            }
+
+            // Fetch Tip
+            try {
+                const tipPrompt = `Provide one useful and concise kitchen tip related to cooking techniques, ${mainIngredients ? `specifically concerning ${mainIngredients}` : 'general cooking'}. ${tipLangInstruction}`;
+                const tip = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(tipPrompt), { isText: true, timeout: 20000 });
+                kitchenTipEl.textContent = cleanApiResponse(tip) || (language === 'en' ? 'Tip not found.' : 'No se encontró consejo.');
+            } catch (error) {
+                console.warn("Could not fetch kitchen tip:", error);
+                kitchenTipEl.textContent = language === 'en' ? 'Could not get tip.' : 'No se pudo obtener consejo.';
+            }
+        }
+
+        // --- Text API Fetch (Unchanged from previous refined version with timeout) ---
+        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+            const { isText = false, timeout = API_TIMEOUT_MS } = options;
+            const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                console.log(`Fetching: ${url.substring(0,100)}... (Retries left: ${retries})`);
+                const response = await fetch(url, { signal: controller.signal }); clearTimeout(timeoutId);
+                if (!response.ok) { throw new Error(`HTTP error ${response.status}`); }
+                return isText ? await response.text() : response;
+            } catch (error) {
+                 clearTimeout(timeoutId);
+                 if (error.name === 'AbortError') { throw new Error("La solicitud a la API tardó demasiado (Timeout)."); }
+                 if (retries > 0 && error.message.includes('HTTP error 5') ) {
+                    console.warn(`Fetch failed, retrying in ${RETRY_DELAY_MS}ms...`, error);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    return fetchWithRetry(url, options, retries - 1);
+                } else { throw error; }
+            }
+        }
+
+        // --- Image Loading Logic (Unchanged from previous refined version) ---
+        function loadImageWithRetry(url, promptForAlt) {
+             let currentRetries = 0; const imgElement = document.createElement('img'); imgElement.id = 'recipe-image'; imgElement.alt = `Fotografía de: ${promptForAlt}`;
+             function attemptLoad(currentAttempt) {
+                let timeoutId; console.log(`Attempting image load (Attempt ${currentAttempt}/${MAX_RETRIES + 1})`);
+                imageContainer.innerHTML = ''; imageContainer.className = 'image-container loading'; imageContainer.appendChild(imgElement);
+                imgElement.src = ''; imgElement.className = ''; // Reset classList for the element
+                imgElement.onload = () => { clearTimeout(timeoutId); console.log("Image loaded."); imageContainer.className = 'image-container loaded'; imgElement.classList.add('loaded'); resetUI(true); };
+                imgElement.onerror = () => { clearTimeout(timeoutId); console.error(`Image load error (Attempt ${currentAttempt})`); handleFailure('Error de carga'); };
+                imgElement.src = url;
+                timeoutId = setTimeout(() => { if (!imgElement.complete || imgElement.naturalHeight === 0) { console.warn(`Image timeout (Attempt ${currentAttempt})`); imgElement.src = ''; handleFailure('Timeout'); } }, IMAGE_LOAD_TIMEOUT_MS);
+             }
+             function handleFailure(reason) {
+                currentRetries++;
+                if (currentRetries <= MAX_RETRIES) {
+                    console.warn(`Image fail: ${reason}. Retrying (${currentRetries}/${MAX_RETRIES})...`);
+                    imageContainer.className = 'image-container loading'; // Keep loading visual
+                    imageContainer.innerHTML = ''; imageContainer.appendChild(imgElement); // Keep spinner visible
+                    setTimeout(() => attemptLoad(currentRetries + 1), RETRY_DELAY_MS * Math.pow(2, currentRetries - 1));
+                } else {
+                    console.error(`Max image retries. Reason: ${reason}`);
+                    imageContainer.className = 'image-container failed';
+                    imageContainer.innerHTML = `Error al cargar imagen.`;
+                    resetUI(true); // Still enable button
+                }
+             }
+             attemptLoad(1);
+        }
+
+        // --- NEW: History Functions ---
+        function getCurrentInputs() {
+            // Helper to get all form values
+            return {
+                mainIngredients: mainIngredientsInput.value.trim(),
+                cuisine: cuisineTypeSelect.value,
+                diet: dietaryNeedsSelect.value,
+                meal: mealTypeSelect.value,
+                difficulty: difficultySelect.value,
+                dishType: dishTypeInput.value.trim(),
+            };
+        }
+
+        function getHistory() {
+            try {
+                const historyJson = localStorage.getItem(HISTORY_KEY);
+                return historyJson ? JSON.parse(historyJson) : [];
+            } catch (e) {
+                console.error("Error reading history from localStorage:", e);
+                return [];
+            }
+        }
+
+        function saveHistory(historyArray) {
+            try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(historyArray));
+                 displayHistory(historyArray); // Update UI after saving
+            } catch (e) {
+                console.error("Error saving history to localStorage:", e);
+                showFeedback('error', 'No se pudo guardar el historial (localStorage podría estar lleno o deshabilitado).');
+            }
+        }
+
+        function saveToHistory(recipeTitle, currentInputs) {
+            const history = getHistory();
+            const newEntry = {
+                id: Date.now(), // Simple unique ID
+                title: recipeTitle,
+                inputs: currentInputs,
+                timestamp: new Date().toISOString()
+            };
+
+            // Add new entry to the beginning
+            history.unshift(newEntry);
+
+            // Limit history size
+            const limitedHistory = history.slice(0, MAX_HISTORY_ITEMS);
+
+            saveHistory(limitedHistory);
+        }
+
+         function displayHistory(historyArray) {
+            historyList.innerHTML = ''; // Clear existing list
+            if (historyArray && historyArray.length > 0) {
+                historyArray.forEach(item => {
+                    const li = document.createElement('li');
+                    const titleSpan = document.createElement('span');
+                    titleSpan.className = 'history-title';
+                    titleSpan.textContent = item.title;
+                    titleSpan.title = `Ingredientes: ${item.inputs.mainIngredients || 'N/A'}, Tipo: ${item.inputs.dishType || 'N/A'}`; // Tooltip
+
+                    const loadBtn = document.createElement('button');
+                    loadBtn.textContent = 'Cargar';
+                    loadBtn.title = 'Cargar estos parámetros en el formulario';
+                    loadBtn.dataset.historyId = item.id; // Store ID on the button
+                    loadBtn.addEventListener('click', () => loadFromHistory(item.id));
+
+                    li.appendChild(titleSpan);
+                    li.appendChild(loadBtn);
+                    historyList.appendChild(li);
+                });
+                clearHistoryBtn.disabled = false;
+                 historySection.style.display = 'block'; // Show section if there's history
+            } else {
+                 historyList.innerHTML = '<li>No hay recetas guardadas.</li>';
+                 clearHistoryBtn.disabled = true;
+                 // Optionally hide the section if empty
+                 // historySection.style.display = 'none';
+            }
+        }
+
+        function loadHistory() {
+            const history = getHistory();
+            displayHistory(history);
+        }
+
+        function loadFromHistory(historyId) {
+            const history = getHistory();
+            const itemToLoad = history.find(item => item.id === historyId);
+
+            if (itemToLoad) {
+                console.log("Loading from history:", itemToLoad);
+                // Populate the form fields
+                mainIngredientsInput.value = itemToLoad.inputs.mainIngredients || '';
+                cuisineTypeSelect.value = itemToLoad.inputs.cuisine || 'cualquiera';
+                dietaryNeedsSelect.value = itemToLoad.inputs.diet || 'ninguna';
+                mealTypeSelect.value = itemToLoad.inputs.meal || 'cualquiera';
+                difficultySelect.value = itemToLoad.inputs.difficulty || 'cualquiera';
+                dishTypeInput.value = itemToLoad.inputs.dishType || '';
+
+                // Optional: Scroll to top or give feedback
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showFeedback('', ''); // Clear any previous messages
+                 // NOTE: We don't automatically generate here, just load the form.
+            } else {
+                console.error("History item not found for ID:", historyId);
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('¿Estás seguro de que quieres borrar todo el historial de recetas?')) {
+                try {
+                    localStorage.removeItem(HISTORY_KEY);
+                    displayHistory([]); // Update UI to show empty list
+                     showFeedback('', ''); // Clear any messages
+                } catch (e) {
+                    console.error("Error clearing history from localStorage:", e);
+                    showFeedback('error', 'No se pudo borrar el historial.');
+                }
+            }
+        }
+
+        // --- Utility Functions ---
+        function cleanApiResponse(text) { /* ... (Unchanged) ... */
+             let cleaned = text.trim(); if (cleaned.startsWith('"') && cleaned.endsWith('"')) { cleaned = cleaned.substring(1, cleaned.length - 1); } cleaned = cleaned.replace(/^Here'?s a suggestion:/i, '').trim(); cleaned = cleaned.replace(/^Sure, here'?s a tip:/i, '').trim(); return cleaned;
+        }
+        function clearRecipeOutput() { /* ... (Unchanged) ... */
+            feedbackArea.innerHTML = ''; recipeTitleEl.textContent = ''; recipeDescriptionEl.textContent = ''; imageContainer.innerHTML = ''; imageContainer.className = 'image-container'; ingredientsListEl.innerHTML = ''; instructionsListEl.innerHTML = ''; pairingSuggestionEl.textContent = ''; kitchenTipEl.textContent = ''; recipeOutputCard.style.display = 'none';
+        }
+        function showFeedback(type, message) { /* ... (Unchanged) ... */
+             feedbackArea.innerHTML = ''; if (message) { const m = document.createElement('div'); m.textContent = message; m.className = `${type}-message`; feedbackArea.appendChild(m); }
+        }
+        function resetUI(keepContent = false) { /* ... (Unchanged) ... */
+             generateBtn.disabled = false; generateBtn.textContent = 'Generar Receta Ilustrada'; if (!keepContent) { clearRecipeOutput(); } if (feedbackArea.querySelector('.loading-message')) { feedbackArea.innerHTML = ''; }
+        }
+
+        // --- Preconnect (Unchanged) ---
+        document.addEventListener('DOMContentLoaded', () => { ['https://text.pollinations.ai', 'https://image.pollinations.ai'].forEach(url => { const link = document.createElement('link'); link.rel = 'preconnect'; link.href = url; document.head.appendChild(link); }); });
+
+    </script>
+
+</body>
+</html>

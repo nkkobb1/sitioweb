@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title will be updated by JS -->
+    <title>Nightmare Weaver - Generador de Historias de Terror IA | PapitasFritas.com</title>
+    <!-- Meta Description (Add manually or via CMS) -->
+    <!-- <meta name="description" content="Crea historias de terror personalizadas en varios idiomas con ilustraciones generadas por IA. Elige subgénero, escenario, idioma y más con Nightmare Weaver en PapitasFritas.com."> -->
+
+    <style>
+        /* --- Fonts & Base Styles (mostly unchanged) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&family=Roboto:wght@300;400&display=swap');
+        :root {
+            --bg-color: #100c0c; --text-color: #a9a9a9; --heading-color: #e53935;
+            --primary-accent: #b71c1c; --secondary-accent: #4a4a4a; --input-bg: rgba(0, 0, 0, 0.5);
+            --card-bg: rgba(20, 15, 15, 0.85); --shadow-color: rgba(229, 57, 53, 0.2);
+            --error-color: #ffccbc; --error-bg: rgba(183, 28, 28, 0.3);
+            --loading-color: #e53935;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body {
+            font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            background-image: radial-gradient(circle at top right, rgba(183, 28, 28, 0.1), transparent 60%),
+                              radial-gradient(circle at bottom left, rgba(74, 74, 74, 0.1), transparent 50%);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 2rem; line-height: 1.6;
+        }
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 950px; /* Slightly wider for more options */ margin: auto; padding: 2.5rem 3rem;
+            background-color: var(--card-bg); backdrop-filter: blur(5px);
+            border-radius: 8px; border: 1px solid var(--secondary-accent);
+            box-shadow: 0 0 25px var(--shadow-color);
+        }
+        /* --- Header & UI Language Switcher --- */
+        .header-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+        .header-text { text-align: left; flex-grow: 1; }
+        .ui-language-switcher label { font-size: 0.85rem; margin-right: 0.5rem; opacity: 0.8; }
+        .ui-language-switcher select {
+            padding: 3px 5px; font-size: 0.85rem; background-color: var(--input-bg); color: var(--text-color);
+            border: 1px solid var(--secondary-accent); border-radius: 3px;
+        }
+        header h1 { /* Target specific h1 */
+            font-family: 'Creepster', cursive; font-size: 3.5rem; font-weight: normal;
+            color: var(--heading-color); text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); margin-bottom: 0.3rem; letter-spacing: 2px; line-height: 1;
+        }
+        header .subtitle { /* Target specific subtitle */
+            font-family: 'Special Elite', cursive; font-size: 1.3rem; color: var(--text-color); opacity: 0.8; line-height: 1.2;
+        }
+        /* --- Customization Panel --- */
+        .customization-panel {
+            background-color: rgba(0, 0, 0, 0.2); padding: 1.5rem 2rem; border-radius: 6px;
+            margin-bottom: 2.5rem; border: 1px dashed var(--secondary-accent);
+        }
+        .customization-panel legend {
+            font-family: 'Creepster', cursive; font-size: 1.8rem; color: var(--primary-accent);
+            padding: 0 1rem; margin-bottom: 1.5rem; text-align: left; width: auto; border: none;
+        }
+        .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; } /* Slightly wider minmax */
+        .option-group label { display: block; font-family: 'Special Elite', cursive; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-color); opacity: 0.9; }
+        .option-group select, .option-group textarea {
+            width: 100%; padding: 0.7rem 0.9rem; background-color: var(--input-bg); border: 1px solid var(--secondary-accent);
+            border-radius: 4px; color: var(--text-color); font-family: 'Roboto', sans-serif; font-size: 0.95rem;
+             transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .option-group select {
+             appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23a9a9a9' d='M6 8L0 2l1.4-1.4L6 5.2 10.6.6 12 2z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 0.7rem center;
+        }
+        .option-group textarea { min-height: 80px; resize: vertical; }
+        .option-group select:focus, .option-group textarea:focus { outline: none; border-color: var(--heading-color); box-shadow: 0 0 8px var(--shadow-color); }
+
+        /* --- Story Output (mostly unchanged) --- */
+        .story-output { display: flex; flex-direction: column; align-items: center; margin-top: 2rem; }
+        #image-container {
+            width: 100%; max-width: 450px; aspect-ratio: 16 / 10; background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 4px; overflow: hidden; margin-bottom: 2rem; position: relative;
+            border: 1px solid var(--secondary-accent); display: flex; justify-content: center; align-items: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #image-container.loading { border-color: var(--loading-color); animation: pulse-border 1.5s infinite ease-in-out; }
+        #story-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.9s ease-in-out; filter: saturate(0.8) contrast(1.1) brightness(0.9); }
+        #story-image.loaded { opacity: 1; }
+        #image-container.loading::before { content: ''; position: absolute; width: 40px; height: 40px; border: 4px solid rgba(229, 57, 53, 0.3); border-top-color: var(--heading-color); border-radius: 50%; animation: spin 1.2s linear infinite; z-index: 1; }
+        #image-container.failed { background-color: var(--error-bg); border-color: var(--primary-accent); color: var(--error-color); font-size: 0.9em; padding: 15px; text-align: center; animation: none; }
+        #image-container.failed::before { display: none; }
+        #story-text-container { width: 100%; background-color: rgba(0, 0, 0, 0.15); padding: 1.5rem 2rem; border-radius: 4px; border: 1px solid var(--secondary-accent); min-height: 150px; text-align: left; opacity: 0; transition: opacity 0.7s ease-in-out 0.3s; }
+        #story-text-container.visible { opacity: 1; }
+        #story-text { font-family: 'Roboto', sans-serif; font-weight: 300; font-size: 1.05rem; line-height: 1.8; color: #bdbdbd; white-space: pre-wrap; }
+        #story-text p { margin-bottom: 1.2em; }
+        #story-text p:last-child { margin-bottom: 0; }
+
+        /* --- Controls & Feedback (mostly unchanged) --- */
+        .controls { text-align: center; margin-top: 2.5rem; }
+        #generate-btn { font-family: 'Creepster', cursive; font-size: 1.5rem; letter-spacing: 1px; padding: 10px 40px; color: var(--bg-color); background-color: var(--heading-color); border: 1px solid var(--primary-accent); border-radius: 4px; cursor: pointer; transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); box-shadow: 0 4px 15px rgba(183, 28, 28, 0.3); }
+        #generate-btn:hover:not(:disabled) { background-color: var(--primary-accent); border-color: var(--heading-color); transform: scale(1.03); box-shadow: 0 6px 20px var(--shadow-color); }
+        #generate-btn:active:not(:disabled) { transform: scale(1); }
+        #generate-btn:disabled { background-color: #555; color: #888; border-color: #444; cursor: wait; box-shadow: none; text-shadow: none; }
+        #feedback-area { min-height: 2em; margin-top: 2rem; text-align: center; font-size: 1rem; font-family: 'Special Elite', cursive; }
+        .loading-message { color: var(--loading-color); animation: pulse-text 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: var(--error-bg); padding: 8px 15px; border-radius: 5px; border: 1px solid var(--primary-accent); display: inline-block; }
+        .success-message { color: #81c784; }
+
+        /* --- Footer (unchanged) --- */
+        footer { margin-top: 3rem; font-size: 0.9rem; color: #666; text-align: center; font-family: 'Roboto', sans-serif; }
+        footer a { color: var(--secondary-accent); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--heading-color); text-shadow: 0 0 5px var(--shadow-color); }
+        /* --- Animations (unchanged) --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes pulse-border { 0%, 100% { border-color: var(--loading-color); box-shadow: 0 0 5px rgba(229, 57, 53, 0.2); } 50% { border-color: var(--primary-accent); box-shadow: 0 0 15px rgba(229, 57, 53, 0.4); } }
+        /* --- Responsive (adjustments) --- */
+        @media (max-width: 768px) {
+            .container { padding: 2rem 1.5rem; }
+            header h1 { font-size: 2.8rem; }
+            header .subtitle { font-size: 1.1rem; }
+            .options-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } /* Adjust minmax */
+            #image-container { max-width: 100%; aspect-ratio: 1 / 1; }
+            .header-section { flex-direction: column; align-items: center; text-align: center;} /* Stack header */
+            .header-text { text-align: center; margin-bottom: 1rem;}
+            .ui-language-switcher { margin-top: 0;}
+        }
+         @media (max-width: 480px) {
+             body { padding: 1rem; }
+             .container { padding: 1.5rem 1rem; }
+             header h1 { font-size: 2.2rem; }
+             header .subtitle { font-size: 1rem; }
+              #generate-btn { font-size: 1.2rem; padding: 8px 30px; }
+              .options-grid { grid-template-columns: 1fr; } /* Ensure stacking */
+         }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-section">
+            <div class="header-text">
+                <h1 id="main-title">Nightmare Weaver</h1>
+                <p class="subtitle" id="main-subtitle">Generador de Historias de Terror IA</p>
+            </div>
+            <div class="ui-language-switcher">
+                 <label for="ui-language" id="ui-lang-label">Idioma Interfaz:</label>
+                 <select id="ui-language" name="ui-language">
+                     <option value="es" selected>Español</option>
+                     <option value="en">English</option>
+                 </select>
+             </div>
+        </div>
+
+        <form id="horror-form">
+            <fieldset class="customization-panel">
+                <legend id="customize-legend">Personaliza Tu Terror</legend>
+                <div class="options-grid">
+                    <!-- Existing Options -->
+                    <div class="option-group">
+                        <label for="subgenre" id="subgenre-label">Subgénero:</label>
+                        <select id="subgenre" name="subgenre">
+                             <option value="ghost story" selected>Historia de Fantasmas</option>
+                            <option value="cosmic horror">Horror Cósmico</option>
+                            <option value="psychological thriller">Thriller Psicológico</option>
+                            <option value="slasher">Slasher</option>
+                            <option value="folk horror">Horror Folclórico</option>
+                            <option value="body horror">Horror Corporal</option>
+                            <option value="creature feature">Película de Monstruos</option>
+                            <option value="haunted house">Casa Encantada</option>
+                            <option value="found footage style">Estilo Metraje Encontrado</option>
+                            <option value="urban legend">Leyenda Urbana</option>
+                            <option value="gothic horror">Horror Gótico</option>
+                        </select>
+                    </div>
+                     <div class="option-group">
+                        <label for="setting" id="setting-label">Escenario:</label>
+                        <select id="setting" name="setting">
+                            <option value="abandoned hospital" selected>Hospital Abandonado</option>
+                            <option value="foggy forest">Bosque Nebuloso</option>
+                            <option value="old victorian mansion">Vieja Mansión Victoriana</option>
+                            <option value="isolated cabin in the woods">Cabaña Aislada</option>
+                            <option value="creepy abandoned carnival">Carnaval Abandonado</option>
+                            <option value="derelict spaceship">Nave Espacial Abandonada</option>
+                            <option value="flooded underwater city">Ciudad Submarina Inundada</option>
+                            <option value="seemingly normal suburban house">Casa Suburbana Normal</option>
+                            <option value="ancient catacombs">Catacumbas Antiguas</option>
+                            <option value="desolate cornfield">Maizal Desolado</option>
+                            <option value="empty research facility">Instalación de Investigación Vacía</option>
+                        </select>
+                    </div>
+                     <div class="option-group">
+                        <label for="protagonist" id="protagonist-label">Tipo de Protagonista:</label>
+                        <select id="protagonist" name="protagonist">
+                           <option value="skeptic" selected>Escéptico/a</option>
+                            <option value="believer">Creyente</option>
+                            <option value="curious child">Niño/a Curioso/a</option>
+                            <option value="paranormal investigator">Investigador/a Paranormal</option>
+                            <option value="lone survivor">Único/a Sobreviviente</option>
+                            <option value="group of lost friends">Grupo de Amigos Perdidos</option>
+                            <option value="jaded detective">Detective Cansado/a</option>
+                             <option value="research scientist">Científico/a Investigador/a</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="antagonist" id="antagonist-label">Antagonista / Miedo Central:</label>
+                        <select id="antagonist" name="antagonist">
+                             <option value="vengeful ghost" selected>Fantasma Vengativo</option>
+                            <option value="unknowable cosmic entity">Entidad Cósmica Incognoscible</option>
+                            <option value="internal psychological decay">Decadencia Psicológica Interna</option>
+                            <option value="grotesque monster">Monstruo Grotesco</option>
+                            <option value="masked human killer">Asesino Humano Enmascarado</option>
+                            <option value="ancient curse">Maldición Antigua</option>
+                            <option value="unsettling atmosphere itself">La Atmósfera Inquietante Misma</option>
+                             <option value="body mutation">Mutación Corporal</option>
+                             <option value="malevolent AI">IA Malévola</option>
+                             <option value="possessed object">Objeto Poseído</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="mood" id="mood-label">Ambiente Principal:</label>
+                        <select id="mood" name="mood">
+                             <option value="suspenseful and tense" selected>Suspense / Tensión</option>
+                            <option value="filled with dread and unease">Pavor / Inquietud</option>
+                            <option value="atmospheric and eerie">Atmosférico / Espeluznante</option>
+                            <option value="gory and visceral">Sangriento / Visceral</option>
+                            <option value="melancholic and unsettling">Melancólico / Inquietante</option>
+                            <option value="fast-paced and frantic">Rápido / Frenético</option>
+                            <option value="surreal and dreamlike">Surrealista / Onírico</option>
+                        </select>
+                    </div>
+                     <div class="option-group">
+                        <label for="length" id="length-label">Longitud de la Historia:</label>
+                        <select id="length" name="length">
+                             <option value="very short vignette (1-2 paragraphs)" selected>Viñeta (1-2 párrafos)</option>
+                            <option value="short scene (3-4 paragraphs)">Escena Corta (3-4 párrafos)</option>
+                            <option value="medium length (5-6 paragraphs)">Mediana (5-6 párrafos)</option>
+                        </select>
+                    </div>
+                    <!-- NEW: Story Language -->
+                    <div class="option-group">
+                        <label for="story-language" id="story-language-label">Idioma de la Historia:</label>
+                        <select id="story-language" name="story-language">
+                            <option value="Spanish" selected>Español</option>
+                            <option value="English">English</option>
+                            <option value="French">Français</option>
+                            <option value="German">Deutsch</option>
+                            <option value="Italian">Italiano</option>
+                            <option value="Portuguese">Português</option>
+                            <option value="Japanese">日本語 (Japonés)</option>
+                            <option value="Russian">Русский (Ruso)</option>
+                            <option value="Korean">한국어 (Coreano)</option>
+                            <option value="Chinese">中文 (Chino)</option>
+                            <!-- Add more as needed -->
+                        </select>
+                    </div>
+                </div>
+                 <!-- NEW: Extra Details Textarea -->
+                 <div class="option-group full-width-option"> <!-- Optional class for styling -->
+                     <label for="extra-details" id="extra-details-label">Detalles Adicionales (Opcional):</label>
+                     <textarea id="extra-details" name="extra-details" rows="3" placeholder="Ej: protagonista llamado John, quiere encontrar un medallón perdido..."></textarea>
+                 </div>
+            </fieldset>
+
+            <div class="controls">
+                <button id="generate-btn" type="button">Tejer Pesadilla</button>
+            </div>
+        </form>
+
+        <section class="story-output">
+            <div id="image-container" class="image-container">
+                <!-- Story image will be loaded here -->
+            </div>
+            <div id="story-text-container">
+                <div id="story-text" data-placeholder-key="storyPlaceholder">Tu historia de terror generada aparecerá aquí...</div>
+            </div>
+        </section>
+
+        <div id="feedback-area" aria-live="polite"></div>
+
+    </div>
+
+    <footer>
+         <span id="footer-powered">Impulsado por</span> <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | <span id="footer-conjured">Conjurado para</span> <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const horrorForm = document.getElementById('horror-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const imageContainer = document.getElementById('image-container');
+        const storyTextContainer = document.getElementById('story-text-container');
+        const storyTextDiv = document.getElementById('story-text');
+        const feedbackArea = document.getElementById('feedback-area');
+        const uiLanguageSelector = document.getElementById('ui-language');
+        // --- Configuration --- (Unchanged)
+        const TEXT_API_BASE_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 768; const IMAGE_HEIGHT = 480; const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500; const API_TIMEOUT_MS = 70000; // Increased timeout slightly
+        const IMAGE_LOAD_TIMEOUT_MS = 50000;
+
+        // --- NEW: UI Text Translations ---
+        const uiTexts = {
+            es: {
+                pageTitle: "Nightmare Weaver - Generador de Historias de Terror IA | PapitasFritas.com",
+                mainTitle: "Nightmare Weaver",
+                mainSubtitle: "Generador de Historias de Terror IA",
+                uiLangLabel: "Idioma Interfaz:",
+                customizeLegend: "Personaliza Tu Terror",
+                subgenreLabel: "Subgénero:",
+                subgenre_ghost: "Historia de Fantasmas", subgenre_cosmic: "Horror Cósmico", subgenre_psych: "Thriller Psicológico",
+                subgenre_slasher: "Slasher", subgenre_folk: "Horror Folclórico", subgenre_body: "Horror Corporal",
+                subgenre_creature: "Película de Monstruos", subgenre_house: "Casa Encantada", subgenre_footage: "Estilo Metraje Encontrado",
+                subgenre_legend: "Leyenda Urbana", subgenre_gothic: "Horror Gótico",
+                settingLabel: "Escenario:",
+                setting_hospital: "Hospital Abandonado", setting_forest: "Bosque Nebuloso", setting_mansion: "Vieja Mansión Victoriana",
+                setting_cabin: "Cabaña Aislada", setting_carnival: "Carnaval Abandonado", setting_ship: "Nave Espacial Abandonada",
+                setting_city: "Ciudad Submarina Inundada", setting_suburban: "Casa Suburbana Normal", setting_catacombs: "Catacumbas Antiguas",
+                setting_cornfield: "Maizal Desolado", setting_facility: "Instalación de Investigación Vacía",
+                protagonistLabel: "Tipo de Protagonista:",
+                protagonist_skeptic: "Escéptico/a", protagonist_believer: "Creyente", protagonist_child: "Niño/a Curioso/a",
+                protagonist_investigator: "Investigador/a Paranormal", protagonist_survivor: "Único/a Sobreviviente",
+                protagonist_friends: "Grupo de Amigos Perdidos", protagonist_detective: "Detective Cansado/a", protagonist_scientist: "Científico/a Investigador/a",
+                antagonistLabel: "Antagonista / Miedo Central:",
+                antagonist_ghost: "Fantasma Vengativo", antagonist_entity: "Entidad Cósmica Incognoscible", antagonist_decay: "Decadencia Psicológica Interna",
+                antagonist_monster: "Monstruo Grotesco", antagonist_killer: "Asesino Humano Enmascarado", antagonist_curse: "Maldición Antigua",
+                antagonist_atmosphere: "La Atmósfera Inquietante Misma", antagonist_mutation: "Mutación Corporal", antagonist_ai: "IA Malévola", antagonist_object: "Objeto Poseído",
+                moodLabel: "Ambiente Principal:",
+                mood_suspense: "Suspense / Tensión", mood_dread: "Pavor / Inquietud", mood_atmos: "Atmosférico / Espeluznante",
+                mood_gory: "Sangriento / Visceral", mood_melancholic: "Melancólico / Inquietante", mood_fast: "Rápido / Frenético", mood_surreal: "Surrealista / Onírico",
+                lengthLabel: "Longitud de la Historia:",
+                length_vignette: "Viñeta (1-2 párrafos)", length_short: "Escena Corta (3-4 párrafos)", length_medium: "Mediana (5-6 párrafos)",
+                storyLanguageLabel: "Idioma de la Historia:",
+                extraDetailsLabel: "Detalles Adicionales (Opcional):",
+                extraDetailsPlaceholder: "Ej: protagonista llamado John, quiere encontrar un medallón perdido...",
+                generateButton: "Tejer Pesadilla",
+                generateButtonGenerating: "Conjurando...",
+                storyPlaceholder: "Tu historia de terror generada aparecerá aquí...",
+                loadingMessage: "Tejiendo hilos de terror...",
+                successMessage: "La pesadilla ha sido tejida...",
+                errorFetch: "Error al contactar la API. Inténtalo de nuevo.",
+                errorImage: "Error al conjurar la imagen.",
+                errorTimeout: "La solicitud a la API tardó demasiado.",
+                errorGeneric: "Falló el tejido de la pesadilla. Por favor, inténtalo de nuevo.",
+                errorImageFinal: "No se pudo cargar la ilustración después de varios intentos.",
+                errorImageRetryPlaceholder: "Fallo al conjurar imagen.<br>Por favor, inténtalo de nuevo.",
+                footerPowered: "Impulsado por",
+                footerConjured: "Conjurado para"
+            },
+            en: {
+                 pageTitle: "Nightmare Weaver - AI Horror Story Generator | PapitasFritas.com",
+                mainTitle: "Nightmare Weaver",
+                mainSubtitle: "AI Horror Story & Illustration Generator",
+                uiLangLabel: "Interface Language:",
+                customizeLegend: "Customize Your Terror",
+                subgenreLabel: "Subgenre:",
+                 subgenre_ghost: "Ghost Story", subgenre_cosmic: "Cosmic Horror", subgenre_psych: "Psychological Thriller",
+                 subgenre_slasher: "Slasher", subgenre_folk: "Folk Horror", subgenre_body: "Body Horror",
+                 subgenre_creature: "Creature Feature", subgenre_house: "Haunted House", subgenre_footage: "Found Footage Style",
+                 subgenre_legend: "Urban Legend", subgenre_gothic: "Gothic Horror",
+                settingLabel: "Setting:",
+                setting_hospital: "Abandoned Hospital", setting_forest: "Foggy Forest", setting_mansion: "Old Victorian Mansion",
+                setting_cabin: "Isolated Cabin", setting_carnival: "Creepy Carnival", setting_ship: "Derelict Spaceship",
+                setting_city: "Flooded Underwater City", setting_suburban: "Suburban House", setting_catacombs: "Ancient Catacombs",
+                setting_cornfield: "Desolate Cornfield", setting_facility: "Empty Research Facility",
+                protagonistLabel: "Protagonist Type:",
+                protagonist_skeptic: "Skeptic", protagonist_believer: "Believer", protagonist_child: "Curious Child",
+                protagonist_investigator: "Paranormal Investigator", protagonist_survivor: "Lone Survivor",
+                protagonist_friends: "Group of Friends", protagonist_detective: "Jaded Detective", protagonist_scientist: "Research Scientist",
+                antagonistLabel: "Antagonist / Core Fear:",
+                antagonist_ghost: "Vengeful Ghost", antagonist_entity: "Cosmic Entity", antagonist_decay: "Psychological Decay",
+                antagonist_monster: "Grotesque Monster", antagonist_killer: "Masked Killer", antagonist_curse: "Ancient Curse",
+                antagonist_atmosphere: "Unsettling Atmosphere", antagonist_mutation: "Body Mutation", antagonist_ai: "Malevolent AI", antagonist_object: "Possessed Object",
+                moodLabel: "Primary Mood:",
+                 mood_suspense: "Suspenseful / Tense", mood_dread: "Dread / Unease", mood_atmos: "Atmospheric / Eerie",
+                 mood_gory: "Gory / Visceral", mood_melancholic: "Melancholic / Unsettling", mood_fast: "Fast-Paced / Frantic", mood_surreal: "Surreal / Dreamlike",
+                lengthLabel: "Story Length:",
+                length_vignette: "Vignette (1-2 paragraphs)", length_short: "Short Scene (3-4 paragraphs)", length_medium: "Medium (5-6 paragraphs)",
+                storyLanguageLabel: "Story Language:",
+                extraDetailsLabel: "Additional Details (Optional):",
+                extraDetailsPlaceholder: "E.g.: protagonist named John, wants to find a lost locket...",
+                generateButton: "Weave Nightmare",
+                generateButtonGenerating: "Conjuring...",
+                storyPlaceholder: "Your generated horror story will appear here...",
+                loadingMessage: "Weaving threads of terror...",
+                successMessage: "The nightmare has been woven...",
+                errorFetch: "Error contacting the API. Please try again.",
+                errorImage: "Error conjuring the image.",
+                errorTimeout: "API request timed out.",
+                errorGeneric: "Failed to weave the nightmare. Please try again.",
+                errorImageFinal: "Could not load the illustration after several attempts.",
+                 errorImageRetryPlaceholder: "Failed to conjure image.<br>Please try again.",
+                footerPowered: "Powered by",
+                footerConjured: "Conjured for"
+            }
+        };
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        uiLanguageSelector.addEventListener('change', (e) => setUILanguage(e.target.value));
+
+        // --- NEW: UI Language Function ---
+        function setUILanguage(lang) {
+            if (!uiTexts[lang]) return; // Safety check
+            const texts = uiTexts[lang];
+
+            document.title = texts.pageTitle; // Update page title
+
+            // Update elements by ID
+            document.getElementById('main-title').textContent = texts.mainTitle;
+            document.getElementById('main-subtitle').textContent = texts.mainSubtitle;
+            document.getElementById('ui-lang-label').textContent = texts.uiLangLabel;
+            document.getElementById('customize-legend').textContent = texts.customizeLegend;
+            document.getElementById('subgenre-label').textContent = texts.subgenreLabel;
+            document.getElementById('setting-label').textContent = texts.settingLabel;
+            document.getElementById('protagonist-label').textContent = texts.protagonistLabel;
+            document.getElementById('antagonist-label').textContent = texts.antagonistLabel;
+            document.getElementById('mood-label').textContent = texts.moodLabel;
+            document.getElementById('length-label').textContent = texts.lengthLabel;
+            document.getElementById('story-language-label').textContent = texts.storyLanguageLabel;
+            document.getElementById('extra-details-label').textContent = texts.extraDetailsLabel;
+            document.getElementById('extra-details').placeholder = texts.extraDetailsPlaceholder;
+            document.getElementById('generate-btn').textContent = texts.generateButton; // Initial button text
+            document.getElementById('footer-powered').textContent = texts.footerPowered;
+            document.getElementById('footer-conjured').textContent = texts.footerConjured;
+
+             // Update story placeholder if it's currently visible
+             const storyPlaceholderKey = storyTextDiv.dataset.placeholderKey;
+             if(storyPlaceholderKey && storyTextDiv.textContent === uiTexts[lang === 'es' ? 'en' : 'es'][storyPlaceholderKey]) {
+                 storyTextDiv.textContent = texts[storyPlaceholderKey];
+             }
+
+
+            // Update options within select elements
+            const updateSelectOptions = (selectId, prefix) => {
+                const select = document.getElementById(selectId);
+                Array.from(select.options).forEach(option => {
+                    const key = `${prefix}_${option.value.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/gi, '')}`; // Create a simplified key
+                    if (texts[key]) {
+                        option.textContent = texts[key];
+                    }
+                });
+            };
+
+            updateSelectOptions('subgenre', 'subgenre');
+            updateSelectOptions('setting', 'setting');
+            updateSelectOptions('protagonist', 'protagonist');
+            updateSelectOptions('antagonist', 'antagonist');
+            updateSelectOptions('mood', 'mood');
+            updateSelectOptions('length', 'length');
+
+             // Store preference (optional)
+             // localStorage.setItem('preferredLang', lang);
+        }
+
+
+        // --- Core Logic ---
+        async function handleGeneration() {
+            const currentLang = uiLanguageSelector.value; // Get current UI language
+            clearPreviousState();
+            showFeedback('loading', uiTexts[currentLang].loadingMessage);
+            generateBtn.disabled = true;
+            generateBtn.textContent = uiTexts[currentLang].generateButtonGenerating;
+
+            const formData = new FormData(horrorForm);
+            const options = Object.fromEntries(formData.entries());
+            console.log("Selected Options:", options);
+
+            // --- 1. Generate Story Text ---
+            let textPrompt = `Write a ${options.length} ${options.subgenre} horror story in ${options['story-language']}. Setting: ${options.setting}. Protagonist: ${options.protagonist}. Antagonist/Fear: ${options.antagonist}. Primary Mood: ${options.mood}.`;
+
+            // Add extra details if provided
+            if (options['extra-details'] && options['extra-details'].trim().length > 0) {
+                textPrompt += ` Incorporate these specific details: "${options['extra-details'].trim()}".`;
+            }
+
+             textPrompt += ` Write ONLY the story narrative, separating paragraphs clearly with newlines. Do NOT include any introductory or concluding remarks, comments, or titles. Just the story in ${options['story-language']}.`;
+            console.log("Text API Prompt:", textPrompt);
+
+            try {
+                const storyRaw = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(textPrompt), { isText: true, timeout: API_TIMEOUT_MS });
+                const cleanedStory = cleanApiResponse(storyRaw);
+                const formattedStory = cleanedStory.split('\n').map(p => p.trim()).filter(p => p.length > 0).map(p => `<p>${p}</p>`).join('');
+                storyTextDiv.innerHTML = formattedStory || `<p>${uiTexts[currentLang].errorGeneric}</p>`; // Fallback uses UI lang
+                storyTextContainer.classList.add('visible');
+                console.log("Generated Story Snippet:", cleanedStory.substring(0, 100) + "...");
+
+                // --- 2. Generate Image ---
+                const imagePrompt = `${options.setting}, ${options.antagonist}, ${options.mood}, ${options.subgenre} style, dark atmosphere, horror illustration, mysterious, eerie, unsettling, cinematic lighting, low light, digital painting`;
+                const negativePrompt = "text, words, letters, bright colors, cartoon, drawing, sketch, happy, cheerful, multiple people, signature, watermark";
+                const seed = Math.floor(Math.random() * 1000000);
+                const imageUrl = `${IMAGE_API_BASE_URL}${encodeURIComponent(imagePrompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true&negative_prompt=${encodeURIComponent(negativePrompt)}`;
+                console.log("Image API URL:", imageUrl);
+
+                loadImageWithRetry(imageUrl, imagePrompt);
+
+            } catch (error) {
+                console.error("Error during generation:", error);
+                let errorKey = 'errorGeneric';
+                 if (error.message.includes('timed out')) errorKey = 'errorTimeout';
+                 else if (error.message.includes('HTTP error')) errorKey = 'errorFetch';
+                showFeedback('error', uiTexts[currentLang][errorKey]);
+                resetUI();
+            }
+        }
+
+        // --- Fetch with Retry (Handles Text/Generic API Calls) ---
+        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+            // ... (Fetch logic remains the same as previous version, including AbortController)
+            const { isText = false, timeout = API_TIMEOUT_MS } = options;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            try {
+                console.log(`Fetching: ${url} (Retries left: ${retries}, Timeout: ${timeout}ms)`);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status} (${response.statusText})`);
+                }
+                return isText ? await response.text() : response;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    console.error(`Fetch aborted due to timeout (${timeout}ms): ${url}`);
+                     throw new Error(`API request timed out after ${timeout/1000}s.`); // Keep specific error message
+                }
+                if (retries > 0) {
+                    console.warn(`Fetch failed, retrying in ${RETRY_DELAY_MS}ms...`, error);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    return fetchWithRetry(url, options, retries - 1);
+                } else {
+                    console.error("Max retries reached for fetch.");
+                    throw error;
+                }
+            }
+        }
+
+
+        // --- Image Loading Logic (Creates new img element) ---
+         function loadImageWithRetry(url, promptForAlt) {
+            // ... (Image loading logic remains the same as previous version)
+             let currentRetries = 0;
+            const imgElement = document.createElement('img');
+            imgElement.id = 'story-image';
+            imgElement.alt = `Horror illustration related to: ${promptForAlt}`; // Alt text in English usually fine
+
+            function attemptLoad(currentAttempt) {
+                let timeoutId;
+                console.log(`Attempting image load (Attempt ${currentAttempt}/${MAX_RETRIES + 1}): ${url}`);
+
+                imageContainer.innerHTML = '';
+                imageContainer.classList.add('loading');
+                imageContainer.classList.remove('failed', 'loaded');
+                imageContainer.appendChild(imgElement);
+
+                imgElement.src = '';
+                imgElement.classList.remove('loaded');
+
+                imgElement.onload = () => {
+                    clearTimeout(timeoutId);
+                    console.log("Image loaded successfully.");
+                    imageContainer.classList.remove('loading', 'failed');
+                    imageContainer.classList.add('loaded');
+                    imgElement.classList.add('loaded');
+                    showFeedback('success', uiTexts[uiLanguageSelector.value].successMessage);
+                    resetUI(true);
+                };
+
+                imgElement.onerror = () => {
+                    clearTimeout(timeoutId);
+                    console.error(`Image load error (Attempt ${currentAttempt}): ${url}`);
+                    handleFailure('Image load error');
+                };
+
+                imgElement.src = url;
+
+                timeoutId = setTimeout(() => {
+                    if (!imgElement.complete || imgElement.naturalHeight === 0) {
+                        console.warn(`Image load timeout (Attempt ${currentAttempt}): ${url}`);
+                        imgElement.src = '';
+                        handleFailure('Image load timeout');
+                    }
+                }, IMAGE_LOAD_TIMEOUT_MS);
+            }
+
+            function handleFailure(reason) {
+                currentRetries++;
+                if (currentRetries <= MAX_RETRIES) {
+                    console.warn(`Image load failed: ${reason}. Retrying (${currentRetries}/${MAX_RETRIES})...`);
+                    imageContainer.classList.add('loading');
+                    imageContainer.classList.remove('failed');
+                    imageContainer.innerHTML = '';
+                    imageContainer.appendChild(imgElement);
+
+                    setTimeout(() => attemptLoad(currentRetries + 1), RETRY_DELAY_MS * Math.pow(2, currentRetries - 1));
+                } else {
+                    const currentLang = uiLanguageSelector.value;
+                    console.error(`Max retries reached for image. Reason: ${reason}`);
+                    imageContainer.classList.remove('loading', 'loaded');
+                    imageContainer.classList.add('failed');
+                    imageContainer.innerHTML = uiTexts[currentLang].errorImageRetryPlaceholder; // Use translated message
+                    showFeedback('error', uiTexts[currentLang].errorImageFinal);
+                    resetUI();
+                }
+            }
+            attemptLoad(1);
+        }
+
+        // --- Utility Functions ---
+        function cleanApiResponse(text) {
+             // ... (Cleaning logic remains the same)
+             let cleaned = text.trim();
+            const patternsToRemove = [
+                /^Here's a story based on your prompt:/i, /^Here's a horror story:/i, /^Okay, here's the story:/i,
+                /I hope you find this story unsettling./i, /Enjoy the horror\./i, /\[End of story\]/i, /^Story:/i,
+                 // Add patterns for other languages if needed, e.g.:
+                 /^Aquí tienes una historia de terror:/i, /^Voilà une histoire d'horreur:/i
+            ];
+            patternsToRemove.forEach(pattern => { cleaned = cleaned.replace(pattern, ''); });
+            if (cleaned.startsWith('"') && cleaned.endsWith('"')) { cleaned = cleaned.substring(1, cleaned.length - 1); }
+            return cleaned.trim();
+        }
+
+        function clearPreviousState() {
+            feedbackArea.innerHTML = '';
+            imageContainer.innerHTML = '';
+            imageContainer.classList.remove('loaded', 'failed', 'loading');
+            storyTextContainer.classList.remove('visible');
+            const currentLang = uiLanguageSelector.value;
+            storyTextDiv.textContent = uiTexts[currentLang].storyPlaceholder; // Reset placeholder using current lang
+            storyTextDiv.dataset.placeholderKey = 'storyPlaceholder'; // Store key for potential lang change while empty
+        }
+
+        function showFeedback(type, message) {
+            feedbackArea.innerHTML = '';
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.className = `${type}-message`;
+            feedbackArea.appendChild(messageElement);
+            if (type === 'success') {
+                setTimeout(() => {
+                    if (messageElement.parentNode === feedbackArea) {
+                         feedbackArea.removeChild(messageElement);
+                    }
+                }, 4000);
+            }
+        }
+
+        function resetUI(keepContent = false) {
+            const currentLang = uiLanguageSelector.value;
+            generateBtn.disabled = false;
+            generateBtn.textContent = uiTexts[currentLang].generateButton; // Reset button text using current lang
+            if (!keepContent) {
+                imageContainer.classList.remove('loading', 'loaded', 'failed');
+                imageContainer.innerHTML = '';
+                storyTextContainer.classList.remove('visible');
+                storyTextDiv.textContent = uiTexts[currentLang].storyPlaceholder;
+                storyTextDiv.dataset.placeholderKey = 'storyPlaceholder';
+
+            } else {
+                imageContainer.classList.remove('loading');
+                 if(feedbackArea.querySelector('.loading-message')) {
+                     feedbackArea.innerHTML = '';
+                 }
+            }
+        }
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial UI language
+            // const preferredLang = localStorage.getItem('preferredLang') || 'es'; // Optional: load preference
+            const preferredLang = 'es';
+             uiLanguageSelector.value = preferredLang;
+            setUILanguage(preferredLang);
+             // Set initial placeholder text correctly
+            storyTextDiv.textContent = uiTexts[preferredLang].storyPlaceholder;
+            storyTextDiv.dataset.placeholderKey = 'storyPlaceholder';
+
+
+            // Preconnect
+            ['https://text.pollinations.ai', 'https://image.pollinations.ai'].forEach(url => {
+                const link = document.createElement('link'); link.rel = 'preconnect'; link.href = url; document.head.appendChild(link);
+            });
+        });
+
+    </script>
+
+</body>
+</html>

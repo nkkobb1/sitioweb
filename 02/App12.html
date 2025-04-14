@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title -->
+    <title>Visual Dream Journal AI - Ilustra Tus Sueños con IA | Papitas Fritas</title>
+    <!-- Meta Description (IMPORTANTE para SEO) -->
+    <meta name="description" content="Transforma tus sueños en arte visual con IA. Describe tu sueño y nuestro Visual Dream Journal AI generará una imagen única y de alta calidad para tu diario personal en PapitasFritas.com.">
+
+    <style>
+        /* --- Estilos Neón Futurista (Consistentes con ejemplos anteriores) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap');
+        :root {
+            --bg-color: #0a0a1a; --primary-neon: #ff00ff; /* Magenta */
+            --secondary-neon: #00f0ff; /* Cyan */
+            --accent-neon: #39ff14;    /* Verde brillante */
+            --error-neon: #ff4d4d;
+            --text-color: #e8e8e8; --border-color: rgba(0, 240, 255, 0.4);
+            --glow-primary: 0 0 6px var(--primary-neon), 0 0 12px var(--primary-neon), 0 0 18px rgba(255, 0, 255, 0.6);
+            --glow-secondary: 0 0 6px var(--secondary-neon), 0 0 12px var(--secondary-neon), 0 0 18px rgba(0, 240, 255, 0.6);
+            --glow-accent: 0 0 5px var(--accent-neon), 0 0 10px var(--accent-neon);
+            --glow-error: 0 0 5px var(--error-neon), 0 0 10px var(--error-neon);
+            --input-bg: rgba(10, 10, 30, 0.7);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Rajdhani', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 2rem; line-height: 1.6;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 0, 255, 0.08), transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 240, 255, 0.08), transparent 50%);
+            background-attachment: fixed;
+        }
+        .container {
+            background-color: rgba(10, 10, 30, 0.88); padding: 2.5rem 3rem; border-radius: 12px; border: 1px solid var(--border-color);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15), inset 0 0 10px rgba(255, 0, 255, 0.1);
+            width: 100%; max-width: 850px; /* Ajustado para layout de 1 imagen + texto */
+            backdrop-filter: blur(8px); text-align: center; margin-bottom: 2rem;
+        }
+        h1 { font-family: 'Orbitron', sans-serif; color: var(--primary-neon); text-shadow: var(--glow-primary); margin-bottom: 0.5em; font-size: 2.6rem; letter-spacing: 1px; }
+        .subtitle { color: var(--secondary-neon); margin-bottom: 2.5rem; font-weight: 400; font-size: 1.25rem; text-shadow: 0 0 5px var(--secondary-neon); }
+        .input-section label { display: block; margin-bottom: 0.8rem; color: var(--secondary-neon); font-weight: 600; text-align: left; font-size: 1.1rem; }
+        #dreamInput {
+            width: 100%; padding: 1rem 1.2rem; margin-bottom: 1.5rem; background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px;
+            color: var(--text-color); font-family: 'Rajdhani', sans-serif; font-size: 1rem; min-height: 120px; resize: vertical; transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+        #dreamInput:focus { outline: none; border-color: var(--primary-neon); box-shadow: var(--glow-primary), inset 0 1px 3px rgba(0,0,0,0.3); }
+        #generateBtn {
+            background: linear-gradient(60deg, var(--secondary-neon), var(--primary-neon)); color: var(--bg-color); border: none; padding: 0.9rem 2.2rem; font-family: 'Orbitron', sans-serif;
+            font-size: 1.15rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, opacity 0.3s; text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+            margin-top: 0.5rem; box-shadow: 0 0 12px rgba(0, 240, 255, 0.5), 0 0 12px rgba(255, 0, 255, 0.5);
+        }
+        #generateBtn:hover:not(:disabled) { transform: scale(1.04); box-shadow: var(--glow-secondary), var(--glow-primary); }
+        #generateBtn:active:not(:disabled) { transform: scale(1); }
+        #generateBtn:disabled { cursor: wait; opacity: 0.6; background: grey; box-shadow: none; }
+
+        /* --- Feedback Area --- */
+        #feedback { min-height: 30px; margin-top: 1.5rem; padding: 0.5rem; text-align: center; }
+        .loading-indicator, .error-message { padding: 0.8rem 1rem; border-radius: 5px; display: inline-block; font-weight: 600; }
+        .loading-indicator { color: var(--accent-neon); border: 1px dashed var(--accent-neon); animation: pulse 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-neon); background-color: rgba(255, 77, 77, 0.1); border: 1px solid var(--error-neon); }
+        .success-message { color: var(--accent-neon); background-color: rgba(57, 255, 20, 0.1); border: 1px solid var(--accent-neon); }
+
+
+        /* --- Dream Entry Display Area --- */
+        #dreamEntryContainer {
+            margin-top: 2.5rem; background-color: rgba(15, 15, 35, 0.5); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(0, 240, 255, 0.2);
+            display: none; /* Hidden initially */
+            flex-direction: column; /* Stack text and image on small screens */
+            gap: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+        #dreamEntryContainer.visible {
+             display: flex; /* Changed to flex for larger screens */
+             opacity: 1;
+        }
+         /* Layout for larger screens */
+        @media (min-width: 768px) {
+            #dreamEntryContainer.visible {
+                 flex-direction: row;
+                 align-items: flex-start; /* Align items at the top */
+            }
+            .dream-text-wrapper { flex: 1; /* Takes available space */ }
+            .image-wrapper { flex-shrink: 0; /* Prevents image wrapper from shrinking */ width: 300px; /* Fixed width or max-width */ }
+        }
+        @media (min-width: 900px) {
+             .image-wrapper { width: 350px; }
+        }
+
+        .dream-text-wrapper {
+            text-align: left;
+        }
+        .dream-text-wrapper h2 {
+             color: var(--secondary-neon); margin-bottom: 0.8rem; font-family: 'Orbitron', sans-serif; font-size: 1.3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3rem;
+        }
+        .dream-text {
+             background-color: rgba(0,0,0,0.2); padding: 1rem; border-radius: 4px; line-height: 1.7; font-size: 1rem; white-space: pre-wrap; /* Preserve line breaks */ word-wrap: break-word; /* Handle long words */
+             max-height: 350px; /* Limit height and allow scrolling if needed */
+             overflow-y: auto;
+             border-left: 3px solid var(--primary-neon);
+        }
+
+        /* --- Image Wrapper (Holds the single image) --- */
+        .image-wrapper {
+            position: relative; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+            background-color: var(--input-bg); aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; cursor: pointer; text-align: center; width: 100%; /* Full width on small screens */ max-width: 400px; /* Limit size */ margin: 0 auto; /* Center */
+        }
+        .image-wrapper.failed { cursor: not-allowed; }
+        .image-wrapper:hover:not(.failed) { transform: scale(1.03); box-shadow: var(--glow-secondary); border-color: var(--secondary-neon); }
+        .image-wrapper img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .image-wrapper img.loaded { opacity: 1; }
+
+        /* Spinner inside image wrapper */
+        .image-wrapper.loading::before {
+            content: ''; position: absolute; width: 40px; height: 40px; border: 4px solid rgba(0, 240, 255, 0.3); border-top-color: var(--secondary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 3;
+        }
+        /* Hide spinner when loaded or failed */
+        .image-wrapper.img-loaded::before, .image-wrapper.failed::before { display: none; }
+        /* Error state styling */
+        .image-wrapper.failed { border-color: var(--error-neon); box-shadow: var(--glow-error); color: var(--error-neon); font-size: 0.9em; padding: 10px; }
+        .image-wrapper.failed img { opacity: 0; display: none; } /* Hide broken image */
+        .retry-info { font-size: 0.9em; color: var(--secondary-neon); margin-top: 5px; }
+        .error-content { /* Wrapper for error messages inside */ }
+
+        /* --- Lightbox (Same as before) --- */
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
+        #lightbox.active { display: flex; }
+        #lightbox img { display: block; max-width: 90%; max-height: 90%; object-fit: contain; border: 3px solid var(--secondary-neon); box-shadow: var(--glow-secondary); }
+        #lightbox .close-btn { position: absolute; top: 25px; right: 35px; font-size: 3rem; color: var(--text-color); cursor: pointer; line-height: 1; transition: color 0.3s, text-shadow 0.3s; text-shadow: 0 0 8px rgba(0, 0, 0, 0.8); }
+        #lightbox .close-btn:hover { color: var(--primary-neon); text-shadow: var(--glow-primary); }
+
+        /* --- Footer --- */
+        footer { margin-top: 3rem; font-size: 0.9rem; color: rgba(224, 224, 224, 0.7); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: text-shadow 0.3s; }
+        footer a:hover { text-shadow: var(--glow-secondary); }
+
+        /* --- Animations --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 767px) {
+             .container { padding: 1.5rem; } h1 { font-size: 2rem; } .subtitle { font-size: 1.1rem; margin-bottom: 1.5rem; }
+             #dreamEntryContainer.visible { flex-direction: column; }
+             .image-wrapper { width: 100%; max-width: 300px; } /* Adjust max width on small screens */
+             .dream-text-wrapper h2 { font-size: 1.1rem; }
+             .dream-text { font-size: 0.95rem; max-height: 250px; }
+             #lightbox .close-btn { top: 15px; right: 20px; font-size: 2.2rem; }
+        }
+         @media (max-width: 480px) {
+             body { padding: 1rem; } .container { padding: 1.5rem 1rem; } h1 { font-size: 1.8rem; } .subtitle { font-size: 1rem; }
+             #generateBtn { font-size: 1rem; padding: 0.8rem 1.8rem; }
+             .image-wrapper { max-width: 100%; /* Allow full width if needed */ }
+         }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Visual Dream Journal AI</h1>
+        <p class="subtitle">Convierte la descripción de tus sueños en arte visual único</p>
+
+        <div class="input-section">
+            <label for="dreamInput">Describe tu sueño:</label>
+            <textarea id="dreamInput" placeholder="Ej: Estaba volando sobre una ciudad hecha de nubes rosadas, perseguido por pájaros de origami..." rows="4"></textarea>
+        </div>
+
+        <button id="generateBtn">Visualizar Sueño</button>
+
+        <!-- Area for global feedback -->
+        <div id="feedback"></div>
+
+    </div>
+
+    <!-- Container for the generated dream entry (text + image) -->
+    <div id="dreamEntryContainer">
+        <!-- Content will be dynamically inserted here -->
+        <!-- Example Structure:
+        <div class="dream-text-wrapper">
+            <h2>Tu Sueño:</h2>
+            <div class="dream-text">...</div>
+        </div>
+        <div class="image-wrapper loading">
+             <img src="..." alt="..." class="loaded">
+        </div>
+        -->
+    </div>
+
+    <!-- Lightbox Structure -->
+    <div id="lightbox">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="Sueño Visualizado - Imagen Ampliada">
+    </div>
+
+    <footer>
+        Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | Una herramienta de <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- Element References ---
+        const dreamInput = document.getElementById('dreamInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const feedbackDiv = document.getElementById('feedback');
+        const dreamEntryContainer = document.getElementById('dreamEntryContainer');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.querySelector('#lightbox .close-btn');
+
+        // --- Configuration ---
+        const IMAGE_WIDTH = 1024; // High Quality
+        const IMAGE_HEIGHT = 1024; // High Quality
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500;
+        const IMAGE_LOAD_TIMEOUT_MS = 60000; // Increased timeout for potentially larger images
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        // Optional: Allow Shift+Enter for newlines in textarea, Enter to submit
+        dreamInput.addEventListener('keydown', (event) => {
+             if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault(); // Prevent default newline on Enter
+                  handleGeneration();
+            }
+        });
+
+        // --- Core Generation Logic ---
+        function handleGeneration() {
+            const dreamText = dreamInput.value.trim();
+            if (!dreamText) {
+                showFeedback('error', 'Por favor, describe tu sueño primero.');
+                return;
+            }
+
+            // --- ALWAYS generate a new random seed ---
+            const seed = Math.floor(Math.random() * 1000000);
+            console.log(`Generating with Seed: ${seed}`);
+
+            clearFeedback();
+            showFeedback('loading', 'Visualizando tu sueño... Esto puede tardar un momento.');
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generando...';
+            dreamEntryContainer.classList.remove('visible'); // Hide previous entry
+            dreamEntryContainer.style.opacity = 0; // Reset opacity for transition
+
+            // Construct the prompt and URL
+            // Optional: Add style keywords automatically? e.g., ", dreamlike, surreal"
+            const encodedPrompt = encodeURIComponent(dreamText); // Use the raw dream text
+            const requestUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+            // --- Prepare the display area ---
+            dreamEntryContainer.innerHTML = `
+                <div class="dream-text-wrapper">
+                    <h2>Tu Sueño Descrito:</h2>
+                    <div class="dream-text">${escapeHtml(dreamText)}</div>
+                </div>
+                <div class="image-wrapper loading" data-retries="0">
+                    <!-- Image tag will be added by loadImageWithRetry -->
+                </div>
+            `;
+            const imageWrapper = dreamEntryContainer.querySelector('.image-wrapper');
+
+            // --- Initiate Fetch (simple fetch, retry handled on image load) ---
+             console.log(`Requesting Image URL: ${requestUrl}`);
+            fetch(requestUrl)
+                .then(response => {
+                    if (!response.ok) {
+                         throw new Error(`Error HTTP ${response.status} al contactar la API.`);
+                    }
+                    // Get the final image URL after potential redirects
+                    console.log(`Received Final Image URL: ${response.url}`);
+                    return response.url;
+                })
+                .then(finalImageUrl => {
+                    // --- Start Image Loading with Retry Logic ---
+                    loadImageWithRetry(imageWrapper, finalImageUrl, dreamText);
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud inicial a Pollinations:', error);
+                    handleInitialFetchFailure(imageWrapper, dreamText, error.message);
+                     checkCompletion(true); // Mark as complete (failed)
+                });
+        }
+
+        // --- Image Loading with Retry Logic (Adapted from previous examples) ---
+        function loadImageWithRetry(container, imageUrl, altText) {
+            let timeoutId;
+            const img = document.createElement('img');
+            img.alt = `Visualización del sueño: ${escapeHtml(altText.substring(0, 100))}...`; // SEO friendly alt
+
+            // Clear previous state and add image element
+            container.classList.add('loading');
+            container.classList.remove('failed', 'img-loaded');
+            container.innerHTML = ''; // Clear previous content (like error messages)
+            container.appendChild(img); // Add the new image element
+
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                container.classList.remove('loading', 'failed');
+                container.classList.add('img-loaded');
+                img.classList.add('loaded');
+                // Add lightbox click listener ONLY on successful load
+                container.onclick = () => openLightbox(imageUrl); // Assign directly to container
+                console.log("Imagen del sueño cargada con éxito.");
+                checkCompletion(true); // Mark as complete (success)
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                console.error(`Error cargando la imagen final del sueño: ${imageUrl}`);
+                handleImageLoadFailure(container, img, imageUrl, altText, 'Error de carga');
+            };
+
+            // Set src AFTER attaching listeners
+            img.src = imageUrl;
+
+            // Set timeout for this load attempt
+            timeoutId = setTimeout(() => {
+                if (container.classList.contains('loading')) {
+                    console.warn(`Timeout cargando imagen del sueño: ${imageUrl}`);
+                    img.src = ''; // Stop loading
+                    handleImageLoadFailure(container, img, imageUrl, altText, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageLoadFailure(container, img, imageUrl, altText, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                const attempt = currentRetries + 1;
+                console.log(`Reintentando carga de imagen del sueño (Intento: ${attempt}/${MAX_RETRIES})...`);
+
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = `<div class="error-content">${reason}<br><span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span></div>`;
+
+                // Exponential backoff for retry delay
+                setTimeout(() => {
+                    loadImageWithRetry(container, imageUrl, altText);
+                }, RETRY_DELAY_MS * Math.pow(2, currentRetries));
+
+            } else {
+                console.error(`Máximos reintentos alcanzados para la imagen del sueño. Desistiendo.`);
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = `<div class="error-content">Error final: ${reason}<br>(No se pudo cargar la imagen)</div>`;
+                container.onclick = null; // Remove click listener on final failure
+                checkCompletion(true); // Mark as complete (failed)
+            }
+        }
+
+         function handleInitialFetchFailure(container, altText, reason) {
+             // Called when the very first fetch fails
+             container.classList.remove('loading');
+             container.classList.add('failed');
+             container.innerHTML = `<div class="error-content">Error de API:<br>${escapeHtml(reason)}</div>`;
+             container.onclick = null; // Remove click listener
+              console.error(`Fallo inicial de fetch para sueño: ${reason}`);
+         }
+
+        // --- Completion Check ---
+        function checkCompletion(isDone) {
+            if(isDone){
+                 showFeedback(''); // Clear loading message
+                 generateBtn.disabled = false;
+                 generateBtn.textContent = 'Visualizar Otro Sueño';
+
+                 // Make the entry visible with transition
+                 dreamEntryContainer.classList.add('visible');
+                 // Force reflow before adding opacity class for transition
+                 void dreamEntryContainer.offsetWidth;
+                 dreamEntryContainer.style.opacity = 1;
+
+
+                 const imageWrapper = dreamEntryContainer.querySelector('.image-wrapper');
+                 if (imageWrapper && imageWrapper.classList.contains('failed')) {
+                      showFeedback('error', 'No se pudo generar la imagen después de varios intentos.');
+                 } else {
+                      // Optional: Show success message briefly?
+                       showFeedback('success', '¡Sueño visualizado!');
+                       setTimeout(clearFeedback, 3000); // Clear success message after 3s
+                 }
+            }
+        }
+
+        // --- UI Helper Functions ---
+        function showFeedback(type, message) {
+            feedbackDiv.innerHTML = ''; // Clear previous messages
+            if (!message) return; // If message is empty, just clear
+
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            if (type === 'error') {
+                messageElement.className = 'error-message';
+            } else if (type === 'loading') {
+                messageElement.className = 'loading-indicator';
+            } else if (type === 'success') {
+                 messageElement.className = 'success-message';
+            }
+            feedbackDiv.appendChild(messageElement);
+        }
+        function clearFeedback() {
+             feedbackDiv.innerHTML = '';
+        }
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        // --- Lightbox Functions (Unchanged) ---
+        function openLightbox(imageUrl) {
+            lightboxImg.src = imageUrl;
+            lightbox.classList.add('active');
+        }
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxImg.src = ""; // Clear src
+        }
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (event) => { if (event.target === lightbox) closeLightbox(); }); // Close on background click
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); }); // Close with Esc key
+
+         // Preconnect to Pollinations API endpoint on load
+         document.addEventListener('DOMContentLoaded', () => {
+             const preconnectLink = document.createElement('link');
+             preconnectLink.rel = 'preconnect';
+             preconnectLink.href = 'https://image.pollinations.ai';
+             document.head.appendChild(preconnectLink);
+         });
+
+    </script>
+
+</body>
+</html>

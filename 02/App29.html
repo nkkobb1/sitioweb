@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Architect AI - Generador de Exámenes Inteligentes | PapitasFritas.com</title>
+    <!-- <meta name="description" content="Crea exámenes personalizados sobre cualquier tema con IA. Genera preguntas de opción múltiple y respuesta corta, obtén explicaciones, consejos de estudio y evalúa tus respuestas. Herramienta de aprendizaje por PapitasFritas.com."> -->
+
+    <style>
+        /* --- Fonts & Base Styles --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Montserrat:wght@600;700&display=swap');
+        :root {
+            --bg-color: #f8f9fa; /* Light grey background */
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --heading-color: #0a1931; /* Deep blue for headings */
+            --accent-color: #007bff; /* Vibrant Blue */
+            --accent-hover: #0056b3;
+            --secondary-accent: #6f42c1; /* Purple for secondary actions */
+            --secondary-hover: #5a32a3;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107; /* For experimental features */
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.075);
+            --code-bg: #e9ecef;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2rem; line-height: 1.6;
+        }
+        /* --- Layout & Container --- */
+        .container { width: 100%; max-width: 850px; margin: auto; display: flex; flex-direction: column; gap: 2rem; }
+        .card { background-color: var(--card-bg); border-radius: 10px; padding: 2rem 2.5rem; box-shadow: 0 4px 15px var(--shadow-color); border: 1px solid var(--border-color); }
+        /* --- Configuration Section --- */
+        .config-card h2 {
+            font-family: 'Montserrat', sans-serif; color: var(--heading-color); font-size: 1.7rem; text-align: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem;
+        }
+        .form-row { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1.5rem; align-items: flex-end; }
+        .form-group { flex: 1 1 200px; /* Responsive flex layout */ }
+        .form-group label { display: block; font-weight: 500; color: #495057; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .form-group input[type="text"], .form-group input[type="number"] {
+            width: 100%; padding: 0.7rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+        .generate-button-container { text-align: center; margin-top: 1rem; }
+        #generate-btn {
+            font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px; padding: 12px 40px; color: #fff; background-color: var(--accent-color); border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+        }
+        #generate-btn:hover:not(:disabled) { background-color: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3); }
+        #generate-btn:disabled { background-color: #adb5bd; cursor: wait; box-shadow: none; }
+        /* --- Exam Display Section --- */
+        #exam-area { display: none; /* Hidden initially */ }
+        #exam-topic-title { font-family: 'Montserrat', sans-serif; color: var(--heading-color); font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center; }
+        #exam-topic-image-container { width: 100%; max-width: 300px; aspect-ratio: 16 / 9; background-color: var(--code-bg); border-radius: 8px; overflow: hidden; margin: 0 auto 2rem auto; position: relative; border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; }
+        #exam-topic-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.7s ease-in-out; }
+        #exam-topic-image.loaded { opacity: 1; }
+        #exam-topic-image-container.loading::before { /* Spinner */ content: ''; position: absolute; width: 30px; height: 30px; border: 3px solid rgba(0, 123, 255, 0.2); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; z-index: 1; }
+        #exam-topic-image-container.failed { background-color: #f8d7da; border-color: var(--error-color); color: var(--error-color); font-size: 0.85em; padding: 5px; text-align: center; }
+        #exam-topic-image-container.failed::before { display: none; }
+
+        .question-block { background-color: #fff; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1.5rem; padding: 1.5rem; transition: box-shadow 0.3s ease; }
+        .question-block:focus-within { box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); border-color: var(--accent-color); }
+        .question-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; gap: 1rem;}
+        .question-text { font-weight: 500; font-size: 1.05rem; flex-grow: 1; }
+        .question-actions button, .grade-btn { font-size: 0.8rem; padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; background-color: var(--secondary-accent); color: white; }
+        .question-actions button:hover:not(:disabled), .grade-btn:hover:not(:disabled) { background-color: var(--secondary-hover); }
+        .question-actions button:disabled, .grade-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .explanation-area { font-size: 0.9rem; background-color: #f1f3f5; border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; margin-top: 1rem; display: none; color: #495057; }
+
+        .options-list { list-style: none; padding: 0; margin-bottom: 1rem; }
+        .options-list li { margin-bottom: 0.75rem; }
+        .options-list label { display: flex; align-items: center; cursor: pointer; font-size: 1rem; }
+        .options-list input[type="radio"] { margin-right: 0.8rem; width: 18px; height: 18px; accent-color: var(--accent-color); }
+        .short-answer-input textarea { width: 100%; min-height: 80px; padding: 0.7rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; resize: vertical; }
+        .short-answer-input textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+
+        .answer-reveal { background-color: #e6f7ff; /* Light blue background */ border: 1px solid #b3e0ff; border-radius: 4px; padding: 1rem; margin-top: 1rem; display: none; }
+        .answer-reveal strong { color: var(--accent-color); }
+        .answer-reveal code { background-color: var(--code-bg); padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+        .answer-feedback { margin-top: 0.5rem; font-size: 0.9rem; font-style: italic; color: var(--text-muted); }
+         .correct-answer { color: var(--success-color); font-weight: bold; }
+         .incorrect-answer { color: var(--error-color); font-weight: bold; }
+
+        .grading-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-color); }
+        .grade-btn { background-color: var(--warning-color); color: #333; font-weight: 500; }
+         .grade-btn:hover:not(:disabled) { background-color: #e0a800; }
+        .grade-feedback { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.5em; } /* Placeholder */
+        .grade-feedback .experimental { font-size: 0.8em; color: var(--warning-color); display: inline-block; border: 1px solid; padding: 1px 4px; border-radius: 3px; margin-left: 5px; }
+
+        #exam-controls { margin-top: 2rem; text-align: center; }
+        #toggle-answers-btn { font-family: 'Montserrat', sans-serif; font-size: 1rem; padding: 10px 25px; background-color: var(--success-color); color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+        #toggle-answers-btn:hover { background-color: #218838; }
+        /* --- Study Tools Section --- */
+        #study-tools { display: none; /* Hidden initially */ margin-top: 2rem; }
+        #study-tools h3 { font-family: 'Montserrat', sans-serif; color: var(--heading-color); font-size: 1.3rem; margin-bottom: 1rem; text-align: center; }
+        #study-tips-list { list-style: disc; padding-left: 20px; margin: 0; font-size: 0.95rem; color: #495057; }
+        #study-tips-list li { margin-bottom: 0.5rem; }
+        /* --- Feedback Area --- */
+        #feedback-area { text-align: center; padding: 1rem; min-height: 2em; }
+        .loading-message, .error-message { padding: 10px 20px; border-radius: 6px; display: inline-block; font-weight: 500; font-size: 0.95rem; }
+        .loading-message { color: var(--accent-color); background-color: rgba(0, 123, 255, 0.1); animation: pulse-text 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: rgba(220, 53, 69, 0.1); }
+        /* --- Footer --- */
+        footer { margin-top: 3rem; font-size: 0.85rem; color: var(--text-muted); text-align: center; }
+        footer a { color: var(--accent-color); text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: var(--accent-hover); }
+        /* --- Animations --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            .card { padding: 1.5rem; }
+            .form-row { flex-direction: column; gap: 1rem; align-items: stretch; }
+            .question-header { flex-direction: column; align-items: stretch; }
+             .question-actions { margin-top: 0.5rem; text-align: right; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Configuration Card -->
+        <section class="card config-card">
+            <h2>Exam Architect AI</h2>
+            <form id="exam-config-form">
+                <div class="form-row">
+                    <div class="form-group" style="flex-basis: 100%;">
+                        <label for="exam-topic">Tema del Examen</label>
+                        <input type="text" id="exam-topic" placeholder="Ej: Fotosíntesis, Mitología Griega, Javascript Basics" required>
+                    </div>
+                </div>
+                 <div class="form-row">
+                    <div class="form-group">
+                        <label for="total-questions">Número Total de Preguntas</label>
+                        <input type="number" id="total-questions" value="10" min="2" max="20" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mc-questions">Nº Preguntas Opción Múltiple</label>
+                        <input type="number" id="mc-questions" value="5" min="0" max="20" required>
+                    </div>
+                </div>
+                <div class="generate-button-container">
+                    <button type="button" id="generate-btn">Construir Examen</button>
+                </div>
+            </form>
+            <div id="feedback-area"></div>
+        </section>
+
+        <!-- Exam Display Area (Initially Hidden) -->
+        <section class="card exam-display-card" id="exam-area">
+            <h3 id="exam-topic-title"></h3>
+             <div id="exam-topic-image-container">
+                 <!-- Image will be loaded here -->
+             </div>
+             <div id="questions-container">
+                 <!-- Questions will be populated here -->
+             </div>
+             <div id="exam-controls">
+                 <button id="toggle-answers-btn" disabled>Mostrar Respuestas</button>
+             </div>
+        </section>
+
+         <!-- Study Tools Area (Initially Hidden) -->
+         <section class="card study-tools-card" id="study-tools">
+             <h3><span role="img" aria-label="bombilla">💡</span> Herramientas de Estudio IA</h3>
+             <ul id="study-tips-list">
+                 <!-- Study tips will be populated here -->
+             </ul>
+         </section>
+    </div>
+
+    <footer>
+        Exam Architect AI por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | APIs by <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const generateBtn = document.getElementById('generate-btn');
+        const feedbackArea = document.getElementById('feedback-area');
+        const examTopicInput = document.getElementById('exam-topic');
+        const totalQuestionsInput = document.getElementById('total-questions');
+        const mcQuestionsInput = document.getElementById('mc-questions');
+        const examArea = document.getElementById('exam-area');
+        const examTopicTitle = document.getElementById('exam-topic-title');
+        const examTopicImageContainer = document.getElementById('exam-topic-image-container');
+        const questionsContainer = document.getElementById('questions-container');
+        const toggleAnswersBtn = document.getElementById('toggle-answers-btn');
+        const studyToolsArea = document.getElementById('study-tools');
+        const studyTipsList = document.getElementById('study-tips-list');
+
+        // --- Configuration ---
+        const TEXT_API_BASE_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 480; const IMAGE_HEIGHT = 270; // 16:9 aspect ratio
+        const MAX_RETRIES = 2; const RETRY_DELAY_MS = 1500;
+        const API_TIMEOUT_MS = 90000; // Longer timeout for complex exam generation
+        const IMAGE_LOAD_TIMEOUT_MS = 45000;
+
+        // --- Language Detection Keywords (Same as before) ---
+        const ENGLISH_KEYWORDS = ['photosynthesis', 'mythology', 'javascript', 'python', 'history', 'biology', 'chemistry', 'physics', 'computer', 'science', 'literature', 'art', 'music', 'geography', 'economics', 'politics'];
+
+        // --- State ---
+        let generatedExamData = null; // To store parsed exam { questions: [], topic: '', language: 'es'}
+        let showingAnswers = false;
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        toggleAnswersBtn.addEventListener('click', toggleAnswers);
+
+        // --- Core Generation Logic ---
+        async function handleGeneration() {
+            clearExamArea();
+            showFeedback('loading', 'Diseñando tu examen...');
+            generateBtn.disabled = true; generateBtn.textContent = 'Construyendo...';
+            examArea.style.display = 'none';
+            studyToolsArea.style.display = 'none';
+            toggleAnswersBtn.disabled = true;
+
+            // --- Validate Inputs ---
+            const topic = examTopicInput.value.trim();
+            const totalQuestions = parseInt(totalQuestionsInput.value);
+            const mcQuestions = parseInt(mcQuestionsInput.value);
+
+            if (!topic) { showFeedback('error', 'Por favor, introduce un tema.'); resetUI(); return; }
+            if (isNaN(totalQuestions) || totalQuestions < 2 || totalQuestions > 20) { showFeedback('error', 'Número total de preguntas debe ser entre 2 y 20.'); resetUI(); return; }
+            if (isNaN(mcQuestions) || mcQuestions < 0 || mcQuestions > totalQuestions) { showFeedback('error', 'Nº de preguntas de Opción Múltiple inválido.'); resetUI(); return; }
+            const saQuestions = totalQuestions - mcQuestions;
+
+            // --- Language Detection ---
+            const detectedLanguage = detectLanguage(topic);
+            const langInstruction = detectedLanguage === 'en' ? 'Generate the response in English language.' : 'Genera la respuesta en idioma español.';
+            console.log(`Detected language: ${detectedLanguage}`);
+
+            // --- Construct Exam Prompt ---
+            let examPrompt = `Generate a text-based exam about "${topic}".\n`;
+            examPrompt += `Include exactly ${mcQuestions} multiple-choice questions (labeled QUESTION_MC_1, QUESTION_MC_2, etc.) and ${saQuestions} short-answer questions (labeled QUESTION_SA_1, QUESTION_SA_2, etc.).\n`;
+            examPrompt += `${langInstruction}\n`;
+            examPrompt += `Output the exam ONLY in the following structured format, using these exact labels. Do not add any extra text or commentary:\n\n`;
+
+            // Add MC structure example
+            for (let i = 1; i <= mcQuestions; i++) {
+                examPrompt += `QUESTION_MC_${i}: [Question Text ${i}]\n`;
+                examPrompt += `OPTION_A: [Option A Text]\n`;
+                examPrompt += `OPTION_B: [Option B Text]\n`;
+                examPrompt += `OPTION_C: [Option C Text]\n`;
+                examPrompt += `OPTION_D: [Option D Text]\n`;
+                examPrompt += `ANSWER_MC_${i}: [Correct Option Letter, e.g., C]\n\n`;
+            }
+            // Add SA structure example
+            for (let i = 1; i <= saQuestions; i++) {
+                 examPrompt += `QUESTION_SA_${i}: [Question Text ${i}]\n`;
+                 examPrompt += `ANSWER_SA_${i}: [Ideal Answer Text or Keywords ${i}]\n\n`;
+            }
+             examPrompt = examPrompt.trim(); // Remove trailing newlines
+            console.log("Exam Prompt:", examPrompt);
+
+            // --- Fetch and Process ---
+            try {
+                // Fetch Exam Content
+                const rawExamText = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(examPrompt), { isText: true, timeout: API_TIMEOUT_MS });
+                console.log("Raw Exam Response:", rawExamText);
+
+                // Parse Exam Content
+                generatedExamData = parseStructuredExam(rawExamText, mcQuestions, saQuestions, topic, detectedLanguage);
+
+                if (!generatedExamData || generatedExamData.questions.length !== totalQuestions) {
+                    throw new Error(`La IA no generó el examen con el formato o número de preguntas esperado (${generatedExamData?.questions?.length || 0}/${totalQuestions}). Intenta de nuevo o ajusta el tema.`);
+                }
+
+                // --- Display Exam ---
+                examTopicTitle.textContent = `Examen sobre: ${topic}`;
+                displayQuestions(generatedExamData.questions);
+                examArea.style.display = 'block';
+                toggleAnswersBtn.disabled = false;
+                toggleAnswersBtn.textContent = 'Mostrar Respuestas';
+                showingAnswers = false;
+                showFeedback('', ''); // Clear loading
+
+                // --- Fetch & Display Topic Image (Async) ---
+                 fetchAndDisplayTopicImage(topic);
+
+                // --- Fetch & Display Study Tips (Async) ---
+                 fetchAndDisplayStudyTips(topic, detectedLanguage);
+                 studyToolsArea.style.display = 'block';
+
+            } catch (error) {
+                console.error("Error during exam generation or parsing:", error);
+                showFeedback('error', `Error: ${error.message || "No se pudo generar el examen."}`);
+                resetUI();
+            } finally {
+                // Re-enable button even if async parts fail, unless full reset happened
+                 if (!generateBtn.disabled) { // Check if resetUI wasn't called
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = 'Construir Examen';
+                 }
+            }
+        }
+
+        // --- Language Detection (Simple Heuristic) ---
+        function detectLanguage(text) {
+            const lowerText = text.toLowerCase();
+            for (const keyword of ENGLISH_KEYWORDS) {
+                const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+                if (regex.test(lowerText)) { return 'en'; }
+            }
+            return 'es';
+        }
+
+        // --- Exam Parsing ---
+        function parseStructuredExam(rawText, expectedMc, expectedSa, topic, language) {
+            if (!rawText) return null;
+            const lines = rawText.split('\n');
+            const questions = [];
+            let currentQuestion = null;
+
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) continue; // Skip empty lines
+
+                const mcMatch = trimmedLine.match(/^QUESTION_MC_(\d+):\s*(.*)/i);
+                const saMatch = trimmedLine.match(/^QUESTION_SA_(\d+):\s*(.*)/i);
+                const optMatch = trimmedLine.match(/^OPTION_([A-D]):\s*(.*)/i);
+                const ansMcMatch = trimmedLine.match(/^ANSWER_MC_(\d+):\s*([A-D])/i);
+                const ansSaMatch = trimmedLine.match(/^ANSWER_SA_(\d+):\s*(.*)/i);
+
+                if (mcMatch) {
+                    currentQuestion = { id: `mc_${mcMatch[1]}`, type: 'MC', text: mcMatch[2].trim(), options: {}, answer: null };
+                    questions.push(currentQuestion);
+                } else if (saMatch) {
+                    currentQuestion = { id: `sa_${saMatch[1]}`, type: 'SA', text: saMatch[2].trim(), idealAnswer: null };
+                    questions.push(currentQuestion);
+                } else if (optMatch && currentQuestion?.type === 'MC') {
+                    currentQuestion.options[optMatch[1].toUpperCase()] = optMatch[2].trim();
+                } else if (ansMcMatch && questions.find(q => q.id === `mc_${ansMcMatch[1]}` && q.type === 'MC')) {
+                    const q = questions.find(q => q.id === `mc_${ansMcMatch[1]}`);
+                    if(q) q.answer = ansMcMatch[2].toUpperCase();
+                } else if (ansSaMatch && questions.find(q => q.id === `sa_${ansSaMatch[1]}` && q.type === 'SA')) {
+                     const q = questions.find(q => q.id === `sa_${ansSaMatch[1]}`);
+                     if(q) q.idealAnswer = ansSaMatch[2].trim();
+                } else if (currentQuestion) {
+                    // Append to last field if it seems like a continuation (simple approach)
+                    if (currentQuestion.type === 'MC' && currentQuestion.answer === null) { // Append to last option if answer not set yet
+                        const lastOptKey = Object.keys(currentQuestion.options).pop();
+                        if(lastOptKey) currentQuestion.options[lastOptKey] += ' ' + trimmedLine;
+                    } else if (currentQuestion.type === 'SA' && currentQuestion.idealAnswer === null) {
+                        currentQuestion.text += ' ' + trimmedLine; // Append to question text if ideal answer not set
+                    } else if (currentQuestion.type === 'SA' && currentQuestion.idealAnswer !== null) {
+                         currentQuestion.idealAnswer += ' ' + trimmedLine; // Append to ideal answer
+                    }
+                }
+            }
+             // Basic validation
+             if (questions.length !== (expectedMc + expectedSa)) return null; // Incorrect number of questions found
+             // Could add more validation (e.g., check if all MC have 4 options and an answer)
+
+            return { questions, topic, language };
+        }
+
+        // --- Display Logic ---
+        function displayQuestions(questions) {
+            questionsContainer.innerHTML = ''; // Clear previous
+            questions.forEach((q, index) => {
+                const block = document.createElement('article');
+                block.className = 'question-block';
+                block.id = `question-${q.id}`;
+
+                let questionHTML = `
+                    <div class="question-header">
+                        <p class="question-text">${index + 1}. ${q.text}</p>
+                        <div class="question-actions">
+                            <button class="explain-btn" data-question-id="${q.id}" title="Obtener Explicación IA">Explicar</button>
+                        </div>
+                    </div>
+                    <div class="explanation-area" id="explanation-${q.id}"></div>
+                `;
+
+                if (q.type === 'MC') {
+                    questionHTML += `<ul class="options-list">`;
+                    ['A', 'B', 'C', 'D'].forEach(optKey => {
+                        if (q.options[optKey] !== undefined) {
+                             questionHTML += `
+                                <li>
+                                    <label>
+                                        <input type="radio" name="q_${q.id}" value="${optKey}">
+                                        <span>${optKey}. ${q.options[optKey]}</span>
+                                    </label>
+                                </li>`;
+                        }
+                    });
+                    questionHTML += `</ul>`;
+                    questionHTML += `<div class="answer-reveal" id="answer-${q.id}"><strong>Respuesta Correcta:</strong> ${q.answer || 'N/A'}</div>`;
+                } else { // SA
+                    questionHTML += `
+                        <div class="short-answer-input">
+                             <textarea id="user-answer-${q.id}" placeholder="Escribe tu respuesta aquí..."></textarea>
+                        </div>
+                         <div class="grading-section">
+                             <button class="grade-btn" data-question-id="${q.id}" title="Evaluar mi respuesta (Experimental)">Evaluar Respuesta IA <span class="experimental">Beta</span></button>
+                             <div class="grade-feedback" id="grade-feedback-${q.id}"></div>
+                         </div>
+                        <div class="answer-reveal" id="answer-${q.id}"><strong>Respuesta Ideal:</strong> <code>${q.idealAnswer || 'N/A'}</code></div>
+                        `;
+                }
+                block.innerHTML = questionHTML;
+                questionsContainer.appendChild(block);
+            });
+
+             // Add event listeners after creating elements
+             addQuestionActionListeners();
+        }
+
+        function addQuestionActionListeners() {
+             document.querySelectorAll('.explain-btn').forEach(btn => {
+                 btn.addEventListener('click', handleExplanationRequest);
+             });
+             document.querySelectorAll('.grade-btn').forEach(btn => {
+                 btn.addEventListener('click', handleGradeRequest);
+             });
+        }
+
+        function toggleAnswers() {
+            showingAnswers = !showingAnswers;
+            const answerDivs = document.querySelectorAll('.answer-reveal');
+            answerDivs.forEach(div => {
+                div.style.display = showingAnswers ? 'block' : 'none';
+            });
+            toggleAnswersBtn.textContent = showingAnswers ? 'Ocultar Respuestas' : 'Mostrar Respuestas';
+
+             // Optional: Highlight correct/incorrect answers if shown
+            if (showingAnswers) checkMCAnswers();
+            else clearMCFeedback();
+        }
+
+         function checkMCAnswers() {
+             generatedExamData.questions.filter(q => q.type === 'MC').forEach(q => {
+                 const radios = document.querySelectorAll(`input[name="q_${q.id}"]`);
+                 let userAnswer = null;
+                 radios.forEach(radio => {
+                     if (radio.checked) userAnswer = radio.value;
+                     const label = radio.closest('label');
+                     label.classList.remove('correct-answer', 'incorrect-answer'); // Clear previous
+                     if (radio.value === q.answer) {
+                          label.classList.add('correct-answer'); // Mark correct option always
+                     }
+                 });
+                 if(userAnswer && userAnswer !== q.answer) {
+                      const incorrectLabel = document.querySelector(`input[name="q_${q.id}"][value="${userAnswer}"]`).closest('label');
+                      if(incorrectLabel) incorrectLabel.classList.add('incorrect-answer');
+                 }
+             });
+         }
+
+         function clearMCFeedback() {
+              document.querySelectorAll('.options-list label').forEach(label => {
+                 label.classList.remove('correct-answer', 'incorrect-answer');
+             });
+         }
+
+        // --- Topic Image Logic ---
+        async function fetchAndDisplayTopicImage(topic) {
+             const container = examTopicImageContainer;
+             container.innerHTML = ''; // Clear previous
+             container.className = 'exam-topic-image-container loading'; // Add loading class
+
+             const imagePrompt = `Abstract conceptual representation of "${topic}", educational context, minimalist vector style, subtle background`;
+             const seed = Math.floor(Math.random() * 1000000);
+             const imageUrl = `${IMAGE_API_BASE_URL}${encodeURIComponent(imagePrompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true&style=vector`; // Added style parameter
+
+             try {
+                 const imgElement = document.createElement('img');
+                 imgElement.id = 'exam-topic-image';
+                 imgElement.alt = `Imagen conceptual sobre ${topic}`;
+
+                 let loadComplete = false;
+                 const timeoutId = setTimeout(() => {
+                     if (!loadComplete) { throw new Error("Image load timeout"); }
+                 }, IMAGE_LOAD_TIMEOUT_MS);
+
+                 imgElement.onload = () => {
+                     loadComplete = true; clearTimeout(timeoutId);
+                     container.appendChild(imgElement); // Append only on success
+                     container.className = 'exam-topic-image-container loaded';
+                     imgElement.classList.add('loaded');
+                 };
+                 imgElement.onerror = () => {
+                     loadComplete = true; clearTimeout(timeoutId); throw new Error("Image load error");
+                 };
+                 imgElement.src = imageUrl;
+
+             } catch (error) {
+                  console.error("Error loading topic image:", error);
+                  container.className = 'exam-topic-image-container failed';
+                  container.innerHTML = `No se pudo cargar imagen del tema.`;
+             }
+        }
+
+        // --- Study Tips Logic ---
+         async function fetchAndDisplayStudyTips(topic, language) {
+             studyTipsList.innerHTML = `<li>Buscando consejos...</li>`;
+             const langInstruction = language === 'en' ? 'Provide the response in English.' : 'Proporciona la respuesta en español.';
+             const prompt = `Provide 2-3 concise and actionable study tips for the topic "${topic}". Focus on effective learning strategies. ${langInstruction} Output ONLY the tips as a bulleted list (using '-' for bullets). No intro or conclusion.`;
+
+             try {
+                 const tipsText = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(prompt), { isText: true, timeout: 30000 });
+                 const tips = tipsText.split('\n')
+                                     .map(t => t.trim())
+                                     .filter(t => t.startsWith('-'))
+                                     .map(t => t.substring(1).trim());
+
+                 if (tips.length > 0) {
+                     studyTipsList.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+                 } else {
+                      studyTipsList.innerHTML = `<li>No se pudieron generar consejos específicos.</li>`;
+                 }
+             } catch (error) {
+                  console.error("Error fetching study tips:", error);
+                  studyTipsList.innerHTML = `<li>Error al obtener consejos.</li>`;
+             }
+        }
+
+
+        // --- Question Action Handlers ---
+        async function handleExplanationRequest(event) {
+            const button = event.target;
+            const questionId = button.dataset.questionId;
+            const explanationArea = document.getElementById(`explanation-${questionId}`);
+            const questionData = generatedExamData?.questions.find(q => q.id === questionId);
+
+            if (!questionData || !explanationArea) return;
+
+            explanationArea.style.display = 'block';
+            explanationArea.textContent = 'Obteniendo explicación IA...';
+            button.disabled = true;
+
+            const langInstruction = generatedExamData.language === 'en' ? 'Explain the concept in English.' : 'Explica el concepto en español.';
+            const prompt = `Briefly explain the core concept behind this question: "${questionData.text}". Keep it concise (2-4 sentences). ${langInstruction} Focus on the underlying principle.`;
+
+             try {
+                 const explanation = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(prompt), { isText: true, timeout: 30000 });
+                 explanationArea.textContent = cleanApiResponse(explanation) || 'No se pudo obtener explicación.';
+             } catch (error) {
+                  console.error("Error fetching explanation:", error);
+                  explanationArea.textContent = 'Error al obtener explicación.';
+             } finally {
+                 button.disabled = false; // Re-enable button regardless of outcome
+             }
+        }
+
+         async function handleGradeRequest(event) {
+             const button = event.target;
+             const questionId = button.dataset.questionId;
+             const feedbackArea = document.getElementById(`grade-feedback-${questionId}`);
+             const userAnswerTextarea = document.getElementById(`user-answer-${questionId}`);
+             const questionData = generatedExamData?.questions.find(q => q.id === questionId);
+
+             if (!questionData || !feedbackArea || !userAnswerTextarea || questionData.type !== 'SA') return;
+
+             const userAnswer = userAnswerTextarea.value.trim();
+             if (!userAnswer) {
+                 feedbackArea.textContent = 'Por favor, escribe una respuesta primero.';
+                 return;
+             }
+
+             feedbackArea.textContent = 'Evaluando con IA...';
+             button.disabled = true;
+
+             const langInstruction = generatedExamData.language === 'en' ? 'Evaluate in English.' : 'Evalúa en español.';
+              // Prompt for evaluation - this is experimental!
+              const prompt = `Question: "${questionData.text}"
+Ideal Answer/Keywords: "${questionData.idealAnswer}"
+User's Answer: "${userAnswer}"
+
+Evaluate if the User's Answer is correct, partially correct, or incorrect compared to the Ideal Answer. Provide a very brief (1 sentence) feedback explaining why. ${langInstruction} Start your response ONLY with "Correct:", "Partially Correct:", or "Incorrect:".`;
+
+              try {
+                  const evaluation = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(prompt), { isText: true, timeout: 45000 });
+                  feedbackArea.innerHTML = `${cleanApiResponse(evaluation)} <span class="experimental">Beta</span>`;
+              } catch (error) {
+                   console.error("Error fetching grade feedback:", error);
+                   feedbackArea.innerHTML = `Error al evaluar. <span class="experimental">Beta</span>`;
+              } finally {
+                  button.disabled = false;
+              }
+         }
+
+
+        // --- Text API Fetch (With Timeout and Retries) ---
+        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+            const { isText = false, timeout = API_TIMEOUT_MS } = options;
+            const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                console.log(`Fetching: ${url.substring(0,100)}... (Retries left: ${retries})`);
+                const response = await fetch(url, { signal: controller.signal }); clearTimeout(timeoutId);
+                if (!response.ok) { throw new Error(`HTTP error ${response.status}`); }
+                return isText ? await response.text() : response;
+            } catch (error) {
+                 clearTimeout(timeoutId);
+                 if (error.name === 'AbortError') { throw new Error("La solicitud a la API tardó demasiado (Timeout)."); }
+                 if (retries > 0 && (error.message.includes('HTTP error 5') || error.message.includes('Failed to fetch'))) { // Retry on server errors or network issues
+                    console.warn(`Fetch failed, retrying in ${RETRY_DELAY_MS}ms...`, error);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    return fetchWithRetry(url, options, retries - 1);
+                } else { throw error; }
+            }
+        }
+
+
+        // --- Utility Functions ---
+        function cleanApiResponse(text) {
+             let cleaned = text ? text.trim() : '';
+             if (cleaned.startsWith('"') && cleaned.endsWith('"')) { cleaned = cleaned.substring(1, cleaned.length - 1); }
+             // Add more cleaning specific to expected outputs if needed
+             return cleaned;
+        }
+
+        function clearExamArea() {
+            feedbackArea.innerHTML = '';
+            examTopicTitle.textContent = '';
+            examTopicImageContainer.innerHTML = '';
+            examTopicImageContainer.className = 'exam-topic-image-container';
+            questionsContainer.innerHTML = '';
+            studyTipsList.innerHTML = '';
+            studyToolsArea.style.display = 'none';
+            examArea.style.display = 'none';
+            toggleAnswersBtn.disabled = true;
+            toggleAnswersBtn.textContent = 'Mostrar Respuestas';
+            generatedExamData = null;
+            showingAnswers = false;
+        }
+
+        function showFeedback(type, message) {
+            feedbackArea.innerHTML = '';
+            if (message) {
+                 const m = document.createElement('div'); m.textContent = message; m.className = `${type}-message`; feedbackArea.appendChild(m);
+            }
+        }
+
+        function resetUI(keepContent = false) { // KeepContent not really used here, full reset on error
+            generateBtn.disabled = false; generateBtn.textContent = 'Construir Examen';
+            if (!keepContent) { clearExamArea(); }
+            if (feedbackArea.querySelector('.loading-message')) { feedbackArea.innerHTML = ''; }
+        }
+
+        // --- Preconnect ---
+        document.addEventListener('DOMContentLoaded', () => { ['https://text.pollinations.ai', 'https://image.pollinations.ai'].forEach(url => { const link = document.createElement('link'); link.rel = 'preconnect'; link.href = url; document.head.appendChild(link); }); });
+
+    </script>
+
+</body>
+</html>

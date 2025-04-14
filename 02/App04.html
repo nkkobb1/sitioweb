@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title: Claro, con palabras clave relevantes y branding -->
+    <title>AI Image Seed Explorer - Genera Variaciones de Arte con IA | PapitasFritas.com</title>
+    <!-- Meta Description (IMPORTANTE para SEO - Añadir manualmente o con CMS): -->
+    <!-- <meta name="description" content="Explora variaciones únicas de imágenes generadas por IA a partir de tu texto. Introduce una descripción y obtén 6 ideas visuales distintas con nuestro Seed Explorer en PapitasFritas.com. ¡Ideal para inspiración creativa!"> -->
+
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-color: #10121a; --primary-neon: #00f0ff; --secondary-neon: #f000ff;
+            --text-color: #e0e0e0; --text-glow: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon), 0 0 15px rgba(0, 240, 255, 0.5);
+            --element-glow: 0 0 8px var(--secondary-neon), 0 0 15px rgba(240, 0, 255, 0.6);
+            --input-bg: rgba(255, 255, 255, 0.05); --error-color: #ff4d4d;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            line-height: 1.6; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; background-image: radial-gradient(circle at top left, rgba(0, 240, 255, 0.1), transparent 40%), radial-gradient(circle at bottom right, rgba(240, 0, 255, 0.1), transparent 40%);
+        }
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 1100px; /* Slightly smaller max-width for 6 images */
+             margin: 20px auto; padding: 30px; background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 15px; backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(0, 240, 255, 0.1);
+        }
+        /* --- Header --- */
+        header { text-align: center; margin-bottom: 40px; }
+        /* SEO Heading 1: Principal keyword phrase */
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.5em; /* Slightly adjusted size */
+            color: var(--primary-neon); text-shadow: var(--text-glow); margin-bottom: 10px;
+            letter-spacing: 1px; font-weight: 700;
+        }
+        /* SEO Subtitle: Explica el beneficio, usa keywords secundarias */
+        .subtitle {
+            font-size: 1.2em; color: var(--secondary-neon); text-shadow: 0 0 5px var(--secondary-neon);
+            font-weight: 300; max-width: 600px; margin-left: auto; margin-right: auto; /* Center if needed */
+        }
+        /* --- Controls --- */
+        .controls { display: flex; flex-direction: column; gap: 15px; margin-bottom: 40px; align-items: center; }
+        .prompt-label { font-size: 1.2em; color: var(--primary-neon); text-shadow: var(--text-glow); margin-bottom: 5px; text-align: center; }
+        #promptInput {
+            width: 100%; max-width: 600px; padding: 12px 18px; font-size: 1em; background-color: var(--input-bg);
+            border: 1px solid var(--primary-neon); border-radius: 8px; color: var(--text-color); transition: all 0.3s ease;
+            box-shadow: inset 0 0 8px rgba(0, 240, 255, 0.3);
+        }
+        #promptInput:focus { outline: none; border-color: var(--secondary-neon); box-shadow: inset 0 0 10px rgba(240, 0, 255, 0.5), 0 0 15px var(--secondary-neon); }
+        #generateBtn {
+            padding: 12px 30px; font-family: 'Orbitron', sans-serif; font-size: 1.1em; font-weight: 700;
+            color: var(--bg-color); background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+            border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+            letter-spacing: 1px; box-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 10px rgba(240, 0, 255, 0.5);
+        }
+        #generateBtn:hover:not(:disabled) { box-shadow: 0 0 15px var(--primary-neon), 0 0 15px var(--secondary-neon); transform: translateY(-2px) scale(1.02); }
+        #generateBtn:active:not(:disabled) { transform: translateY(0) scale(1); box-shadow: 0 0 5px rgba(0, 240, 255, 0.5), 0 0 5px rgba(240, 0, 255, 0.5); }
+        #generateBtn:disabled { opacity: 0.6; cursor: not-allowed; background: grey; box-shadow: none; }
+
+        /* --- Results Grid (Adjusted for potentially 6 items) --- */
+        .results-grid {
+            display: grid;
+            /* Adjust grid columns for 6 items - common pattern is 3x2 or 2x3 */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Larger minmax might make it 2 or 3 columns */
+            gap: 20px; margin-top: 30px;
+        }
+        /* --- Image Container & Image --- */
+        .image-container {
+            position: relative; aspect-ratio: 1 / 1; background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 10px; overflow: hidden; border: 1px solid rgba(0, 240, 255, 0.1);
+            display: flex; justify-content: center; align-items: center; text-align: center; /* Center text too */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .image-container:hover { transform: scale(1.03); box-shadow: 0 0 15px var(--primary-neon); }
+        .result-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .result-image.loaded { opacity: 1; }
+
+        /* --- Loading / Feedback / Error States --- */
+        .feedback-area { min-height: 30px; /* Reserve space */ text-align: center; margin-top: 20px; }
+        .loading-indicator, .error-message { font-size: 1.1em; padding: 10px; border-radius: 5px; display: inline-block; /* Prevent full width */ }
+        .loading-indicator { color: var(--primary-neon); text-shadow: var(--text-glow); animation: pulse 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); }
+
+        /* Spinner inside image container */
+        .image-container.loading::before {
+            content: ''; position: absolute; width: 40px; height: 40px;
+            border: 4px solid rgba(0, 240, 255, 0.3); border-top-color: var(--primary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        /* Style for failed image */
+        .image-container.error {
+            background-color: rgba(255, 77, 77, 0.1); border-color: rgba(255, 77, 77, 0.3);
+            color: var(--error-color); font-size: 0.9em; padding: 10px;
+        }
+        .image-container.error::before { display: none; } /* Hide spinner on final error */
+        .image-container .retry-info {
+            position: absolute; bottom: 5px; left: 5px; font-size: 0.7em;
+            color: var(--secondary-neon); background: rgba(0,0,0,0.5); padding: 1px 4px; border-radius: 3px;
+            z-index: 2; opacity: 0.7;
+        }
+
+        /* --- Footer --- */
+        footer { margin-top: 50px; text-align: center; font-size: 0.9em; color: rgba(224, 224, 224, 0.6); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--primary-neon); text-shadow: 0 0 5px var(--primary-neon); }
+        /* --- Animations --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <!-- SEO H1 -->
+            <h1>Explorador de Variaciones con IA</h1>
+            <!-- SEO Subtitle -->
+            <p class="subtitle">Genera 6 ideas visuales únicas a partir de tu descripción | PapitasFritas.com</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <label for="promptInput" class="prompt-label">Ingresa tu prompt creativo:</label>
+                <input type="text" id="promptInput" placeholder="Ej: papas fritas neón en un paisaje cyberpunk">
+                <button id="generateBtn">Generar 6 Variaciones</button>
+            </div>
+
+            <!-- Area for global feedback like loading or general errors -->
+            <div id="feedback" class="feedback-area" aria-live="polite"></div>
+
+            <div id="resultsGrid" class="results-grid">
+                <!-- Las imágenes generadas aparecerán aquí -->
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        Herramienta por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | Imágenes generadas con <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const feedbackDiv = document.getElementById('feedback');
+
+        // --- Configuration ---
+        const NUM_VARIATIONS = 6; // <<-- Changed to 6
+        const IMAGE_WIDTH = 512;
+        const IMAGE_HEIGHT = 512;
+        const MAX_RETRIES = 2; // <<-- Max retries per image
+        const RETRY_DELAY_MS = 1000; // <<-- Delay before retrying (milliseconds)
+        const IMAGE_LOAD_TIMEOUT_MS = 45000; // <<-- Timeout per image attempt (45 seconds)
+
+        generateBtn.addEventListener('click', handleGeneration);
+        promptInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                handleGeneration();
+            }
+        });
+
+        function handleGeneration() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                showFeedback('error', '¡Describe algo para generar imágenes!');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generando...';
+            resultsGrid.innerHTML = '';
+            feedbackDiv.innerHTML = '';
+            showFeedback('loading', `Creando ${NUM_VARIATIONS} variaciones... Puede tardar un poco.`);
+
+            const usedSeeds = new Set();
+            for (let i = 0; i < NUM_VARIATIONS; i++) {
+                let seed = Math.floor(Math.random() * 1000000);
+                while (usedSeeds.has(seed)) {
+                    seed = Math.floor(Math.random() * 1000000);
+                }
+                usedSeeds.add(seed);
+
+                const encodedPrompt = encodeURIComponent(prompt);
+                // Using nologo=true is often helpful
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+                // Create container immediately and start loading
+                createImageContainerAndLoad(imageUrl, prompt, seed);
+            }
+
+             // Initial check if maybe all containers were created (though images are loading)
+             // The button re-enabling logic is now primarily in checkAllImagesLoaded
+             checkAllImagesLoaded();
+        }
+
+        function createImageContainerAndLoad(url, prompt, seed) {
+            const container = document.createElement('div');
+            container.className = 'image-container loading';
+            // Store necessary info for retries
+            container.dataset.imageUrl = url;
+            container.dataset.prompt = prompt;
+            container.dataset.seed = seed;
+            container.dataset.retries = 0;
+
+            const img = document.createElement('img');
+            img.className = 'result-image';
+            img.alt = `Variación de '${prompt}' (Seed: ${seed})`; // SEO: Descriptive alt text
+
+            // Append container to grid first
+            resultsGrid.appendChild(container);
+
+            // Start the loading process (potentially with retries)
+            loadImageWithRetry(container, img, url);
+        }
+
+        function loadImageWithRetry(container, img, url) {
+            let timeoutId;
+
+            // Clear previous retry info if any
+            const existingRetryInfo = container.querySelector('.retry-info');
+            if (existingRetryInfo) existingRetryInfo.remove();
+
+            // Add loading state visually
+            container.classList.add('loading');
+            container.classList.remove('error'); // Remove error state if retrying
+            container.innerHTML = ''; // Clear previous content (like error messages) before adding img
+            container.appendChild(img); // Add the image element back if it was removed by error message
+
+            img.onload = () => {
+                clearTimeout(timeoutId); // Clear the timeout
+                container.classList.remove('loading');
+                img.classList.add('loaded');
+                checkAllImagesLoaded();
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId); // Clear the timeout
+                console.error(`Error loading image: ${url}, Seed: ${container.dataset.seed}`);
+                handleImageFailure(container, img, url, 'Error de carga');
+            };
+
+            // Set the src *after* attaching listeners
+            img.src = url;
+
+            // Set a timeout for this specific load attempt
+            timeoutId = setTimeout(() => {
+                // If it's still loading after the timeout, trigger failure
+                if (container.classList.contains('loading')) {
+                    console.warn(`Image load timeout: ${url}, Seed: ${container.dataset.seed}`);
+                    img.src = ''; // Stop trying to load the timed-out image
+                    handleImageFailure(container, img, url, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageFailure(container, img, url, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+            const seed = container.dataset.seed;
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                console.log(`Retrying image (Seed: ${seed}, Attempt: ${currentRetries + 1}/${MAX_RETRIES})...`);
+
+                // Show retry indicator
+                container.classList.remove('loading'); // Temporarily remove loading for retry info
+                container.classList.add('error'); // Visually indicate an issue occurred
+                container.innerHTML = `${reason}<br>Reintentando... (${currentRetries + 1}/${MAX_RETRIES})<br>(Seed: ${seed})`;
+
+                // Use setTimeout for delay before retry
+                setTimeout(() => {
+                    loadImageWithRetry(container, img, url); // Pass the same img element
+                }, RETRY_DELAY_MS);
+
+            } else {
+                // Max retries reached, mark as permanent error
+                console.error(`Max retries reached for image (Seed: ${seed}). Giving up.`);
+                container.classList.remove('loading');
+                container.classList.add('error');
+                container.innerHTML = `Error final: ${reason}<br>(Seed: ${seed})`;
+                checkAllImagesLoaded(); // Check if others finished
+            }
+        }
+
+        function checkAllImagesLoaded() {
+            const containers = resultsGrid.querySelectorAll('.image-container');
+            // Consider loading complete only if all containers exist and none are in the 'loading' state
+            if (containers.length < NUM_VARIATIONS) {
+                 return; // Still creating initial containers
+            }
+
+            const allDone = Array.from(containers).every(
+                cont => !cont.classList.contains('loading')
+            );
+
+            if (allDone) {
+                feedbackDiv.innerHTML = ''; // Clear global loading message
+                generateBtn.disabled = false;
+                generateBtn.textContent = `Generar ${NUM_VARIATIONS} Variaciones`;
+
+                // Count errors for final feedback
+                const errorCount = resultsGrid.querySelectorAll('.image-container.error').length;
+                if(errorCount > 0) {
+                    showFeedback('error', `${errorCount} imagen(es) no pudieron cargarse después de ${MAX_RETRIES} intentos.`);
+                } else {
+                    // Optional: Success message if needed
+                     // showFeedback('success', '¡Todas las imágenes cargadas!');
+                }
+            }
+        }
+
+        function showFeedback(type, message) {
+            // Clear only previous messages of the same type or all if needed
+            feedbackDiv.innerHTML = ''; // Simple clear for now
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.className = type === 'error' ? 'error-message' : type === 'loading' ? 'loading-indicator' : ''; // Add more types if needed
+            feedbackDiv.appendChild(messageElement);
+        }
+
+    </script>
+
+</body>
+</html>

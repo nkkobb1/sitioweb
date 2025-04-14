@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title -->
+    <title>FusionArt AI - Combina Ideas con IA | Papitas Fritas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-color: #0a0a1a;
+            --primary-neon: #ff00ff; /* Magenta */
+            --secondary-neon: #00ffff; /* Cyan */
+            --accent-neon: #39ff14; /* Verde */
+            --error-neon: #ff4d4d; /* Rojo */
+            --text-color: #e0e0e0;
+            --border-color: rgba(0, 255, 255, 0.5);
+            --glow-primary: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon), 0 0 15px var(--primary-neon);
+            --glow-secondary: 0 0 5px var(--secondary-neon), 0 0 10px var(--secondary-neon), 0 0 15px var(--secondary-neon);
+            --glow-accent: 0 0 5px var(--accent-neon), 0 0 10px var(--accent-neon), 0 0 15px var(--accent-neon);
+            --glow-error: 0 0 5px var(--error-neon), 0 0 10px var(--error-neon);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 25px 25px;
+        }
+
+        .container {
+            background-color: rgba(10, 10, 30, 0.85);
+            padding: 2rem 3rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+            width: 100%;
+            max-width: 800px; /* Adjusted width */
+            backdrop-filter: blur(6px);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-neon);
+            text-shadow: var(--glow-primary);
+            margin-bottom: 0.5em;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
+
+        /* SEO Subtitle */
+        .subtitle {
+            color: var(--secondary-neon);
+            margin-bottom: 2rem;
+            font-weight: 400;
+            font-size: 1.2rem;
+        }
+
+        .input-section label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-neon);
+            font-weight: 600;
+            text-align: left;
+        }
+         /* Add margin between input sections */
+        .input-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .prompt-input { /* Shared class for inputs */
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-color);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .prompt-input:focus {
+            outline: none;
+            border-color: var(--primary-neon);
+            box-shadow: var(--glow-primary);
+        }
+
+        #generate-button {
+            background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+            color: var(--bg-color);
+            border: none;
+            padding: 0.8rem 2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s, opacity 0.3s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            margin-top: 1rem; /* Margin from last input */
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        #generate-button:hover {
+            transform: scale(1.05);
+            box-shadow: var(--glow-primary), var(--glow-secondary);
+        }
+        #generate-button:active { transform: scale(1); }
+        #generate-button:disabled {
+            cursor: wait;
+            opacity: 0.7;
+        }
+
+
+        #loading-indicator, #error-message {
+            margin-top: 1.5rem;
+            padding: 0.8rem;
+            border-radius: 5px;
+            display: none;
+            font-weight: 600;
+            text-align: center;
+        }
+        #loading-indicator {
+            color: var(--accent-neon);
+            border: 1px dashed var(--accent-neon);
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        #error-message {
+            color: var(--error-neon);
+            background-color: rgba(255, 77, 77, 0.1);
+            border: 1px solid var(--error-neon);
+        }
+
+        #image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2.5rem;
+            width: 100%;
+        }
+
+        .image-container {
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            background-color: rgba(10, 10, 30, 0.6);
+            aspect-ratio: 1 / 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+         .image-container.failed { cursor: not-allowed; }
+         .image-container:hover:not(.failed) {
+            transform: translateY(-5px);
+            box-shadow: var(--glow-secondary);
+        }
+        .image-container img {
+            display: block; width: 100%; height: 100%; object-fit: cover;
+            opacity: 0; transition: opacity 0.5s ease-in-out;
+            position: absolute; top: 0; left: 0; pointer-events: none;
+        }
+        .image-container img.loaded { opacity: 1; pointer-events: auto; }
+
+        .image-container .spinner {
+            content: ''; width: 30px; height: 30px;
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-top-color: var(--secondary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite;
+            z-index: 1; pointer-events: none;
+        }
+        .image-container.img-loaded .spinner,
+        .image-container.failed .spinner { display: none; }
+
+        .image-container.failed { border-color: var(--error-neon); box-shadow: var(--glow-error); }
+        .image-container .error-icon {
+            display: none; font-size: 2rem; color: var(--error-neon);
+            text-shadow: var(--glow-error); content: '!'; font-weight: bold;
+            line-height: 1; z-index: 1; pointer-events: none;
+        }
+        .image-container.failed .error-icon { display: block; }
+
+        footer { margin-top: 3rem; font-size: 0.9rem; color: rgba(224, 224, 224, 0.6); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: text-shadow 0.3s; }
+        footer a:hover { text-shadow: var(--glow-secondary); }
+
+        /* Lightbox Styles */
+        #lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            padding: 20px; backdrop-filter: blur(3px);
+        }
+        #lightbox.active { display: flex; }
+        #lightbox img {
+            display: block; max-width: 90%; max-height: 90%; object-fit: contain;
+            border: 2px solid var(--secondary-neon); box-shadow: var(--glow-secondary);
+        }
+        #lightbox .close-btn {
+            position: absolute; top: 20px; right: 30px; font-size: 2.5rem;
+            color: var(--text-color); cursor: pointer; line-height: 1;
+            transition: color 0.3s, text-shadow 0.3s; text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+        }
+         #lightbox .close-btn:hover { color: var(--primary-neon); text-shadow: var(--glow-primary); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1.5rem; }
+            h1 { font-size: 2rem; }
+            .subtitle { font-size: 1.1rem; }
+            #image-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 1rem; }
+            .container { padding: 1rem; max-width: 100%; }
+            h1 { font-size: 1.8rem; }
+            .subtitle { font-size: 1rem; }
+            .prompt-input { font-size: 0.9rem; }
+            #generate-button { font-size: 1rem; padding: 0.7rem 1.5rem; }
+            #image-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+            #lightbox .close-btn { top: 15px; right: 20px; font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Papitas Fritas</h1>
+        <!-- Tool Name + SEO Subtitle -->
+        <p class="subtitle">FusionArt AI: Combina Conceptos y Genera Imágenes</p>
+
+        <!-- Input Section 1 -->
+        <div class="input-section">
+            <label for="prompt-input-1">Concepto 1:</label>
+            <input type="text" id="prompt-input-1" class="prompt-input" placeholder="Ej: Un gato astronauta">
+        </div>
+
+        <!-- Input Section 2 -->
+        <div class="input-section">
+            <label for="prompt-input-2">Concepto 2:</label>
+            <input type="text" id="prompt-input-2" class="prompt-input" placeholder="Ej: tocando un saxofón en Marte">
+        </div>
+
+        <!-- Generate Button -->
+        <button id="generate-button">Generar</button>
+
+        <div id="loading-indicator">Fusionando conceptos y generando imágenes...</div>
+        <div id="error-message"></div>
+
+        <div id="image-grid">
+            <!-- Las imágenes generadas aparecerán aquí -->
+        </div>
+    </div>
+
+    <!-- Lightbox Structure -->
+    <div id="lightbox">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="" alt="Imagen Ampliada">
+    </div>
+
+    <footer>
+        Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | Desarrollado para <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // Get references to the two input fields
+        const promptInput1 = document.getElementById('prompt-input-1');
+        const promptInput2 = document.getElementById('prompt-input-2');
+        const generateButton = document.getElementById('generate-button');
+        const imageGrid = document.getElementById('image-grid');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+
+        // Lightbox Elements
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.querySelector('#lightbox .close-btn');
+
+        // --- Constants ---
+        const MAX_IMAGES = 4;
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 512;
+        const IMAGE_HEIGHT = 512;
+        const RETRY_COUNT = 3;
+        const RETRY_DELAY = 1500; // ms
+        const FETCH_TIMEOUT = 20000; // 20 segundos
+
+        // --- Lógica de Generación ---
+        generateButton.addEventListener('click', () => {
+            // Get values from both inputs
+            const concept1 = promptInput1.value.trim();
+            const concept2 = promptInput2.value.trim();
+
+            // Validate that both inputs have content
+            if (!concept1 || !concept2) {
+                showError("Por favor, introduce ambos conceptos para fusionar.");
+                return;
+            }
+
+            clearResults();
+            showLoading(true);
+
+            // Combine concepts into a single prompt
+            const finalPrompt = `${concept1} ${concept2}`; // Simple space concatenation
+            console.log("Prompt combinado:", finalPrompt);
+
+            const generationPromises = [];
+
+            for (let i = 0; i < MAX_IMAGES; i++) {
+                const imageContainer = document.createElement('div');
+                imageContainer.classList.add('image-container');
+                const spinner = document.createElement('div');
+                spinner.classList.add('spinner');
+                const errorIcon = document.createElement('div');
+                errorIcon.classList.add('error-icon');
+                errorIcon.textContent = '!';
+
+                imageContainer.appendChild(spinner);
+                imageContainer.appendChild(errorIcon);
+                imageGrid.appendChild(imageContainer);
+
+                const seed = Math.floor(Math.random() * 100000);
+                const encodedPrompt = encodeURIComponent(finalPrompt); // Use combined prompt
+                const apiUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+                generationPromises.push(
+                    fetchWithRetry(apiUrl, RETRY_COUNT, RETRY_DELAY, FETCH_TIMEOUT)
+                        .then(imageUrl => {
+                            displayImage(imageUrl, finalPrompt, imageContainer); // Pass combined prompt as alt
+                            imageContainer.addEventListener('click', () => openLightbox(imageUrl));
+                        })
+                        .catch(error => {
+                            console.error(`Error final generando imagen ${i+1} (${apiUrl}):`, error);
+                            imageContainer.classList.add('failed');
+                            return Promise.reject(error);
+                        })
+                );
+            }
+
+            Promise.allSettled(generationPromises).then(results => {
+                showLoading(false);
+                const successfulCount = results.filter(result => result.status === 'fulfilled').length;
+                const failedCount = MAX_IMAGES - successfulCount;
+
+                if (failedCount > 0 && successfulCount === 0) {
+                    showError(`No se pudo generar ninguna imagen después de ${RETRY_COUNT} intentos por imagen.`);
+                } else if (failedCount > 0) {
+                    showError(`Se generaron ${successfulCount} de ${MAX_IMAGES} imágenes. ${failedCount} fallaron.`, true);
+                }
+            });
+        });
+
+        // --- Función Fetch con Reintentos (Identical to previous version) ---
+        async function fetchWithRetry(url, retries, delay, timeout) {
+            let lastError;
+            for (let i = 0; i < retries; i++) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+                try {
+                    const response = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        if (response.status >= 500 && response.status < 600) {
+                             console.warn(`Error Servidor (Status ${response.status}) Intento ${i + 1}. Reintentando...`);
+                             lastError = new Error(`Server error: ${response.status}`);
+                             await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                             continue;
+                        } else {
+                             lastError = new Error(`HTTP error: ${response.status}`);
+                             throw lastError;
+                        }
+                    }
+
+                    const contentType = response.headers.get('Content-Type');
+                    if (!contentType || !contentType.startsWith('image/')) {
+                         lastError = new Error(`Invalid Content-Type: ${contentType}`);
+                         throw lastError;
+                    }
+                    return response.url;
+
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    lastError = error;
+                     console.error(`Intento ${i + 1}/${retries} fallido: ${error.name === 'AbortError' ? 'Timeout' : error.message}`);
+                    if (i === retries - 1 || (error.name !== 'AbortError' && !(error.message.startsWith('Server error')))) {
+                        throw lastError;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                }
+            }
+            throw lastError || new Error('Unknown error after retries');
+        }
+
+        // --- Funciones Auxiliares UI (Mostly identical) ---
+        function displayImage(imageUrl, altText, container) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = altText; // Use the combined prompt for Alt text
+            img.onload = () => {
+                img.classList.add('loaded');
+                container.classList.add('img-loaded');
+            };
+            img.onerror = () => {
+                 console.error("Error al cargar imagen final:", imageUrl);
+                 container.classList.remove('img-loaded');
+                 container.classList.add('failed');
+            };
+            container.appendChild(img);
+        }
+
+        function showLoading(isLoading) {
+            loadingIndicator.style.display = isLoading ? 'block' : 'none';
+            generateButton.disabled = isLoading; // Disable button while loading
+        }
+
+        function showError(message, isPartial = false) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            errorMessage.style.borderColor = isPartial ? 'var(--accent-neon)' : 'var(--error-neon)';
+            if (!isPartial) showLoading(false);
+        }
+
+        function clearResults() {
+            imageGrid.innerHTML = '';
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+        }
+
+         // --- Lightbox Functions (Identical) ---
+         function openLightbox(imageUrl) {
+            lightboxImg.src = imageUrl;
+            lightbox.classList.add('active');
+        }
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxImg.src = "";
+        }
+
+        // --- Event Listeners ---
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (event) => {
+            if (event.target === lightbox) closeLightbox();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
+        });
+
+        // Preconnect on load
+        document.addEventListener('DOMContentLoaded', () => {
+             const preconnectLink = document.createElement('link');
+             preconnectLink.rel = 'preconnect';
+             preconnectLink.href = 'https://image.pollinations.ai';
+             document.head.appendChild(preconnectLink);
+        });
+
+    </script>
+
+</body>
+</html>

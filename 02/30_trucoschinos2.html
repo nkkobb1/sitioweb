@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia de Trucos Matemáticos - Parte 2</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .trick-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer; background: white; border-radius: 1rem; overflow: hidden;
+        }
+        .trick-card:hover {
+            transform: translateY(-8px) scale(1.02); box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        .hidden { display: none !important; }
+        .progress-bar {
+            height: 20px; background-color: #e0e0e0; border-radius: 10px;
+            margin: 10px 0; overflow: hidden; position: relative;
+        }
+        .progress-fill {
+            height: 100%; background-color: #4CAF50; border-radius: 10px; width: 0%;
+            transition: width 0.5s ease; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.8rem; font-weight: bold;
+        }
+        .star-rating .star { color: #ccc; font-size: 24px; cursor: default; transition: color 0.3s ease; }
+        .star-rating .star.active { color: #FFD700; }
+        .dragon {
+            position: fixed; bottom: 20px; right: 20px; width: 100px; height: auto; z-index: 1000;
+            cursor: pointer; animation: float 3s infinite ease-in-out;
+            content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🐉</text></svg>');
+        }
+        .dragon-message {
+            position: fixed; bottom: 130px; right: 20px; background-color: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1001;
+            font-size: 0.9rem; max-width: 200px; text-align: center; opacity: 0; transition: opacity 0.5s ease;
+            pointer-events: none; border: 1px solid #eee;
+        }
+        .dragon-message.show { opacity: 1; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .category-btn, .category-filter-btn {
+            transition: all 0.3s ease; min-width: 120px; text-align: center; font-weight: 600;
+        }
+        .category-btn:hover, .category-filter-btn:hover:not(.active) {
+            transform: scale(1.05) rotate(-2deg); box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        .category-filter-btn.active { transform: scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .question-card { transition: all 0.3s ease; border: 2px solid transparent; }
+        .question-card.correct { border-color: #4CAF50; background-color: #e8f5e9; }
+        .question-card.incorrect { border-color: #f44336; background-color: #ffebee; }
+        .answer-btn {
+             transition: all 0.2s ease; border: 2px solid #ccc; background-color: #f8f9fa;
+        }
+        .answer-btn:hover { transform: scale(1.03); border-color: #888; background-color: #e9ecef;}
+        .answer-btn.selected { border-color: #60a5fa !important; background-color: #eff6ff !important; }
+        .answer-btn.correct { background-color: #4CAF50 !important; border-color: #388e3c !important; color: white !important; transform: scale(1.05); }
+        .answer-btn.incorrect { background-color: #f44336 !important; border-color: #d32f2f !important; color: white !important; opacity: 0.7; }
+        .answer-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .nav-item {
+            position: relative; cursor: pointer; padding-bottom: 8px; transition: color 0.3s ease;
+        }
+        .nav-item::after {
+            content: ''; position: absolute; width: 0; height: 3px; bottom: 0; left: 50%;
+            transform: translateX(-50%); background-color: #FFD700; border-radius: 1.5px;
+            transition: width 0.3s ease;
+        }
+        .nav-item:hover::after, .nav-item.active::after { width: 70%; }
+        .nav-item:hover { color: #fff5cc; }
+        @media (max-width: 768px) {
+             h1 { font-size: 1.8rem; } h2 { font-size: 1.5rem; } .nav-item { font-size: 0.9rem; padding: 8px 8px;}
+        }
+        @media (max-width: 640px) {
+            .trick-grid { grid-template-columns: repeat(1, 1fr); } .nav-item { padding: 8px 6px; }
+            .dragon { width: 80px; bottom: 10px; right: 10px; }
+            .dragon-message { bottom: 100px; right: 10px; font-size: 0.8rem; }
+            h1 { font-size: 1.6rem; }
+            .flex-col.md\:flex-row > .flex.items-center.mb-4 { margin-bottom: 1rem; }
+        }
+        .prose ol, .prose ul { padding-left: 1.5em; } .prose li { margin-bottom: 0.75em; }
+        /* Confetti styles */
+        .confetti {
+            position: fixed; /* Use fixed for full viewport effect */
+            width: 8px;
+            height: 15px;
+            opacity: 0.9; /* Slightly more opaque */
+            z-index: 9999; /* Ensure it's on top */
+            pointer-events: none; /* Don't block clicks */
+        }
+        /* Tailwind safe list (optional but recommended for dynamic classes) */
+        /* hover:bg-red-200 hover:bg-blue-200 hover:bg-green-200 hover:bg-yellow-200 hover:bg-indigo-200 hover:bg-purple-200 hover:bg-gray-300 */
+    </style>
+</head>
+<body class="bg-blue-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Cabecera -->
+        <header class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-xl p-6 shadow-lg mb-8 sticky top-0 z-50">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0 text-white">
+                    <svg class="w-10 h-10 md:w-12 md:h-12 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.539 1.118l-3.975-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                    <h1 class="text-2xl md:text-4xl font-bold">Academia de Trucos - Parte 2</h1>
+                </div>
+                <nav class="flex flex-wrap justify-center space-x-1 md:space-x-4">
+                    <button id="btnHome" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full active">Inicio</button>
+                    <button id="btnTricks" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full">Trucos (P2)</button>
+                    <button id="btnStats" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full">Estadísticas (P2)</button>
+                    <button id="btnAbout" class="nav-item text-white font-bold py-2 px-3 md:px-4 rounded-full">Sobre Nosotros</button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <main>
+            <!-- Sección de bienvenida (Inicio) -->
+            <section id="welcome" class="mb-16">
+                <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-purple-400">
+                    <h2 class="text-3xl font-bold text-purple-700 mb-4 text-center">¡La Aventura Matemática Continúa! 🚀</h2>
+                    <p class="text-lg mb-6 text-gray-700 text-center">¡Felicidades por llegar a la Parte 2! 🎉 Aquí descubrirás <span class="font-bold">30 nuevos trucos</span> aún más sorprendentes para dominar los números. ¡Prepárate para nuevos desafíos!</p>
+                    <div class="text-center mb-10">
+                        <button id="start-learning-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 text-xl">
+                            ¡Explorar Nuevos Trucos! <i class="fas fa-lightbulb ml-2"></i>
+                        </button>
+                    </div>
+                    <div class="mt-10 border-t pt-6">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-4 text-center">Tu progreso en la Parte 2:</h3>
+                        <div class="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-10 text-center">
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-sm w-full md:w-auto min-w-[180px]">
+                                <p class="text-lg font-semibold text-gray-600">Trucos P2 Aprendidos</p>
+                                <p class="text-4xl font-bold text-green-600" id="home-tricks-mastered">0/30</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-sm w-full md:w-auto min-w-[180px]">
+                                <p class="text-lg font-semibold text-gray-600">Estrellas P2 Ganadas <i class="fas fa-star text-yellow-400"></i></p>
+                                <p class="text-4xl font-bold text-yellow-500" id="home-stars-earned">0</p>
+                            </div>
+                            <div class="bg-gray-100 p-4 rounded-lg shadow-sm w-full md:w-auto min-w-[180px]">
+                                <p class="text-lg font-semibold text-gray-600">Ejercicios P2 Hechos</p>
+                                <p class="text-4xl font-bold text-blue-600" id="home-exercises-completed">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Lista de Trucos -->
+             <section id="trick-list" class="mb-16 hidden">
+                <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-cyan-400">
+                    <h2 class="text-3xl font-bold text-cyan-700 mb-6 text-center">Nuevos Trucos por Descubrir ✨</h2>
+                    <div class="flex flex-wrap justify-center gap-3 mb-8">
+                        <button class="category-filter-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-full active" data-category="all">Todos</button>
+                        <button class="category-filter-btn bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded-full" data-category="multiplication">Multiplicación <i class="fas fa-times ml-1"></i></button>
+                        <button class="category-filter-btn bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded-full" data-category="addition">Sumas/Restas <i class="fas fa-plus-minus ml-1"></i></button>
+                         <button class="category-filter-btn bg-green-100 hover:bg-green-200 text-green-800 font-bold py-2 px-4 rounded-full" data-category="mental">Cálculo Mental <i class="fas fa-brain ml-1"></i></button>
+                        <button class="category-filter-btn bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-bold py-2 px-4 rounded-full" data-category="patterns">Patrones <i class="fas fa-puzzle-piece ml-1"></i></button>
+                         <button class="category-filter-btn bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold py-2 px-4 rounded-full" data-category="division">División <i class="fas fa-divide ml-1"></i></button>
+                        <button class="category-filter-btn bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold py-2 px-4 rounded-full" data-category="advanced">Avanzados <i class="fas fa-infinity ml-1"></i></button>
+                    </div>
+                    <div id="trick-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 trick-grid">
+                        {/* Las tarjetas de trucos (P2) se cargarán aquí */}
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Detalle del Truco y Práctica -->
+             <section id="trick-detail" class="mb-16 hidden">
+                 <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-emerald-400">
+                    <button id="back-to-list-btn" class="mb-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">
+                        <i class="fas fa-arrow-left mr-2"></i> Volver a la Lista (P2)
+                    </button>
+                    <div id="trick-detail-content">
+                        {/* El contenido del truco (P2) (explicación) se carga aquí */}
+                    </div>
+                    <div id="practice-section" class="mt-8 border-t pt-6 hidden">
+                         <h3 class="text-2xl font-bold text-emerald-700 mb-4 text-center">¡Practica el Nuevo Truco! 💡</h3>
+                         <div id="question-container" class="bg-gray-50 p-6 rounded-lg shadow-inner mb-4"></div>
+                         <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"></div>
+                         <div id="feedback-container" class="text-center font-bold mb-4 h-6"></div>
+                         <div class="flex justify-center space-x-4">
+                             <button id="check-answer-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 hidden">Revisar Respuesta</button>
+                            <button id="next-question-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition duration-300 hidden">Siguiente <i class="fas fa-arrow-right ml-1"></i></button>
+                         </div>
+                    </div>
+                     <div id="practice-results" class="mt-8 border-t pt-6 text-center hidden">
+                         <h3 class="text-2xl font-bold text-purple-700 mb-4">¡Práctica (P2) Completada! 🥳</h3>
+                         <p class="text-xl mb-2">Tu resultado:</p>
+                         <p class="text-3xl font-bold mb-4"><span id="score-correct">0</span> de <span id="score-total">0</span> correctas</p>
+                         <div class="star-rating flex justify-center text-4xl mb-6" id="result-stars"></div>
+                         <p id="result-message" class="text-lg mb-6 font-semibold"></p>
+                         <button id="back-to-trick-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full transition duration-300">Volver al Truco</button>
+                     </div>
+                     <div id="start-practice-area" class="text-center mt-8 border-t pt-6 hidden">
+                         <button id="start-practice-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 text-xl">
+                             ¡Probar este truco! <i class="fas fa-pencil-alt ml-2"></i>
+                         </button>
+                     </div>
+                </div>
+            </section>
+
+            <!-- Sección de estadísticas -->
+            <section id="stats" class="mb-16 hidden">
+                 <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-orange-400">
+                    <h2 class="text-3xl font-bold text-orange-700 mb-6 text-center">Tu Avance en la Parte 2 📊</h2>
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-2">Progreso General (P2)</h3>
+                        <div class="progress-bar">
+                            <div id="overall-progress" class="progress-fill bg-orange-500">0%</div>
+                        </div>
+                        <p class="text-right text-gray-600"><span id="overall-progress-text">0</span>% de trucos P2 aprendidos (<span id="stats-tricks-mastered">0</span>/30)</p>
+                        <p class="text-right text-gray-600"><i class="fas fa-star text-yellow-400"></i> Total Estrellas P2: <span id="stats-stars-earned" class="font-bold">0</span></p>
+                         <p class="text-right text-gray-600"><i class="fas fa-check text-green-500"></i> Ejercicios P2 Completados: <span id="stats-exercises-completed" class="font-bold">0</span></p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                            <h4 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Progreso por Tipo de Truco (P2)</h4>
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Multiplicación <i class="fas fa-times text-red-500"></i></p>
+                                <div class="progress-bar"><div id="multiplication-progress" class="progress-fill bg-red-500" style="width: 0%;">0%</div></div>
+                            </div>
+                            <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Sumas/Restas <i class="fas fa-plus-minus text-blue-500"></i></p>
+                                <div class="progress-bar"><div id="addition-progress" class="progress-fill bg-blue-500" style="width: 0%;">0%</div></div>
+                            </div>
+                            <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Cálculo Mental <i class="fas fa-brain text-green-500"></i></p>
+                                <div class="progress-bar"><div id="mental-progress" class="progress-fill bg-green-500" style="width: 0%;">0%</div></div>
+                            </div>
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Patrones <i class="fas fa-puzzle-piece text-yellow-500"></i></p>
+                                <div class="progress-bar"><div id="patterns-progress" class="progress-fill bg-yellow-500" style="width: 0%;">0%</div></div>
+                            </div>
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">División <i class="fas fa-divide text-indigo-500"></i></p>
+                                <div class="progress-bar"><div id="division-progress" class="progress-fill bg-indigo-500" style="width: 0%;">0%</div></div>
+                             </div>
+                             <div class="mb-3">
+                                <p class="text-gray-700 font-semibold">Avanzados <i class="fas fa-infinity text-purple-500"></i></p>
+                                <div class="progress-bar"><div id="advanced-progress" class="progress-fill bg-purple-500" style="width: 0%;">0%</div></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                            <h4 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Tus Medallas (P2) <i class="fas fa-medal text-yellow-600"></i></h4>
+                            <div id="achievements-container" class="space-y-3">
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="first_trick">
+                                    <div class="mr-4 text-2xl"><i class="fas fa-star text-gray-400"></i></div>
+                                    <div><p class="font-bold text-gray-600">Primer Truco (P2)</p><p class="text-sm text-gray-500">Completa tu primer truco de esta sección.</p></div>
+                                </div>
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="five_tricks">
+                                    <div class="mr-4 text-2xl"><i class="fas fa-award text-gray-400"></i></div>
+                                    <div><p class="font-bold text-gray-600">Aprendiz Veloz (P2)</p><p class="text-sm text-gray-500">Completa 5 trucos de esta sección.</p></div>
+                                </div>
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="fifteen_tricks">
+                                    <div class="mr-4 text-2xl"><i class="fas fa-medal text-gray-400"></i></div>
+                                    <div><p class="font-bold text-gray-600">Experto Calculista (P2)</p><p class="text-sm text-gray-500">Completa 15 trucos de esta sección.</p></div>
+                                </div>
+                                <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="all_tricks">
+                                     <div class="mr-4 text-2xl"><i class="fas fa-trophy text-gray-400"></i></div>
+                                    <div><p class="font-bold text-gray-600">Maestro de Trucos (P2)</p><p class="text-sm text-gray-500">¡Completa todos los trucos de la Parte 2!</p></div>
+                                </div>
+                                 <div class="achievement-item flex items-center p-3 bg-gray-200 rounded opacity-50 transition duration-300" data-id="perfect_score">
+                                     <div class="mr-4 text-2xl"><i class="fas fa-check-double text-gray-400"></i></div>
+                                    <div><p class="font-bold text-gray-600">¡Perfecto! (P2)</p><p class="text-sm text-gray-500">Consigue 3 estrellas en un truco de esta sección.</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-6 border-t pt-6">
+                         <button id="reset-progress-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full transition duration-300 transform hover:scale-105">
+                             <i class="fas fa-undo mr-2"></i> Reiniciar Progreso (P2)
+                        </button>
+                        <p class="text-sm text-gray-500 mt-2">¡Cuidado! Esto borrará tu progreso de la Parte 2.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Sobre Nosotros -->
+            <section id="about" class="mb-16 hidden">
+                 <div class="bg-white rounded-xl p-8 shadow-lg border-t-4 border-rose-400">
+                    <h2 class="text-3xl font-bold text-rose-700 mb-6 text-center">Nuestra Aventura Matemática 🗺️</h2>
+                    <div class="mb-8 text-center">
+                        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🧭</text></svg>" alt="Brújula" class="w-24 h-24 mx-auto mb-4">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-4">¿Quiénes somos?</h3>
+                        <p class="text-lg text-gray-700 mb-4 leading-relaxed max-w-3xl mx-auto">Somos los mismos amigos apasionados por las mates, ¡y estamos emocionados de que sigas explorando con nosotros! La Parte 2 profundiza en más técnicas fascinantes.</p>
+                        <p class="text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto">Nuestra misión sigue siendo la misma: ¡hacer que las matemáticas sean una aventura divertida y llena de descubrimientos para ti!</p>
+                    </div>
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-gray-700 mb-4 text-center">¿Por qué seguir aprendiendo trucos? 🤔</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div class="bg-blue-50 p-5 rounded-lg shadow-sm border-l-4 border-blue-400">
+                                <div class="flex items-center mb-2"><i class="fas fa-bolt text-blue-500 text-2xl mr-3"></i><h4 class="font-bold text-lg text-blue-800">¡Aún Más Rápido!</h4></div>
+                                <p class="text-gray-700">Con más trucos, tendrás más herramientas para elegir la más veloz.</p>
+                            </div>
+                            <div class="bg-green-50 p-5 rounded-lg shadow-sm border-l-4 border-green-400">
+                                <div class="flex items-center mb-2"><i class="fas fa-brain text-green-500 text-2xl mr-3"></i><h4 class="font-bold text-lg text-green-800">Cerebro Más Poderoso</h4></div>
+                                <p class="text-gray-700">Cada nuevo truco fortalece tu agilidad y comprensión mental.</p>
+                            </div>
+                             <div class="bg-yellow-50 p-5 rounded-lg shadow-sm border-l-4 border-yellow-400">
+                                <div class="flex items-center mb-2"><i class="fas fa-star text-yellow-500 text-2xl mr-3"></i><h4 class="font-bold text-lg text-yellow-800">Mayor Confianza</h4></div>
+                                <p class="text-gray-700">Dominar más técnicas te hará sentir imparable ante cualquier cálculo.</p>
+                            </div>
+                            <div class="bg-red-50 p-5 rounded-lg shadow-sm border-l-4 border-red-400">
+                                <div class="flex items-center mb-2"><i class="fas fa-link text-red-500 text-2xl mr-3"></i><h4 class="font-bold text-lg text-red-800">Conecta las Ideas</h4></div>
+                                <p class="text-gray-700">Verás cómo diferentes trucos se relacionan entre sí.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-10 border-t pt-6">
+                         <p class="text-lg text-gray-700">¿Listo para los trucos de la Parte 2?</p>
+                        <button id="about-to-tricks-btn" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full transition duration-300">
+                             ¡Ver los Nuevos Trucos! <i class="fas fa-wand-magic-sparkles ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Pie de página simple -->
+        <footer class="text-center text-gray-500 text-sm mt-12 pb-4">
+            Parte 2 - Hecho con <i class="fas fa-heart text-red-500"></i> y <i class="fas fa-brain text-blue-500"></i> para maestros matemáticos en formación.
+        </footer>
+
+        <!-- Mascota Dragón y Confeti (igual) -->
+        <div class="dragon" id="dragon-mascot"></div>
+        <div class="dragon-message" id="dragon-message-box">¡Guau! ¡Llegaste a la Parte 2!</div>
+        <div id="confetti-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></div>
+
+    </div> <!-- Fin del container -->
+
+    <script>
+        // --- Datos de los Nuevos Trucos (Parte 2) ---
+        // ***** REEMPLAZADO CON EL CONTENIDO COMPLETO *****
+        const tricks = [
+             // IDs empiezan desde 31
+             {
+                 id: 'trick31', title: 'Compensación en Sumas y Restas', category: 'addition', difficulty: 1, icon: 'fas fa-balance-scale-right',
+                 description: 'Ajusta números a decenas/centenas y corrige al final.',
+                 explanation: `
+                    <p class="mb-4 text-lg">¡Este truco hace que sumar y restar sea más fácil haciendo los números más "amigos" (terminados en 0)!</p>
+                    <p class="mb-2 font-semibold">Para sumar 58 + 37:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Haz un número "redondo":</span> Es más fácil sumar con 60 que con 58. Para convertir 58 en 60, le sumamos 2. ¡Recuerda ese +2!</li>
+                        <li><span class="font-bold text-blue-600">Haz la suma fácil:</span> Ahora suma 60 + 37 = 97.</li>
+                        <li><span class="font-bold text-green-600">Compensa (corrige):</span> Como al principio sumamos 2 "extra", ahora tenemos que quitarlos. 97 - 2 = 95.</li>
+                        <li><span class="font-bold text-purple-600">¡Resultado:</span> 58 + 37 = 95!</li>
+                    </ol>
+                    <p class="mt-4 mb-2 font-semibold text-lg">Para restar 73 - 29:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Haz redondo el número que RESTAS:</span> Es más fácil restar 30 que 29. Para convertir 29 en 30, le sumamos 1. ¡Recuerda ese +1!</li>
+                        <li><span class="font-bold text-blue-600">Haz la resta fácil:</span> Ahora resta 73 - 30 = 43.</li>
+                        <li><span class="font-bold text-green-600">Compensa al revés:</span> Como restamos 1 "extra" (porque 30 es 1 más que 29), nuestro resultado (43) es 1 menos de lo que debería ser. ¡Así que tenemos que sumar 1! 43 + 1 = 44.</li>
+                        <li><span class="font-bold text-purple-600">¡Resultado:</span> 73 - 29 = 44!</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-yellow-100 p-3 rounded">¡Es como pedir prestado y devolverlo al final!</p>
+                 `,
+                 practice: [
+                    { question: 'Usando compensación, ¿cuánto es 49 + 65?', options: ['114', '115', '104', '124'], correctAnswer: '114', hint: 'Haz 49 -> 50 (sumaste 1). Suma 50+65. Luego resta 1.' },
+                    { question: 'Usando compensación, ¿cuánto es 86 - 38?', options: ['48', '58', '52', '46'], correctAnswer: '48', hint: 'Haz 38 -> 40 (sumaste 2). Resta 86-40. Luego suma 2.' },
+                    { question: 'Calcula 197 + 55 compensando.', options: ['252', '250', '257', '242'], correctAnswer: '252', hint: 'Haz 197 -> 200 (sumaste 3). Suma 200+55. Luego resta 3.' }
+                 ]
+             },
+             {
+                 id: 'trick32', title: 'Multiplicación Rápida por 9', category: 'multiplication', difficulty: 1, icon: 'fas fa-9',
+                 description: 'Multiplica por 10 y resta el número original.',
+                 explanation: `
+                    <p class="mb-4 text-lg">¡Multiplicar por 9 es súper fácil si sabes multiplicar por 10!</p>
+                    <p class="mb-2 font-semibold">Para calcular 7 x 9:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Multiplica por 10:</span> Es fácil, ¡solo añade un cero! 7 x 10 = 70.</li>
+                        <li><span class="font-bold text-blue-600">Resta el número original:</span> Quítale el número con el que empezaste (el 7) al resultado anterior. 70 - 7 = 63.</li>
+                        <li><span class="font-bold text-purple-600">¡Listo!</span> ¡7 x 9 = 63!</li>
+                    </ol>
+                    <p class="mt-4 text-lg font-semibold">Otro ejemplo: 25 x 9</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li>25 x 10 = 250.</li>
+                        <li>250 - 25 = 225.</li>
+                        <li>¡Resultado: 25 x 9 = 225!</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-green-100 p-3 rounded">Piensa: "Quiero 9 grupos de algo. Mejor tomo 10 grupos y luego devuelvo 1 grupo."</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto es 6 x 9?', options: ['54', '60', '45', '56'], correctAnswer: '54', hint: 'Calcula 6x10 y luego resta 6.' },
+                    { question: 'Calcula 15 x 9.', options: ['135', '150', '145', '125'], correctAnswer: '135', hint: '15x10 = 150. Ahora resta 15.' },
+                    { question: '¿Cuál es el resultado de 80 x 9?', options: ['720', '800', '710', '640'], correctAnswer: '720', hint: '80x10 = 800. Ahora resta 80.' }
+                 ]
+             },
+             {
+                 id: 'trick33', title: 'Multiplicación Cruzada Extendida', category: 'multiplication', difficulty: 2, icon: 'fas fa-code-branch',
+                 description: 'Multiplica dígitos en cruz y suma para obtener el resultado.',
+                  explanation: `
+                    <p class="mb-4 text-lg">Este es otro vistazo al truco de multiplicar cruzado (como el Truco 1), ¡perfecto para números de dos cifras!</p>
+                    <p class="mb-2 font-semibold">Vamos a multiplicar 34 x 21:</p>
+                    <div class="text-center my-4 font-mono text-2xl">
+                       <span class="text-blue-600">3</span><span class="text-red-600">4</span><br>
+                       x <span class="text-green-600">2</span><span class="text-purple-600">1</span><br>
+                       ----
+                    </div>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-purple-600">Paso 1: Multiplica los de la derecha.</span><br>
+                           Multiplica los últimos dígitos: <span class="text-red-600">4</span> x <span class="text-purple-600">1</span> = 4. Este es el <span class="font-bold">último dígito</span> de tu respuesta. Escribe __4.</li>
+                        <li><span class="font-bold text-orange-600">Paso 2: Multiplica cruzado y suma.</span><br>
+                           (<span class="text-blue-600">3</span> x <span class="text-purple-600">1</span>) + (<span class="text-red-600">4</span> x <span class="text-green-600">2</span>) = 3 + 8 = 11.
+                           ¡Cuidado! Es 11. Escribe el 1 (de las unidades) y "llevas" el otro 1 (de las decenas). Tu respuesta ahora parece _14, y llevas 1.</li>
+                        <li><span class="font-bold text-blue-600">Paso 3: Multiplica los de la izquierda.</span><br>
+                           Multiplica los primeros dígitos: <span class="text-blue-600">3</span> x <span class="text-green-600">2</span> = 6.</li>
+                        <li><span class="font-bold text-teal-600">Paso 4: Suma lo que llevabas.</span><br>
+                           Al resultado anterior (6), súmale el 1 que llevabas: 6 + 1 = 7. Este es el <span class="font-bold">primer dígito</span> de tu respuesta.</li>
+                        <li><span class="font-bold text-pink-600">¡Une todo!</span><br>
+                           El primer dígito es 7, el del medio es 1, y el último es 4. ¡Resultado: 714!</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-blue-100 p-3 rounded">¡Derecha, Cruzado (sumando), Izquierda! ¡Recuerda llevarte números si la suma cruzada es 10 o más!</p>
+                 `,
+                 practice: [
+                     { question: 'Calcula 23 x 41 con este método.', options: ['943', '843', '923', '863'], correctAnswer: '943', hint: 'Derecha: 3x1=3. Cruzado: (2x1)+(3x4)=14 (pon 4, llevas 1). Izquierda: 2x4=8. Suma lo que llevas: 8+1=9. -> 943' },
+                     { question: '¿Cuánto es 52 x 16?', options: ['832', '732', '812', '712'], correctAnswer: '832', hint: 'Derecha: 2x6=12 (pon 2, llevas 1). Cruzado: (5x6)+(2x1)=30+2=32. Suma lo que llevas: 32+1=33 (pon 3, llevas 3). Izquierda: 5x1=5. Suma lo que llevas: 5+3=8. -> 832' },
+                     { question: 'Resultado de 71 x 33:', options: ['2343', '2143', '2333', '2133'], correctAnswer: '2343', hint: '1x3=3. (7x3)+(1x3)=21+3=24 (pon 4, llevas 2). 7x3=21. 21+2=23. -> 2343' }
+                 ]
+             },
+             {
+                 id: 'trick34', title: 'Multiplicar por 4 (Doble Doble)', category: 'multiplication', difficulty: 1, icon: 'fas fa-angles-up',
+                 description: 'Dobla el número dos veces para multiplicar por 4.',
+                 explanation: `
+                    <p class="mb-4 text-lg">Multiplicar por 4 es súper fácil si sabes cómo doblar un número (multiplicarlo por 2).</p>
+                    <p class="mb-2 font-semibold">Para calcular 15 x 4:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Dobla el número una vez:</span> ¿Cuánto es el doble de 15? 15 + 15 = 30 (o 15 x 2 = 30).</li>
+                        <li><span class="font-bold text-blue-600">¡Dobla el resultado otra vez!:</span> ¿Cuánto es el doble de 30? 30 + 30 = 60 (o 30 x 2 = 60).</li>
+                        <li><span class="font-bold text-purple-600">¡Ese es el resultado!</span> ¡15 x 4 = 60!</li>
+                    </ol>
+                    <p class="mt-4 text-lg font-semibold">Otro ejemplo: 35 x 4</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li>Doble de 35 es 70.</li>
+                        <li>Doble de 70 es 140.</li>
+                        <li>¡Resultado: 35 x 4 = 140!</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-purple-100 p-3 rounded">¡Multiplicar por 4 es simplemente... Doblar y Doblar!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto es 12 x 4?', options: ['48', '24', '42', '44'], correctAnswer: '48', hint: 'Dobla 12 (24), y dobla 24 de nuevo.' },
+                    { question: 'Calcula 25 x 4.', options: ['100', '50', '75', '125'], correctAnswer: '100', hint: 'Doble de 25 es 50. Doble de 50 es...' },
+                    { question: '¿Cuál es el resultado de 43 x 4?', options: ['172', '86', '162', '182'], correctAnswer: '172', hint: 'Doble de 43 es 86. Dobla 86.' }
+                 ]
+             },
+             {
+                 id: 'trick35', title: 'Método del Dedo (6 al 9)', category: 'multiplication', difficulty: 2, icon: 'fas fa-hand-point-up',
+                 description: 'Usa tus dedos para multiplicar números del 6 al 9.',
+                 explanation: `
+                    <p class="mb-4 text-lg">¡Tus manos pueden ayudarte a multiplicar números entre 6 y 9! Es un poco como un código secreto.</p>
+                    <p class="mb-2 font-semibold">Vamos a calcular 7 x 8:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Asigna números a tus dedos:</span> En cada mano, el pulgar es 6, el índice 7, el medio 8, el anular 9 y el meñique 10 (aunque el 10 no lo usaremos ahora).</li>
+                        <li><span class="font-bold text-blue-600">Junta los dedos clave:</span> En una mano, toca el dedo que representa el 7 (índice). En la otra mano, toca el dedo que representa el 8 (medio). ¡Junta esos dos dedos!</li>
+                        <li><span class="font-bold text-green-600">Cuenta los dedos "juntos y abajo":</span> Cuenta los dos dedos que se tocan y TODOS los dedos que están DEBAJO de ellos (hacia la muñeca) en AMBAS manos. En este caso: dedo 7 (índice izq.), dedo 6 (pulgar izq.), dedo 8 (medio der.), dedo 7 (índice der.), dedo 6 (pulgar der.). Son 5 dedos en total. ¡Este número representa las DECENAS! Así que tenemos 50.</li>
+                        <li><span class="font-bold text-yellow-600">Multiplica los dedos "arriba":</span> Ahora mira los dedos que quedaron ARRIBA de los que se tocan en CADA mano (sin incluir los que se tocan). En la mano del 7 (izquierda), quedan 3 dedos arriba (medio, anular, meñique). En la mano del 8 (derecha), quedan 2 dedos arriba (anular, meñique). Multiplica esos números: 3 x 2 = 6. ¡Este número representa las UNIDADES!</li>
+                        <li><span class="font-bold text-purple-600">Suma decenas y unidades:</span> Suma los resultados de los pasos 3 y 4: 50 + 6 = 56.</li>
+                        <li><span class="font-bold text-pink-600">¡Resultado:</span> 7 x 8 = 56!</li>
+                    </ol>
+                     <div class="mt-4 flex justify-center">
+                        {/* Idealmente, aquí iría una imagen o GIF */}
+                        <img src="https://i.ytimg.com/vi/l-hKr0tO848/hqdefault.jpg" alt="Multiplicación con dedos" class="rounded border shadow w-full max-w-xs">
+                     </div>
+                    <p class="mt-4 text-lg bg-orange-100 p-3 rounded">¡Practica con diferentes combinaciones (6x7, 8x9, 7x7)! Los dedos de abajo suman decenas, los de arriba se multiplican para las unidades.</p>
+                 `,
+                 practice: [
+                    { question: 'Usando los dedos, ¿cuánto es 6 x 8?', options: ['48', '42', '54', '46'], correctAnswer: '48', hint: 'Junta pulgar (6) y medio (8). Dedos abajo/tocando: 1 (pulgar izq) + 3 (medio, índice, pulgar der) = 4 decenas (40). Dedos arriba: 4 (izq) x 2 (der) = 8 unidades. 40+8=48.' },
+                    { question: 'Calcula 7 x 7 con los dedos.', options: ['49', '42', '56', '47'], correctAnswer: '49', hint: 'Junta índice (7) e índice (7). Dedos abajo/tocando: 2 (izq) + 2 (der) = 4 decenas (40). Dedos arriba: 3 (izq) x 3 (der) = 9 unidades. 40+9=49.' },
+                    { question: '¿Cuál es el resultado de 9 x 6 con los dedos?', options: ['54', '45', '56', '63'], correctAnswer: '54', hint: 'Junta anular (9) y pulgar (6). Dedos abajo/tocando: 4 (izq) + 1 (der) = 5 decenas (50). Dedos arriba: 1 (izq) x 4 (der) = 4 unidades. 50+4=54.' }
+                 ]
+             },
+             {
+                 id: 'trick36', title: 'División Rápida por 5', category: 'division', difficulty: 1, icon: 'fas fa-bolt',
+                 description: 'Multiplica por 2 y divide entre 10.',
+                 explanation: `
+                    <p class="mb-4 text-lg">¿Dividir entre 5? ¡Hay un truco que usa la multiplicación por 2, que suele ser más fácil!</p>
+                    <p class="mb-2 font-semibold">Para calcular 80 / 5:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-red-600">Olvida la división por ahora. ¡Multiplica por 2!</span> Toma el número que quieres dividir (80) y dóblalo: 80 x 2 = 160.</li>
+                        <li><span class="font-bold text-blue-600">Ahora divide entre 10:</span> Esto es súper fácil. Si el número acaba en 0, ¡simplemente quítale el cero! 160 -> 16. (Si no acabara en cero, moverías la coma decimal un lugar a la izquierda).</li>
+                        <li><span class="font-bold text-purple-600">¡Ese es el resultado de la división original!</span> ¡80 / 5 = 16!</li>
+                    </ol>
+                    <p class="mt-4 text-lg font-semibold">Otro ejemplo: 135 / 5</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li>Multiplica por 2: 135 x 2 = 270.</li>
+                        <li>Divide entre 10 (quita el cero): 270 -> 27.</li>
+                        <li>¡Resultado: 135 / 5 = 27!</li>
+                    </ol>
+                     <p class="mt-4 text-lg font-semibold">Ejemplo con decimales: 42 / 5</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li>Multiplica por 2: 42 x 2 = 84.</li>
+                        <li>Divide entre 10 (mueve la coma un lugar a la izquierda): 84 -> 8.4.</li>
+                        <li>¡Resultado: 42 / 5 = 8.4!</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-teal-100 p-3 rounded">¡Dividir por 5 es lo mismo que Doblar y luego Quitar el Cero (o mover la coma)!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto es 60 / 5?', options: ['12', '10', '15', '30'], correctAnswer: '12', hint: 'Dobla 60 (120). Quita el cero.' },
+                    { question: 'Calcula 210 / 5.', options: ['42', '40', '45', '105'], correctAnswer: '42', hint: '210 x 2 = 420. Divide entre 10.' },
+                    { question: '¿Cuál es el resultado de 75 / 5?', options: ['15', '17', '12', '37.5'], correctAnswer: '15', hint: 'Dobla 75 (150). Quita el cero.' },
+                    { question: 'Calcula 14 / 5.', options: ['2.8', '2.4', '3.0', '7.0'], correctAnswer: '2.8', hint: 'Dobla 14 (28). Mueve la coma.' }
+                 ]
+             },
+             {
+                 id: 'trick37', title: 'Multiplicación 3 Dígitos en Cruz', category: 'multiplication', difficulty: 3, icon: 'fas fa-diagram-project',
+                 description: 'Técnica cruzada para números de tres cifras.',
+                 explanation: `
+                    <p class="mb-4 text-lg">Este es el hermano mayor de la multiplicación cruzada. ¡Un poco más largo, pero muy poderoso!</p>
+                    <p class="mb-2 font-semibold">Para multiplicar 123 x 456:</p>
+                    <div class="text-center my-4 font-mono text-xl">
+                       <span class="text-blue-600">1</span><span class="text-red-600">2</span><span class="text-purple-600">3</span><br>
+                       x <span class="text-green-600">4</span><span class="text-yellow-600">5</span><span class="text-orange-600">6</span><br>
+                       ------
+                    </div>
+                    <p class="mb-2 text-lg">Seguiremos 5 pasos, de derecha a izquierda:</p>
+                    <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                        <li><span class="font-bold text-orange-600">Paso 1 (Unidades):</span> Multiplica los últimos dígitos: 3 x 6 = 18. Escribe 8, llevas 1. (Respuesta: ___ _ _ 8)</li>
+                        <li><span class="font-bold text-yellow-600">Paso 2 (Decenas - Cruzado corto):</span> Multiplica cruzado los últimos dos dígitos de cada número y suma lo que llevas: (2x6) + (3x5) + 1(llevas) = 12 + 15 + 1 = 28. Escribe 8, llevas 2. (Respuesta: ___ _ 8 8)</li>
+                        <li><span class="font-bold text-green-600">Paso 3 (Centenas - Cruzado largo y medio):</span> Este es el paso estrella. Multiplica los extremos, multiplica los del medio y suma todo, más lo que llevas: (1x6) + (3x4) + (2x5) + 2(llevas) = 6 + 12 + 10 + 2 = 30. Escribe 0, llevas 3. (Respuesta: ___ 0 8 8)</li>
+                        <li><span class="font-bold text-red-600">Paso 4 (Miles - Cruzado corto izquierdo):</span> Multiplica cruzado los primeros dos dígitos y suma lo que llevas: (1x5) + (2x4) + 3(llevas) = 5 + 8 + 3 = 16. Escribe 6, llevas 1. (Respuesta: _ 6 0 8 8)</li>
+                        <li><span class="font-bold text-blue-600">Paso 5 (Decenas de Mil - Izquierda):</span> Multiplica los primeros dígitos y suma lo que llevas: (1x4) + 1(llevas) = 4 + 1 = 5. Escribe 5. (Respuesta: 5 6 0 8 8)</li>
+                        <li><span class="font-bold text-pink-600">¡Resultado final!</span> 123 x 456 = 56088.</li>
+                    </ol>
+                    <p class="mt-4 text-lg bg-red-50 p-3 rounded">¡Es como un baile complejo: Derecha -> Cruz corta -> Cruz larga+medio -> Cruz corta izq -> Izquierda! Requiere práctica.</p>
+                 `,
+                 practice: [
+                    { question: 'Calcula 111 x 222.', options: ['24642', '24442', '23642', '24622'], correctAnswer: '24642', hint: '1. 1x2=2. 2. (1x2)+(1x2)=4. 3. (1x2)+(1x2)+(1x2)=6. 4. (1x2)+(1x2)=4. 5. 1x2=2. -> 24642' },
+                    { question: '¿Cuánto es 101 x 303?', options: ['30603', '30303', '30503', '31603'], correctAnswer: '30603', hint: '1. 1x3=3. 2. (0x3)+(1x0)=0. 3. (1x3)+(1x3)+(0x0)=6. 4. (1x0)+(0x3)=0. 5. 1x3=3. -> 30603' },
+                    { question: 'Resultado de 210 x 150:', options: ['31500', '30500', '31000', '32500'], correctAnswer: '31500', hint: '1. 0x0=0. 2. (1x0)+(0x5)=0. 3. (2x0)+(0x1)+(1x5)=5. 4. (2x5)+(1x1)=11 (pon 1, llevas 1). 5. (2x1)+1=3. -> 31500' }
+                 ]
+              },
+              {
+                 id: 'trick38', title: 'Descomposición cerca de 1000', category: 'multiplication', difficulty: 2, icon: 'fas fa-thousand-separator', // Icono cambiado
+                 description: 'Similar al "faltante a 100", pero con 1000.',
+                 explanation: `
+                     <p class="mb-4 text-lg">Este truco es primo del "Faltante a 100", ¡pero para números grandes cerca de 1000!</p>
+                     <p class="mb-2 font-semibold">Vamos a multiplicar 997 x 992:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">¿Cuánto les falta para 1000?</span><br>
+                            A 997 le faltan 3 (1000 - 997 = 3).<br>
+                            A 992 le faltan 8 (1000 - 992 = 8).</li>
+                         <li><span class="font-bold text-blue-600">Resta cruzado (igual que antes):</span><br>
+                             997 - 8 = 989<br>
+                             o<br>
+                             992 - 3 = 989.<br>
+                            ¡Este es el <span class="font-bold">primer trozo</span> (grande) de tu respuesta!</li>
+                         <li><span class="font-bold text-green-600">Multiplica lo que faltaba:</span><br>
+                            Multiplica los "faltantes": 3 x 8 = 24.</li>
+                         <li><span class="font-bold text-yellow-600">¡Asegura TRES cifras!:</span> Como trabajamos con 1000 (que tiene 3 ceros), este segundo trozo DEBE tener 3 cifras. A 24 le falta una. Añadimos un cero DELANTE: <span class="font-bold">024</span>.</li>
+                         <li><span class="font-bold text-purple-600">¡Une los trozos!</span><br>
+                            Pon el primer trozo (989) y luego el segundo (024): 989024.<br>
+                            ¡Así que 997 x 992 = 989024!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-indigo-100 p-3 rounded">Clave: El segundo trozo debe tener TANTAS cifras como ceros tenga tu base (100 -> 2 cifras, 1000 -> 3 cifras). ¡Añade ceros delante si es necesario!</p>
+                 `,
+                 practice: [
+                    { question: 'Calcula 995 x 996.', options: ['991020', '99120', '991010', '990020'], correctAnswer: '991020', hint: 'Faltan 5 y 4. Resta cruzado (995-4=991). Multiplica faltantes (5x4=20). Asegura 3 cifras (020). Une: 991020.' },
+                    { question: '¿Cuánto es 998 x 997?', options: ['995006', '99506', '995016', '996006'], correctAnswer: '995006', hint: 'Faltan 2 y 3. Resta (998-3=995). Multiplica (2x3=6). Asegura 3 cifras (006). Une: 995006.' },
+                    { question: 'Resultado de 990 x 999:', options: ['989010', '98910', '989001', '990010'], correctAnswer: '989010', hint: 'Faltan 10 y 1. Resta (990-1=989). Multiplica (10x1=10). Asegura 3 cifras (010). Une: 989010.' }
+                 ]
+              },
+              {
+                 id: 'trick39', title: 'Sustracción con Complemento', category: 'addition', difficulty: 2, icon: 'fas fa-circle-minus',
+                 description: 'Usa lo que falta para 10/100/1000 para restar fácil.',
+                 explanation: `
+                     <p class="mb-4 text-lg">Restar puede ser más fácil si pensamos en "cuánto falta para..." (el complemento). Especialmente útil al restar de 100, 1000, etc.</p>
+                     <p class="mb-2 font-semibold">Para restar 100 - 43:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Mira el número que restas (43).</span></li>
+                         <li><span class="font-bold text-blue-600">Busca el "amigo" del último dígito para 10:</span> ¿Cuánto le falta al 3 para ser 10? Le faltan 7. Este es el <span class="font-bold">último dígito</span> de tu respuesta.</li>
+                         <li><span class="font-bold text-green-600">Busca el "amigo" de los otros dígitos para 9:</span> Mira el 4. ¿Cuánto le falta al 4 para ser 9? Le faltan 5. Este es el <span class="font-bold">primer dígito</span> de tu respuesta.</li>
+                         <li><span class="font-bold text-purple-600">¡Une los dígitos!</span> El primer dígito es 5, el último es 7. ¡Resultado: 57! (Así que 100 - 43 = 57).</li>
+                     </ol>
+                     <p class="mt-4 text-lg font-semibold">Para 1000 - 628:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Último dígito (8): ¿Cuánto falta para 10? Faltan 2. (Último dígito de la respuesta)</li>
+                         <li>Dígitos anteriores (6 y 2): ¿Cuánto falta para 9?
+                             <ul><li>Para el 2, faltan 7.</li> <li>Para el 6, faltan 3.</li></ul></li>
+                         <li>¡Une todo en orden (de izquierda a derecha según los calculaste)! 3, 7, 2 -> ¡Resultado: 372! (1000 - 628 = 372).</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-cyan-100 p-3 rounded">Regla: ¡El último dígito busca su amigo para 10, todos los demás a su izquierda buscan su amigo para 9!</p>
+                 `,
+                 practice: [
+                    { question: 'Calcula 100 - 61 usando complementos.', options: ['39', '29', '49', '41'], correctAnswer: '39', hint: 'Último (1) para 10 es 9. Primero (6) para 9 es 3. Une: 39.' },
+                    { question: '¿Cuánto es 1000 - 584?', options: ['416', '426', '516', '415'], correctAnswer: '416', hint: 'Último (4) para 10 es 6. Medio (8) para 9 es 1. Primero (5) para 9 es 4. Une: 416.' },
+                    { question: 'Resultado de 10000 - 7352:', options: ['2648', '2748', '3648', '2658'], correctAnswer: '2648', hint: 'Último (2) para 10 es 8. Otros (7, 3, 5) para 9 son (2, 6, 4). Une: 2648.' }
+                 ]
+              },
+              {
+                 id: 'trick40', title: 'Multiplicación por 25 (vía 100)', category: 'multiplication', difficulty: 1, icon: 'fas fa-coins',
+                 description: 'Multiplica por 100 y divide entre 4.',
+                 explanation: `
+                     <p class="mb-4 text-lg">Multiplicar por 25 es fácil si piensas en el 100. ¿Cuántas veces cabe el 25 en el 100? ¡4 veces!</p>
+                     <p class="mb-2 font-semibold">Para calcular 16 x 25:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Multiplica por 100:</span> Añade dos ceros al número original. 16 x 100 = 1600.</li>
+                         <li><span class="font-bold text-blue-600">Divide el resultado entre 4:</span> ¿Cuánto es 1600 dividido entre 4? Puedes pensar: 16 entre 4 es 4, así que 1600 entre 4 es 400.</li>
+                         <li><span class="font-bold text-purple-600">¡Listo!</span> ¡16 x 25 = 400!</li>
+                     </ol>
+                      <p class="mt-4 text-lg font-semibold">Dividir entre 4 rápido:</p>
+                      <p class="text-lg">Dividir entre 4 es lo mismo que sacar la mitad, ¡y luego sacar la mitad otra vez!</p>
+                      <p class="mb-2 text-lg">Ejemplo: 1600 / 4</p>
+                      <ul class="list-disc list-inside ml-6">
+                         <li>Mitad de 1600 es 800.</li>
+                         <li>Mitad de 800 es 400. ¡Ya está!</li>
+                      </ul>
+                      <p class="mb-2 text-lg">Otro ejemplo: 60 x 25</p>
+                      <ul class="list-disc list-inside ml-6">
+                         <li>60 x 100 = 6000.</li>
+                         <li>Dividir 6000 / 4: Mitad es 3000. Mitad de 3000 es 1500.</li>
+                         <li>¡Resultado: 60 x 25 = 1500!</li>
+                      </ul>
+                     <p class="mt-4 text-lg bg-lime-100 p-3 rounded">¡Multiplicar por 25 = Multiplicar por 100 y luego Mitad-Mitad!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto es 12 x 25?', options: ['300', '250', '350', '400'], correctAnswer: '300', hint: '12x100=1200. Mitad=600. Mitad=300.' },
+                    { question: 'Calcula 48 x 25.', options: ['1200', '1000', '1100', '1250'], correctAnswer: '1200', hint: '48x100=4800. Mitad=2400. Mitad=1200.' },
+                    { question: '¿Cuál es el resultado de 32 x 25?', options: ['800', '750', '850', '900'], correctAnswer: '800', hint: '32x100=3200. 3200/4 = ? (Mitad=1600, Mitad=800)' }
+                 ]
+              },
+              {
+                  id: 'trick41', title: 'Porcentajes con Fracciones Comunes', category: 'mental', difficulty: 1, icon: 'fas fa-chart-pie',
+                  description: 'Usa 1/4, 1/8, 3/4 para calcular porcentajes mentalmente.',
+                  explanation: `
+                     <p class="mb-4 text-lg">¡Los porcentajes pueden ser fáciles si los ves como pedazos de un pastel (fracciones)!</p>
+                     <p class="mb-2 font-semibold">Recuerda estos porcentajes amigos:</p>
+                     <ul class="list-disc list-inside ml-6 space-y-1 text-lg bg-gray-100 p-3 rounded">
+                         <li><span class="font-bold text-red-600">50%</span> = <span class="font-bold">la mitad</span> (1/2)</li>
+                         <li><span class="font-bold text-blue-600">25%</span> = <span class="font-bold">un cuarto</span> (1/4) = Mitad de la mitad</li>
+                         <li><span class="font-bold text-green-600">75%</span> = <span class="font-bold">tres cuartos</span> (3/4) = 25% x 3</li>
+                         <li><span class="font-bold text-yellow-600">10%</span> = <span class="font-bold">un décimo</span> (1/10) = Dividir por 10 (mover coma 1 lugar izq.)</li>
+                         <li><span class="font-bold text-purple-600">20%</span> = <span class="font-bold">un quinto</span> (1/5) = Doble del 10%</li>
+                         <li><span class="font-bold text-orange-600">1%</span> = <span class="font-bold">un centésimo</span> (1/100) = Dividir por 100 (mover coma 2 lugares izq.)</li>
+                         <li><span class="font-bold text-pink-600">12.5%</span> = <span class="font-bold">un octavo</span> (1/8) = Mitad del 25%</li>
+                     </ul>
+                     <p class="mt-4 mb-2 font-semibold text-lg">Ejemplo: Calcular el 25% de 80</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>25% es 1/4.</li>
+                         <li>Mitad de 80 es 40. Mitad de 40 es 20.</li>
+                         <li>¡Resultado: El 25% de 80 es 20!</li>
+                     </ol>
+                     <p class="mt-4 mb-2 font-semibold text-lg">Ejemplo: Calcular el 20% de 150</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>20% es el doble del 10%.</li>
+                         <li>Calcula el 10%: 150 / 10 = 15.</li>
+                         <li>Dobla el resultado: 15 x 2 = 30.</li>
+                         <li>¡Resultado: El 20% de 150 es 30!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-pink-100 p-3 rounded">¡Convierte el porcentaje en una fracción amiga o usa el 10% como base y calcula!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto es el 50% de 120?', options: ['60', '50', '70', '100'], correctAnswer: '60', hint: '50% es la mitad.' },
+                    { question: 'Calcula el 25% de 60.', options: ['15', '20', '30', '10'], correctAnswer: '15', hint: '25% es la mitad de la mitad.' },
+                    { question: '¿Cuál es el 10% de 350?', options: ['35', '3.5', '70', '30'], correctAnswer: '35', hint: '10% es dividir por 10.' },
+                    { question: 'Calcula el 20% de 90.', options: ['18', '9', '20', '27'], correctAnswer: '18', hint: 'Calcula el 10% (9) y dóblalo.' }
+                 ]
+              },
+              {
+                 id: 'trick42', title: 'Doble y Suma en Pares', category: 'multiplication', difficulty: 1, icon: 'fas fa-people-arrows',
+                 description: 'Técnica específica para multiplicar números pares.',
+                 explanation: `
+                    <p class="mb-4 text-lg">Este truco es una variación simple, útil cuando multiplicas dos números pares.</p>
+                    <p class="mb-2 font-semibold">Para calcular 14 x 6:</p>
+                     <p class="text-lg italic mb-2">(Sabemos que 6 es 2 x 3)</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Separa el número par más simple:</span> 6 es lo mismo que 2 x 3.</li>
+                         <li><span class="font-bold text-blue-600">Multiplica por el factor 'no 2':</span> Multiplica 14 x 3 = 42. (Puedes usar 10x3 + 4x3 = 30+12=42).</li>
+                         <li><span class="font-bold text-green-600">Ahora multiplica por el 2 (¡dobla!):</span> Dobla el resultado anterior: 42 x 2 = 84.</li>
+                         <li><span class="font-bold text-purple-600">¡Resultado:</span> 14 x 6 = 84!</li>
+                     </ol>
+                     <p class="mt-4 text-lg font-semibold">Otro ejemplo: 22 x 8</p>
+                      <p class="text-lg italic mb-2">(Sabemos que 8 es 2 x 4, o 2 x 2 x 2)</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Multiplica 22 x 4 (doble doble): Doble de 22 es 44. Doble de 44 es 88.</li>
+                         <li>Ahora multiplica por el último 2 (dobla de nuevo): Doble de 88 es 176.</li>
+                         <li>¡Resultado: 22 x 8 = 176!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-yellow-50 p-3 rounded">¡Descompón uno de los números pares en sus factores (especialmente el 2) y multiplica por partes!</p>
+                 `,
+                 practice: [
+                    { question: 'Calcula 16 x 6.', options: ['96', '86', '106', '90'], correctAnswer: '96', hint: '16 x 3 = 48. Dobla 48.' },
+                    { question: '¿Cuánto es 12 x 8?', options: ['96', '84', '108', '92'], correctAnswer: '96', hint: '12 x 4 (doble doble: 24->48). Dobla 48.' },
+                    { question: 'Resultado de 25 x 6:', options: ['150', '125', '175', '160'], correctAnswer: '150', hint: '25 x 3 = 75. Dobla 75.' }
+                 ]
+              },
+              {
+                 id: 'trick43', title: 'Raíces Cuadradas con Tablas Mentales', category: 'mental', difficulty: 2, icon: 'fas fa-square-root-variable',
+                 description: 'Memoriza cuadrados perfectos para estimar raíces.',
+                 explanation: `
+                     <p class="mb-4 text-lg">La raíz cuadrada de un número es encontrar qué número, multiplicado por sí mismo, da ese número original. Ejemplo: la raíz cuadrada de 9 es 3, porque 3 x 3 = 9.</p>
+                     <p class="mb-2 font-semibold">¡Memorizar los primeros cuadrados perfectos ayuda mucho!</p>
+                     <div class="grid grid-cols-2 gap-x-4 bg-yellow-50 p-3 rounded text-lg mb-4">
+                         <div>1² = 1</div> <div>7² = 49</div>
+                         <div>2² = 4</div> <div>8² = 64</div>
+                         <div>3² = 9</div> <div>9² = 81</div>
+                         <div>4² = 16</div> <div>10² = 100</div>
+                         <div>5² = 25</div> <div>11² = 121</div>
+                         <div>6² = 36</div> <div>12² = 144</div>
+                         {/* <div>13²=169</div> <div>14²=196</div> <div>15²=225</div> */}
+                     </div>
+                     <p class="mt-4 mb-2 font-semibold text-lg">¿Cómo usar esto para estimar?</p>
+                     <p class="text-lg">Si te piden la raíz cuadrada de 55:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Mira tu tabla mental: 55 está entre 49 (7²) y 64 (8²).</li>
+                         <li>Como 55 está más cerca de 49, la raíz cuadrada de 55 estará más cerca de 7 que de 8.</li>
+                         <li>¡Puedes decir que la raíz cuadrada de 55 es "un poco más que 7"! (La respuesta real es aprox. 7.4)</li>
+                     </ol>
+                      <p class="mt-4 mb-2 font-semibold text-lg">Otro ejemplo: Raíz cuadrada de 90</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Mira la tabla: 90 está entre 81 (9²) y 100 (10²).</li>
+                         <li>Está más cerca de 81.</li>
+                         <li>La raíz cuadrada será un poco más que 9. (Aprox. 9.5)</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-red-100 p-3 rounded">¡Saber los cuadrados perfectos te da súper poderes para adivinar raíces cuadradas!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuál es la raíz cuadrada de 36?', options: ['6', '5', '7', '4'], correctAnswer: '6', hint: '¿Qué número multiplicado por sí mismo da 36?' },
+                    { question: 'La raíz cuadrada de 81 es...', options: ['9', '8', '10', '7'], correctAnswer: '9', hint: 'Busca en tu tabla mental.' },
+                    { question: 'La raíz cuadrada de 110 está entre...', options: ['10 y 11', '9 y 10', '11 y 12', '8 y 9'], correctAnswer: '10 y 11', hint: '10x10=100, 11x11=121. ¿Dónde está 110?' },
+                    { question: '¿Cuál es la raíz cuadrada de 144?', options: ['12', '11', '13', '14'], correctAnswer: '12', hint: 'Está en la tabla.' }
+                 ]
+              },
+              {
+                 id: 'trick44', title: 'División Restando Múltiplos Grandes', category: 'division', difficulty: 2, icon: 'fas fa-arrow-down-short-wide',
+                 description: 'Resta "pedazos" grandes para dividir más rápido.',
+                 explanation: `
+                     <p class="mb-4 text-lg">Dividir puede ser como repartir galletas. En vez de dar una por una, ¡puedes dar paquetes grandes (múltiplos fáciles)!</p>
+                     <p class="mb-2 font-semibold">Para calcular 92 / 4:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Piensa en un múltiplo fácil de 4 que quepa en 92:</span> 4 x 10 = 40. ¡Cabe! Resta 40.<br>
+                            92 - 40 = 52. <span class="text-gray-500 italic">(Hemos "repartido" 10 grupos de 4)</span></li>
+                         <li><span class="font-bold text-blue-600">¿Queda 52? Repite:</span> Usemos otro 40. Resta 40.<br>
+                            52 - 40 = 12. <span class="text-gray-500 italic">(Llevamos repartidos 10 + 10 = 20 grupos de 4)</span></li>
+                          <li><span class="font-bold text-green-600">¿Queda 12?</span> ¿Cuántas veces cabe el 4 en 12? ¡3 veces! (4 x 3 = 12). Resta 12.<br>
+                             12 - 12 = 0. <span class="text-gray-500 italic">(Repartimos 3 grupos más)</span></li>
+                         <li><span class="font-bold text-purple-600">Suma cuántos grupos de 4 repartiste en total:</span> 10 + 10 + 3 = 23.</li>
+                         <li><span class="font-bold text-pink-600">¡Resultado:</span> 92 / 4 = 23!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-orange-100 p-3 rounded">¡Resta múltiplos fáciles (x10, x20, x5...) y suma cuántos grupos usaste!</p>
+                 `,
+                 practice: [
+                    { question: 'Calcula 69 / 3 usando restas grandes.', options: ['23', '21', '26', '13'], correctAnswer: '23', hint: 'Resta 3x20=60 (queda 9). ¿Cuántas veces cabe 3 en 9? Suma los grupos: 20+?' },
+                    { question: '¿Cuánto es 110 / 5?', options: ['22', '20', '25', '12'], correctAnswer: '22', hint: 'Resta 5x20=100 (queda 10). ¿Cuántas veces cabe 5 en 10? Suma: 20+?' },
+                    { question: 'Resultado de 84 / 6:', options: ['14', '13', '16', '12'], correctAnswer: '14', hint: 'Resta 6x10=60 (queda 24). ¿Cuántas veces cabe 6 en 24? Suma: 10+?' }
+                 ]
+              },
+              {
+                 id: 'trick45', title: 'Simplificación de Fracciones Primero', category: 'addition', difficulty: 1, icon: 'fas fa-compress',
+                 description: 'Reduce fracciones antes de operar para facilitar.',
+                 explanation: `
+                     <p class="mb-4 text-lg">¡Trabajar con fracciones es más fácil si son lo más pequeñas posible! Como ordenar tus juguetes antes de jugar.</p>
+                     <p class="mb-2 font-semibold">¿Qué es simplificar? Es dividir el número de arriba (numerador) y el de abajo (denominador) por el MISMO número más grande posible.</p>
+                     <p class="mb-2 font-semibold">Ejemplo: Simplificar 6/8</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>¿Por qué número se pueden dividir 6 y 8? Por 2.</li>
+                         <li>Divide: 6 ÷ 2 = 3.   8 ÷ 2 = 4.</li>
+                         <li>La fracción simplificada es 3/4. Ya no se puede dividir más.</li>
+                     </ol>
+                      <p class="mt-4 mb-2 font-semibold">Ejemplo: Simplificar 12/18</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Se pueden dividir por 2: 12÷2=6, 18÷2=9 -> 6/9.</li>
+                         <li>¿Se puede simplificar 6/9? ¡Sí, por 3! 6÷3=2, 9÷3=3 -> 2/3.</li>
+                         <li>¿Se puede simplificar 2/3? No. ¡Esa es la respuesta!</li>
+                         <li>(También podías dividir 12 y 18 por 6 directamente: 12÷6=2, 18÷6=3 -> 2/3)</li>
+                     </ol>
+                     <p class="mt-4 mb-2 font-semibold text-lg">¿Por qué hacerlo ANTES de sumar o multiplicar?</p>
+                     <p class="text-lg">Imagina multiplicar 4/8 x 2/3.</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Simplifica 4/8 primero:</span> Es 1/2.</li>
+                         <li><span class="font-bold text-blue-600">Ahora la multiplicación es:</span> 1/2 x 2/3.</li>
+                          <li>Multiplica arriba y abajo: (1x2) / (2x3) = 2/6.</li>
+                          <li><span class="font-bold text-green-600">Simplifica el resultado final si puedes:</span> 2/6 se simplifica a 1/3.</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-green-100 p-3 rounded">¡Busca el número más grande que divida arriba y abajo! Simplifica ANTES y a veces DESPUÉS.</p>
+                 `,
+                 practice: [
+                    { question: 'Simplifica la fracción 10/12.', options: ['5/6', '2/3', '1/2', 'No se puede'], correctAnswer: '5/6', hint: 'Divide por 2.' },
+                    { question: '¿Cuál es la forma simplificada de 9/15?', options: ['3/5', '1/3', '3/4', 'No se puede'], correctAnswer: '3/5', hint: 'Divide por 3.' },
+                    { question: 'Simplifica 24/36.', options: ['2/3', '3/4', '4/6', '12/18'], correctAnswer: '2/3', hint: 'Puedes dividir por 2 varias veces, o por 3, o por 6, o por 12... ¡Busca el más grande (12)!' }
+                 ]
+              },
+              { id: 'trick46', title: 'Interpolación para Aproximar', category: 'mental', difficulty: 3, icon: 'fas fa-chart-line', description: 'Estima un resultado usando dos valores conocidos.', explanation: '<p class="text-center text-gray-500 italic py-4">Idea Principal: Si sabes que f(2)=10 y f(4)=20, puedes "adivinar" que f(3) estará cerca del punto medio, o sea, 15. Es una estimación lineal útil cuando no tienes el valor exacto.</p>', practice: [] },
+              { id: 'trick47', title: 'Algoritmo de Horner (Idea)', category: 'advanced', difficulty: 3, icon: 'fas fa-cogs', description: 'Evalúa polinomios con menos multiplicaciones.', explanation: '<p class="text-center text-gray-500 italic py-4">Idea Principal: Para calcular 3x²+2x+1 con x=4, Horner lo reordena como ( (3*4) + 2 )*4 + 1. Reduce el número de multiplicaciones, haciéndolo más rápido para computadoras (y mentalmente si practicas).</p>', practice: [] },
+              {
+                 id: 'trick48', title: 'Promedio con Ajuste', category: 'mental', difficulty: 2, icon: 'fas fa-calculator',
+                 description: 'Calcula promedios redondeando y compensando.',
+                 explanation: `
+                     <p class="mb-4 text-lg">El promedio (o media) es como encontrar el "punto medio" de un grupo de números. ¡Podemos usar la compensación para hacerlo más rápido!</p>
+                     <p class="mb-2 font-semibold">Para hallar el promedio de 18, 21, 23:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Adivina un promedio cercano (Pivote):</span> Los números están alrededor de 20. Usemos 20 como pivote.</li>
+                         <li><span class="font-bold text-blue-600">Calcula las diferencias con el pivote:</span>
+                             <ul>
+                                 <li>18 - 20 = <span class="text-red-500">-2</span></li>
+                                 <li>21 - 20 = <span class="text-green-500">+1</span></li>
+                                 <li>23 - 20 = <span class="text-green-500">+3</span></li>
+                             </ul>
+                         </li>
+                         <li><span class="font-bold text-green-600">Suma las diferencias:</span> (-2) + (+1) + (+3) = 2.</li>
+                         <li><span class="font-bold text-yellow-600">Calcula el promedio de las diferencias:</span> Hay 3 números. El promedio de las diferencias es: Suma / Cantidad = 2 / 3.</li>
+                         <li><span class="font-bold text-purple-600">Ajusta el pivote:</span> El promedio real es el Pivote + Promedio de las diferencias = 20 + (2/3) = 20 y 2/3.</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-purple-100 p-3 rounded">¡Elige un pivote, promedia las diferencias y ajusta el pivote!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuál es el promedio de 8, 10, 12?', options: ['10', '9', '11', '8'], correctAnswer: '10', hint: 'Pivote 10. Diferencias: -2, 0, +2. Suma=0. Promedio diff=0. Ajuste=10+0=10.' },
+                    { question: 'Calcula el promedio de 28, 30, 32.', options: ['30', '29', '31', '32'], correctAnswer: '30', hint: 'Pivote 30. Diferencias: -2, 0, +2. Suma=0. Promedio=30.' },
+                    { question: 'Promedio de 45, 50, 52?', options: ['49', '50', '48', '47'], correctAnswer: '49', hint: 'Pivote 50. Diferencias: -5, 0, +2. Suma=-3. Promedio diff= -3/3 = -1. Ajuste=50+(-1)=49.' }
+                 ]
+              },
+              {
+                 id: 'trick49', title: 'Divisibilidad por 3 (Suma Dígitos)', category: 'patterns', difficulty: 1, icon: 'fas fa-check-double', // Icono cambiado
+                 description: 'Suma los dígitos para saber si un número es divisible por 3.',
+                 explanation: `
+                     <p class="mb-4 text-lg">¿Cómo saber rápido si un número grande se puede dividir exactamente entre 3 (sin que sobre nada)? ¡Hay un truco mágico!</p>
+                     <p class="mb-2 font-semibold">Para saber si 123 se puede dividir entre 3:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Suma TODOS los dígitos del número:</span> 1 + 2 + 3 = 6.</li>
+                         <li><span class="font-bold text-blue-600">Mira el resultado de la suma (6).</span> ¿Está 6 en la tabla del 3 (es divisible por 3)? ¡Sí! (6 / 3 = 2).</li>
+                         <li><span class="font-bold text-purple-600">¡La regla mágica!</span> Si la SUMA de los dígitos es divisible por 3, ¡entonces el número ORIGINAL (123) también es divisible por 3!</li>
+                     </ol>
+                      <p class="mt-4 mb-2 font-semibold text-lg">Si la suma es muy grande, ¡puedes repetir el truco!</p>
+                      <p class="text-lg">Ejemplo: ¿Es 7896 divisible por 3?</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Suma: 7 + 8 + 9 + 6 = 30.</li>
+                         <li>¿Es 30 divisible por 3? ¡Sí! (O repite: 3+0=3. ¿Es 3 divisible por 3? Sí).</li>
+                         <li>¡Entonces 7896 SÍ es divisible por 3!</li>
+                      </ol>
+                     <p class="mt-4 text-lg bg-yellow-100 p-3 rounded">¡Suma los dígitos! Si la suma está en la tabla del 3, ¡el número original también!</p>
+                 `,
+                 practice: [
+                    { question: '¿Es 234 divisible por 3?', options: ['Sí', 'No'], correctAnswer: 'Sí', hint: 'Suma los dígitos: 2+3+4 = 9. ¿Es 9 divisible por 3?' },
+                    { question: '¿Se puede dividir 712 entre 3?', options: ['No', 'Sí'], correctAnswer: 'No', hint: '7+1+2 = 10. ¿Es 10 divisible por 3?' },
+                    { question: '¿Cuál de estos números es divisible por 3?', options: ['681', '503', '772', '109'], correctAnswer: '681', hint: 'Suma los dígitos de cada opción. 6+8+1=15 (Sí).' },
+                    { question: '¿Es 998877 divisible por 3?', options: ['Sí', 'No'], correctAnswer: 'Sí', hint: 'Suma: 9+9+8+8+7+7 = 48. ¿Es 48 div por 3? (O suma de nuevo: 4+8=12. ¿Es 12 div por 3? Sí)' }
+                 ]
+              },
+              { id: 'trick50', title: 'Multiplicación Cerca de Base Común', category: 'mental', difficulty: 2, icon: 'fas fa-bullseye', description: 'Usa diferencias a una base (50, 100) para multiplicar.', explanation: '<p class="text-center text-gray-500 italic py-4">Idea Principal: Similar a faltante a 100/1000. Para 48x53 (Base 50): 48 es -2, 53 es +3. Suma cruzado (48+3=51 o 53-2=51). Multiplica por la base (51x50=2550). Multiplica diferencias (-2x3=-6). Suma/resta al final: 2550 - 6 = 2544.</p>', practice: [] },
+              { id: 'trick51', title: 'Redondeo y Ajuste Complejo', category: 'mental', difficulty: 2, icon: 'fas fa-sliders', description: 'Redondea, multiplica y corrige en operaciones difíciles.', explanation: '<p class="text-center text-gray-500 italic py-4">Idea Principal: Para 47x62, redondea a 50x60=3000. Ahora ajusta: faltan (3x62) y sobran (47x2). Es más complejo que otros métodos para cálculo exacto, pero útil para estimaciones rápidas.</p>', practice: [] },
+              {
+                 id: 'trick52', title: 'Duplicación para Potencias de 2', category: 'patterns', difficulty: 1, icon: 'fas fa-chart-line',
+                 description: 'Multiplica por 2 repetidamente para hallar 2, 4, 8, 16...',
+                 explanation: `
+                     <p class="mb-4 text-lg">Las "potencias de 2" son los números que obtienes al multiplicar 2 por sí mismo varias veces (2¹, 2², 2³...). ¡Son la base del sistema binario de las computadoras y se calculan fácilmente doblando!</p>
+                     <p class="mb-2 font-semibold">Calculando las primeras potencias:</p>
+                     <ul class="list-disc list-inside ml-6 space-y-2 text-lg bg-gray-100 p-4 rounded">
+                         <li>2<sup>1</sup> = <span class="font-bold text-blue-600">2</span></li>
+                         <li>2<sup>2</sup> = Doble de 2 = <span class="font-bold text-blue-600">4</span></li>
+                         <li>2<sup>3</sup> = Doble de 4 = <span class="font-bold text-blue-600">8</span></li>
+                         <li>2<sup>4</sup> = Doble de 8 = <span class="font-bold text-blue-600">16</span></li>
+                         <li>2<sup>5</sup> = Doble de 16 = <span class="font-bold text-blue-600">32</span></li>
+                         <li>2<sup>6</sup> = Doble de 32 = <span class="font-bold text-blue-600">64</span></li>
+                         <li>2<sup>7</sup> = Doble de 64 = <span class="font-bold text-blue-600">128</span></li>
+                         <li>2<sup>8</sup> = Doble de 128 = <span class="font-bold text-blue-600">256</span></li>
+                         <li>2<sup>9</sup> = Doble de 256 = <span class="font-bold text-blue-600">512</span></li>
+                         <li>2<sup>10</sup> = Doble de 512 = <span class="font-bold text-blue-600">1024</span> (¡Esto es 1 Kilobyte en computación!)</li>
+                     </ul>
+                     <p class="mt-4 text-lg bg-blue-100 p-3 rounded">¡Cada potencia es simplemente el doble de la anterior!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto es 2 elevado a la 5 (2⁵)?', options: ['32', '16', '64', '25'], correctAnswer: '32', hint: 'Empieza en 2 y dobla 4 veces más: 2->4->8->16->?' },
+                    { question: 'Si 2⁷ = 128, ¿cuánto es 2⁸?', options: ['256', '246', '266', '128'], correctAnswer: '256', hint: 'Solo dobla 128.' },
+                    { question: '¿Cuál es el valor de 2⁶?', options: ['64', '32', '128', '48'], correctAnswer: '64', hint: '2->4->8->16->32->?' }
+                 ]
+              },
+              {
+                 id: 'trick53', title: 'Multiplicar por 6 (vía x3 y x2)', category: 'multiplication', difficulty: 1, icon: 'fas fa-recycle', // Icono cambiado
+                 description: 'Calcula x3 y luego dobla el resultado.',
+                 explanation: `
+                     <p class="mb-4 text-lg">Multiplicar por 6 puede parecer un paso más, ¡pero podemos usar los trucos que ya sabemos para 3 y para 2 (doblar)!</p>
+                     <p class="mb-2 font-semibold">Para calcular 7 x 6:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Paso 1: Multiplica por 3 primero.</span> ¿Cuánto es 7 x 3? ¡Es 21!</li>
+                         <li><span class="font-bold text-blue-600">Paso 2: Dobla ese resultado (multiplica por 2).</span> ¿Cuánto es el doble de 21? 21 x 2 = 42.</li>
+                         <li><span class="font-bold text-purple-600">¡Listo!</span> ¡7 x 6 = 42! (Porque 6 es 3 x 2).</li>
+                     </ol>
+                     <p class="mt-4 text-lg font-semibold">Otro ejemplo: 15 x 6</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>15 x 3 = 45. (Puedes hacer 10x3 + 5x3 = 30+15=45).</li>
+                         <li>Doble de 45 es 90.</li>
+                         <li>¡Resultado: 15 x 6 = 90!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-green-100 p-3 rounded">¡Multiplicar por 6 = (Multiplicar por 3) y luego Doblar!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto es 8 x 6?', options: ['48', '42', '54', '46'], correctAnswer: '48', hint: 'Calcula 8x3 (24) y luego dobla.' },
+                    { question: 'Calcula 12 x 6.', options: ['72', '60', '66', '84'], correctAnswer: '72', hint: '12x3 = 36. Doble de 36.' },
+                    { question: '¿Cuál es el resultado de 25 x 6?', options: ['150', '120', '175', '160'], correctAnswer: '150', hint: '25x3 = 75. Dobla 75.' }
+                 ]
+              },
+              {
+                 id: 'trick54', title: 'Proporcionalidad (Regla de Tres)', category: 'advanced', difficulty: 2, icon: 'fas fa-right-left', // Icono cambiado
+                 description: 'Usa la regla de tres para resolver razones.',
+                 explanation: `
+                     <p class="mb-4 text-lg">La "Regla de Tres" es un método súper útil para resolver problemas donde tienes una relación entre dos cosas (proporción) y te falta un valor.</p>
+                     <p class="mb-2 font-semibold">Ejemplo: Si 3 manzanas cuestan 2 euros, ¿cuánto costarán 9 manzanas?</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Organiza los datos (¡muy importante!):</span> Pon las mismas cosas en la misma columna.
+                             <div class="my-2 p-2 bg-gray-100 rounded font-mono">
+                                 Manzanas &nbsp;&nbsp;&nbsp; Euros<br>
+                                 ---------&nbsp;&nbsp;&nbsp;-----<br>
+                                 &nbsp;&nbsp;&nbsp; 3 &nbsp;&nbsp; -> &nbsp;&nbsp; 2 <br>
+                                 &nbsp;&nbsp;&nbsp; 9 &nbsp;&nbsp; -> &nbsp;&nbsp; x (lo que buscamos)
+                             </div>
+                         </li>
+                         <li><span class="font-bold text-blue-600">Multiplica los números en diagonal que SÍ conoces:</span> 9 x 2 = 18.</li>
+                         <li><span class="font-bold text-green-600">Divide por el número que queda solo (el que está en diagonal con la 'x'):</span> El número que queda es el 3. Divide el resultado anterior (18) por 3: 18 / 3 = 6.</li>
+                         <li><span class="font-bold text-purple-600">¡Ese es el valor de 'x'!</span> ¡9 manzanas costarán 6 euros!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-cyan-100 p-3 rounded">¡Organiza en columnas, Multiplica la Diagonal Conocida, Divide por el que Sobra!</p>
+                 `,
+                 practice: [
+                    { question: 'Si 2 lápices cuestan 1 euro, ¿cuánto cuestan 10 lápices?', options: ['5 euros', '10 euros', '2 euros', '20 euros'], correctAnswer: '5 euros', hint: 'Organiza: (2 lá / 1 eu), (10 lá / x eu). Multiplica cruzado (10x1). Divide por 2.' },
+                    { question: 'Un coche recorre 120 km en 2 horas. ¿Cuántos km recorrerá en 3 horas?', options: ['180 km', '150 km', '240 km', '100 km'], correctAnswer: '180 km', hint: 'Organiza: (120 km / 2 h), (x km / 3 h). Multiplica (120x3). Divide por 2.' },
+                    { question: 'Si 5 galletas tienen 200 calorías, ¿cuántas calorías tienen 3 galletas?', options: ['120 calorías', '100 calorías', '150 calorías', '600 calorías'], correctAnswer: '120 calorías', hint: 'Organiza: (5 gal / 200 cal), (3 gal / x cal). Multiplica (200x3). Divide por 5.' }
+                 ]
+              },
+              {
+                 id: 'trick55', title: 'Agrupación en Sumas de Series', category: 'addition', difficulty: 2, icon: 'fas fa-object-group', // Icono cambiado
+                 description: 'Suma series agrupando números en pares o decenas.',
+                 explanation: `
+                     <p class="mb-4 text-lg">Sumar una larga lista de números seguidos (una serie aritmética) puede ser más rápido si los agrupas de forma inteligente.</p>
+                     <p class="mb-2 font-semibold">Para sumar 1 + 2 + 3 + ... + 9 + 10:</p>
+                     <p class="font-bold text-red-600 mb-2">Método 1: Parejas desde los extremos</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Junta el primero (1) con el último (10): 1 + 10 = 11.</li>
+                         <li>Junta el segundo (2) con el penúltimo (9): 2 + 9 = 11.</li>
+                         <li>¡Todas las parejas suman lo mismo! (3+8=11, 4+7=11, 5+6=11).</li>
+                         <li>¿Cuántos números hay? 10. ¿Cuántas parejas puedes formar? 10 / 2 = 5 parejas.</li>
+                         <li>Multiplica la suma de una pareja por el número de parejas: 11 x 5 = 55.</li>
+                     </ol>
+                      <p class="mt-4 font-bold text-blue-600 mb-2">Método 2: Fórmula de Gauss (para sumar de 1 hasta N)</p>
+                       <p class="text-lg">La suma es <span class="font-mono font-bold">(N x (N + 1)) / 2</span>, donde N es el último número.</p>
+                       <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                           <li>Aquí N=10.</li>
+                           <li>Aplica la fórmula: (10 x (10 + 1)) / 2 = (10 x 11) / 2 = 110 / 2 = 55.</li>
+                       </ol>
+                     <p class="mt-4 text-lg bg-lime-100 p-3 rounded">¡Agrupar en parejas o usar la fórmula N*(N+1)/2 son súper atajos!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuánto suman los números del 1 al 5 (1+2+3+4+5)?', options: ['15', '10', '20', '12'], correctAnswer: '15', hint: 'Usa parejas (1+5=6, 2+4=6, queda 3 -> 6+6+3) o la fórmula (5x6)/2.' },
+                    { question: 'Calcula la suma de 1 a 8 usando la fórmula.', options: ['36', '45', '32', '40'], correctAnswer: '36', hint: 'N=8. (8 x 9) / 2.' },
+                    { question: '¿Cuánto es 1+2+...+20?', options: ['210', '200', '190', '220'], correctAnswer: '210', hint: 'Usa la fórmula con N=20. (20 x 21) / 2.' }
+                 ]
+              },
+              {
+                 id: 'trick56', title: 'Multiplicar Números terminados en 1 o 9', category: 'mental', difficulty: 2, icon: 'fas fa-circle-nodes',
+                 description: 'Aprovecha la cercanía a la base 10 para multiplicar.',
+                 explanation: `
+                     <p class="mb-4 text-lg">¡Los números que acaban en 1 o 9 son "casi redondos"! Podemos usar la propiedad distributiva (o el redondeo con ajuste) para hacerlos más fáciles.</p>
+                     <p class="mb-2 font-semibold">Para multiplicar 41 x 6:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Descompón el número "casi redondo":</span> 41 es (40 + 1).</li>
+                         <li><span class="font-bold text-blue-600">Distribuye la multiplicación:</span> (40 + 1) x 6 = (40 x 6) + (1 x 6).</li>
+                         <li><span class="font-bold text-green-600">Calcula las partes fáciles:</span> 40 x 6 = 240.   1 x 6 = 6.</li>
+                         <li><span class="font-bold text-purple-600">Suma los resultados:</span> 240 + 6 = 246.</li>
+                     </ol>
+                     <p class="mt-4 mb-2 font-semibold text-lg">Para multiplicar 39 x 7:</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Descompón:</span> 39 es (40 - 1).</li>
+                         <li><span class="font-bold text-blue-600">Distribuye:</span> (40 - 1) x 7 = (40 x 7) - (1 x 7).</li>
+                         <li><span class="font-bold text-green-600">Calcula:</span> 40 x 7 = 280.   1 x 7 = 7.</li>
+                         <li><span class="font-bold text-purple-600">Resta los resultados:</span> 280 - 7 = 273.</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-red-50 p-3 rounded">¡Piensa en el número como "redondo + 1" o "redondo - 1" y distribuye!</p>
+                 `,
+                 practice: [
+                    { question: 'Calcula 51 x 4.', options: ['204', '200', '214', '196'], correctAnswer: '204', hint: '(50 + 1) x 4 = (50x4) + (1x4)' },
+                    { question: '¿Cuánto es 29 x 5?', options: ['145', '150', '135', '140'], correctAnswer: '145', hint: '(30 - 1) x 5 = (30x5) - (1x5)' },
+                    { question: 'Resultado de 61 x 8:', options: ['488', '480', '498', '472'], correctAnswer: '488', hint: '(60 + 1) x 8' },
+                    { question: 'Calcula 19 x 9.', options: ['171', '180', '181', '161'], correctAnswer: '171', hint: '(20 - 1) x 9 = (20x9) - (1x9)' }
+                 ]
+              },
+              {
+                 id: 'trick57', title: 'Suma con Técnica "Base 10"', category: 'addition', difficulty: 1, icon: 'fas fa-layer-group', // Icono cambiado
+                 description: 'Separa en centenas/decenas/unidades para sumar.',
+                 explanation: `
+                     <p class="mb-4 text-lg">Este es el método clásico de sumar, ¡pensando en el valor de cada posición (unidades, decenas, centenas)!</p>
+                     <p class="mb-2 font-semibold">Para sumar 123 + 456:</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li><span class="font-bold text-red-600">Columna de Unidades:</span> 3 + 6 = 9. Escribe 9.</li>
+                         <li><span class="font-bold text-blue-600">Columna de Decenas:</span> 2 + 5 = 7. Escribe 7 a la izquierda del 9. (Resultado parcial: 79)</li>
+                         <li><span class="font-bold text-green-600">Columna de Centenas:</span> 1 + 4 = 5. Escribe 5 a la izquierda del 7. (Resultado final: 579)</li>
+                     </ol>
+                     <p class="mt-4 mb-2 font-semibold text-lg">Con "llevadas": Ejemplo 248 + 175</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Unidades: 8 + 5 = 13. Escribe 3, <span class="font-bold text-orange-500">llevas 1</span> (decena).</li>
+                         <li>Decenas: 4 + 7 = 11. ¡Suma la que llevabas! 11 + 1 = 12. Escribe 2, <span class="font-bold text-orange-500">llevas 1</span> (centena).</li>
+                         <li>Centenas: 2 + 1 = 3. ¡Suma la que llevabas! 3 + 1 = 4. Escribe 4.</li>
+                         <li>¡Resultado: 423!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-indigo-100 p-3 rounded">¡Suma columna por columna, de derecha a izquierda, y no olvides llevarte lo que sobre a la siguiente columna!</p>
+                 `,
+                 practice: [
+                    { question: 'Suma 312 + 527.', options: ['839', '829', '849', '739'], correctAnswer: '839', hint: '2+7=9. 1+2=3. 3+5=8.' },
+                    { question: 'Calcula 651 + 234.', options: ['885', '875', '895', '785'], correctAnswer: '885', hint: '1+4=5. 5+3=8. 6+2=8.' },
+                    { question: '¿Cuánto es 159 + 462?', options: ['621', '611', '521', '631'], correctAnswer: '621', hint: '9+2=11 (pon 1, llevas 1). 5+6+1(llevas)=12 (pon 2, llevas 1). 1+4+1(llevas)=6.' },
+                     { question: 'Suma 78 + 95.', options: ['173', '163', '172', '165'], correctAnswer: '173', hint: '8+5=13 (pon 3, llevas 1). 7+9+1(llevas)=17 (pon 17).' }
+                 ]
+              },
+              { id: 'trick58', title: 'Doble Complemento para Restas', category: 'addition', difficulty: 3, icon: 'fas fa-arrows-rotate', description: 'Transforma restas difíciles usando complementos.', explanation: '<p class="text-center text-gray-500 italic py-4">Idea Principal: Para restar A - B, calculas el complemento de B respecto a una potencia de 10 mayor que A y B (ej. 1000). Luego sumas A + (Complemento de B). Finalmente, ajustas el resultado quitando la potencia de 10 usada. Es útil en computación binaria y para entender cómo funcionan las restas.</p>', practice: [] },
+              {
+                 id: 'trick59', title: 'Cálculo Mental de Áreas Simples', category: 'mental', difficulty: 1, icon: 'fas fa-ruler-combined', // Icono cambiado
+                 description: 'Memoriza y aplica fórmulas de área mentalmente.',
+                 explanation: `
+                     <p class="mb-4 text-lg">El área mide el espacio DENTRO de una figura plana. ¡Conociendo las fórmulas, puedes calcularla mentalmente!</p>
+                     <p class="mb-2 font-semibold">Fórmulas para Recordar:</p>
+                     <ul class="list-disc list-inside ml-6 space-y-2 text-lg bg-gray-100 p-4 rounded">
+                         <li><span class="font-bold text-red-600">Cuadrado:</span> Área = Lado × Lado (L²)</li>
+                         <li><span class="font-bold text-blue-600">Rectángulo:</span> Área = Largo × Ancho (o Base × Altura)</li>
+                         <li><span class="font-bold text-green-600">Triángulo:</span> Área = (Base × Altura) / 2</li>
+                     </ul>
+                     <p class="mt-4 mb-2 font-semibold text-lg">Ejemplo Mental: Área de un jardín rectangular de 7 metros de largo y 5 metros de ancho.</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Figura: Rectángulo. Fórmula: Largo x Ancho.</li>
+                         <li>Calcula: 7 x 5 = 35.</li>
+                         <li>¡El área es 35 metros cuadrados (m²)!</li>
+                     </ol>
+                      <p class="mt-4 mb-2 font-semibold text-lg">Ejemplo Mental: Área de una vela de barco triangular con base de 4m y altura de 6m.</p>
+                     <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Figura: Triángulo. Fórmula: (Base x Altura) / 2.</li>
+                         <li>Calcula Base x Altura: 4 x 6 = 24.</li>
+                         <li>Divide entre 2 (saca la mitad): 24 / 2 = 12.</li>
+                         <li>¡El área es 12 metros cuadrados (m²)!</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-orange-100 p-3 rounded">¡Identifica la figura, recuerda la fórmula y calcula!</p>
+                 `,
+                 practice: [
+                    { question: '¿Cuál es el área de un cuadrado de lado 5 cm?', options: ['25 cm²', '20 cm²', '10 cm²', '5 cm²'], correctAnswer: '25 cm²', hint: 'Cuadrado: Lado x Lado.' },
+                    { question: 'Calcula el área de un rectángulo de 8m de largo y 3m de ancho.', options: ['24 m²', '11 m²', '32 m²', '21 m²'], correctAnswer: '24 m²', hint: 'Rectángulo: Largo x Ancho.' },
+                    { question: 'Área de un triángulo con base 6cm y altura 4cm:', options: ['12 cm²', '24 cm²', '10 cm²', '18 cm²'], correctAnswer: '12 cm²', hint: 'Triángulo: (Base x Altura) / 2.' },
+                    { question: 'Un campo cuadrado tiene 10m de lado. ¿Su área?', options: ['100 m²', '40 m²', '10 m²', '1000 m²'], correctAnswer: '100 m²', hint: 'Cuadrado: 10 x 10.' }
+                 ]
+              },
+              {
+                 id: 'trick60', title: 'Verificación con Operación Inversa', category: 'advanced', difficulty: 1, icon: 'fas fa-question-circle', // Icono cambiado
+                 description: 'Comprueba resultados usando la operación contraria.',
+                 explanation: `
+                     <p class="mb-4 text-lg">¿Hiciste una cuenta y quieres estar SEGURO? ¡Usa la operación INVERSA (la contraria) para revisar! Es como volver sobre tus pasos.</p>
+                     <p class="mb-2 font-semibold">Las Parejas Inversas:</p>
+                     <ul class="list-disc list-inside ml-6 space-y-1 text-lg bg-teal-50 p-3 rounded">
+                         <li>Suma (+) <--> Resta (-)</li>
+                         <li>Multiplicación (×) <--> División (÷)</li>
+                     </ul>
+                     <p class="mt-4 mb-2 font-semibold text-lg">Ejemplo: Revisar si 15 + 7 = 22 está bien.</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Operación original: Suma. Inversa: Resta.</li>
+                         <li>Toma el resultado (22). Réstale uno de los sumandos (7): 22 - 7 = 15.</li>
+                         <li>¿El resultado (15) es el otro sumando original? ¡Sí! Bingo.</li>
+                         <li>(También puedes hacer 22 - 15 = 7. ¡Funciona igual!)</li>
+                     </ol>
+                      <p class="mt-4 mb-2 font-semibold text-lg">Ejemplo: Revisar si 48 / 6 = 8 está bien.</p>
+                      <ol class="list-decimal list-inside pl-6 space-y-3 text-lg">
+                         <li>Operación original: División. Inversa: Multiplicación.</li>
+                         <li>Toma el resultado (8). Multiplícalo por el divisor (6): 8 x 6 = 48.</li>
+                         <li>¿El resultado (48) es el número original que dividiste (dividendo)? ¡Sí! Correcto.</li>
+                     </ol>
+                     <p class="mt-4 text-lg bg-gray-200 p-3 rounded">¡Es la mejor forma de encontrar errores antes de entregar un examen!</p>
+                 `,
+                 practice: [
+                    { question: 'Calculaste 35 - 12 = 23. La comprobación correcta es:', options: ['23 + 12 = 35', '35 + 12 = 47', '23 - 12 = 11', '35 / 23 = ?'], correctAnswer: '23 + 12 = 35', hint: 'Inversa de resta es suma. Resultado + sustraendo = minuendo.' },
+                    { question: 'Hiciste 9 x 7 = 63. ¿Cómo lo verificas?', options: ['63 / 7 = 9 (o 63 / 9 = 7)', '63 + 7 = 70', '63 - 9 = 54', '9 + 7 = 16'], correctAnswer: '63 / 7 = 9 (o 63 / 9 = 7)', hint: 'Inversa de multiplicar es dividir. Resultado / un factor = otro factor.' },
+                    { question: 'Si 100 / 4 = 25, ¿cuál es la verificación?', options: ['25 x 4 = 100', '100 - 4 = 96', '100 + 4 = 104', '100 / 25 = 4'], correctAnswer: '25 x 4 = 100', hint: 'Inversa de dividir es multiplicar. Cociente x divisor = dividendo.' }
+                 ]
+              }
+        ];
+
+        // --- Estado de la Aplicación ---
+        let currentTrickId = null;
+        let currentQuestionIndex = 0;
+        let currentScore = 0;
+        let practiceQuestions = [];
+        let selectedAnswer = null;
+        let progressData = { completedTricks: [], trickStars: {}, totalStars: 0, exercisesCompleted: 0, achievements: [] };
+
+        // --- Selectores de DOM ---
+        let sections = {}; let navButtons = {}; let trickListContainer, trickDetailContent, practiceSection, questionContainer, optionsContainer;
+        let feedbackContainer, checkAnswerBtn, nextQuestionBtn, practiceResults, scoreCorrectSpan; let scoreTotalSpan, resultStarsContainer, resultMessage, startPracticeBtn, startPracticeArea;
+        let backToListBtn, backToTrickBtn, categoryFilterBtns, confettiContainer, dragonMascot; let dragonMessageBox, resetProgressBtn, startLearningBtn, aboutToTricksBtn;
+
+        // --- Clave de Almacenamiento para Parte 2 ---
+        const PROGRESS_KEY = 'mathTricksProgressPart2';
+
+        // --- Funciones (Idénticas a la versión anterior) ---
+        function showSection(sectionId) {
+            Object.values(sections).forEach((section) => {
+                if(section) section.classList.add('hidden');
+            });
+             if (sections[sectionId]) {
+                 sections[sectionId].classList.remove('hidden');
+             } else {
+                 console.error(`Sección "${sectionId}" no encontrada.`);
+                 if (sections.welcome) sections.welcome.classList.remove('hidden');
+                 sectionId = 'welcome';
+             }
+            Object.values(navButtons).forEach(btn => { if (btn) btn.classList.remove('active'); });
+            let activeBtn = null;
+            if (sectionId === 'welcome' && navButtons.home) activeBtn = navButtons.home;
+            else if ((sectionId === 'trickList' || sectionId === 'trickDetail') && navButtons.tricks) activeBtn = navButtons.tricks;
+            else if (sectionId === 'stats' && navButtons.stats) activeBtn = navButtons.stats;
+            else if (sectionId === 'about' && navButtons.about) activeBtn = navButtons.about;
+            if (activeBtn) activeBtn.classList.add('active');
+
+            if (sectionId === 'trickList') displayTrickList();
+            if (sectionId === 'stats') updateStatsUI();
+            if (sectionId === 'welcome') updateWelcomeStats();
+            if (sectionId !== 'trickDetail') window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setupNavigation() {
+             if (navButtons.home) navButtons.home.addEventListener('click', () => showSection('welcome'));
+             if (navButtons.tricks) navButtons.tricks.addEventListener('click', () => showSection('trickList'));
+             if (navButtons.stats) navButtons.stats.addEventListener('click', () => showSection('stats'));
+             if (navButtons.about) navButtons.about.addEventListener('click', () => showSection('about'));
+             if (startLearningBtn) startLearningBtn.addEventListener('click', () => showSection('trickList'));
+             if (aboutToTricksBtn) aboutToTricksBtn.addEventListener('click', () => showSection('trickList'));
+             if (backToListBtn) backToListBtn.addEventListener('click', () => showSection('trickList'));
+             if (backToTrickBtn) backToTrickBtn.addEventListener('click', () => {
+                 if (practiceResults) practiceResults.classList.add('hidden');
+                 if (practiceSection) practiceSection.classList.add('hidden');
+                 if (startPracticeArea) startPracticeArea.classList.remove('hidden');
+                 if (trickDetailContent) trickDetailContent.classList.remove('hidden');
+             });
+             if (categoryFilterBtns) {
+                 categoryFilterBtns.forEach(btn => {
+                     btn.addEventListener('click', () => {
+                         const category = btn.dataset.category;
+                         displayTrickList(category);
+                     });
+                 });
+             }
+        }
+        function getTrickById(id) { return tricks.find(trick => trick.id === id); }
+        function displayTrickList(filterCategory = 'all') {
+            if (!trickListContainer) return;
+            trickListContainer.innerHTML = '';
+            const categoryExists = category => tricks.some(trick => trick.category === category);
+            const filteredTricks = filterCategory === 'all' || !categoryExists(filterCategory)
+                ? tricks
+                : tricks.filter(trick => trick.category === filterCategory);
+
+            if (filteredTricks.length === 0 && filterCategory !== 'all') {
+                 trickListContainer.innerHTML = `<p class="text-center text-gray-500 col-span-full">No hay trucos de la Parte 2 en esta categoría.</p>`;
+             } else if (filteredTricks.length === 0) {
+                  trickListContainer.innerHTML = `<p class="text-center text-gray-500 col-span-full">No hay trucos disponibles.</p>`;
+             } else {
+                filteredTricks.forEach(trick => {
+                    const stars = progressData.trickStars[trick.id] || 0;
+                    const isCompleted = progressData.completedTricks.includes(trick.id);
+                    const card = document.createElement('div');
+                    card.className = `trick-card p-5 shadow-md hover:shadow-xl border ${isCompleted ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white'} flex flex-col justify-between transition duration-300`;
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center mb-3">
+                                 <i class="${trick.icon || 'fas fa-star'} text-2xl mr-3 ${getCategoryColorClass(trick.category, 'text')}"></i>
+                                <h3 class="text-xl font-bold text-gray-800">${trick.title}</h3>
+                            </div>
+                            <p class="text-gray-600 mb-4 text-sm">${trick.description}</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-auto pt-3 border-t ${isCompleted ? 'border-green-200' : 'border-gray-200'}">
+                             <div class="star-rating text-lg">
+                                ${[1, 2, 3].map(i => `<i class="star ${i <= stars ? 'active fas' : 'far'} fa-star"></i>`).join('')}
+                            </div>
+                            <span class="text-xs font-semibold px-2 py-1 rounded ${getCategoryColorClass(trick.category, 'bg')} ${getCategoryColorClass(trick.category, 'text')} opacity-80 capitalize">${trick.category || 'General'}</span>
+                         </div>
+                    `;
+                    card.addEventListener('click', () => showTrickDetail(trick.id));
+                    trickListContainer.appendChild(card);
+                });
+             }
+            updateCategoryFilterButtons(filterCategory);
+         }
+        function updateCategoryFilterButtons(activeCategory) {
+             if (!categoryFilterBtns) return;
+             categoryFilterBtns.forEach(btn => {
+                 const category = btn.dataset.category;
+                 btn.classList.remove('active', 'bg-blue-500', 'text-white', 'ring-2', 'ring-blue-300');
+                 const categoryExistsInTricks = category === 'all' || tricks.some(trick => trick.category === category);
+                 btn.classList.toggle('hidden', !categoryExistsInTricks);
+                 if (!categoryExistsInTricks) return;
+                 const colorClasses = getCategoryColorClass(category);
+                 if (category === 'all') {
+                     btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-gray-300');
+                 } else {
+                     btn.classList.add(colorClasses.bg, colorClasses.text, `hover:bg-${colorClasses.baseColor}-200`);
+                 }
+                 if (category === activeCategory) {
+                     btn.classList.add('active', 'bg-blue-500', 'text-white', 'ring-2', 'ring-blue-300');
+                     if (category === 'all') { btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-gray-300'); }
+                     else { btn.classList.remove(colorClasses.bg, colorClasses.text, `hover:bg-${colorClasses.baseColor}-200`); }
+                 }
+             });
+        }
+        function getCategoryColorClass(category, type = null) {
+             const colors = { multiplication: { bg: 'bg-red-100', text: 'text-red-800', baseColor: 'red' }, addition: { bg: 'bg-blue-100', text: 'text-blue-800', baseColor: 'blue' }, mental: { bg: 'bg-green-100', text: 'text-green-800', baseColor: 'green' }, patterns: { bg: 'bg-yellow-100', text: 'text-yellow-800', baseColor: 'yellow' }, division: { bg: 'bg-indigo-100', text: 'text-indigo-800', baseColor: 'indigo' }, advanced: { bg: 'bg-purple-100', text: 'text-purple-800', baseColor: 'purple' }, default: { bg: 'bg-gray-100', text: 'text-gray-800', baseColor: 'gray'} };
+             const selected = colors[category] || colors.default; return type ? selected[type] : selected;
+        }
+        function showTrickDetail(trickId) {
+            currentTrickId = trickId; const trick = getTrickById(trickId); if (!trick || !trickDetailContent) return;
+            trickDetailContent.innerHTML = `<div class="flex items-center mb-4"><i class="${trick.icon || 'fas fa-star'} text-3xl mr-4 ${getCategoryColorClass(trick.category, 'text')}"></i><h2 class="text-3xl font-bold text-gray-800">${trick.title}</h2></div><div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">${trick.explanation}</div>`;
+            if (practiceSection) practiceSection.classList.add('hidden'); if (practiceResults) practiceResults.classList.add('hidden'); if (trickDetailContent) trickDetailContent.classList.remove('hidden');
+             if (startPracticeArea) {
+                 if (trick.practice && trick.practice.length > 0) {
+                     startPracticeArea.classList.remove('hidden');
+                     if (startPracticeBtn) { const oldBtn = startPracticeBtn; const newBtn = oldBtn.cloneNode(true); oldBtn.parentNode.replaceChild(newBtn, oldBtn); startPracticeBtn = newBtn; startPracticeBtn.addEventListener('click', () => startPractice(trickId)); }
+                 } else { startPracticeArea.classList.add('hidden'); trickDetailContent.innerHTML += '<p class="mt-6 text-center text-gray-500 italic">Este truco es conceptual o la práctica estará disponible pronto.</p>'; }
+             }
+            showSection('trickDetail'); if (trickDetailContent) trickDetailContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function startPractice(trickId) {
+            const trick = getTrickById(trickId); if (!trick || !trick.practice || trick.practice.length === 0) return;
+            practiceQuestions = [...trick.practice].sort(() => Math.random() - 0.5); currentQuestionIndex = 0; currentScore = 0; selectedAnswer = null;
+            if (trickDetailContent) trickDetailContent.classList.add('hidden'); if (startPracticeArea) startPracticeArea.classList.add('hidden'); if (practiceSection) practiceSection.classList.remove('hidden'); if (practiceResults) practiceResults.classList.add('hidden');
+            displayQuestion(); if (practiceSection) practiceSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+         }
+        function displayQuestion() {
+             if (currentQuestionIndex >= practiceQuestions.length) { finishPractice(); return; } if (!questionContainer || !optionsContainer || !feedbackContainer || !checkAnswerBtn || !nextQuestionBtn) return;
+             const questionData = practiceQuestions[currentQuestionIndex]; questionContainer.innerHTML = `<p class="text-xl font-semibold mb-2">Pregunta ${currentQuestionIndex + 1} de ${practiceQuestions.length}:</p><p class="text-2xl">${questionData.question}</p>${questionData.hint ? `<p class="text-sm text-gray-500 mt-2"><i class="fas fa-lightbulb mr-1 text-yellow-400"></i> Pista: ${questionData.hint}</p>` : ''}`; questionContainer.className = 'bg-gray-50 p-6 rounded-lg shadow-inner mb-4 question-card'; optionsContainer.innerHTML = ''; const options = [...questionData.options].sort(() => Math.random() - 0.5); options.forEach(option => { const button = document.createElement('button'); button.className = 'answer-btn bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow transition duration-200 w-full text-left text-lg'; button.textContent = option; button.dataset.answer = option; button.onclick = () => selectAnswer(button); optionsContainer.appendChild(button); }); feedbackContainer.textContent = ''; feedbackContainer.className = 'text-center font-bold mb-4 h-6'; nextQuestionBtn.classList.add('hidden'); checkAnswerBtn.classList.remove('hidden'); checkAnswerBtn.disabled = true; selectedAnswer = null;
+        }
+        function selectAnswer(button) {
+             if (!optionsContainer || !checkAnswerBtn) return; optionsContainer.querySelectorAll('.answer-btn').forEach(btn => { btn.classList.remove('selected'); btn.style.borderColor = ''; btn.style.backgroundColor = '';}); button.classList.add('selected'); button.style.borderColor = '#60a5fa'; button.style.backgroundColor = '#eff6ff'; selectedAnswer = button.dataset.answer; checkAnswerBtn.disabled = false;
+        }
+        function setupPracticeButtons() {
+            if (checkAnswerBtn) {
+                 checkAnswerBtn.onclick = () => { if (!selectedAnswer || !optionsContainer || !feedbackContainer || !checkAnswerBtn || !nextQuestionBtn || !questionContainer) return; const questionData = practiceQuestions[currentQuestionIndex]; const correctAnswer = questionData.correctAnswer; const isCorrect = selectedAnswer === correctAnswer; optionsContainer.querySelectorAll('.answer-btn').forEach(btn => { btn.disabled = true; btn.onclick = null; btn.classList.remove('hover:bg-gray-100', 'selected'); btn.style.borderColor = ''; btn.style.backgroundColor = ''; if (btn.dataset.answer === correctAnswer) { btn.classList.add('correct'); btn.innerHTML += ' <i class="fas fa-check ml-2"></i>'; } else if (btn.dataset.answer === selectedAnswer) { btn.classList.add('incorrect'); btn.innerHTML += ' <i class="fas fa-times ml-2"></i>'; } }); if (isCorrect) { currentScore++; feedbackContainer.textContent = '¡Correcto! 😄'; feedbackContainer.className = 'text-center font-bold mb-4 h-6 text-green-600'; questionContainer.classList.add('correct'); } else { feedbackContainer.textContent = `¡Ups! La correcta era ${correctAnswer}. 🤔`; feedbackContainer.className = 'text-center font-bold mb-4 h-6 text-red-600'; questionContainer.classList.add('incorrect'); } checkAnswerBtn.classList.add('hidden'); nextQuestionBtn.classList.remove('hidden'); };
+             }
+             if (nextQuestionBtn) { nextQuestionBtn.onclick = () => { currentQuestionIndex++; displayQuestion(); }; }
+        }
+        function finishPractice() {
+             if (!practiceSection || !practiceResults || !scoreCorrectSpan || !scoreTotalSpan || !resultStarsContainer || !resultMessage) return; practiceSection.classList.add('hidden'); practiceResults.classList.remove('hidden'); scoreCorrectSpan.textContent = currentScore; scoreTotalSpan.textContent = practiceQuestions.length; const percentage = practiceQuestions.length > 0 ? (currentScore / practiceQuestions.length) * 100 : 0; let stars = 0; if (percentage >= 90) stars = 3; else if (percentage >= 50) stars = 2; else if (currentScore > 0) stars = 1; else stars = 0; resultStarsContainer.innerHTML = [1, 2, 3].map(i => `<i class="star ${i <= stars ? 'active fas' : 'far'} fa-star mx-1"></i>`).join(''); let message = ''; if (stars === 3) { message = '¡Increíble! ¡Eres un Maestro del Truco! ✨'; triggerConfetti(); } else if (stars === 2) { message = '¡Muy bien hecho! ¡Sigue practicando! 👍'; } else if (stars === 1) { message = '¡Buen intento! ¡La práctica hace al maestro! 💪'; } else { message = '¡No te rindas! Vuelve a intentarlo. 💡'; } resultMessage.textContent = message; updateProgress(currentTrickId, stars); practiceResults.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        function loadProgress() {
+            try { const savedProgress = localStorage.getItem(PROGRESS_KEY); if (savedProgress) { progressData = JSON.parse(savedProgress); progressData.completedTricks = progressData.completedTricks || []; progressData.trickStars = progressData.trickStars || {}; progressData.totalStars = progressData.totalStars || 0; progressData.exercisesCompleted = progressData.exercisesCompleted || 0; progressData.achievements = progressData.achievements || []; } else { progressData = { completedTricks: [], trickStars: {}, totalStars: 0, exercisesCompleted: 0, achievements: [] }; } } catch (e) { console.error(`Error cargando progreso (${PROGRESS_KEY}):`, e); progressData = { completedTricks: [], trickStars: {}, totalStars: 0, exercisesCompleted: 0, achievements: [] }; } updateWelcomeStats();
+        }
+        function saveProgress() { try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressData)); } catch (e) { console.error(`Error guardando progreso (${PROGRESS_KEY}):`, e); } }
+        function updateProgress(trickId, starsEarned) {
+             let newStarsAdded = 0; if (!progressData.completedTricks.includes(trickId)) { progressData.completedTricks.push(trickId); } const currentStars = progressData.trickStars[trickId] || 0; const newBestStars = Math.max(currentStars, starsEarned); newStarsAdded = newBestStars - currentStars; progressData.totalStars += newStarsAdded; progressData.trickStars[trickId] = newBestStars; progressData.exercisesCompleted++; checkAchievements(newStarsAdded > 0 && newBestStars === 3); saveProgress(); updateWelcomeStats();
+        }
+        function checkAchievements(justGotPerfectScore = false) {
+            const completedCount = progressData.completedTricks.length; let newAchievement = false; const checkAndAdd = (id, condition) => { if (condition && !progressData.achievements.includes(id)) { progressData.achievements.push(id); return true; } return false; }; if (checkAndAdd('first_trick', completedCount >= 1)) { showAchievementNotification('¡Primer Truco (P2)!', 'Completaste tu primer truco de esta sección.'); newAchievement = true; } if (checkAndAdd('five_tricks', completedCount >= 5)) { showAchievementNotification('¡Aprendiz Veloz (P2)!', 'Completaste 5 trucos de esta sección.'); newAchievement = true; } if (checkAndAdd('fifteen_tricks', completedCount >= 15)) { showAchievementNotification('¡Experto Calculista (P2)!', 'Completaste 15 trucos de esta sección.'); newAchievement = true; } if (checkAndAdd('all_tricks', completedCount === tricks.length)) { showAchievementNotification('¡Maestro de Trucos (P2)!', '¡Completaste TODOS los trucos de la Parte 2!'); newAchievement = true; } if (justGotPerfectScore && checkAndAdd('perfect_score', true)) { showAchievementNotification('¡Perfecto! (P2)', 'Conseguiste 3 estrellas en un truco de esta sección.'); newAchievement = true; } if (newAchievement) { saveProgress(); if (sections.stats && !sections.stats.classList.contains('hidden')) { updateStatsUI(); } }
+        }
+        function showAchievementNotification(title, message) { console.log(`%c🏆 Logro P2: ${title} - ${message}`, 'color: gold; font-weight: bold; font-size: 1.1em;'); showDragonMessage(`¡Logro P2! ${title}`); }
+        function updateWelcomeStats() {
+            const elemTricks = document.getElementById('home-tricks-mastered'); const elemStars = document.getElementById('home-stars-earned'); const elemExercises = document.getElementById('home-exercises-completed'); if (elemTricks) elemTricks.textContent = `${progressData.completedTricks.length}/${tricks.length}`; if (elemStars) elemStars.textContent = progressData.totalStars; if (elemExercises) elemExercises.textContent = progressData.exercisesCompleted;
+        }
+        function updateStatsUI() {
+            const elemStatsTricks = document.getElementById('stats-tricks-mastered'); const elemStatsStars = document.getElementById('stats-stars-earned'); const elemStatsExercises = document.getElementById('stats-exercises-completed'); const overallProgressBar = document.getElementById('overall-progress'); const overallProgressText = document.getElementById('overall-progress-text'); const achievementsContainer = document.getElementById('achievements-container'); if (!elemStatsTricks || !elemStatsStars || !elemStatsExercises || !overallProgressBar || !overallProgressText || !achievementsContainer) return; const completedCount = progressData.completedTricks.length; const totalTricks = tricks.length; const overallPercentage = totalTricks > 0 ? Math.round((completedCount / totalTricks) * 100) : 0; elemStatsTricks.textContent = `${completedCount}/${totalTricks}`; elemStatsStars.textContent = progressData.totalStars; elemStatsExercises.textContent = progressData.exercisesCompleted; overallProgressBar.style.width = `${overallPercentage}%`; overallProgressBar.textContent = `${overallPercentage}%`; overallProgressText.textContent = overallPercentage; const categories = [...new Set(tricks.map(t => t.category))]; document.querySelectorAll('#stats .progress-fill[id$="-progress"]').forEach(bar => { bar.style.width = '0%'; bar.textContent = '0%'; }); categories.forEach(category => { if (!category) return; const categoryTricks = tricks.filter(t => t.category === category); const completedInCategory = categoryTricks.filter(t => progressData.completedTricks.includes(t.id)).length; const categoryPercentage = categoryTricks.length > 0 ? Math.round((completedInCategory / categoryTricks.length) * 100) : 0; const progressBar = document.getElementById(`${category}-progress`); if (progressBar) { progressBar.style.width = `${categoryPercentage}%`; progressBar.textContent = `${categoryPercentage}%`; } }); const achievementItems = achievementsContainer.querySelectorAll('.achievement-item'); achievementItems.forEach(item => { const achievementId = item.dataset.id; const icon = item.querySelector('i'); if (progressData.achievements.includes(achievementId)) { item.classList.remove('opacity-50', 'bg-gray-200'); item.classList.add('opacity-100', 'bg-yellow-100', 'shadow-sm'); if (icon) { icon.classList.remove('text-gray-400'); icon.classList.add('text-yellow-500'); } } else { item.classList.add('opacity-50', 'bg-gray-200'); item.classList.remove('opacity-100', 'bg-yellow-100', 'shadow-sm'); if (icon) { icon.classList.add('text-gray-400'); icon.classList.remove('text-yellow-500'); } } });
+        }
+        function resetProgress() {
+            if (confirm('¿Estás seguro de que quieres borrar TODO tu progreso de la PARTE 2? ¡No podrás recuperarlo!')) { progressData = { completedTricks: [], trickStars: {}, totalStars: 0, exercisesCompleted: 0, achievements: [] }; saveProgress(); loadProgress(); displayTrickList(); showSection('welcome'); showDragonMessage('¡Progreso (P2) reiniciado! ¡Nuevos retos esperan!'); console.log(`Progreso (${PROGRESS_KEY}) reiniciado.`); }
+        }
+        function triggerConfetti() {
+            if (!confettiContainer) return; confettiContainer.innerHTML = ''; const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800']; for (let i = 0; i < 100; i++) { const confetti = document.createElement('div'); confetti.className = 'confetti'; confetti.style.left = `${Math.random() * 100}vw`; confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; confetti.style.animationDelay = `${Math.random() * 1}s`; confetti.style.transform = `rotate(${Math.random() * 360}deg)`; const size = Math.random() * 8 + 6; confetti.style.width = `${size}px`; confetti.style.height = `${size * (Math.random() * 0.5 + 1)}px`; confetti.animate([{ transform: `translateY(-20vh) rotate(${Math.random() * 360}deg)`, opacity: 1 },{ transform: `translateY(120vh) rotate(${Math.random() * 720 + 360}deg)`, opacity: 0 }], { duration: Math.random() * 3000 + 4000, easing: 'linear' }).onfinish = () => confetti.remove(); confettiContainer.appendChild(confetti); }
+        }
+        let dragonMessageTimeout;
+        function showDragonMessage(message, duration = 5000) {
+            if (!dragonMessageBox) return; clearTimeout(dragonMessageTimeout); dragonMessageBox.textContent = message; dragonMessageBox.classList.add('show'); dragonMessageTimeout = setTimeout(() => { dragonMessageBox.classList.remove('show'); }, duration);
+        }
+
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', () => {
+             console.log("DOM Cargado. Iniciando aplicación (Parte 2)...");
+             sections = { welcome: document.getElementById('welcome'), trickList: document.getElementById('trick-list'), trickDetail: document.getElementById('trick-detail'), stats: document.getElementById('stats'), about: document.getElementById('about') };
+             navButtons = { home: document.getElementById('btnHome'), tricks: document.getElementById('btnTricks'), stats: document.getElementById('btnStats'), about: document.getElementById('btnAbout') };
+             trickListContainer = document.getElementById('trick-list-container'); trickDetailContent = document.getElementById('trick-detail-content'); practiceSection = document.getElementById('practice-section'); questionContainer = document.getElementById('question-container'); optionsContainer = document.getElementById('options-container'); feedbackContainer = document.getElementById('feedback-container'); checkAnswerBtn = document.getElementById('check-answer-btn'); nextQuestionBtn = document.getElementById('next-question-btn'); practiceResults = document.getElementById('practice-results'); scoreCorrectSpan = document.getElementById('score-correct'); scoreTotalSpan = document.getElementById('score-total'); resultStarsContainer = document.getElementById('result-stars'); resultMessage = document.getElementById('result-message'); startPracticeBtn = document.getElementById('start-practice-btn'); startPracticeArea = document.getElementById('start-practice-area'); backToListBtn = document.getElementById('back-to-list-btn'); backToTrickBtn = document.getElementById('back-to-trick-btn'); categoryFilterBtns = document.querySelectorAll('.category-filter-btn'); confettiContainer = document.getElementById('confetti-container'); dragonMascot = document.getElementById('dragon-mascot'); dragonMessageBox = document.getElementById('dragon-message-box'); resetProgressBtn = document.getElementById('reset-progress-btn'); startLearningBtn = document.getElementById('start-learning-btn'); aboutToTricksBtn = document.getElementById('about-to-tricks-btn');
+
+             if (!sections.welcome || !navButtons.home || !startLearningBtn || !resetProgressBtn) { console.error("¡Error crítico (P2)! Faltan elementos esenciales."); return; }
+
+            loadProgress();
+            setupNavigation();
+            setupPracticeButtons(); // Asegurar que los botones de práctica tengan listeners
+            displayTrickList();
+            showSection('welcome');
+            showDragonMessage("¡Seguimos aprendiendo! Nuevos trucos esperan.", 6000);
+            if (resetProgressBtn) resetProgressBtn.addEventListener('click', resetProgress);
+            if (dragonMascot) dragonMascot.addEventListener('click', () => { const msgs = ["¡Más trucos, más diversión!", "Estos son un poco más avanzados.", "¡No te detengas ahora!", "Explora las nuevas categorías.", "¿Cuál te parece más interesante?"]; showDragonMessage(msgs[Math.floor(Math.random() * msgs.length)]); });
+            console.log("Aplicación (Parte 2) inicializada.");
+        });
+    </script>
+
+</body>
+</html>

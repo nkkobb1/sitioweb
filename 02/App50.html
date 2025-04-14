@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciencia Sencilla - Religiones</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #8b5cf6; /* Violet */
+            --color-secondary: #f59e0b; /* Amber/Gold */
+            --color-background: #f9fafb; /* Very light gray */
+            --color-text: #1f2937; /* Dark Gray */
+            --color-text-muted: #6b7280; /* Medium Gray */
+            --color-modal-bg: #ffffff;
+            --color-border: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--color-background); color: var(--color-text); }
+        h1, h2, h3, h4, .logo { font-family: 'Quicksand', sans-serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.5rem; display: inline-block; }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.25rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: 'Nunito', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #7c3aed; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #9ca3af; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.8); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper { background-color: var(--color-modal-bg); border-radius: var(--border-radius); padding: 1.5rem; max-width: 850px; width: 95%; max-height: 90vh; overflow: hidden; position: relative; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #e5e7eb; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.4rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: #d1d5db; color: var(--color-text); }
+        #modal-title { color: var(--color-primary); text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; }
+        #modal-content { line-height: 1.7; color: var(--color-text); white-space: normal; overflow-y: auto; margin-bottom: 1.5rem; padding: 0 10px; flex-grow: 1; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border); }
+        #modal-content::-webkit-scrollbar { width: 8px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: 4px;}
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: 4px; border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.2em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Quicksand', sans-serif; margin-top: 1.8em; margin-bottom: 0.8em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.3em; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.2em; }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-secondary); }
+        #modal-content .formula { text-align: center; font-family: 'Consolas', 'Courier New', Courier, monospace; font-size: 1.1em; padding: 0.8em; margin: 1.2em 0; border: 1px solid var(--color-border); background-color: #f9fafb; border-radius: var(--border-radius); overflow-x: auto; white-space: nowrap; }
+        #modal-content .formula sub, #modal-content .formula sup { font-size: 0.8em; line-height: 0; position: relative; vertical-align: baseline; }
+        #modal-content .formula sub { top: 0.5em; }
+        #modal-content .formula sup { top: -0.5em; }
+        #modal-image-container { width: 100%; height: 220px; background-color: #f3f4f6; border-radius: var(--border-radius); overflow: hidden; display: none; /* Start hidden */ align-items: center; justify-content: center; border: 1px solid var(--color-border); flex-shrink: 0; margin-top: 1rem; }
+        #modal-image-container.visible { display: flex; }
+        #modal-image-container img { width: 100%; height: 100%; object-fit: contain; display: none; }
+        #modal-image-container .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; display: none; }
+        #modal-image-container .placeholder-icon { font-size: 2.5rem; color: var(--color-border); display: none; }
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 50px; height: 50px; border: 5px solid #d1d5db; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-text); font-size: 1.1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: var(--border-radius); border: 1px solid #fecaca; margin-top: 1rem; text-align: center; flex-shrink: 0; }
+        .error-msg i { margin-right: 0.5rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-8">
+         <div class="container mx-auto px-4 py-3 flex justify-center items-center">
+             <div class="flex items-center">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-om mr-2"></i> Ciencia Sencilla: Religiones
+                 </h1>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Explorando las Creencias Humanas</h1>
+             <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">Descubre la diversidad de las religiones y sistemas de creencias con explicaciones claras por IA. ¡Selecciona un tema!</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-place-of-worship text-purple-500 mr-2"></i>
+                 Conceptos a Explorar
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Buscando escrituras...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Conceptos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Investigando explicación...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                 </div>
+                  <!-- Image Container (Initially Hidden) -->
+                 <div id="modal-image-container">
+                     <div class="spinner"></div>
+                     <i class="fas fa-book-reader placeholder-icon"></i> <!-- Placeholder icon -->
+                     <img id="modal-image" alt="Visualización abstracta del concepto" />
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-circle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-5 mt-12 border-t border-gray-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Explicaciones generadas por IA con fines educativos e informativos. La religión es compleja, busca fuentes académicas y expertas para un estudio profundo.</p>
+              <p class="mt-1">© 2025 Ciencia Sencilla</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Conceptos Generales
+            "¿Qué es la Religión?", "¿Qué es la Espiritualidad?", "Diferencia entre Religión y Espiritualidad", "Teísmo, Deísmo, Panteísmo", "Ateísmo: Definición y Variantes", "Agnosticismo: La Incertidumbre", "Monoteísmo vs. Politeísmo", "Animismo: Espíritus en la Naturaleza", "¿Qué es un Mito?", "Función de los Mitos en la Religión", "Rituales: Definición y Tipos", "Importancia de los Rituales", "Textos Sagrados: ¿Qué son?", "Interpretación de Textos Sagrados", "Lugares Sagrados", "Símbolos Religiosos", "Ética y Moral en la Religión", "El Concepto de lo Sagrado y lo Profano", "Oración y Meditación", "La Experiencia Religiosa", "Conversión Religiosa", "Sincretismo Religioso", "Fundamentalismo Religioso", "Secularización: Religión en el Mundo Moderno", "Religión y Ciencia: ¿Conflicto o Diálogo?", "Libertad Religiosa", "Pluralismo Religioso", "Religión y Violencia", "El Problema del Mal", "Conceptos de la Creación del Mundo", "Escatología: El Fin de los Tiempos", "Ideas sobre la Vida después de la Muerte", "El Concepto de Alma o Espíritu", "Misticismo: La Búsqueda de la Unión Divina", "Ascetismo: Disciplina Espiritual", "Peregrinaciones Religiosas", "Iconografía Religiosa", "Religión y Arte", "Religión y Música", "Religión y Política",
+            // Religiones Abrahámicas
+            "Judaísmo: Orígenes e Historia", "La Torá: El Texto Central Judío", "El Talmud y la Ley Oral Judía", "Sinagoga: Lugar de Culto Judío", "Principales Fiestas Judías (Pascua, Rosh Hashaná, Yom Kipur)", "Concepto de Dios en el Judaísmo (YHWH)", "El Mesías en el Judaísmo", "Ramas del Judaísmo (Ortodoxo, Conservador, Reformista)", "Cristianismo: Orígenes y Figura de Jesús", "La Biblia: Antiguo y Nuevo Testamento", "Concepto de Dios en el Cristianismo (Trinidad)", "La Figura de Jesucristo (Divinidad, Resurrección)", "La Iglesia Cristiana: Concepto y Tipos", "Sacramentos Cristianos (Bautismo, Eucaristía)", "Principales Fiestas Cristianas (Navidad, Pascua)", "Ramas del Cristianismo (Catolicismo, Ortodoxia, Protestantismo)", "El Papa y la Jerarquía Católica", "La Reforma Protestante (Lutero, Calvino)", "Islam: Orígenes y Figura de Mahoma", "El Corán: El Texto Sagrado Islámico", "Los Cinco Pilares del Islam", "Concepto de Dios en el Islam (Alá, Tawhid)", "La Sharia: Ley Islámica", "La Mezquita: Lugar de Culto Islámico", "Principales Fiestas Islámicas (Ramadán, Eid al-Fitr, Eid al-Adha)", "Ramas del Islam (Sunismo, Chiismo)", "Sufismo: La Veta Mística del Islam",
+            // Religiones Dhármicas
+            "Hinduismo: Orígenes y Diversidad", "Los Vedas y Upanishads", "Conceptos Clave Hindúes (Dharma, Karma, Samsara, Moksha)", "El Panteón Hindú (Brahma, Vishnu, Shiva, Devi)", "El Sistema de Castas (Historia y Situación Actual)", "Yoga y Meditación en el Hinduismo", "Templos Hindúes (Mandir)", "Principales Fiestas Hindúes (Diwali, Holi)", "Budismo: Orígenes y Figura de Siddhartha Gautama (Buda)", "Las Cuatro Nobles Verdades", "El Noble Óctuple Sendero", "Conceptos Clave Budistas (Nirvana, Anatman, Impermanencia)", "Textos Budistas (Canon Pali, Sutras Mahayana)", "Ramas del Budismo (Theravada, Mahayana, Vajrayana)", "El Dalai Lama y el Budismo Tibetano", "Zen: Budismo en Asia Oriental", "Monasterios Budistas y la Sangha", "Jainismo: Principios y Fundador (Mahavira)", "Ahimsa: El Principio de No Violencia Jainista", "Conceptos Jainistas (Anekantavada, Aparigraha)", "Sijismo: Orígenes y Gurús", "El Gurú Granth Sahib: Texto Sagrado Sij", "Los Cinco K (Kesh, Kara, Kanga, Kachera, Kirpan)", "El Templo Dorado (Harmandir Sahib)", "Concepto de Dios en el Sijismo (Ik Onkar)",
+            // Religiones de Asia Oriental
+            "Taoísmo: Lao Tsé y el Tao Te Ching", "El Concepto del Tao", "Yin y Yang: Dualidad y Equilibrio", "Wu Wei: La Acción sin Esfuerzo", "Confucianismo: Confucio y sus Enseñanzas", "Ética Confuciana (Piedad Filial, Rectitud, Humanidad)", "Los Analectas de Confucio", "Importancia de la Educación y el Ritual en el Confucianismo", "Sintoísmo: La Religión Nativa de Japón", "Kami: Los Espíritus Sintoístas", "Santuarios Sintoístas (Jinja)", "Rituales de Purificación Sintoístas",
+            // Otras Religiones y Sistemas de Creencias
+            "Zoroastrismo: Orígenes y Principios", "Ahura Mazda y Angra Mainyu (Dualismo)", "Religiones Indígenas/Tradicionales (Características Generales)", "Chamanismo: El Rol del Chamán", "Creencias de los Nativos Americanos (Ejemplos)", "Religiones Tradicionales Africanas (Ejemplos)", "Espiritismo: Comunicación con Espíritus", "Nuevos Movimientos Religiosos (Definición)", "Ejemplos de Nuevos Movimientos Religiosos (Cienciología, Wicca, etc.)", "Paganismo y Neopaganismo", "Humanismo Secular", "Fe Bahá'í: Unidad de la Humanidad",
+            // Temas Comparativos y Filosóficos
+            "Religión Comparada: Métodos y Enfoques", "El Diálogo Interreligioso", "Filosofía de la Religión", "Argumentos sobre la Existencia de Dios (Ontológico, Cosmológico, Teleológico)", "El Papel de la Fe y la Razón", "Religión y Mitología", "El Concepto de Pecado o Error Moral", "Salvación, Liberación o Iluminación", "Profetas y Mensajeros Divinos", "Sacerdocio y Roles Religiosos", "Monasticismo: Vida Religiosa Comunitaria", "Religión y Género", "Interpretaciones del Sufrimiento", "Ética Religiosa vs. Ética Secular", "Proselitismo y Evangelización", "Religión y Globalización", "Movimientos Carismáticos y Pentecostales", "Religión Popular vs. Religión Institucionalizada", "La Diáspora Religiosa", "Antropología de la Religión", "Sociología de la Religión", "Psicología de la Religión", "Crítica a la Religión", "El Futuro de la Religión"
+        ];
+        const religionThemes = [ // Reemplaza mathThemes
+            "mitología comparada", "textos sagrados", "rituales y prácticas", "figuras importantes", "conceptos éticos", "historia de las religiones", "religiones del mundo", "filosofía de la religión", "nuevos movimientos religiosos", "religión y sociedad", "religiones abrahámicas", "religiones dhármicas", "creencias de Asia Oriental", "espiritualidad no religiosa", "conceptos sobre la divinidad", "vida después de la muerte", "misticismo", "religiones indígenas", "religión y ciencia"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un erudito en religiones comparadas y un excelente comunicador. Tu tarea es explicar conceptos religiosos, filosóficos y espirituales complejos de forma objetiva, clara, respetuosa y detallada para un público general o estudiantes (similar a un ensayo introductorio). Presenta diferentes perspectivas cuando sea apropiado, evita el proselitismo o juicios de valor. Utiliza un lenguaje neutral y académico pero accesible. Estructura la explicación con claridad usando párrafos y ocasionalmente sub-títulos (usando markdown como #, ##, ### o ####). El objetivo es una explicación completa y fácil de entender de unas **1200-1300 palabras**. Basa tu explicación únicamente en el siguiente concepto:",
+            timeoutSeconds: 150 // Aumentado el tiempo de espera
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso. Genera exactamente 15 conceptos o preguntas clave sobre religión, espiritualidad o filosofía de la religión, adecuados para ser explicados de forma sencilla y objetiva. Devuelve *solo* la lista de conceptos/preguntas, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 30
+        };
+
+        // ========== DOM ELEMENTS ========== (sin cambios)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
+        const modalImage = document.getElementById('modal-image');
+        const modalImageSpinner = modalImageContainer.querySelector('.spinner');
+        const modalImagePlaceholder = modalImageContainer.querySelector('.placeholder-icon');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // --- Variable to hold the current scroll listener ---
+        let currentScrollHandler = null;
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config) { /* ... (sin cambios) ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url}`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000); // Usa el timeout de config
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s).`);
+                 throw new Error(`Error de comunicación con la API. ${error.message}`);
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { /* ... (usa textApiConfig actualizado) ... */
+            const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+             // Ajustar la validación mínima de longitud si es necesario, aunque 1200 es alto
+             const minLength = 900; // Un umbral razonable por debajo del objetivo
+             if (text.trim().length < minLength || text.toLowerCase().includes("cannot fulfill")) {
+                  throw new Error("La IA no pudo generar una explicación suficientemente detallada para este concepto.");
+              }
+            return text;
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(religionThemes) || "conceptos religiosos básicos"; // Usa la nueva lista
+            const specificPrompt = `Genera 15 conceptos o preguntas clave sobre ${randomTheme}`; // Ajusta el prompt base
+            console.log("Generating concepts with prompt:", specificPrompt);
+            const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+            const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+            const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 120);
+            if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de conceptos.");
+            return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "spiritual concept abstract";
+            // Prompt ENFOCADO en lo abstracto y conceptual, evitando símbolos específicos
+            const enhancedPrompt = `Abstract symbolic visualization related to the concept of '${safePromptText}', spiritual or philosophical theme, ethereal light, subtle patterns, conceptual art, sacred geometry inspiration`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            // Negative prompt MUY estricto para evitar texto e iconografía religiosa
+            const negativePrompt = "text, words, labels, letters, titles, captions, writing, numbers, specific religious symbols, cross, star of david, crescent moon, om symbol, yin yang, iconography, specific deities, jesus, buddha, muhammad, vishnu, shiva, angels, saints, realistic photo, person, people, crowd, worshippers, church, temple, mosque, synagogue, building interior, religious texts, scriptures, book, scroll, diagrams, charts, graphs, instructional material, drawing, illustration with labels";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... (exactamente igual que antes) ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (sin cambios en lógica de scroll/listeners)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+            }
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent || !modalImage || !modalImageSpinner || !modalImagePlaceholder || !modalImageContainer) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             // Scroll reset handled in hideModal and handleTitleClick
+             modalImage.src = '';
+             modalImage.style.display = 'none';
+             modalImageSpinner.style.display = 'none';
+             modalImagePlaceholder.style.display = 'none';
+             modalImageContainer.classList.remove('visible');
+             modalImageContainer.style.display = 'none';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (sin cambios en lógica de scroll/listeners)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+            if (!titleListContainer || !titlesLoading) return;
+            const shuffledTitles = shuffleArray([...titles]);
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay conceptos disponibles.</p>'; return; }
+            shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        async function handleTitleClick(title) { // (Lógica de scroll/listeners igual)
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalImageContainer.style.display = 'none';
+            modalImageContainer.classList.remove('visible');
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+            }
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.scrollTop = 0; // <<<--- RESET SCROLL AFTER CONTENT VISIBLE
+                console.log("Scroll set to 0 after content visible");
+
+                modalImageSpinner.style.display = 'block'; // Show spinner inside hidden container
+                const imageUrl = createPollinationsImageUrl(title);
+                 if (imageUrl) {
+                     modalImage.onload = () => { modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'none'; modalImage.style.display = 'block'; };
+                     modalImage.onerror = () => { console.error("Error loading image:", title); modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'block'; modalImage.style.display = 'none'; };
+                     modalImage.src = imageUrl;
+                 } else {
+                     console.error("Could not create image URL:", title);
+                     modalImageSpinner.style.display = 'none';
+                     modalImagePlaceholder.style.display = 'block';
+                 }
+
+                const scrollBuffer = 15;
+                currentScrollHandler = () => {
+                    if (modalContent.scrollHeight <= modalContent.clientHeight) {
+                         console.log("Content fits, showing image immediately.");
+                         modalImageContainer.classList.add('visible');
+                         modalImageContainer.style.display = 'flex';
+                         modalContent.removeEventListener('scroll', currentScrollHandler);
+                         currentScrollHandler = null;
+                    } else if ((modalContent.scrollTop + modalContent.clientHeight) >= (modalContent.scrollHeight - scrollBuffer)) {
+                        console.log("Scroll end reached, showing image.");
+                        modalImageContainer.classList.add('visible');
+                        modalImageContainer.style.display = 'flex';
+                        modalContent.removeEventListener('scroll', currentScrollHandler);
+                        currentScrollHandler = null;
+                        console.log("Scroll listener removed after showing image.");
+                    }
+                };
+                modalContent.addEventListener('scroll', currentScrollHandler);
+                console.log("Scroll listener added.");
+                setTimeout(currentScrollHandler, 100); // Initial check
+
+            } catch (error) {
+                console.error("Failed to display explanation:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error al cargar: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalImageContainer.style.display = 'none';
+                modalContent.innerHTML = '';
+                 if (currentScrollHandler) {
+                    modalContent.removeEventListener('scroll', currentScrollHandler);
+                    currentScrollHandler = null;
+                 }
+            }
+        }
+
+        async function handleGenerateMoreTitles() { // (Usa religionThemes ahora)
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             // Cambiar texto del botón si quieres
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Investigando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // fetchGeneratedTitles ya usa religionThemes
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none'; appendTitles(newTitles);
+                     if (titleListContainer.parentNode) { titleListContainer.parentNode.appendChild(generateMoreContainer); }
+                     generateMoreContainer.style.display = 'block';
+                 } else { alert("No se pudieron generar nuevos conceptos en este momento."); }
+             } catch (error) { console.error("Failed generation:", error); alert(`Error: ${error.message}`);
+             } finally { generateMoreBtn.disabled = false; generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Conceptos'; }
+         }
+
+        // ========== INITIALIZATION ========== (sin cambios)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p>Error crítico.</p>'; return; }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

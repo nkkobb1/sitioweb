@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title (Updated by JS) -->
+    <title>Viral Post Spark - Generador IA para Redes Sociales | PapitasFritas.com</title>
+    <!-- Meta Description (Add manually or via CMS) -->
+    <!-- <meta name="description" content="Crea publicaciones virales para redes sociales con IA. Genera textos atractivos, hashtags y gráficos personalizados para Instagram, Twitter, Facebook y más con Viral Post Spark en PapitasFritas.com."> -->
+
+    <style>
+        /* --- Fonts & Base Styles --- */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@400;500&display=swap');
+        :root {
+            --bg-color: #f4f7f9; /* Light grey background */
+            --text-color: #333;
+            --primary-color: #007bff; /* Bright Blue */
+            --secondary-color: #6f42c1; /* Purple */
+            --accent-color: #fd7e14; /* Orange */
+            --card-bg: #ffffff;
+            --input-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --heading-color: #343a40;
+            --error-color: #dc3545;
+            --error-bg: rgba(220, 53, 69, 0.1);
+            --success-color: #28a745;
+            --loading-color: var(--primary-color);
+            --loading-bg-pulse: rgba(0, 123, 255, 0.05);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 2rem; line-height: 1.6;
+        }
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 1000px; margin: auto; padding: 2rem 2.5rem;
+            background-color: var(--card-bg); border-radius: 12px;
+            box-shadow: 0 6px 20px var(--shadow-color); border: 1px solid var(--border-color);
+        }
+        /* --- Header & UI Language Switcher --- */
+        .header-section { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+        .header-text { text-align: left; flex-grow: 1; }
+        .ui-language-switcher { margin-top: 5px; }
+        .ui-language-switcher label { font-size: 0.85rem; margin-right: 0.5rem; color: #6c757d; }
+        .ui-language-switcher select { padding: 4px 6px; font-size: 0.85rem; background-color: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; }
+        header h1 {
+            font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 2.5rem;
+            color: var(--heading-color); margin-bottom: 0.3rem; line-height: 1.2;
+            /* Simple gradient text */
+             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent;
+        }
+        header .subtitle { font-family: 'Poppins', sans-serif; font-weight: 300; font-size: 1.1rem; color: #6c757d; line-height: 1.3; }
+        /* --- Customization Form --- */
+        .customization-form {
+            background-color: #fdfdff; padding: 1.5rem 2rem; border-radius: 8px;
+            margin-bottom: 2.5rem; border: 1px solid #e9ecef;
+        }
+        .customization-form legend {
+            font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.4rem; color: var(--primary-color);
+            padding: 0 0.5rem; margin-bottom: 1.5rem; width: auto; border: none;
+        }
+        .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem 1.5rem; margin-bottom: 1.5rem; }
+        .option-group label { display: block; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; margin-bottom: 0.4rem; color: #495057; }
+        .option-group select, .option-group input[type="text"], .option-group textarea {
+            width: 100%; padding: 0.65rem 0.9rem; background-color: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 6px; color: var(--text-color); font-family: 'Inter', sans-serif; font-size: 0.95rem;
+             transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .option-group select {
+            appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236c757d' d='M6 8L0 2l1.4-1.4L6 5.2 10.6.6 12 2z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 0.8rem center; padding-right: 2.5rem; /* Ensure space for arrow */
+        }
+        .option-group textarea { min-height: 70px; resize: vertical; }
+        .option-group select:focus, .option-group input[type="text"]:focus, .option-group textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+        /* --- Post Output --- */
+        .post-output { display: grid; grid-template-columns: 1fr; /* Default stack */ gap: 2rem; margin-top: 2rem; }
+        @media (min-width: 768px) { /* Side by side on larger screens */
+            .post-output { grid-template-columns: 1fr 1fr; align-items: start; }
+        }
+        #image-container {
+            width: 100%; /* Takes grid width */ max-width: 400px; /* Max width for aesthetics */ aspect-ratio: 1 / 1; /* Default square */
+            background-color: #e9ecef; border-radius: 8px; overflow: hidden;
+            position: relative; border: 1px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center;
+             margin: 0 auto; /* Center if grid column is wider */
+        }
+        #image-container.loading { animation: pulse-bg-light 1.8s infinite ease-in-out; border-color: transparent; }
+        #post-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        #post-image.loaded { opacity: 1; }
+        #image-container.loading::before { content: ''; position: absolute; width: 35px; height: 35px; border: 4px solid rgba(0, 123, 255, 0.2); border-top-color: var(--loading-color); border-radius: 50%; animation: spin 1s linear infinite; z-index: 1; }
+        #image-container.failed { background-color: var(--error-bg); color: var(--error-color); font-size: 0.9em; padding: 15px; text-align: center; animation: none; }
+        #image-container.failed::before { display: none; }
+
+        #post-text-container {
+            width: 100%; background-color: var(--card-bg); padding: 1.5rem; border-radius: 8px;
+            border: 1px solid var(--border-color); position: relative; min-height: 200px;
+            opacity: 0; transition: opacity 0.7s ease-in-out 0.2s;
+        }
+        #post-text-container.visible { opacity: 1; }
+        #copy-text-btn {
+            position: absolute; top: 10px; right: 10px; background: none; border: none;
+            cursor: pointer; font-size: 1.2rem; color: #adb5bd; transition: color 0.2s; padding: 5px;
+        }
+        #copy-text-btn:hover { color: var(--primary-color); }
+        #copy-text-btn svg { display: block; width: 18px; height: 18px; }
+        #copy-feedback {
+            position: absolute; top: 12px; right: 45px; background-color: #28a745; color: white;
+            font-size: 0.75rem; padding: 2px 6px; border-radius: 3px; opacity: 0;
+            transition: opacity 0.3s; pointer-events: none;
+        }
+        #copy-feedback.show { opacity: 1; }
+        #post-text { font-family: 'Inter', sans-serif; font-size: 1rem; line-height: 1.7; color: #495057; white-space: pre-wrap; max-height: 400px; overflow-y: auto; padding-right: 10px; } /* Allow scrolling for long text */
+        #post-text p { margin-bottom: 1em; }
+        #post-text p:last-child { margin-bottom: 0; }
+        #post-text .hashtags { color: var(--primary-color); font-weight: 500; margin-top: 1.5em; display: block; }
+
+        /* --- Controls & Feedback --- */
+        .controls { text-align: center; margin-top: 3rem; }
+        #generate-btn {
+            font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.1rem;
+            padding: 12px 45px; color: #fff;
+            background-image: linear-gradient(45deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none; border-radius: 50px; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s, background-image 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2), 0 2px 8px rgba(111, 66, 193, 0.15);
+        }
+        #generate-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3), 0 4px 12px rgba(111, 66, 193, 0.2); }
+        #generate-btn:active:not(:disabled) { transform: translateY(0); }
+        #generate-btn:disabled { background-image: none; background-color: #adb5bd; cursor: wait; box-shadow: none; }
+        #feedback-area { min-height: 2em; margin-top: 2rem; text-align: center; font-size: 0.95rem; }
+        .loading-message { color: var(--loading-color); font-weight: 500; animation: pulse-text-light 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: var(--error-bg); padding: 8px 15px; border-radius: 5px; border: 1px solid rgba(220, 53, 69, 0.2); display: inline-block; }
+        .success-message { color: var(--success-color); font-weight: 500; }
+
+        /* --- Footer --- */
+        footer { margin-top: 3rem; font-size: 0.85rem; color: #6c757d; text-align: center; }
+        footer a { color: var(--primary-color); text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: var(--secondary-color); }
+        /* --- Animations --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-text-light { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes pulse-bg-light { 0% { background-color: #e9ecef; } 50% { background-color: var(--loading-bg-pulse); } 100% { background-color: #e9ecef; } }
+        /* --- Responsive --- */
+         @media (max-width: 767px) { /* Match the grid breakpoint */
+             .post-output { grid-template-columns: 1fr; } /* Stack on smaller */
+             #image-container { margin-bottom: 1.5rem; max-width: 350px; } /* Adjust size */
+         }
+         @media (max-width: 480px) {
+             body { padding: 1rem; }
+             .container { padding: 1.5rem 1rem; }
+             header h1 { font-size: 2rem; }
+             header .subtitle { font-size: 1rem; }
+             .options-grid { grid-template-columns: 1fr; }
+             #generate-btn { font-size: 1rem; padding: 10px 35px; }
+             #post-text { font-size: 0.95rem;}
+         }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-section">
+            <div class="header-text">
+                <h1 id="main-title">Viral Post Spark</h1>
+                <p class="subtitle" id="main-subtitle">Generador IA para Redes Sociales</p>
+            </div>
+             <div class="ui-language-switcher">
+                 <label for="ui-language" id="ui-lang-label">Idioma Interfaz:</label>
+                 <select id="ui-language" name="ui-language">
+                     <option value="es" selected>Español</option>
+                     <option value="en">English</option>
+                 </select>
+             </div>
+        </div>
+
+        <form id="social-form">
+            <fieldset class="customization-form">
+                <legend id="customize-legend">Define tu Post</legend>
+                <div class="options-grid">
+                    <div class="option-group">
+                        <label for="platform" id="platform-label">Plataforma:</label>
+                        <select id="platform" name="platform">
+                            <option value="Instagram" selected>Instagram</option>
+                            <option value="Twitter / X">Twitter / X</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="TikTok Idea">TikTok (Idea)</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label for="topic" id="topic-label">Tema Principal:</label>
+                        <input type="text" id="topic" name="topic" placeholder="Ej: Lanzamiento de producto, café matutino...">
+                    </div>
+                    <div class="option-group">
+                        <label for="tone" id="tone-label">Tono / Estilo:</label>
+                        <select id="tone" name="tone">
+                            <option value="Inspirador" selected>Inspirador</option>
+                            <option value="Divertido / Humorístico">Divertido / Humorístico</option>
+                            <option value="Informativo / Educativo">Informativo / Educativo</option>
+                            <option value="Promocional / Ventas">Promocional / Ventas</option>
+                            <option value="Conversacional / Cercano">Conversacional / Cercano</option>
+                            <option value="Provocador / Controversial">Provocador / Controversial</option>
+                            <option value="Pregunta / Interactivo">Pregunta / Interactivo</option>
+                            <option value="Narrativo / Storytelling">Narrativo / Storytelling</option>
+                        </select>
+                    </div>
+                     <div class="option-group">
+                        <label for="cta" id="cta-label">Llamada a la Acción (Opcional):</label>
+                        <input type="text" id="cta" name="cta" placeholder="Ej: Visita el enlace, comenta abajo...">
+                    </div>
+                    <div class="option-group">
+                        <label for="audience" id="audience-label">Público Objetivo (Opcional):</label>
+                        <input type="text" id="audience" name="audience" placeholder="Ej: Jóvenes profesionales, amantes del café...">
+                    </div>
+                    <div class="option-group">
+                        <label for="post-language" id="post-language-label">Idioma del Post:</label>
+                        <select id="post-language" name="post-language">
+                            <option value="Spanish" selected>Español</option>
+                            <option value="English">English</option>
+                             <option value="French">Français</option>
+                            <option value="German">Deutsch</option>
+                            <option value="Italian">Italiano</option>
+                            <option value="Portuguese">Português</option>
+                            <!-- Add more -->
+                        </select>
+                    </div>
+                </div>
+                <div class="option-group full-width-option">
+                     <label for="extra-keywords" id="extra-keywords-label">Palabras Clave Adicionales (Opcional):</label>
+                     <textarea id="extra-keywords" name="extra-keywords" rows="2" placeholder="Añade términos específicos que quieras incluir..."></textarea>
+                 </div>
+            </fieldset>
+
+            <div class="controls">
+                <button id="generate-btn" type="button">Generar Post</button>
+            </div>
+        </form>
+
+        <section class="post-output">
+             <!-- Image on the left (or top on mobile) -->
+            <div id="image-container" class="image-container">
+                <!-- Post image will be loaded here -->
+            </div>
+             <!-- Text on the right (or bottom on mobile) -->
+            <div id="post-text-container">
+                 <button id="copy-text-btn" title="Copiar texto">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                 </button>
+                 <span id="copy-feedback">¡Copiado!</span>
+                <div id="post-text" data-placeholder-key="postPlaceholder">Aquí aparecerá el texto y los hashtags de tu post...</div>
+            </div>
+        </section>
+
+        <div id="feedback-area" aria-live="polite"></div>
+
+    </div>
+
+    <footer>
+        <span id="footer-powered">Impulsado por</span> <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | <span id="footer-created">Creado para</span> <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const socialForm = document.getElementById('social-form');
+        const generateBtn = document.getElementById('generate-btn');
+        const imageContainer = document.getElementById('image-container');
+        const postTextContainer = document.getElementById('post-text-container');
+        const postTextDiv = document.getElementById('post-text');
+        const feedbackArea = document.getElementById('feedback-area');
+        const uiLanguageSelector = document.getElementById('ui-language');
+        const copyTextBtn = document.getElementById('copy-text-btn');
+        const copyFeedback = document.getElementById('copy-feedback');
+
+        // --- Configuration ---
+        const TEXT_API_BASE_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 600; // Square default
+        const IMAGE_HEIGHT = 600;
+        const MAX_RETRIES = 2; const RETRY_DELAY_MS = 1500;
+        const API_TIMEOUT_MS = 60000; const IMAGE_LOAD_TIMEOUT_MS = 50000;
+
+        // --- UI Text Translations ---
+        const uiTexts = {
+            es: {
+                pageTitle: "Viral Post Spark - Generador IA para Redes Sociales | PapitasFritas.com",
+                mainTitle: "Viral Post Spark",
+                mainSubtitle: "Generador IA para Redes Sociales",
+                uiLangLabel: "Idioma Interfaz:",
+                customizeLegend: "Define tu Post",
+                platformLabel: "Plataforma:",
+                topicLabel: "Tema Principal:",
+                topicPlaceholder: "Ej: Lanzamiento de producto, café matutino...",
+                toneLabel: "Tono / Estilo:",
+                 tone_inspirational: "Inspirador", tone_funny: "Divertido / Humorístico", tone_informative: "Informativo / Educativo",
+                 tone_promotional: "Promocional / Ventas", tone_conversational: "Conversacional / Cercano", tone_provocative: "Provocador / Controversial",
+                 tone_question: "Pregunta / Interactivo", tone_narrative: "Narrativo / Storytelling",
+                ctaLabel: "Llamada a la Acción (Opcional):",
+                ctaPlaceholder: "Ej: Visita el enlace, comenta abajo...",
+                audienceLabel: "Público Objetivo (Opcional):",
+                audiencePlaceholder: "Ej: Jóvenes profesionales, amantes del café...",
+                postLanguageLabel: "Idioma del Post:",
+                extraKeywordsLabel: "Palabras Clave Adicionales (Opcional):",
+                extraKeywordsPlaceholder: "Añade términos específicos que quieras incluir...",
+                generateButton: "Generar Post",
+                generateButtonGenerating: "Generando...",
+                postPlaceholder: "Aquí aparecerá el texto y los hashtags de tu post...",
+                copyButtonTitle: "Copiar texto",
+                copyFeedbackText: "¡Copiado!",
+                loadingMessage: "Generando chispa viral...",
+                successMessage: "¡Tu post está listo!",
+                errorFetch: "Error al contactar la API. Inténtalo de nuevo.",
+                errorImage: "Error al generar la imagen.",
+                errorTimeout: "La solicitud a la API tardó demasiado.",
+                errorGeneric: "No se pudo generar el post. Por favor, inténtalo de nuevo.",
+                errorImageFinal: "No se pudo cargar la imagen después de varios intentos.",
+                errorImageRetryPlaceholder: "Error al generar imagen.<br>Intenta de nuevo.",
+                errorValidationTopic: "Por favor, introduce un tema principal.", // Added validation message
+                footerPowered: "Impulsado por",
+                footerCreated: "Creado para"
+            },
+            en: {
+                 pageTitle: "Viral Post Spark - AI Social Media Generator | PapitasFritas.com",
+                mainTitle: "Viral Post Spark",
+                mainSubtitle: "AI Social Media Generator",
+                uiLangLabel: "Interface Language:",
+                customizeLegend: "Define Your Post",
+                platformLabel: "Platform:",
+                topicLabel: "Main Topic:",
+                topicPlaceholder: "E.g.: Product launch, morning coffee...",
+                toneLabel: "Tone / Style:",
+                tone_inspirational: "Inspirational", tone_funny: "Funny / Humorous", tone_informative: "Informative / Educational",
+                tone_promotional: "Promotional / Sales", tone_conversational: "Conversational / Relatable", tone_provocative: "Provocative / Controversial",
+                tone_question: "Question / Interactive", tone_narrative: "Narrative / Storytelling",
+                ctaLabel: "Call to Action (Optional):",
+                ctaPlaceholder: "E.g.: Visit link in bio, comment below...",
+                audienceLabel: "Target Audience (Optional):",
+                audiencePlaceholder: "E.g.: Young professionals, coffee lovers...",
+                postLanguageLabel: "Post Language:",
+                extraKeywordsLabel: "Additional Keywords (Optional):",
+                extraKeywordsPlaceholder: "Add specific terms you want to include...",
+                generateButton: "Generate Post",
+                generateButtonGenerating: "Generating...",
+                postPlaceholder: "Your post text and hashtags will appear here...",
+                copyButtonTitle: "Copy text",
+                copyFeedbackText: "Copied!",
+                loadingMessage: "Generating viral spark...",
+                successMessage: "Your post is ready!",
+                errorFetch: "Error contacting the API. Please try again.",
+                errorImage: "Error generating the image.",
+                errorTimeout: "API request took too long.",
+                errorGeneric: "Failed to generate the post. Please try again.",
+                errorImageFinal: "Could not load the image after several attempts.",
+                errorImageRetryPlaceholder: "Failed to generate image.<br>Try again.",
+                errorValidationTopic: "Please enter a main topic.", // Added validation message
+                footerPowered: "Powered by",
+                footerCreated: "Created for"
+            }
+        };
+
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', handleGeneration);
+        uiLanguageSelector.addEventListener('change', (e) => setUILanguage(e.target.value));
+        copyTextBtn.addEventListener('click', copyPostText);
+
+        // --- UI Language Function ---
+        function setUILanguage(lang) {
+            if (!uiTexts[lang]) return;
+            const texts = uiTexts[lang];
+            document.title = texts.pageTitle;
+            // Update elements by ID
+            document.getElementById('main-title').textContent = texts.mainTitle;
+            document.getElementById('main-subtitle').textContent = texts.mainSubtitle;
+            document.getElementById('ui-lang-label').textContent = texts.uiLangLabel;
+            document.getElementById('customize-legend').textContent = texts.customizeLegend;
+            document.getElementById('platform-label').textContent = texts.platformLabel;
+            document.getElementById('topic-label').textContent = texts.topicLabel;
+            document.getElementById('topic').placeholder = texts.topicPlaceholder;
+            document.getElementById('tone-label').textContent = texts.toneLabel;
+            document.getElementById('cta-label').textContent = texts.ctaLabel;
+            document.getElementById('cta').placeholder = texts.ctaPlaceholder;
+            document.getElementById('audience-label').textContent = texts.audienceLabel;
+            document.getElementById('audience').placeholder = texts.audiencePlaceholder;
+            document.getElementById('post-language-label').textContent = texts.postLanguageLabel;
+            document.getElementById('extra-keywords-label').textContent = texts.extraKeywordsLabel;
+            document.getElementById('extra-keywords').placeholder = texts.extraKeywordsPlaceholder;
+            document.getElementById('generate-btn').textContent = texts.generateButton;
+            document.getElementById('copy-text-btn').title = texts.copyButtonTitle;
+            document.getElementById('copy-feedback').textContent = texts.copyFeedbackText;
+            document.getElementById('footer-powered').textContent = texts.footerPowered;
+            document.getElementById('footer-created').textContent = texts.footerCreated;
+
+             // Update story placeholder if it's currently visible
+             const placeholderKey = postTextDiv.dataset.placeholderKey;
+             if (placeholderKey && postTextDiv.textContent === uiTexts[lang === 'es' ? 'en' : 'es'][placeholderKey]) {
+                 postTextDiv.textContent = texts[placeholderKey];
+             }
+
+            // Update tone select options
+             const toneSelect = document.getElementById('tone');
+             Array.from(toneSelect.options).forEach(option => {
+                 // Create a simplified key from the *value* (assuming value is somewhat stable)
+                 const keyBase = option.value.split(' ')[0].toLowerCase().replace(/[^a-z]/gi, '');
+                 const key = `tone_${keyBase}`;
+                 if(texts[key]) {
+                     option.textContent = texts[key];
+                 } else {
+                      // Fallback if key generation is tricky, keep original or use value
+                      // option.textContent = option.value;
+                 }
+             });
+             // Add similar updates for other selects like platform if needed
+        }
+
+        // --- Core Logic ---
+        async function handleGeneration() {
+            const currentLang = uiLanguageSelector.value;
+             if (!document.getElementById('topic').value.trim()) {
+                 showFeedback('error', uiTexts[currentLang].errorValidationTopic); // Use translated validation message
+                 return;
+             }
+
+            clearPreviousState();
+            showFeedback('loading', uiTexts[currentLang].loadingMessage);
+            generateBtn.disabled = true;
+            generateBtn.textContent = uiTexts[currentLang].generateButtonGenerating;
+
+            const formData = new FormData(socialForm);
+            const options = Object.fromEntries(formData.entries());
+            console.log("Selected Options:", options);
+
+            // --- 1. Generate Post Text ---
+            let textPrompt = `Generate a social media post in ${options['post-language']} for the platform "${options.platform}". The main topic is "${options.topic}". The desired tone is "${options.tone}".`;
+            if (options.audience && options.audience.trim()) {
+                textPrompt += ` The target audience is ${options.audience}.`;
+            }
+            if (options.cta && options.cta.trim()) {
+                textPrompt += ` Include a call to action like: "${options.cta}".`;
+            }
+             if (options['extra-keywords'] && options['extra-keywords'].trim()) {
+                textPrompt += ` Mention or incorporate these keywords: "${options['extra-keywords']}".`;
+            }
+            let platformInstruction = "";
+            switch (options.platform) {
+                case "Twitter / X": platformInstruction = "Keep it concise and punchy (under 280 characters ideally)."; break;
+                case "Instagram": platformInstruction = "Make it engaging and visually descriptive. Use line breaks for readability."; break;
+                case "LinkedIn": platformInstruction = "Maintain a professional yet engaging tone."; break;
+                case "Facebook": platformInstruction = "Can be slightly longer, encourage discussion."; break;
+                case "TikTok Idea": platformInstruction = "Describe a short video concept or script idea based on the topic and tone."; break;
+            }
+            textPrompt += ` ${platformInstruction} Include 3-5 relevant and popular hashtags at the end, clearly separated (e.g., on a new line starting with #). Write ONLY the post content and hashtags, no extra explanations.`;
+
+            console.log("Text API Prompt:", textPrompt);
+
+            try {
+                const postRaw = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(textPrompt), { isText: true, timeout: API_TIMEOUT_MS });
+                console.log("Raw API Response:", postRaw); // Debug Log
+                const cleanedPost = cleanApiResponse(postRaw);
+                console.log("Cleaned API Response:", cleanedPost); // Debug Log
+
+                // *** USA LA FUNCIÓN formatPostText CORREGIDA ***
+                const { mainText, hashtags } = formatPostText(cleanedPost);
+                console.log("Separated Main Text:", mainText); // Debug Log
+                console.log("Separated Hashtags:", hashtags); // Debug Log
+
+                // *** Renderizado CORREGIDO ***
+                if (!mainText && !hashtags) {
+                     postTextDiv.innerHTML = `<p>${uiTexts[currentLang].errorGeneric}</p>`; // Fallback if everything fails
+                } else {
+                    // Renderiza párrafos del texto principal
+                    postTextDiv.innerHTML = mainText
+                        .split('\n') // Split by newlines existing in the main text
+                        .map(p => p.trim()) // Trim whitespace
+                        .filter(p => p.length > 0) // Remove empty lines resulting from split
+                        .map(p => `<p>${p}</p>`) // Wrap each non-empty line in <p> tags
+                        .join(''); // Join the paragraphs back
+
+                    // Añade los hashtags si existen
+                    if (hashtags) {
+                        postTextDiv.innerHTML += `<span class="hashtags">${hashtags}</span>`; // Add hashtags span
+                    }
+                     // Handle case where mainText might be empty but hashtags exist
+                    if (!mainText && hashtags) {
+                         postTextDiv.innerHTML = `<span class="hashtags">${hashtags}</span>`;
+                    }
+                }
+
+                postTextContainer.classList.add('visible');
+
+
+                // --- 2. Generate Image ---
+                let imageStyle = "";
+                 switch (options.platform) {
+                    case "Instagram": imageStyle = "bright aesthetic photo, vibrant colors, high quality"; break;
+                    case "LinkedIn": imageStyle = "professional graphic design, clean illustration, subtle colors"; break;
+                    case "Twitter / X": imageStyle = "eye-catching meme style graphic or relevant simple illustration"; break;
+                    case "Facebook": imageStyle = "relatable stock photo style or friendly illustration"; break;
+                    default: imageStyle = "modern graphic design, engaging visual";
+                 }
+                const imagePrompt = `${options.topic}, ${options.tone} mood, ${imageStyle}, visually appealing for social media, ${options['extra-keywords'] || ''}, digital art`;
+                const negativePrompt = "text, words, letters, blurry, low quality, ugly, deformed, multiple images, signature, watermark, person looking sad";
+                const seed = Math.floor(Math.random() * 1000000);
+                const imageUrl = `${IMAGE_API_BASE_URL}${encodeURIComponent(imagePrompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true&negative_prompt=${encodeURIComponent(negativePrompt)}`;
+                console.log("Image API URL:", imageUrl);
+
+                loadImageWithRetry(imageUrl, imagePrompt);
+
+            } catch (error) {
+                console.error("Error during generation:", error);
+                 let errorKey = 'errorGeneric';
+                 if (error.message.includes('timed out')) errorKey = 'errorTimeout';
+                 else if (error.message.includes('HTTP error')) errorKey = 'errorFetch';
+                showFeedback('error', uiTexts[currentLang][errorKey]);
+                resetUI();
+            }
+        }
+
+        // --- Fetch with Retry ---
+        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+            const { isText = false, timeout = API_TIMEOUT_MS } = options;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                console.log(`Fetching: ${url} (Retries left: ${retries}, Timeout: ${timeout}ms)`);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) { throw new Error(`HTTP error ${response.status} (${response.statusText})`); }
+                return isText ? await response.text() : response;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') { throw new Error(`API request timed out after ${timeout/1000}s.`); }
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    return fetchWithRetry(url, options, retries - 1);
+                } else { throw error; }
+            }
+        }
+
+        // --- Image Loading Logic ---
+        function loadImageWithRetry(url, promptForAlt) {
+            let currentRetries = 0;
+            const imgElement = document.createElement('img');
+            imgElement.id = 'post-image';
+            imgElement.alt = `Generated social media graphic for: ${promptForAlt}`;
+
+            function attemptLoad(currentAttempt) {
+                let timeoutId;
+                console.log(`Attempting image load (Attempt ${currentAttempt}/${MAX_RETRIES + 1}): ${url}`);
+                imageContainer.innerHTML = '';
+                imageContainer.classList.add('loading');
+                imageContainer.classList.remove('failed', 'loaded');
+                imageContainer.appendChild(imgElement);
+                imgElement.src = '';
+                imgElement.classList.remove('loaded');
+
+                imgElement.onload = () => {
+                    clearTimeout(timeoutId); console.log("Image loaded.");
+                    imageContainer.classList.remove('loading', 'failed'); imageContainer.classList.add('loaded');
+                    imgElement.classList.add('loaded');
+                    showFeedback('success', uiTexts[uiLanguageSelector.value].successMessage);
+                    resetUI(true);
+                };
+                imgElement.onerror = () => { clearTimeout(timeoutId); console.error(`Image load error (Attempt ${currentAttempt}): ${url}`); handleFailure('Image load error'); };
+                imgElement.src = url;
+                timeoutId = setTimeout(() => { if (!imgElement.complete || imgElement.naturalHeight === 0) { imgElement.src = ''; handleFailure('Image load timeout'); } }, IMAGE_LOAD_TIMEOUT_MS);
+            }
+            function handleFailure(reason) {
+                currentRetries++;
+                if (currentRetries <= MAX_RETRIES) {
+                    console.warn(`Image load failed: ${reason}. Retrying (${currentRetries}/${MAX_RETRIES})...`);
+                    imageContainer.classList.add('loading'); imageContainer.classList.remove('failed');
+                    imageContainer.innerHTML = ''; imageContainer.appendChild(imgElement);
+                    setTimeout(() => attemptLoad(currentRetries + 1), RETRY_DELAY_MS * Math.pow(2, currentRetries - 1));
+                } else {
+                    const currentLang = uiLanguageSelector.value; console.error(`Max retries for image. Reason: ${reason}`);
+                    imageContainer.classList.remove('loading', 'loaded'); imageContainer.classList.add('failed');
+                    imageContainer.innerHTML = uiTexts[currentLang].errorImageRetryPlaceholder;
+                    showFeedback('error', uiTexts[currentLang].errorImageFinal); resetUI();
+                }
+            }
+            attemptLoad(1);
+        }
+
+        // --- Utility Functions ---
+        function cleanApiResponse(text) {
+            let cleaned = text.trim();
+            if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+                cleaned = cleaned.substring(1, cleaned.length - 1);
+            }
+            // Remove potential common intro lines if the API adds them despite instructions
+            // cleaned = cleaned.replace(/^Okay, here is the post:/i, '').trim();
+            // cleaned = cleaned.replace(/^Here's your social media post:/i, '').trim();
+            return cleaned;
+        }
+
+        // --- CORRECTED formatPostText ---
+        function formatPostText(rawText) {
+            const lines = rawText.split('\n');
+            let lastHashtagLineIndex = -1;
+
+            // Find the index of the LAST line that seems to start with hashtags
+            for (let i = lines.length - 1; i >= 0; i--) {
+                const trimmedLine = lines[i].trim();
+                // Check if the line starts with # and potentially contains valid hashtag characters
+                if (trimmedLine.startsWith('#') && /^#[\wÄÖÜäöüß]+(?:[ \t]+#[\wÄÖÜäöüß]+)*$/.test(trimmedLine)) {
+                     lastHashtagLineIndex = i;
+                     break; // Found the last potential block of hashtags
+                 } else if (trimmedLine === '' && lastHashtagLineIndex !== -1) {
+                     // Allow empty lines between text and hashtag block, continue searching upwards
+                     continue;
+                 } else if (trimmedLine !== '' && !trimmedLine.startsWith('#') && lastHashtagLineIndex !== -1) {
+                     // We found text above the hashtag block, confirm the separation
+                     break;
+                 } else if (trimmedLine !== '' && !trimmedLine.startsWith('#')) {
+                     // It's definitely text, reset lastHashtagLineIndex if we hadn't found hashtags below it
+                     lastHashtagLineIndex = -1;
+                 }
+            }
+
+            let mainTextLines = [];
+            let hashtagLines = [];
+
+            if (lastHashtagLineIndex === -1) {
+                // No valid-looking hashtag block found at the end
+                mainTextLines = lines;
+            } else {
+                 // Separate text and potential hashtags based on the found index
+                 mainTextLines = lines.slice(0, lastHashtagLineIndex);
+                 hashtagLines = lines.slice(lastHashtagLineIndex)
+                                     .map(line => line.trim())
+                                     .filter(line => line.startsWith('#')); // Ensure only hashtag lines are kept
+
+                 // Remove trailing empty lines from main text
+                 while (mainTextLines.length > 0 && mainTextLines[mainTextLines.length - 1].trim() === '') {
+                     mainTextLines.pop();
+                 }
+            }
+
+            const mainText = mainTextLines.join('\n').trim();
+            // Join valid hashtag lines with spaces
+            const hashtags = hashtagLines.join(' ').trim();
+
+            return { mainText, hashtags };
+        }
+
+
+        function clearPreviousState() {
+            feedbackArea.innerHTML = '';
+            imageContainer.innerHTML = '';
+            imageContainer.classList.remove('loaded', 'failed', 'loading');
+            postTextContainer.classList.remove('visible');
+            const currentLang = uiLanguageSelector.value;
+            postTextDiv.textContent = uiTexts[currentLang].postPlaceholder;
+            postTextDiv.dataset.placeholderKey = 'postPlaceholder';
+            copyFeedback.classList.remove('show');
+        }
+
+        function showFeedback(type, message) {
+            feedbackArea.innerHTML = '';
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.className = `${type}-message`;
+            feedbackArea.appendChild(messageElement);
+            if (type === 'success') {
+                setTimeout(() => { if (messageElement.parentNode === feedbackArea) { feedbackArea.removeChild(messageElement); } }, 4000);
+            }
+        }
+
+        function resetUI(keepContent = false) {
+           const currentLang = uiLanguageSelector.value;
+            generateBtn.disabled = false;
+            generateBtn.textContent = uiTexts[currentLang].generateButton;
+            if (!keepContent) {
+                imageContainer.classList.remove('loading', 'loaded', 'failed'); imageContainer.innerHTML = '';
+                postTextContainer.classList.remove('visible');
+                postTextDiv.textContent = uiTexts[currentLang].postPlaceholder; postTextDiv.dataset.placeholderKey = 'postPlaceholder';
+            } else {
+                imageContainer.classList.remove('loading');
+                 if(feedbackArea.querySelector('.loading-message')) { feedbackArea.innerHTML = ''; }
+            }
+        }
+
+        // --- Copy Text Functionality ---
+        function copyPostText() {
+            // Get text, trying to preserve line breaks as they appear for copying
+            let textToCopy = '';
+            const paragraphs = postTextDiv.querySelectorAll('p');
+            const hashtagsSpan = postTextDiv.querySelector('.hashtags');
+
+            if (paragraphs.length > 0) {
+                 textToCopy = Array.from(paragraphs).map(p => p.innerText).join('\n\n'); // Double newline for paragraph breaks
+            }
+
+             if (hashtagsSpan) {
+                 textToCopy += (textToCopy ? '\n\n' : '') + hashtagsSpan.innerText; // Add hashtags at the end
+             }
+
+
+            if (!textToCopy || textToCopy === uiTexts[uiLanguageSelector.value].postPlaceholder) {
+                console.warn("No text generated to copy.");
+                return;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                console.log('Text copied to clipboard');
+                copyFeedback.classList.add('show');
+                setTimeout(() => { copyFeedback.classList.remove('show'); }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                 showFeedback('error', uiTexts[uiLanguageSelector.value].errorGeneric || 'Could not copy text.'); // Use translated error
+            });
+        }
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferredLang = 'es';
+            uiLanguageSelector.value = preferredLang;
+            setUILanguage(preferredLang);
+            postTextDiv.textContent = uiTexts[preferredLang].postPlaceholder;
+            postTextDiv.dataset.placeholderKey = 'postPlaceholder';
+            ['https://text.pollinations.ai', 'https://image.pollinations.ai'].forEach(url => { const link = document.createElement('link'); link.rel = 'preconnect'; link.href = url; document.head.appendChild(link); });
+        });
+
+    </script>
+
+</body>
+</html>

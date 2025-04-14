@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas de Minecraft - Historias Cúbicas IA</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #22c55e; /* Minecraft Green */
+            --color-secondary: #71717a; /* Stone Gray */
+            --color-background: #27272a; /* Dark Zinc/Stone */
+            --color-text: #f4f4f5; /* Light Zinc/White */
+            --color-text-darker: #a1a1aa; /* Medium Zinc/Gray */
+            --color-modal-bg: #3f3f46; /* Darker Zinc/Stone */
+            --color-dirt-brown: #966c4a; /* Brown for accents */
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.4);
+            --border-radius: 4px; /* Blockier radius */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            background-image: linear-gradient(45deg, #2a2a2e 25%, transparent 25%), linear-gradient(-45deg, #2a2a2e 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2a2a2e 75%), linear-gradient(-45deg, transparent 75%, #2a2a2e 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        h1, h2, h3, .logo {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+        }
+        .logo {
+            color: var(--color-primary);
+        }
+        h1.page-title {
+             color: var(--color-primary);
+             text-shadow: 2px 2px #1a1a1e;
+        }
+         h2.section-title {
+             color: var(--color-text);
+             border-bottom: 2px solid var(--color-secondary);
+             padding-bottom: 0.5rem;
+             display: inline-block;
+         }
+
+
+        .navbar {
+            background-color: #18181b;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 2px solid var(--color-secondary);
+        }
+
+        /* Title List Styling */
+        #title-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+
+        .title-item {
+            background-color: var(--color-modal-bg);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-align: center;
+            font-weight: 600;
+            color: var(--color-text);
+            border: 1px solid var(--color-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+        }
+
+        .title-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 -2px 0 rgba(0,0,0,0.1);
+            border-color: var(--color-primary);
+            background-color: #52525b;
+        }
+
+        /* Generate More Button */
+        #generate-more-btn {
+             grid-column: 1 / -1;
+             background-color: var(--color-primary);
+             color: var(--color-background);
+             padding: 0.6rem 1.2rem;
+             border: none;
+             border-radius: var(--border-radius);
+             font-family: 'Nunito', sans-serif;
+             font-weight: bold;
+             cursor: pointer;
+             transition: var(--transition-normal);
+             margin-top: 1.5rem;
+             text-transform: uppercase;
+             letter-spacing: 1px;
+             border-bottom: 3px solid #16a34a;
+        }
+        #generate-more-btn:hover:not(:disabled) {
+             background-color: #16a34a;
+             border-bottom-color: #15803d;
+             transform: translateY(-1px);
+        }
+         #generate-more-btn:active:not(:disabled) {
+             transform: translateY(1px);
+             border-bottom-width: 1px;
+         }
+         #generate-more-btn:disabled {
+             background-color: var(--color-secondary);
+             border-bottom-color: #52525b;
+             color: var(--color-text-darker);
+             cursor: not-allowed;
+             opacity: 0.7;
+         }
+         #generate-more-btn .fa-sync-alt {
+             color: var(--color-background);
+         }
+
+
+        /* Modal Styling */
+        #story-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(20, 20, 25, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+
+        #story-modal.active {
+            display: flex;
+        }
+
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--color-secondary);
+            padding: 1.5rem;
+            max-width: 750px;
+            width: 95%;
+            max-height: 90vh;
+            overflow: hidden; /* Keep hidden */
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--color-secondary);
+            border: none;
+            border-radius: var(--border-radius);
+            width: 30px;
+            height: 30px;
+            font-size: 1.3rem;
+            color: var(--color-background);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-normal);
+            z-index: 10;
+        }
+        .modal-close-btn:hover {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        /* --- Modal Content Order & SCROLL FIX --- */
+        #modal-title {
+             color: var(--color-primary);
+             text-align: center;
+             margin-bottom: 1rem;
+             flex-shrink: 0;
+        }
+
+        #modal-content { /* Text container */
+            line-height: 1.6;
+            color: var(--color-text);
+            white-space: pre-wrap;
+            overflow-y: auto;      /* <<< Scroll applied HERE */
+            margin-bottom: 1.5rem;
+            padding-right: 10px;
+            flex-grow: 1;          /* <<< Takes available space */
+            min-height: 0;         /* <<< Crucial for flex overflow */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: var(--color-primary) var(--color-background); /* Firefox */
+        }
+         /* Webkit Scrollbar */
+         #modal-content::-webkit-scrollbar { width: 8px; }
+         #modal-content::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px;}
+         #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: 4px; border: 2px solid var(--color-background); }
+         #modal-content p:not(:last-child) { margin-bottom: 0.8em; }
+
+
+        #modal-image-container { /* Image container */
+            width: 100%;
+            height: 200px;
+            background-color: #18181b;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--color-secondary);
+            flex-shrink: 0;       /* <<< Does NOT grow or shrink */
+        }
+         #modal-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            image-rendering: pixelated;
+         }
+         #modal-image-container .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border-left-color: var(--color-primary);
+            animation: spin 1s linear infinite;
+            display: none;
+         }
+         #modal-image-container .placeholder-icon {
+             font-size: 2.5rem;
+             color: var(--color-secondary);
+             display: none;
+         }
+
+
+        /* Loading Indicator */
+        #modal-loading {
+            text-align: center;
+            padding: 3rem 0;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--color-modal-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            border-radius: var(--border-radius);
+        }
+        .loading-spinner-modal {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--color-secondary);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        #modal-loading p {
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error message styling */
+        .error-msg {
+            background-color: rgba(229, 62, 62, 0.1);
+            color: #fc8181;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #e53e3e;
+            margin-top: 1rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+         .error-msg i {
+             margin-right: 0.5rem;
+         }
+
+         .content-hidden {
+             display: none;
+         }
+
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar -->
+    <nav class="navbar mb-8">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="logo text-2xl sm:text-3xl">
+                    <i class="fas fa-cube mr-2"></i> Crónicas de Minecraft
+                </h1>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 pb-16">
+        <!-- Hero section -->
+        <section class="mb-12 text-center">
+            <h1 class="page-title text-5xl sm:text-6xl mb-4">Explora Mundos Infinitos</h1>
+            <p class="text-xl text-gray-400 mb-8 max-w-3xl mx-auto">Cada título, una nueva aventura. Haz clic y deja que la IA construya una historia bloque a bloque.</p>
+        </section>
+
+        <!-- Title List Container -->
+        <section class="mb-10">
+            <h2 class="section-title text-3xl sm:text-4xl mb-6 text-center mx-auto">
+                <i class="fas fa-scroll text-green-400 mr-2"></i>
+                Pergaminos Encontrados
+            </h2>
+            <div id="title-list">
+                 <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Buscando coordenadas...</p>
+            </div>
+            <div id="generate-more-container" class="text-center mt-8">
+                <button id="generate-more-btn">
+                     <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                    Generar Más Coordenadas
+                 </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Story Modal -->
+    <div id="story-modal">
+        <div class="modal-content-wrapper">
+            <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+            <!-- Loading Indicator -->
+            <div id="modal-loading">
+                <div class="loading-spinner-modal"></div>
+                <p>Generando mundo...</p>
+            </div>
+
+            <!-- Content Area -->
+             <!-- This outer div uses flex to manage layout -->
+            <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-3 text-center flex-shrink-0"></h2>
+                <!-- Text Content (Scrollable) -->
+                <div id="modal-content" class="text-base md:text-lg">
+                    <!-- Story text will be placed here -->
+                </div>
+                 <!-- Image Container (Fixed height, at bottom) -->
+                <div id="modal-image-container">
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <img id="modal-image" alt="Ilustración de la historia" />
+                </div>
+                 <!-- Error Display Area (Only shown on error) -->
+                <div id="modal-error" class="error-msg content-hidden">
+                     <i class="fas fa-exclamation-triangle"></i>
+                     <span id="modal-error-message"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black text-gray-500 py-5 mt-12">
+        <div class="container mx-auto px-4 text-center text-xs">
+            <p>Historias generadas por IA. Inspirado en Minecraft, no afiliado a Mojang Studios.</p>
+            <p class="mt-1">© 2025 Crónicas de Minecraft</p>
+        </div>
+    </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+
+        // --- Expanded Minecraft Themed Titles (Ensuring > 150) ---
+        const predefinedTitles = [
+            "La Leyenda de Herobrine", "El Primer Bloque", "Sobreviviendo la Primera Noche", "La Mina Abandonada y sus Secretos",
+            "El Misterio del Templo del Desierto", "Perdido en la Jungla Profunda", "Construyendo el Castillo Imposible",
+            "La Aldea Zombie y la Cura", "El Portal al Nether Peligroso", "Aventura en la Fortaleza Infernal",
+            "La Búsqueda de la Ciudad del End", "Derrotando al Dragón del End", "El Creeper que Quería Abrazar",
+            "El Esqueleto Arquero Solitario", "El Enderman Tímido y la Flor", "Mi Mascota Lobo Fiel Alfa",
+            "El Gato Ocelote Misterioso del Templo", "Cabalgando Cerdos hacia el Atardecer Carmesí", "El Gólem de Hierro Protector de Aldeas",
+            "La Invasión de los Illagers a Medianoche", "El Saqueador Arrepentido y su Ballesta", "Encontrando Diamantes por Primera Vez",
+            "La Magia de la Mesa de Encantamientos Brillante", "Pociones y Calderos Borboteantes", "El Faro y su Rayo al Cielo",
+            "Explorando un Monumento Oceánico Olvidado", "El Secreto de los Corazones del Mar Profundo", "La Ciudad Sumergida y sus Tesoros",
+            "El Comerciante Errante y sus Llamas Viajeras", "Intercambios con los Piglins del Nether", "El Peligro de los Bastiones Remanentes",
+            "Sobreviviendo en el Valle de Almas Azules", "El Bosque Carmesí Embrujado por Hoglins", "El Bosque Deformado y sus Endermen",
+            "Los Striders sobre Lagos de Lava", "La Redstone y sus Mecanismos Complejos", "Creando una Granja Automática Eficiente",
+            "El Mapa del Tesoro Enterrado en la Playa", "Naufragio a la Vista: Botín Sumergido", "El Misterio de las Ruinas del Portal Destruido",
+            "La Invocación y Caza del Wither", "El Poder de las Elytra Aladas", "Volando sobre el Mundo Cúbico",
+            "El Shulker y su Caja Sorpresa Escondida", "Construyendo una Base Secreta Subterránea", "El Guardián Anciano del Templo Acuático",
+            "La Aldea de los Aldeanos Sabios y sus Oficios", "El Bibliotecario y sus Libros Encantados", "El Granjero y sus Cultivos Gigantes",
+            "El Herrero y su Forja Llameante", "Defendiendo la Aldea de un Asalto Illager", "El Viaje por el Océano Helado y sus Icebergs",
+            "Explorando la Taiga Nevada y sus Zorros", "El Oso Polar y su Cachorro Perdido", "El Igloo con Sótano Secreto y Aldeano Zombie",
+            "Aventura en la Meseta Escarpada", "Las Minas de Oro de la Badlands Olvidadas", "El Misterio de las Vagonetas Abandonadas en la Mina",
+            "Construyendo un Ferrocarril Transcontinental", "El Bosque de Abedules Encantado por la Noche", "El Bosque Oscuro y sus Mansiones Tenebrosas",
+            "El Evocador y sus Vexes Fantasmales", "El Vindicador y su Hacha Amenazante", "El Totem de la Inmortalidad que Salvó mi Vida",
+            "El Pantano de las Brujas y sus Cabañas", "La Cabaña Aislada en la Tormenta", "Explorando Cuevas de Espeleotemas Gigantes",
+            "La Belleza de las Geodas de Amatista Resonantes", "La Oscuridad Profunda y el Silencioso Warden", "El Sensor de Sculk que Detecta Todo",
+            "El Aullador de Sculk y su Grito", "El Catalizador de Sculk y la Expansión", "La Ciudad Antigua Subterránea y su Portal",
+            "El Allay Amistoso y la Música", "El Cuerno de Cabra y sus Sonidos", "Navegando en Bote con Cofre Lleno",
+            "El Manglar Misterioso y sus Raíces", "Las Ranas Saltarinas y los Renacuajos", "Construyendo con Bloques de Barro y Ladrillos",
+            "La Brújula de Recuperación: Salvación Final", "El Disco de Música 'Otherside' Melancólico", "El Ritmo del Disco de Música 'Pigstep'",
+            "El Misterio del Disco de Música '5'", "El Sniffer y las Semillas de Flores Antiguas", "Arqueología: Desenterrando el Huevo de Sniffer",
+            "Arqueología: Reconstruyendo Fragmentos de Cerámica", "Arqueología: Encontrando Plantillas de Herrería Raras", "Decorando con Jarrones Pintados",
+            "El Pincel Arqueológico y la Arena Sospechosa", "Las Ruinas del Sendero Olvidado", "El Camello del Desierto y su Salto",
+            "Creando Letreros Colgantes Informativos", "Estanterías Cinceladas y la Magia de los Libros", "Cabezas de Piglin y Sonidos de Victoria",
+            "Interactuando con Cabezas de Mob Musicales", "La Serenidad de los Bosques de Cerezos", "Pétalos Rosados y la Nueva Madera de Cerezo",
+            "Forjando la Nueva Armadura de Netherita", "Personalizando Armaduras con Estilo", "El Enigma del Huevo de Dragón Intocable",
+            "La Leyenda Olvidada del Gigante", "El Bloque de Comando Perdido y su Poder", "Viajando Equivocadamente entre Dimensiones",
+            "El Desafío de Supervivencia en Mundo Plano", "El Verdadero Desafío Skyblock", "La Maldición del Faraón del Templo del Desierto",
+            "El Barco Fantasma en el Océano de Niebla", "La Isla Champiñón y sus Vacasetas Secretas", "Buscando al Moobloom Perdido",
+            "El Iceologer Congelado en la Montaña", "El Glare Escondido en la Oscuridad", "El Golem de Cobre Oxidado y Olvidado",
+            "La Leyenda Urbana del Null", "El Código Fuente con Mensajes Ocultos", "El Mundo Invertido Detrás del Espejo",
+            "La Criatura Brillante de las Cavernas de Cristal", "El Bosque Petrificado por un Rayo Antiguo", "La Aldea Flotante entre las Nubes",
+            "El Portal que Llevó a un Lugar Extraño", "Sobreviviendo en la Dimensión del Vacío", "El Bloque que Ni el Vacío Puede Destruir",
+            "El Mob que Nadie ha Visto Jamás", "Descifrando el Sonido Misterioso del Disco 11", "La Historia Oculta del Disco 13",
+            "Explorando las Tierras Lejanas (Far Lands)", "El Error de Código que Creó un Mundo Nuevo", "La Noche en que los Bloques Cobraron Vida",
+            "El Sueño Lúcido dentro de Minecraft", "Despertar Fuera del Juego: ¿Realidad?", "El Jugador Fantasma que Ayuda (o no)",
+            "Explorando un Servidor Abandonado Hace Años", "La Búsqueda del Último Bloque del Mundo", "La Torre Construida hasta el Límite del Sol",
+            "El Túnel Cavado hasta el Vacío Infinito", "Las Fases Secretas de la Luna Cuadrada", "El Ciclo Eterno del Sol Cuadrado",
+            "El Clima Impredecible y sus Efectos", "La Tormenta Eléctrica y los Jinetes Esqueleto", "Domando un Caballo Esqueleto Único",
+            "Optimizando la Granja de Experiencia Definitiva", "Los Secretos de la Pesca Legendaria", "Tesoros Olvidados en las Profundidades Abisales",
+            "El Kraken de Tinta Gigante del Océano Oscuro", "El Dragón de Hielo de las Cumbres Nevadas", "La Fortaleza Voladora de los Piglins",
+            "Perdido en el Laberinto Subterráneo Infinito", "Diseñando la Trampa de Redstone Perfecta e Indetectable", "Creando un Pixel Art Gigante de Notch",
+            "Recreando Construcciones Famosas Bloque a Bloque", "El Mod Maldito que Cambia el Juego", "El Texture Pack que Revela Secretos Ocultos",
+            "El Shader Hiperrealista que Funde la Realidad", "Jugando con Amigos: La Traición Inesperada", "Jugando con Amigos: La Gran Aventura Épica",
+            "Sobreviviendo en un Servidor Anárquico Hostil", "Construyendo la Base Secreta Compartida Perfecta", "El Misterio del Jugador que Nunca Volvió a Conectarse",
+            "Descubriendo el Legado de un Mundo Antiguo Borrado", "La Estatua que Sigue tu Mirada", "El Libro Encantado que Narra tu Futuro",
+            "Creando la Poción Desconocida Definitiva", "El Efecto Inesperado de una Poción Mal Hecha", "El Mob Pacífico que se Volvió una Pesadilla",
+            "La Noche Infinita que Cubrió el Mundo", "El Día Eterno sin Sombras", "Un Mundo Extrañamente Vacío sin Animales",
+            "El Mundo Hostil Lleno Solo de Monstruos", "En Busca de la Semilla Perfecta para Construir", "La Semilla Maldita que Genera Horrores",
+            "El Bioma Imposible que No Debería Existir", "La Falla Glitch en la Generación del Mundo", "El Oasis Secreto Escondido en el Desierto",
+            "La Cascada de Lava que Fluye Hacia Arriba", "El Árbol del Mundo que Conecta Dimensiones", "Las Raíces Profundas de la Montaña Eterna",
+            "El Corazón Palpitante del Océano Profundo", "Alcanzando la Cima Más Alta del Mundo", "El Vacío Misterioso entre los Bloques del Juego",
+            "La Melodía Olvidada de los Discos Rotos", "Protegiendo al Último Aldeano del Mundo"
+        ];
+
+        // --- NEW: Minecraft themes for title generation variety ---
+        const minecraftThemes = [
+            "el Nether", "el End", "la exploración de cuevas", "la construcción de bases",
+            "los aldeanos y sus oficios", "los Illagers", "la redstone y mecanismos",
+            "la supervivencia nocturna", "los mobs hostiles", "los mobs pasivos", "los biomas raros",
+            "las leyendas como Herobrine", "el océano profundo", "la minería de diamantes",
+            "los encantamientos y pociones", "la arqueología", "los bloques nuevos", "las estructuras generadas",
+            "el Warden y la oscuridad profunda", "el combate contra jefes", "la agricultura y animales",
+            "el misterio y secretos ocultos", "la aventura épica", "la vida tranquila", "el modo hardcore",
+            "los mods o servidores", "los bloques musicales", "los viajes largos", "el cielo y el vuelo",
+            "el desierto y sus peligros", "la jungla y sus templos", "la nieve y el hielo"
+        ];
+
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un narrador de historias ambientadas en el universo de Minecraft. Escribe relatos cortos (aprox. 250-450 palabras) que capturen la esencia de la aventura, la exploración, la construcción, la supervivencia, el misterio o las leyendas del juego. Usa un lenguaje evocador pero sencillo, apto para fans de Minecraft. Céntrate en la atmósfera y la experiencia del jugador. Escribe una historia completa basada únicamente en el siguiente título:",
+            timeoutSeconds: 60
+        };
+
+         const titleGenerationConfig = { // Base config, prompt will be modified
+             model: "mistral",
+             systemPrompt: "Actúa como un generador de ideas conciso. Genera exactamente 15 ideas de títulos cortos y evocadores para historias ambientadas en Minecraft. Devuelve *solo* la lista de títulos, uno por línea. No incluyas números, guiones, introducciones ni despedidas. Cada línea debe ser solo un título.",
+             // prompt: "...", // Prompt set dynamically
+             timeoutSeconds: 30,
+             // Seed will be added dynamically
+         };
+
+        // ========== DOM ELEMENTS ==========
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
+        const modalImage = document.getElementById('modal-image');
+        const modalImageSpinner = modalImageContainer.querySelector('.spinner');
+        const modalImagePlaceholder = modalImageContainer.querySelector('.placeholder-icon');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+
+        // ========== API FUNCTIONS ==========
+
+        async function fetchTextFromApi(prompt, config) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) { // Use seed if provided
+                params.append('seed', config.seed);
+            }
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url}`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s).`);
+                 throw new Error(`Error de comunicación con la API. ${error.message}`);
+            }
+        }
+
+        async function fetchStoryText(title) {
+             const text = await fetchTextFromApi(title, textApiConfig); // Uses base config
+              if (text.trim().length < 50 || text.toLowerCase().includes("cannot fulfill")) {
+                  throw new Error("La IA no pudo generar una historia adecuada para este título.");
+              }
+             return text;
+        }
+
+        /**
+         * Fetches generated titles using a VARIED PROMPT and random seed.
+         */
+        async function fetchGeneratedTitles() {
+            // --- NEW: Select random theme and create specific prompt ---
+            const randomTheme = getRandomElement(minecraftThemes) || "la aventura"; // Fallback theme
+            const specificPrompt = `Genera 15 títulos de historias de Minecraft sobre ${randomTheme}`;
+            console.log("Generating titles with prompt:", specificPrompt);
+
+            const configForThisRequest = {
+                ...titleGenerationConfig, // Base config (model, system, timeout)
+                seed: Math.floor(Math.random() * 1000000) // Add random seed
+            };
+
+            // Use the SPECIFIC prompt for this call
+            const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+
+            const titles = text.split('\n')
+                               .map(line => line.replace(/^[-\d.\s*]+/, '').trim()) // Remove potential list markers
+                               .filter(line => line.length > 3 && line.length < 100);
+            if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de títulos.");
+            return titles.slice(0, 15);
+        }
+
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Minecraft landscape";
+            const enhancedPrompt = `Minecraft screenshot style, cinematic lighting, depicting scene from story titled '${safePromptText}', blocky art style, vibrant colors if applicable`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, letters, UI, interface, menu, buttons, overlay, watermark, signature, writing, person, people, character, figure, player, steve, alex";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() {
+            if(!storyModal) return;
+            storyModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal() {
+             if(!storyModal) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            resetModalState();
+        }
+
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent || !modalImage || !modalImageSpinner || !modalImagePlaceholder || !modalImageContainer) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.textContent = '';
+             modalContent.scrollTop = 0; // Reset scroll position
+             modalImage.src = '';
+             modalImage.style.display = 'none';
+             modalImageSpinner.style.display = 'none';
+             modalImagePlaceholder.style.display = 'none';
+             modalImageContainer.style.display = 'flex';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) {
+            if (!arr || arr.length === 0) return null;
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex > 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+         function createTitleItem(title) {
+            const div = document.createElement('div');
+            div.className = 'title-item';
+            div.textContent = title;
+            div.setAttribute('data-title', title);
+            div.addEventListener('click', () => handleTitleClick(title));
+            return div;
+        }
+
+        function displayTitles(titles) {
+            if (!titleListContainer || !titlesLoading) return;
+            const shuffledTitles = shuffleArray([...titles]);
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (shuffledTitles.length === 0) {
+                titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No se encontraron pergaminos.</p>';
+                return;
+            }
+            shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+
+         function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.textContent = '';
+            modalImageContainer.style.display = 'none';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const storyText = await fetchStoryText(title);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.textContent = storyText;
+                modalStoryContentArea.classList.remove('content-hidden'); // Show content container
+                modalImageContainer.style.display = 'flex'; // Show image container (for spinner)
+                modalImageSpinner.style.display = 'block';
+
+                const imageUrl = createPollinationsImageUrl(title);
+                 if (imageUrl) {
+                     modalImage.onload = () => {
+                         modalImageSpinner.style.display = 'none';
+                         modalImagePlaceholder.style.display = 'none';
+                         modalImage.style.display = 'block';
+                     };
+                     modalImage.onerror = () => {
+                         console.error("Error loading image for title:", title);
+                         modalImageSpinner.style.display = 'none';
+                         modalImagePlaceholder.style.display = 'block';
+                         modalImage.style.display = 'none';
+                     };
+                     modalImage.src = imageUrl;
+                 } else {
+                     console.error("Could not create image URL for title:", title);
+                     modalImageSpinner.style.display = 'none';
+                     modalImagePlaceholder.style.display = 'block';
+                 }
+            } catch (error) {
+                console.error("Failed to display story:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalImageContainer.style.display = 'none';
+                modalContent.textContent = '';
+            }
+        }
+
+         async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Generando...';
+
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Gets varied titles now
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                      alert("No se pudieron generar nuevas coordenadas en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed to generate more titles:", error);
+                 alert(`Error al generar más coordenadas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Coordenadas';
+             }
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) {
+                 console.error("Initialization failed: Critical elements missing.");
+                 document.body.innerHTML = '<p style="padding: 2rem; text-align: center; color: red;">Error crítico al cargar la página. Faltan elementos esenciales.</p>';
+                 return;
+            }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => {
+                 if (event.target === storyModal) hideModal();
+            });
+            displayTitles(predefinedTitles); // Display initial shuffled list
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

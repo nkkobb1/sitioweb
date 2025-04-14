@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title -->
+    <title>Oráculo Tarot IA - Tu Lectura Visual con IA | PapitasFritas.com</title>
+    <!-- Meta Description -->
+    <meta name="description" content="Obtén una lectura de tarot visual única con Aether Oracle AI. Saca una carta aleatoria y recibe una imagen generada por inteligencia artificial junto con su interpretación. Descubre tu mensaje en PapitasFritas.com.">
+
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-color: #0c0a1f; /* Slightly deeper purple/blue */
+            --primary-neon: #a020f0; /* Purple */
+            --secondary-neon: #00f0ff; /* Cyan */
+            --accent-neon: #ffdf00; /* Gold/Yellow for emphasis */
+            --error-neon: #ff3366; /* Bright Pink/Red error */
+            --text-color: #e8e8ff; /* Soft Lavender white */
+            --border-color: rgba(0, 240, 255, 0.4); /* Cyan border */
+            --glow-primary: 0 0 6px var(--primary-neon), 0 0 12px var(--primary-neon), 0 0 18px rgba(160, 32, 240, 0.7);
+            --glow-secondary: 0 0 6px var(--secondary-neon), 0 0 12px var(--secondary-neon), 0 0 18px rgba(0, 240, 255, 0.7);
+            --glow-accent: 0 0 5px var(--accent-neon), 0 0 10px var(--accent-neon);
+            --glow-error: 0 0 5px var(--error-neon), 0 0 10px var(--error-neon);
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Rajdhani', sans-serif; background-color: var(--bg-color); color: var(--text-color);
+            line-height: 1.6; padding: 2rem; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; background: var(--bg-color) radial-gradient(circle at top left, rgba(160, 32, 240, 0.15), transparent 50%), radial-gradient(circle at bottom right, rgba(0, 240, 255, 0.15), transparent 50%);
+        }
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 750px; /* Optimal for single card display */
+            margin: 20px auto; padding: 2.5rem 3rem; background: rgba(12, 10, 31, 0.8);
+            border: 1px solid var(--border-color); border-radius: 15px; backdrop-filter: blur(8px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.1);
+            text-align: center;
+        }
+        /* --- Header --- */
+        header { margin-bottom: 2.5rem; }
+        /* SEO H1 */
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 2.6rem; color: var(--primary-neon);
+            text-shadow: var(--glow-primary); margin-bottom: 0.75rem; letter-spacing: 1.5px;
+        }
+        /* SEO Subtitle */
+        .subtitle {
+            font-size: 1.3rem; color: var(--secondary-neon); text-shadow: 0 0 5px var(--secondary-neon);
+            font-weight: 400; max-width: 500px; margin: 0 auto;
+        }
+        /* --- Controls --- */
+        #drawCardBtn {
+            padding: 1rem 2.5rem; font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 700;
+            color: var(--bg-color); background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+            border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+            letter-spacing: 1px; box-shadow: 0 0 10px rgba(160, 32, 240, 0.6), 0 0 10px rgba(0, 240, 255, 0.6);
+            margin-bottom: 2.5rem; /* Space before results appear */
+        }
+        #drawCardBtn:hover:not(:disabled) { box-shadow: var(--glow-primary), var(--glow-secondary); transform: translateY(-3px) scale(1.03); }
+        #drawCardBtn:active:not(:disabled) { transform: translateY(0) scale(1); box-shadow: 0 0 5px rgba(160, 32, 240, 0.5), 0 0 5px rgba(0, 240, 255, 0.5); }
+        #drawCardBtn:disabled { opacity: 0.6; cursor: wait; background: grey; box-shadow: none; }
+
+        /* --- Card Display Area --- */
+        .card-display {
+            display: none; /* Hidden initially */
+            flex-direction: column; align-items: center; gap: 2rem;
+            margin-top: 1rem; /* Add some space when it appears */
+            width: 100%;
+        }
+        /* --- Image Container --- */
+        .image-container {
+            position: relative; width: 100%; max-width: 400px; /* Control max image size */
+            aspect-ratio: 1 / 1; /* Keep square aspect ratio from API */
+            background-color: rgba(255, 255, 255, 0.03); border-radius: 10px; overflow: hidden;
+            border: 2px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer;
+        }
+        .image-container:hover:not(.loading):not(.failed) { transform: scale(1.03); box-shadow: var(--glow-secondary); border-color: var(--secondary-neon); }
+        .result-image { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .result-image.loaded { opacity: 1; }
+
+        /* Image States (Loading/Error) */
+        .image-container.loading::before {
+            content: ''; position: absolute; width: 50px; height: 50px;
+            border: 5px solid rgba(0, 240, 255, 0.3); border-top-color: var(--secondary-neon);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        .image-container.failed {
+            border-color: var(--error-neon); box-shadow: var(--glow-error); color: var(--error-neon);
+            font-size: 0.95em; padding: 15px; cursor: default; background-color: rgba(255, 51, 102, 0.1);
+        }
+        .image-container.failed::before { display: none; } /* Hide spinner on final error */
+        .image-container.failed .retry-info { font-size: 0.9em; color: var(--secondary-neon); margin-top: 8px; }
+        .image-container.failed .error-content { line-height: 1.4; }
+
+        /* --- Card Info (Text) --- */
+        #cardInfo { width: 100%; margin-top: 1rem; text-align: center; }
+        #cardName {
+            font-family: 'Orbitron', sans-serif; font-size: 1.8rem; color: var(--accent-neon);
+            text-shadow: var(--glow-accent); margin-bottom: 0.8rem; letter-spacing: 1px;
+        }
+        #cardInterpretation { font-size: 1.1rem; color: var(--text-color); max-width: 600px; margin: 0 auto; line-height: 1.7; }
+
+        /* --- Feedback Area --- */
+        .feedback-area { min-height: 30px; text-align: center; margin-top: 1.5rem; }
+        .loading-indicator, .error-message { font-size: 1.1em; padding: 10px; border-radius: 5px; display: inline-block; }
+        .loading-indicator { color: var(--accent-neon); text-shadow: 0 0 5px var(--accent-neon); animation: pulse 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-neon); background-color: rgba(255, 51, 102, 0.1); border: 1px solid var(--error-neon); }
+
+        /* --- Footer --- */
+        footer { margin-top: 4rem; text-align: center; font-size: 0.9em; color: rgba(232, 232, 255, 0.6); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--primary-neon); text-shadow: 0 0 5px var(--primary-neon); }
+        /* --- Animations --- */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- Lightbox Styles (Same as previous) --- */
+        #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(5px); }
+        #lightbox.active { display: flex; }
+        #lightbox img { display: block; max-width: 90%; max-height: 90%; object-fit: contain; border: 3px solid var(--secondary-neon); box-shadow: var(--glow-secondary); border-radius: 5px;}
+        #lightbox .close-btn { position: absolute; top: 25px; right: 35px; font-size: 3rem; color: var(--text-color); cursor: pointer; line-height: 1; transition: color 0.3s, transform 0.3s; text-shadow: 0 0 8px rgba(0,0,0,0.8); }
+        #lightbox .close-btn:hover { color: var(--primary-neon); transform: scale(1.1); }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .container { padding: 2rem 1.5rem; max-width: 95%; }
+            h1 { font-size: 2.2rem; }
+            .subtitle { font-size: 1.1rem; }
+            #drawCardBtn { font-size: 1.1rem; padding: 0.9rem 2rem; }
+            #cardName { font-size: 1.6rem; }
+            #cardInterpretation { font-size: 1rem; }
+            .image-container { max-width: 350px; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 1rem; }
+            .container { padding: 1.5rem 1rem; }
+            h1 { font-size: 1.9rem; }
+            .subtitle { font-size: 1rem; }
+            #drawCardBtn { font-size: 1rem; padding: 0.8rem 1.5rem; margin-bottom: 2rem;}
+            #cardName { font-size: 1.4rem; }
+            #cardInterpretation { font-size: 0.95rem; }
+            .image-container { max-width: 300px; border-width: 1px; }
+            #lightbox .close-btn { top: 15px; right: 20px; font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Aether Oracle AI</h1>
+            <p class="subtitle">Tu Lectura de Tarot Visual con Inteligencia Artificial</p>
+        </header>
+
+        <main>
+            <button id="drawCardBtn">Sacar una Carta</button>
+
+            <!-- Area for global feedback -->
+            <div id="feedback" class="feedback-area" aria-live="polite"></div>
+
+            <!-- Area to display the drawn card -->
+            <div id="cardDisplayArea" class="card-display">
+                <div id="imageContainer" class="image-container">
+                    <!-- La imagen se cargará aquí -->
+                </div>
+                <div id="cardInfo">
+                    <h2 id="cardName"></h2>
+                    <p id="cardInterpretation"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+     <!-- Lightbox structure -->
+    <div id="lightbox">
+        <span class="close-btn" title="Cerrar">&times;</span>
+        <img id="lightbox-img" src="" alt="Imagen Ampliada del Oráculo">
+    </div>
+
+    <footer>
+        Herramienta por <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | Imágenes generadas con <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const drawCardBtn = document.getElementById('drawCardBtn');
+        const cardDisplayArea = document.getElementById('cardDisplayArea');
+        const imageContainer = document.getElementById('imageContainer');
+        const cardNameEl = document.getElementById('cardName');
+        const cardInterpretationEl = document.getElementById('cardInterpretation');
+        const feedbackDiv = document.getElementById('feedback');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const closeBtn = document.querySelector('#lightbox .close-btn');
+
+        // --- Configuration ---
+        const API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 1024; // High Quality
+        const IMAGE_HEIGHT = 1024; // High Quality
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500;
+        const IMAGE_LOAD_TIMEOUT_MS = 60000; // Increased timeout for larger images (60 seconds)
+
+        // --- Tarot Deck Data (Major Arcana) ---
+        const tarotDeck = [
+            { name: "The Fool", interpretation: "Nuevos comienzos, inocencia, espontaneidad, fe en el futuro, potencial ilimitado, tomar un riesgo.", keywords: "symbolic representation, archetypal journey, leap of faith, jester" },
+            { name: "The Magician", interpretation: "Manifestación, habilidad, poder personal, recursos, concentración, acción inspirada.", keywords: "mastery of elements, willpower, alchemy, as above so below" },
+            { name: "The High Priestess", interpretation: "Intuición, misterio, subconsciente, sabiduría interior, secretos, potencial no revelado.", keywords: "lunar mystery, intuition, subconscious, sacred knowledge, veiled secrets" },
+            { name: "The Empress", interpretation: "Fertilidad, feminidad, belleza, naturaleza, abundancia, nutrición, placer.", keywords: "mother earth, divine feminine, creativity, abundance, nurturing" },
+            { name: "The Emperor", interpretation: "Autoridad, estructura, control, paternidad, estabilidad, liderazgo, solidez.", keywords: "divine masculine, structure, authority, stability, father figure" },
+            { name: "The Hierophant", interpretation: "Tradición, instituciones, conformidad, conocimiento convencional, guía espiritual, creencias.", keywords: "tradition, spiritual guidance, institutions, conformity, teacher" },
+            { name: "The Lovers", interpretation: "Amor, relaciones, unión, valores, elecciones importantes, dualidad, armonía.", keywords: "union, relationships, choices, duality, harmony, alignment" },
+            { name: "The Chariot", interpretation: "Control, voluntad, determinación, acción, éxito, ambición, superación de obstáculos.", keywords: "willpower, victory, determination, control, momentum" },
+            { name: "Strength", interpretation: "Fuerza interior, coraje, compasión, influencia sutil, paciencia, autocontrol.", keywords: "inner strength, courage, compassion, taming the beast, patience" },
+            { name: "The Hermit", interpretation: "Introspección, soledad, guía interior, búsqueda de la verdad, sabiduría, retiro.", keywords: "introspection, solitude, wisdom, inner guidance, soul-searching" },
+            { name: "Wheel of Fortune", interpretation: "Ciclos, destino, cambio, suerte, puntos de inflexión, karma, oportunidades.", keywords: "cycles of life, destiny, luck, turning points, karma" },
+            { name: "Justice", interpretation: "Justicia, equidad, verdad, causa y efecto, ley, objetividad, responsabilidad.", keywords: "fairness, truth, balance, cause and effect, karma, accountability" },
+            { name: "The Hanged Man", interpretation: "Sacrificio, perspectiva diferente, suspensión, dejar ir, nueva visión, rendición.", keywords: "suspension, new perspective, sacrifice, letting go, surrender" },
+            { name: "Death", interpretation: "Finales, transformación, cambio inevitable, transición, liberación, nuevos comienzos.", keywords: "endings, transformation, transition, release, new beginnings" },
+            { name: "Temperance", interpretation: "Equilibrio, moderación, paciencia, propósito, alquimia interior, armonía.", keywords: "balance, moderation, harmony, alchemy, patience, integration" },
+            { name: "The Devil", interpretation: "Ataduras, adicción, materialismo, ignorancia, tentación, sombra personal.", keywords: "bondage, addiction, materialism, shadow self, temptation" },
+            { name: "The Tower", interpretation: "Destrucción súbita, revelación, caos, cambio abrupto, liberación, despertar.", keywords: "sudden upheaval, revelation, destruction, liberation, awakening" },
+            { name: "The Star", interpretation: "Esperanza, inspiración, fe, sanación, serenidad, guía espiritual, optimismo.", keywords: "hope, inspiration, healing, serenity, spiritual guidance" },
+            { name: "The Moon", interpretation: "Ilusión, miedo, ansiedad, subconsciente, intuición, confusión, sueños.", keywords: "illusion, intuition, subconscious, dreams, fears, mystery" },
+            { name: "The Sun", interpretation: "Éxito, vitalidad, alegría, claridad, optimismo, realización, energía positiva.", keywords: "joy, success, vitality, clarity, optimism, enlightenment" },
+            { name: "Judgement", interpretation: "Juicio, renacimiento, despertar, evaluación, llamado interior, rendición de cuentas.", keywords: "awakening, reckoning, rebirth, calling, absolution" },
+            { name: "The World", interpretation: "Culminación, realización, integración, viaje completado, éxito, totalidad.", keywords: "completion, integration, fulfillment, wholeness, travel" }
+        ];
+
+        // --- Event Listener ---
+        drawCardBtn.addEventListener('click', drawAndDisplayCard);
+
+        // --- Core Function ---
+        function drawAndDisplayCard() {
+            drawCardBtn.disabled = true;
+            drawCardBtn.textContent = 'Consultando Oráculo...';
+            feedbackDiv.innerHTML = ''; // Clear previous feedback
+            showGlobalFeedback('loading', 'El Oráculo está visualizando tu carta...');
+
+            // 1. Clear previous results
+            clearCardDisplay();
+
+            // 2. Select a random card
+            const randomCard = tarotDeck[Math.floor(Math.random() * tarotDeck.length)];
+
+            // 3. Generate a UNIQUE seed for this specific draw
+            const seed = Math.floor(Math.random() * 1000000); // Random seed every time!
+
+            // 4. Construct the prompt
+            // Added more descriptive keywords for better visual results
+            const prompt = `${randomCard.name} tarot card, ${randomCard.keywords}, mystical atmosphere, intricate detail, vibrant colors, symbolic illustration, fantasy art`;
+            const encodedPrompt = encodeURIComponent(prompt);
+
+            // 5. Construct the API URL
+            const requestUrl = `${API_BASE_URL}${encodedPrompt}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+            console.log(`Solicitando carta: ${randomCard.name}, Seed: ${seed}`);
+            console.log(`URL: ${requestUrl}`);
+
+            // 6. Display Text Info Immediately & Show Area
+            cardNameEl.textContent = randomCard.name;
+            cardInterpretationEl.textContent = randomCard.interpretation;
+            cardDisplayArea.style.display = 'flex'; // Show the display area
+
+            // 7. Set image container to loading state BEFORE fetch
+            imageContainer.className = 'image-container loading'; // Reset classes and set to loading
+            imageContainer.innerHTML = ''; // Clear any previous image or error message
+            imageContainer.dataset.retries = 0; // Reset retries counter
+
+            // 8. Fetch the image URL (initial request)
+            fetch(requestUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP ${response.status} del API`);
+                    }
+                    // The final URL of the generated image after potential redirects
+                    return response.url;
+                })
+                .then(finalImageUrl => {
+                    console.log(`URL final de imagen recibida: ${finalImageUrl}`);
+                    // --- Start the robust image loading process ---
+                    loadImageWithRetry(imageContainer, finalImageUrl, randomCard.name);
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud inicial al API:', error);
+                    handleInitialFetchFailure(imageContainer, randomCard.name, error.message);
+                });
+        }
+
+        // --- Image Loading Logic with Retries (Adapted from App04/ConceptGrid) ---
+        function loadImageWithRetry(container, imageUrl, cardName) {
+            let timeoutId;
+            const img = document.createElement('img');
+            img.className = 'result-image';
+            img.alt = `Representación visual de la carta del tarot: ${cardName}`; // SEO & Accessibility
+
+            // Ensure container is just loading state, clear previous content
+            container.classList.add('loading');
+            container.classList.remove('failed', 'img-loaded');
+            container.innerHTML = ''; // Clear previous error messages/spinners if retrying
+            container.appendChild(img); // Add the image element
+
+            img.onload = () => {
+                clearTimeout(timeoutId);
+                container.classList.remove('loading', 'failed');
+                container.classList.add('img-loaded'); // Add class for loaded state
+                img.classList.add('loaded'); // Add class for opacity transition
+                // Add lightbox functionality ONLY on successful load
+                container.onclick = () => openLightbox(imageUrl); // Assign click listener here
+                console.log(`Imagen para "${cardName}" cargada con éxito.`);
+                checkCompletion(); // Check if we are done
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeoutId);
+                console.error(`Error cargando imagen final para "${cardName}": ${imageUrl}`);
+                handleImageLoadFailure(container, img, imageUrl, cardName, 'Error de carga');
+            };
+
+            // Set src AFTER listeners are attached
+            img.src = imageUrl;
+
+            // Start timeout for this load attempt
+            timeoutId = setTimeout(() => {
+                if (container.classList.contains('loading')) {
+                    console.warn(`Timeout de carga para "${cardName}": ${imageUrl}`);
+                    img.src = ''; // Prevent further loading attempts on this img element
+                    handleImageLoadFailure(container, img, imageUrl, cardName, 'Timeout');
+                }
+            }, IMAGE_LOAD_TIMEOUT_MS);
+        }
+
+        function handleImageLoadFailure(container, img, imageUrl, cardName, reason) {
+            const currentRetries = parseInt(container.dataset.retries || 0);
+
+            if (currentRetries < MAX_RETRIES) {
+                container.dataset.retries = currentRetries + 1;
+                const attempt = currentRetries + 1;
+                console.log(`Reintentando carga para "${cardName}" (Intento: ${attempt}/${MAX_RETRIES})...`);
+
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = `<div class="error-content">${reason}<br><span class="retry-info">Reintentando (${attempt}/${MAX_RETRIES})...</span></div>`;
+                container.onclick = null; // Remove click listener on failure/retry
+
+                // Exponential backoff for retries
+                setTimeout(() => {
+                    loadImageWithRetry(container, imageUrl, cardName);
+                }, RETRY_DELAY_MS * Math.pow(2, currentRetries));
+
+            } else {
+                console.error(`Máximos reintentos alcanzados para "${cardName}". Desistiendo.`);
+                container.classList.remove('loading');
+                container.classList.add('failed');
+                container.innerHTML = `<div class="error-content">Error final: ${reason}<br>(No se pudo cargar la imagen)</div>`;
+                container.onclick = null; // Remove click listener on final failure
+                checkCompletion(); // Mark as done (failed)
+            }
+        }
+
+         function handleInitialFetchFailure(container, cardName, reason) {
+            // Handles failure of the very first fetch request to Pollinations
+             console.error(`Fallo fetch inicial para "${cardName}": ${reason}`);
+             container.classList.remove('loading');
+             container.classList.add('failed');
+             container.innerHTML = `<div class="error-content">Error API:<br>${reason}</div>`;
+             container.onclick = null; // Remove click listener
+             checkCompletion(); // Mark as done (failed)
+         }
+
+        // --- Completion Check & UI Helpers ---
+        function checkCompletion() {
+            // Since there's only one image, completion means it's either loaded or failed definitively
+            showGlobalFeedback(false); // Hide global loading message
+            drawCardBtn.disabled = false;
+            drawCardBtn.textContent = 'Sacar otra Carta';
+
+            // Check if the image failed and show a global error if needed
+             if (imageContainer.classList.contains('failed')) {
+                 showGlobalFeedback('error', 'No se pudo generar la imagen de la carta tras varios intentos.');
+             }
+        }
+
+        function clearCardDisplay() {
+            cardDisplayArea.style.display = 'none'; // Hide the whole area
+            imageContainer.className = 'image-container'; // Reset classes
+            imageContainer.innerHTML = '';
+            imageContainer.onclick = null; // Remove previous click listener
+            cardNameEl.textContent = '';
+            cardInterpretationEl.textContent = '';
+            feedbackDiv.innerHTML = ''; // Clear global feedback too
+        }
+
+        function showGlobalFeedback(type, message) {
+            feedbackDiv.innerHTML = ''; // Clear previous
+            if (type) {
+                const messageElement = document.createElement('div');
+                messageElement.textContent = message;
+                messageElement.className = type === 'error' ? 'error-message' : type === 'loading' ? 'loading-indicator' : '';
+                feedbackDiv.appendChild(messageElement);
+            }
+        }
+
+        // --- Lightbox Functions (Same as before) ---
+        function openLightbox(imageUrl) {
+            if (!imageContainer.classList.contains('failed') && imageContainer.classList.contains('img-loaded')) {
+                lightboxImg.src = imageUrl;
+                lightbox.classList.add('active');
+            }
+        }
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            lightboxImg.src = ""; // Clear src
+        }
+        closeBtn.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (event) => { if (event.target === lightbox) closeLightbox(); }); // Close on bg click
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox(); }); // Close with Esc
+
+        // Optional: Preconnect on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const preconnectLink = document.createElement('link');
+            preconnectLink.rel = 'preconnect';
+            preconnectLink.href = 'https://image.pollinations.ai';
+            document.head.appendChild(preconnectLink);
+        });
+
+    </script>
+
+</body>
+</html>

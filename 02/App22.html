@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Title: Focus on benefit and keywords -->
+    <title>Tu Afirmación Diaria Positiva con Imagen | Inspiración IA - PapitasFritas.com</title>
+    <!-- Meta Description (Add manually or via CMS) -->
+    <!-- <meta name="description" content="Recibe una afirmación diaria positiva única con una imagen inspiradora generada por IA. Encuentra calma, motivación y bienestar cada día con nuestra herramienta en PapitasFritas.com."> -->
+
+    <style>
+        /* --- Fonts & Base Styles --- */
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;700&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap');
+        :root {
+            --bg-gradient-start: #e0f2f7; /* Soft light blue/cyan */
+            --bg-gradient-end: #f8efef;   /* Soft warm pink/beige */
+            --card-bg: rgba(255, 255, 255, 0.85); /* Slightly more opaque card */
+            --text-color: #333;
+            --heading-color: #2a6f7e; /* Deeper teal */
+            --accent-color: #ff8a80; /* Soft coral/peach */
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --border-color: rgba(42, 111, 126, 0.2);
+            --error-color: #d32f2f;
+            --success-color: #388e3c;
+            --loading-color: #64b5f6; /* Soft blue for loading */
+            --loading-bg-pulse: rgba(100, 181, 246, 0.1); /* Faint blue for pulse */
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; }
+        body {
+            font-family: 'Quicksand', sans-serif; background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-color); display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 2rem; line-height: 1.7;
+        }
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%; max-width: 700px; margin: auto; padding: 2rem 2.5rem;
+            background-color: var(--card-bg); backdrop-filter: blur(8px);
+            border-radius: 15px; box-shadow: 0 8px 25px var(--shadow-color);
+            border: 1px solid rgba(255, 255, 255, 0.5); text-align: center;
+        }
+        /* --- Header --- */
+        header { margin-bottom: 2rem; }
+        h1 {
+            font-family: 'Merriweather', serif; font-weight: 400; font-size: 2.2rem;
+            color: var(--heading-color); margin-bottom: 0.5rem;
+        }
+        .subtitle { font-size: 1.1rem; color: #555; font-weight: 300; }
+        /* --- Affirmation Display --- */
+        .affirmation-content { margin-bottom: 2.5rem; min-height: 350px; /* Ensure space while loading */ display: flex; flex-direction: column; align-items: center; }
+        #image-container {
+            width: 100%; max-width: 350px; /* Control image size */ aspect-ratio: 1 / 1;
+            background-color: rgba(0, 0, 0, 0.03); border-radius: 10px; overflow: hidden;
+            margin-bottom: 1.5rem; position: relative; border: 1px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease; /* Added border-color */
+        }
+        /* NEW: Nicer loading state */
+        #image-container.loading {
+            border-color: var(--loading-color); /* Highlight border while loading */
+            animation: pulse-bg 1.8s infinite ease-in-out;
+        }
+        #image-container.loaded { box-shadow: 0 4px 15px rgba(42, 111, 126, 0.15); }
+        #affirmation-image { /* Style applied to the dynamically created image */
+            display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+        #affirmation-image.loaded { opacity: 1; }
+        /* Spinner */
+        #image-container.loading::before {
+            content: ''; position: absolute; width: 40px; height: 40px;
+            border: 4px solid rgba(100, 181, 246, 0.3); border-top-color: var(--loading-color);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        #image-container.failed {
+            background-color: rgba(211, 47, 47, 0.05); border-color: var(--error-color); /* Error border */
+            color: var(--error-color); font-size: 0.9em; padding: 10px;
+            text-align: center; animation: none; /* Stop pulse animation on fail */
+        }
+        #image-container.failed::before { display: none; } /* Hide spinner on fail */
+
+        #affirmation-text-container { width: 100%; }
+        #theme-display { font-size: 0.9rem; color: var(--accent-color); font-weight: 500; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; min-height: 1.2em; /* Reserve space */ }
+        #affirmation-text {
+            font-family: 'Merriweather', serif; font-size: 1.3rem; font-weight: 300; line-height: 1.8;
+            color: #444; min-height: 4em; /* Reserve space */
+            white-space: pre-wrap; /* Respect newlines from API */
+            padding: 0 1rem;
+            opacity: 0; transition: opacity 0.6s ease-in-out 0.2s; /* Fade in after image starts loading */
+        }
+        #affirmation-text.visible { opacity: 1; }
+        #affirmation-text p { margin-bottom: 1em; }
+        #affirmation-text p:last-child { margin-bottom: 0; }
+        /* --- Controls & Feedback --- */
+        .controls { margin-bottom: 1rem; }
+        #generate-btn {
+            font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 1.1rem;
+            padding: 12px 35px; color: #fff; background-color: var(--accent-color);
+            border: none; border-radius: 50px; /* Pill shape */ cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 138, 128, 0.4);
+        }
+        #generate-btn:hover:not(:disabled) { background-color: #ff7163; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 138, 128, 0.5); }
+        #generate-btn:active:not(:disabled) { transform: translateY(0); }
+        #generate-btn:disabled { background-color: #bdbdbd; cursor: wait; box-shadow: none; }
+        #feedback-area { min-height: 2em; margin-top: 1.5rem; font-size: 0.95rem; }
+        .loading-message { color: var(--loading-color); font-weight: 500; animation: pulse-text 1.5s infinite ease-in-out; }
+        .error-message { color: var(--error-color); background-color: rgba(211, 47, 47, 0.05); padding: 8px 15px; border-radius: 5px; border: 1px solid rgba(211, 47, 47, 0.2); display: inline-block; }
+        .success-message { color: var(--success-color); font-weight: 500; }
+
+        /* --- Footer --- */
+        footer { margin-top: 2rem; font-size: 0.85rem; color: rgba(0, 0, 0, 0.5); }
+        footer a { color: var(--heading-color); text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: var(--accent-color); }
+        /* --- Animations --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        /* NEW Animation for loading background */
+        @keyframes pulse-bg {
+            0% { background-color: rgba(0, 0, 0, 0.03); } /* Start color */
+            50% { background-color: var(--loading-bg-pulse); } /* Pulse color */
+            100% { background-color: rgba(0, 0, 0, 0.03); } /* End color */
+        }
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            .container { padding: 1.5rem; }
+            h1 { font-size: 1.8rem; }
+            .subtitle { font-size: 1rem; }
+            #affirmation-text { font-size: 1.15rem; }
+            #generate-btn { font-size: 1rem; padding: 10px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Tu Rincón de Afirmaciones</h1>
+            <p class="subtitle">Un mensaje positivo diario con inspiración visual IA</p>
+        </header>
+
+        <main>
+            <div class="affirmation-content">
+                 <!-- Container is now just a placeholder -->
+                <div id="image-container" class="image-container">
+                    <!-- Image element will be created dynamically by JS -->
+                </div>
+                <div id="affirmation-text-container">
+                    <p id="theme-display"></p>
+                    <div id="affirmation-text"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="generate-btn">Obtener mi Afirmación de Hoy</button>
+            </div>
+
+            <div id="feedback-area" aria-live="polite"></div>
+        </main>
+    </div>
+
+    <footer>
+        Herramienta creada para <a href="https://papitasfritas.com/" target="_blank" rel="noopener noreferrer">papitasfritas.com</a> | APIs por <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const generateBtn = document.getElementById('generate-btn');
+        const imageContainer = document.getElementById('image-container');
+        // REMOVED: affirmationImage variable, as it's created dynamically
+        const affirmationTextDiv = document.getElementById('affirmation-text');
+        const themeDisplay = document.getElementById('theme-display');
+        const feedbackArea = document.getElementById('feedback-area');
+
+        // --- Configuration ---
+        const TEXT_API_BASE_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_BASE_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 600;
+        const IMAGE_HEIGHT = 600;
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500;
+        const IMAGE_LOAD_TIMEOUT_MS = 50000;
+
+        // --- Affirmation Themes (Unchanged) ---
+        const AFFIRMATION_THEMES = [
+            "Gratitud", "Amor Propio", "Paz Interior", "Fortaleza", "Abundancia", "Confianza", "Sanación", "Alegría", "Mindfulness", "Presente", "Éxito", "Creatividad", "Perdón", "Compasión", "Resiliencia", "Optimismo", "Salud", "Bienestar", "Conexión", "Intuición", "Claridad Mental", "Propósito", "Valentía", "Paciencia", "Aceptación", "Liberación", "Crecimiento Personal", "Empoderamiento", "Felicidad", "Equilibrio", "Serenidad", "Energía Positiva", "Motivación", "Inspiración", "Sueños", "Metas", "Prosperidad", "Autoestima", "Bondad", "Generosidad", "Calma", "Naturaleza", "Universo", "Magia Cotidiana", "Pequeñas Alegrías", "Aprendizaje"
+        ];
+
+        // --- Event Listener ---
+        generateBtn.addEventListener('click', handleGeneration);
+
+        // --- Core Logic ---
+        async function handleGeneration() {
+            clearPreviousState();
+            showFeedback('loading', 'Generando tu momento de inspiración...');
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generando...';
+
+            const randomTheme = AFFIRMATION_THEMES[Math.floor(Math.random() * AFFIRMATION_THEMES.length)];
+            themeDisplay.textContent = `Tema: ${randomTheme}`;
+            console.log(`Selected theme: ${randomTheme}`);
+
+            const textPrompt = `Escribe una afirmación corta, positiva y empoderadora sobre ${randomTheme}. Responde únicamente con el texto de la afirmación, sin introducciones, comentarios ni formato adicional. Asegúrate que tenga saltos de linea o párrafos para facilitar la lectura.`;
+            console.log(`Text API Prompt: ${textPrompt}`);
+
+            try {
+                const affirmation = await fetchWithRetry(TEXT_API_BASE_URL + encodeURIComponent(textPrompt), { isText: true });
+                const cleanedAffirmation = cleanApiResponse(affirmation);
+                const formattedAffirmation = cleanedAffirmation.split('\n').map(p => p.trim()).filter(p => p.length > 0).map(p => `<p>${p}</p>`).join('');
+                affirmationTextDiv.innerHTML = formattedAffirmation;
+                affirmationTextDiv.classList.add('visible');
+                console.log(`Received affirmation: ${cleanedAffirmation}`);
+
+                const imagePrompt = `${randomTheme}, visualización serena y positiva, luz suave y cálida, energía calmante, ilustración inspiradora, arte digital abstracto`;
+                console.log(`Image API Prompt: ${imagePrompt}`);
+                const seed = Math.floor(Math.random() * 1000000);
+                const imageUrl = `${IMAGE_API_BASE_URL}${encodeURIComponent(imagePrompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+
+                // Call the image loading function
+                loadImageWithRetry(imageUrl, imagePrompt); // Pass URL and prompt
+
+            } catch (error) {
+                console.error("Error generating affirmation or image:", error);
+                showFeedback('error', `Error: ${error.message || "No se pudo generar la afirmación o la imagen."}`);
+                resetUI();
+            }
+        }
+
+        // --- Text API Fetch (Unchanged) ---
+        async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+            const { isText = false } = options;
+            try {
+                console.log(`Fetching: ${url} (Retries left: ${retries})`);
+                const response = await fetch(url);
+                if (!response.ok) { throw new Error(`HTTP error ${response.status}`); }
+                return isText ? await response.text() : response;
+            } catch (error) {
+                if (retries > 0) {
+                    console.warn(`Fetch failed, retrying in ${RETRY_DELAY_MS}ms...`, error);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                    return fetchWithRetry(url, options, retries - 1);
+                } else {
+                    console.error("Max retries reached for fetch.");
+                    throw error;
+                }
+            }
+        }
+
+        // --- MODIFIED Image Loading Logic ---
+        function loadImageWithRetry(url, promptForAlt) {
+            let currentRetries = 0;
+
+            // Create a *new* image element each time to prevent caching/update issues
+            const imgElement = document.createElement('img');
+            imgElement.id = 'affirmation-image'; // Re-assign id for CSS styling
+            imgElement.alt = `Ilustración inspiradora sobre ${promptForAlt}`;
+
+            function attemptLoad(currentAttempt) {
+                let timeoutId;
+                console.log(`Attempting to load image (Attempt ${currentAttempt}/${MAX_RETRIES + 1}): ${url}`);
+
+                // Ensure container is in loading state and clear previous img/errors
+                imageContainer.innerHTML = ''; // Clear previous content/image
+                imageContainer.classList.add('loading');
+                imageContainer.classList.remove('failed', 'loaded');
+                imageContainer.appendChild(imgElement); // Append the NEW image element
+
+                // Reset img state for retry (important if retry happens before load)
+                imgElement.src = '';
+                imgElement.classList.remove('loaded');
+
+                imgElement.onload = () => {
+                    clearTimeout(timeoutId);
+                    console.log("Image loaded successfully.");
+                    imageContainer.classList.remove('loading', 'failed');
+                    imageContainer.classList.add('loaded');
+                    imgElement.classList.add('loaded');
+                    showFeedback('success', '¡Tu inspiración está lista!');
+                    resetUI(true);
+                };
+
+                imgElement.onerror = () => {
+                    clearTimeout(timeoutId);
+                    console.error(`Image load error (Attempt ${currentAttempt}): ${url}`);
+                    handleFailure('Error de carga');
+                };
+
+                // Set src AFTER listeners and appending
+                imgElement.src = url;
+
+                timeoutId = setTimeout(() => {
+                    // Check using complete and naturalHeight for better timeout detection
+                    if (!imgElement.complete || imgElement.naturalHeight === 0) {
+                        console.warn(`Image load timeout (Attempt ${currentAttempt}): ${url}`);
+                        imgElement.src = ''; // Stop loading
+                        handleFailure('Timeout');
+                    }
+                }, IMAGE_LOAD_TIMEOUT_MS);
+            }
+
+            function handleFailure(reason) {
+                currentRetries++;
+                if (currentRetries <= MAX_RETRIES) {
+                    console.warn(`Image load failed: ${reason}. Retrying (${currentRetries}/${MAX_RETRIES})...`);
+
+                    // *** CHANGE: Keep loading visually, don't show retry text ***
+                    // Ensure loading class is present, remove failed if it was added
+                    imageContainer.classList.add('loading');
+                    imageContainer.classList.remove('failed');
+                    // Clear any potential previous error message inside, spinner will show
+                    imageContainer.innerHTML = '';
+                    imageContainer.appendChild(imgElement); // Ensure img element is still there for next attempt
+
+                    // No message like "Retrying..." is displayed
+
+                    setTimeout(() => attemptLoad(currentRetries + 1), RETRY_DELAY_MS * Math.pow(2, currentRetries - 1));
+                } else {
+                    // *** FINAL FAILURE: Show clear error in the container ***
+                    console.error(`Max retries reached for image. Giving up. Reason: ${reason}`);
+                    imageContainer.classList.remove('loading', 'loaded');
+                    imageContainer.classList.add('failed');
+                    imageContainer.innerHTML = `Error al cargar imagen.<br>Intenta de nuevo.`; // Final error message
+                    showFeedback('error', 'No se pudo cargar la imagen después de varios intentos.');
+                    resetUI();
+                }
+            }
+
+            // Initial attempt
+            attemptLoad(1);
+        }
+
+        // --- Utility Functions ---
+        function cleanApiResponse(text) {
+            let cleaned = text.trim();
+            if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+                cleaned = cleaned.substring(1, cleaned.length - 1);
+            }
+            return cleaned.trim();
+        }
+
+        function clearPreviousState() {
+            feedbackArea.innerHTML = '';
+            imageContainer.innerHTML = ''; // Clear the container fully
+            imageContainer.classList.remove('loaded', 'failed');
+            imageContainer.classList.add('loading'); // Set loading class initially
+            affirmationTextDiv.innerHTML = '';
+            affirmationTextDiv.classList.remove('visible');
+            themeDisplay.textContent = '';
+        }
+
+        function showFeedback(type, message) {
+            feedbackArea.innerHTML = '';
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.className = `${type}-message`;
+            feedbackArea.appendChild(messageElement);
+            if (type === 'success') {
+                setTimeout(() => {
+                    if (messageElement.parentNode === feedbackArea) {
+                         feedbackArea.removeChild(messageElement);
+                    }
+                }, 4000);
+            }
+        }
+
+        function resetUI(keepContent = false) {
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Obtener mi Afirmación de Hoy';
+            if (!keepContent) {
+                imageContainer.classList.remove('loading', 'loaded', 'failed');
+                imageContainer.innerHTML = ''; // Clear container
+                affirmationTextDiv.innerHTML = '';
+                affirmationTextDiv.classList.remove('visible');
+                themeDisplay.textContent = '';
+            } else {
+                imageContainer.classList.remove('loading'); // Ensure loading animation stops
+                 if(feedbackArea.querySelector('.loading-message')) {
+                     feedbackArea.innerHTML = '';
+                 }
+            }
+        }
+
+        // Optional: Preconnect on load
+        document.addEventListener('DOMContentLoaded', () => {
+            ['https://text.pollinations.ai', 'https://image.pollinations.ai'].forEach(url => {
+                const link = document.createElement('link'); link.rel = 'preconnect'; link.href = url; document.head.appendChild(link);
+            });
+        });
+
+    </script>
+
+</body>
+</html>

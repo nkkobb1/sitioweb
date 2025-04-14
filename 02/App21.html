@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO -->
+    <title>AI SongForge - Generador de Letras y Portadas IA | PapitasFritas.com</title>
+    <meta name="description" content="Crea letras de canciones originales y portadas artísticas únicas con IA. Elige género, ánimo y tema, y deja que AI SongForge componga por ti en PapitasFritas.com.">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Using Orbitron for titles and Rajdhani for body/lyrics for a tech feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Reset & Base Styles --- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-color: #0f0f1f; /* Darker blue/purple */
+            --bg-gradient: linear-gradient(145deg, #1a1a3a, #0f0f1f);
+            --primary-neon: #9f00ff; /* Purple */
+            --secondary-neon: #00e5ff; /* Bright Cyan */
+            --accent-color: #ffea00; /* Yellow Accent */
+            --text-color: #e0e5f0;
+            --text-dark: #111;
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --border-color: rgba(0, 229, 255, 0.3);
+            --error-color: #ff4d4d;
+            --glow-primary: 0 0 6px var(--primary-neon), 0 0 12px rgba(159, 0, 255, 0.5);
+            --glow-secondary: 0 0 6px var(--secondary-neon), 0 0 12px rgba(0, 229, 255, 0.5);
+            --shadow-heavy: 0 6px 20px rgba(0, 0, 0, 0.4);
+            --font-heading: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body); background: var(--bg-gradient); color: var(--text-color);
+            line-height: 1.6; padding: 25px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+        }
+        /* --- Main Container --- */
+        .container {
+            width: 100%; max-width: 1000px; margin: 20px auto; padding: 30px 40px;
+            background: rgba(15, 15, 31, 0.8); border: 1px solid var(--border-color);
+            border-radius: 15px; backdrop-filter: blur(7px); box-shadow: var(--shadow-heavy);
+            text-align: center;
+        }
+        /* --- Header --- */
+        header { margin-bottom: 35px; }
+        h1 {
+            font-family: var(--font-heading); font-size: clamp(2.5rem, 6vw, 3.8rem);
+            color: var(--primary-neon); text-shadow: var(--glow-primary); margin-bottom: 10px; letter-spacing: 2px;
+        }
+        .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.25rem); color: var(--secondary-neon); text-shadow: 0 0 5px var(--secondary-neon);
+            font-weight: 400; max-width: 650px; margin: 0 auto 30px auto;
+        }
+        /* --- Controls --- */
+        .controls { margin-bottom: 35px; display: grid; grid-template-columns: 1fr; gap: 20px; }
+         /* Layout controls in columns on wider screens */
+        @media (min-width: 600px) {
+            .controls { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+            .prompt-group { grid-column: 1 / -1; } /* Prompt takes full width */
+        }
+
+        .control-group { display: flex; flex-direction: column; text-align: left; }
+        .control-group label {
+            font-weight: 600; color: var(--secondary-neon); margin-bottom: 8px; font-size: 1.1rem;
+            text-shadow: 0 0 3px rgba(0, 229, 255, 0.4);
+        }
+        .controls textarea, .controls select {
+            width: 100%; background-color: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 6px; padding: 10px 12px; color: var(--text-color); font-family: var(--font-body);
+            font-size: 1rem; transition: all 0.3s ease;
+        }
+         .controls textarea { min-height: 70px; resize: vertical; }
+         /* Style select dropdown arrow */
+         .controls select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300e5ff' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px 12px; padding-right: 35px; }
+
+        .controls textarea:focus, .controls select:focus {
+            outline: none; border-color: var(--primary-neon); box-shadow: 0 0 8px rgba(159, 0, 255, 0.6);
+        }
+        #generateBtn {
+            font-family: var(--font-heading); font-size: 1.4rem; padding: 12px 35px; border-radius: 8px;
+            background: linear-gradient(60deg, var(--primary-neon), var(--secondary-neon)); color: var(--text-dark);
+            border: none; cursor: pointer; transition: all 0.3s ease; font-weight: 700; letter-spacing: 1.5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), var(--glow-primary);
+            margin-top: 10px; grid-column: 1 / -1; /* Span full width */ justify-self: center; /* Center button */ width: fit-content;
+        }
+        #generateBtn:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 7px 18px rgba(0, 0, 0, 0.6), var(--glow-primary), var(--glow-secondary); }
+        #generateBtn:active:not(:disabled) { transform: translateY(0) scale(1); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); }
+        #generateBtn:disabled { background: #444; color: #888; cursor: wait; opacity: 0.7; box-shadow: none; }
+
+        /* --- Feedback Area --- */
+        #feedback { min-height: 25px; margin: 20px 0; font-weight: 400; font-size: 1.1rem; }
+        .loading-text { color: var(--accent-color); animation: pulse 1.5s infinite ease-in-out; }
+        .error-text { color: var(--error-color); background-color: rgba(255, 77, 77, 0.1); padding: 6px 12px; border-radius: 5px; display: inline-block; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* --- Song Output --- */
+        .song-output {
+            display: grid; grid-template-columns: 1fr; /* Default single column */
+            gap: 30px; margin-top: 30px; background: rgba(0,0,0, 0.2); padding: 25px; border-radius: 10px;
+             border: 1px solid var(--border-color);
+             opacity: 0; transition: opacity 0.6s ease-in-out; min-height: 200px;
+        }
+         .song-output.visible { opacity: 1; }
+        @media (min-width: 768px) {
+            .song-output { grid-template-columns: 3fr 2fr; gap: 40px; /* Give more space to lyrics */ }
+            #lyricsDisplay { grid-column: 1 / 2; }
+            #coverDisplay { grid-column: 2 / 3; }
+        }
+
+        #lyricsDisplay, #coverDisplay { text-align: left; }
+         #lyricsDisplay h2, #coverDisplay h2 {
+             font-family: var(--font-heading); color: var(--accent-color); margin-bottom: 15px; font-size: 1.7rem; text-align: center;
+             border-bottom: 1px solid rgba(255, 234, 0, 0.3); padding-bottom: 5px;
+         }
+         /* Lyrics specific styling */
+        #lyricsText {
+             background: rgba(10, 10, 30, 0.5); padding: 20px; border-radius: 8px; font-family: var(--font-body);
+             font-size: 1.05rem; line-height: 1.7; white-space: pre-wrap; /* Preserve formatting */
+             min-height: 200px; max-height: 500px; overflow-y: auto; /* Scroll if long */
+             border: 1px solid rgba(159, 0, 255, 0.2); color: var(--text-color);
+             /* Custom Scrollbar */
+             scrollbar-width: thin; scrollbar-color: var(--secondary-neon) rgba(0,0,0,0.3);
+        }
+        #lyricsText::-webkit-scrollbar { width: 8px; }
+        #lyricsText::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+        #lyricsText::-webkit-scrollbar-thumb { background-color: var(--secondary-neon); border-radius: 4px; border: 2px solid rgba(0,0,0,0.3); }
+
+        /* Cover specific styling */
+        #imageContainer {
+            width: 100%; max-width: 400px; /* Control max size */ aspect-ratio: 1 / 1; background-color: rgba(255, 255, 255, 0.04);
+            border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color);
+            display: flex; justify-content: center; align-items: center; position: relative;
+            box-shadow: var(--shadow-light); margin: 0 auto; /* Center container */
+        }
+        #coverImage { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        #coverImage.loaded { opacity: 1; }
+        /* Status inside image container */
+        .image-status { position: absolute; text-align: center; padding: 10px; z-index: 1; background: rgba(15, 15, 31, 0.6); border-radius: 5px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(0, 229, 255, 0.3); border-top-color: var(--secondary-neon); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 5px auto; }
+        .error-icon { font-size: 2rem; color: var(--error-color); margin-bottom: 5px; }
+        .status-text { font-size: 0.9rem; color: var(--text-color); }
+        .error-text-container { color: var(--error-color); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- History Section --- */
+        .history-section { margin-top: 40px; width: 100%; }
+        .history-section h2 { font-family: var(--font-heading); color: var(--accent-color); margin-bottom: 15px; font-size: 1.7rem; border-bottom: 1px solid rgba(255, 234, 0, 0.3); padding-bottom: 5px; text-align: left;}
+        #historyList { list-style: none; padding: 0; max-height: 250px; overflow-y: auto; background: rgba(0,0,0, 0.15); border-radius: 5px; padding: 10px; border: 1px solid var(--border-color); /* Custom Scrollbar */ scrollbar-width: thin; scrollbar-color: var(--primary-neon) rgba(0,0,0,0.3); }
+        #historyList::-webkit-scrollbar { width: 8px; }
+        #historyList::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+        #historyList::-webkit-scrollbar-thumb { background-color: var(--primary-neon); border-radius: 4px; border: 2px solid rgba(0,0,0,0.3); }
+        #historyList li { background: rgba(255, 255, 255, 0.05); margin-bottom: 8px; padding: 10px 15px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s, color 0.3s, border-left-color 0.3s; font-size: 0.95rem; border-left: 4px solid var(--secondary-neon); display: flex; justify-content: space-between; align-items: center; }
+        #historyList li:hover { background-color: rgba(0, 229, 255, 0.15); color: var(--secondary-neon); border-left-color: var(--primary-neon); }
+        .history-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; }
+        .history-genre-mood { font-size: 0.8em; color: var(--accent-color); opacity: 0.8; white-space: nowrap; }
+        #historyList li.no-history { font-style: italic; cursor: default; border-left: none; background: none; justify-content: center; }
+
+        /* --- Footer --- */
+        footer { margin-top: 40px; font-size: 0.9em; color: rgba(224, 229, 240, 0.6); }
+        footer a { color: var(--secondary-neon); text-decoration: none; transition: color 0.3s, text-shadow 0.3s; }
+        footer a:hover { color: var(--primary-neon); text-shadow: var(--glow-primary); }
+
+        /* --- Responsive --- */
+         @media (max-width: 767px) {
+             .container { padding: 20px 25px; }
+             .song-output { grid-template-columns: 1fr; } /* Stack */
+             #lyricsDisplay, #coverDisplay { grid-column: 1 / -1; }
+             #imageContainer { max-width: 100%; }
+         }
+         @media (max-width: 480px) {
+             body { padding: 15px; }
+             .container { padding: 15px 20px; }
+             h1 { font-size: 2.2rem; }
+             .subtitle { font-size: 1rem; }
+             #generateBtn { font-size: 1.2rem; padding: 10px 30px; }
+             #lyricsText { font-size: 1rem; line-height: 1.6; }
+             .history-genre-mood { display: none; } /* Hide genre/mood on very small screens */
+         }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI SongForge</h1>
+            <p class="subtitle">Genera Letras de Canciones y Portadas Únicas con Inteligencia Artificial</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <div class="control-group prompt-group">
+                     <label for="promptInput">Idea o Tema Principal:</label>
+                     <textarea id="promptInput" placeholder="Ej: Amor perdido bajo la lluvia neón, Aventura espacial en busca de estrellas, Fiesta en la playa al atardecer..." rows="3"></textarea>
+                </div>
+                <div class="control-group">
+                    <label for="genreSelect">Género Musical:</label>
+                    <select id="genreSelect">
+                        <option value="Pop">Pop</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Electrónica">Electrónica</option>
+                        <option value="Hip-Hop">Hip-Hop / Rap</option>
+                        <option value="Synthwave" selected>Synthwave / Retro</option>
+                        <option value="Acústico">Acústico / Folk</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Jazz">Jazz / Blues</option>
+                        <option value="Clásica">Clásica / Orquestal</option>
+                        <option value="Reggaeton">Reggaeton</option>
+                         <option value="Country">Country</option>
+                         <option value="Indie">Indie / Alternativo</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="moodSelect">Ánimo / Mood:</label>
+                    <select id="moodSelect">
+                        <option value="Alegre">Alegre / Feliz</option>
+                        <option value="Triste">Triste / Melancólico</option>
+                        <option value="Energético">Energético / Épico</option>
+                        <option value="Relajado" selected>Relajado / Chill</option>
+                        <option value="Romántico">Romántico / Apasionado</option>
+                        <option value="Misterioso">Misterioso / Oscuro</option>
+                        <option value="Nostálgico">Nostálgico</option>
+                         <option value="Agresivo">Agresivo / Intenso</option>
+                         <option value="Soñador">Soñador / Etéreo</option>
+                    </select>
+                </div>
+                 <button id="generateBtn">Forjar Canción</button>
+            </div>
+
+            <div id="feedback" aria-live="polite"></div>
+
+            <div class="song-output" id="songOutput">
+                <div id="lyricsDisplay" style="display: none;">
+                     <h2>Letras</h2>
+                     <pre id="lyricsText"></pre> <!-- Use <pre> for better format preservation -->
+                </div>
+                <div id="coverDisplay" style="display: none;">
+                    <h2>Portada Sugerida</h2>
+                    <div id="imageContainer">
+                        <img id="coverImage" src="" alt="Portada generada por IA para la canción">
+                        <!-- Status indicators injected here -->
+                    </div>
+                 </div>
+            </div>
+
+             <div class="history-section">
+                <h2>Historial de Canciones</h2>
+                <ul id="historyList">
+                    <!-- History items loaded here -->
+                 </ul>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        Powered by <a href="https://pollinations.ai" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> | For <a href="https://papitasfritas.com" target="_blank" rel="noopener noreferrer">papitasfritas.com</a>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const promptInput = document.getElementById('promptInput');
+        const genreSelect = document.getElementById('genreSelect');
+        const moodSelect = document.getElementById('moodSelect');
+        const generateBtn = document.getElementById('generateBtn');
+        const feedbackDiv = document.getElementById('feedback');
+        const songOutput = document.getElementById('songOutput');
+        const lyricsDisplay = document.getElementById('lyricsDisplay');
+        const lyricsText = document.getElementById('lyricsText'); // Points to the <pre> tag
+        const coverDisplay = document.getElementById('coverDisplay');
+        const imageContainer = document.getElementById('imageContainer');
+        const coverImage = document.getElementById('coverImage');
+        const historyList = document.getElementById('historyList');
+
+        // --- Configuration ---
+        const TEXT_API_URL = "https://text.pollinations.ai/";
+        const IMAGE_API_URL = "https://image.pollinations.ai/prompt/";
+        const IMAGE_WIDTH = 1024;
+        const IMAGE_HEIGHT = 1024;
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY_MS = 1500;
+        const IMAGE_LOAD_TIMEOUT_MS = 75000; // Increased timeout
+        const HISTORY_KEY = 'aiSongForgeHistory_papitasfritas';
+        const MAX_HISTORY = 15;
+
+        // --- State ---
+        let songHistory = [];
+        // Store current *intended* data to prevent race conditions on rapid clicks
+        let currentGenerationData = {
+            lyrics: null,
+            imageUrl: null,
+            isLoading: false
+        };
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', () => handleGeneration());
+        historyList.addEventListener('click', handleHistoryClick);
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
+        // --- Core Generation / Restoration Logic ---
+        async function handleGeneration(loadFromHistory = false, historyItem = null) {
+            if (currentGenerationData.isLoading) {
+                console.warn("Generation already in progress.");
+                return;
+            }
+            currentGenerationData.isLoading = true;
+
+            // --- Get Data: From inputs or from history item ---
+            let prompt, genre, mood, cachedLyrics = null, cachedImageUrl = null;
+            if (loadFromHistory && historyItem) {
+                prompt = historyItem.prompt;
+                genre = historyItem.genre;
+                mood = historyItem.mood;
+                cachedLyrics = historyItem.lyrics; // CACHED LYRICS
+                cachedImageUrl = historyItem.imageUrl; // CACHED IMAGE URL
+                // Update inputs to reflect loaded history (optional but good UX)
+                promptInput.value = prompt;
+                genreSelect.value = genre;
+                moodSelect.value = mood;
+                console.log("Loading from history:", prompt);
+            } else {
+                prompt = promptInput.value.trim();
+                genre = genreSelect.value;
+                mood = moodSelect.value;
+                if (!prompt) {
+                    showFeedback('error', '¡Necesitamos una idea o tema para la canción!');
+                    currentGenerationData.isLoading = false;
+                    return;
+                }
+                 console.log("Generating new song:", prompt);
+            }
+
+            // --- UI Reset and Loading State ---
+            clearPreviousResults();
+            showFeedback('loading', 'Forjando tu canción...');
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Creando...';
+            songOutput.classList.remove('visible');
+            lyricsDisplay.style.display = 'none';
+            coverDisplay.style.display = 'none';
+
+            currentGenerationData.lyrics = null; // Reset current intended data
+            currentGenerationData.imageUrl = null;
+
+            try {
+                // --- 1. Get/Generate Lyrics ---
+                if (cachedLyrics) {
+                    currentGenerationData.lyrics = cachedLyrics;
+                    showFeedback('loading', 'Restaurando letras...');
+                    lyricsText.textContent = currentGenerationData.lyrics; // Display cached lyrics
+                } else {
+                    showFeedback('loading', 'Escribiendo las letras...');
+                    currentGenerationData.lyrics = await generateLyrics(prompt, genre, mood);
+                    lyricsText.textContent = currentGenerationData.lyrics; // Display newly generated lyrics
+                }
+                lyricsDisplay.style.display = 'block';
+                songOutput.classList.add('visible'); // Show output area now that lyrics are ready
+
+                // --- 2. Get/Generate Image ---
+                 coverDisplay.style.display = 'block'; // Show image section container
+                let finalImageUrl;
+                if (cachedImageUrl) {
+                    currentGenerationData.imageUrl = cachedImageUrl;
+                    showFeedback('loading', 'Restaurando portada...');
+                    finalImageUrl = currentGenerationData.imageUrl;
+                     updateImageContainerStatus('loading'); // Show spinner while image loads from cache URL
+                } else {
+                    showFeedback('loading', 'Diseñando la portada...');
+                     updateImageContainerStatus('loading');
+                    currentGenerationData.imageUrl = await generateCoverImageUrl(prompt, genre, mood);
+                    finalImageUrl = currentGenerationData.imageUrl;
+                }
+
+                // --- 3. Load Image (from cache URL or new URL) with Retry ---
+                const imagePromptForAlt = `Portada para canción ${genre} (${mood}): ${prompt}`;
+                await loadImageWithRetry(finalImageUrl, imagePromptForAlt);
+
+                // --- 4. Add to History (ONLY if it was a NEW generation) ---
+                if (!loadFromHistory) {
+                    addToHistory(prompt, genre, mood, currentGenerationData.lyrics, finalImageUrl); // Use the final loaded URL
+                }
+                showFeedback('', ''); // Clear feedback on success
+
+            } catch (error) {
+                console.error("Error during processing:", error);
+                showFeedback('error', `¡Ups! Falló la forja: ${error.message}`);
+                 // If image failed, lyrics might still be visible
+                if (error.message.toLowerCase().includes('imagen') || error.message.toLowerCase().includes('image')) {
+                    updateImageContainerStatus('error', 'No se pudo cargar la portada.');
+                } else {
+                     clearPreviousResults(); // Clear all on general error
+                }
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Forjar Canción';
+                currentGenerationData.isLoading = false;
+            }
+        }
+
+        // --- API Call: Text Generation ---
+        async function generateLyrics(theme, genre, mood) {
+            const instruction = `Write song lyrics ONLY, suitable for a ${genre} song with a ${mood} mood, based on the theme: "${theme}". Structure it with verses and choruses (e.g., [Verse 1], [Chorus], [Verse 2], [Chorus], [Bridge], [Chorus]). Respond ONLY with the lyrics, no commentary.`;
+            const url = `${TEXT_API_URL}${encodeURIComponent(instruction)}`;
+            console.log("Requesting Lyrics:", url);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { throw new Error(`API de texto falló (${response.status})`); }
+                const text = await response.text();
+                console.log("Received Lyrics:", text);
+                return text.trim(); // Clean up response
+            } catch (error) {
+                console.error("Lyrics API fetch error:", error);
+                throw new Error(`No se pudo generar la letra (${error.message})`);
+            }
+        }
+
+        // --- API Call: Get Image URL ---
+        async function generateCoverImageUrl(theme, genre, mood) {
+            const seed = Math.floor(Math.random() * 1000000); // Random seed for NEW generations
+            // More descriptive image prompt
+            const imagePrompt = `Album cover art, ${genre}, ${mood} mood. Theme: ${theme}. Style: vibrant digital art, cinematic lighting, high detail, epic composition.`;
+            const url = `${IMAGE_API_URL}${encodeURIComponent(imagePrompt)}?width=${IMAGE_WIDTH}&height=${IMAGE_HEIGHT}&seed=${seed}&nologo=true`;
+            console.log("Requesting Image URL:", url);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { throw new Error(`Error ${response.status} al obtener URL de imagen.`); }
+                console.log("Received Final Image URL:", response.url);
+                return response.url;
+            } catch (error) {
+                console.error("Image URL fetch error:", error);
+                throw new Error('No se pudo obtener la URL de la portada.');
+            }
+        }
+
+       // --- Image Loading with Retries (Similar to previous, adjusted for current state tracking) ---
+       function loadImageWithRetry(imageUrl, altText) {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                 const expectedUrl = currentGenerationData.imageUrl; // Reference the URL we *expect* to load
+
+                function attemptLoad() {
+                     // **Crucial Check:** If the expected URL changed while waiting/retrying, abort this load.
+                    if (imageUrl !== expectedUrl || !currentGenerationData.isLoading) {
+                        console.log(`Aborting load/retry for ${imageUrl} as expected URL changed or generation cancelled.`);
+                        // Don't reject here, let the new process handle errors. Silently stop.
+                        return;
+                    }
+
+                    let timeoutId;
+                    coverImage.src = ''; // Clear previous src
+                    coverImage.alt = altText;
+                    coverImage.classList.remove('loaded');
+
+                    updateImageContainerStatus('loading', `Cargando... Intento ${attempts + 1}`);
+
+                    coverImage.onload = () => {
+                        clearTimeout(timeoutId);
+                        // **Crucial Check:** Only proceed if this is the image we currently expect
+                        if (imageUrl === expectedUrl && currentGenerationData.isLoading) {
+                             console.log("Cover loaded successfully:", imageUrl);
+                            coverImage.classList.add('loaded');
+                             updateImageContainerStatus('loaded');
+                            resolve();
+                        } else {
+                             console.log(`Image loaded (${imageUrl}), but it's not the current expected URL (${expectedUrl}) or generation cancelled. Ignoring.`);
+                         }
+                    };
+
+                    coverImage.onerror = () => {
+                        clearTimeout(timeoutId);
+                        if (imageUrl !== expectedUrl || !currentGenerationData.isLoading) { return; } // Ignore errors for stale requests
+                        console.error(`Error loading cover (Attempt ${attempts + 1}): ${imageUrl}`);
+                        handleFailure('Error de carga');
+                    };
+
+                    coverImage.src = imageUrl; // Set src *after* listeners
+
+                    timeoutId = setTimeout(() => {
+                        if (imageUrl !== expectedUrl || !currentGenerationData.isLoading) { return; } // Ignore timeouts for stale requests
+                        if (!coverImage.complete || coverImage.naturalWidth === 0) {
+                            console.warn(`Cover load timeout or invalid (Attempt ${attempts + 1}): ${imageUrl}`);
+                            coverImage.src = '';
+                            handleFailure('Timeout o imagen inválida');
+                        }
+                    }, IMAGE_LOAD_TIMEOUT_MS);
+                } // end attemptLoad
+
+                function handleFailure(reason) {
+                    attempts++;
+                    if (attempts <= MAX_RETRIES) {
+                        console.log(`Retrying cover load in ${RETRY_DELAY_MS / 1000}s...`);
+                         updateImageContainerStatus('retrying', `${reason}. Reintentando ${attempts}/${MAX_RETRIES}...`);
+                        setTimeout(attemptLoad, RETRY_DELAY_MS * Math.pow(2, attempts -1) ); // Exponential backoff
+                    } else {
+                        console.error(`Max retries reached for cover: ${imageUrl}`);
+                         updateImageContainerStatus('error', `Error final: ${reason}`);
+                        reject(new Error('No se pudo cargar la portada después de varios intentos.'));
+                    }
+                }
+
+                attemptLoad(); // Start first attempt
+            });
+        }
+
+
+        // --- UI Update Functions ---
+        function updateImageContainerStatus(status, message = '') {
+             // Ensure img tag is always present
+             if (!imageContainer.contains(coverImage)) { imageContainer.appendChild(coverImage); }
+             const existingStatus = imageContainer.querySelector('.image-status');
+             if (existingStatus) { existingStatus.remove(); }
+
+            let statusDiv = document.createElement('div');
+            statusDiv.className = 'image-status';
+
+            switch (status) {
+                case 'loading':
+                case 'retrying':
+                     statusDiv.innerHTML = `<div class="spinner"></div><div class="status-text">${message || 'Cargando...'}</div>`;
+                     imageContainer.appendChild(statusDiv);
+                     coverImage.style.opacity = '0';
+                     break;
+                case 'error':
+                     statusDiv.innerHTML = `<div class="error-icon">⚠️</div><div class="status-text error-text-container">${message || 'Error'}</div>`;
+                     imageContainer.appendChild(statusDiv);
+                     coverImage.style.opacity = '0';
+                     break;
+                 case 'loaded':
+                     coverImage.style.opacity = '1'; // Handled by .loaded class now
+                    break;
+                 case 'idle':
+                 default:
+                    coverImage.style.opacity = '0';
+                    break;
+            }
+        }
+
+        function showFeedback(type, message) {
+            feedbackDiv.innerHTML = '';
+            if (message) {
+                const el = document.createElement('span');
+                el.textContent = message;
+                el.className = type === 'error' ? 'error-text' : type === 'loading' ? 'loading-text' : '';
+                feedbackDiv.appendChild(el);
+            }
+        }
+
+        function clearPreviousResults() {
+            lyricsText.textContent = ''; // Clear lyrics
+            coverImage.src = '';
+            coverImage.alt = 'Portada generada por IA';
+            coverImage.classList.remove('loaded');
+            updateImageContainerStatus('idle');
+            currentGenerationData.lyrics = null; // Clear state
+            currentGenerationData.imageUrl = null;
+            songOutput.classList.remove('visible');
+            lyricsDisplay.style.display = 'none';
+            coverDisplay.style.display = 'none';
+             // Don't clear feedback here, handleGeneration does it.
+        }
+
+        // --- History Management (with Caching) ---
+        function addToHistory(prompt, genre, mood, lyrics, imageUrl) {
+            // Use prompt, genre, and mood as a unique identifier
+            const existingIndex = songHistory.findIndex(item => item.prompt === prompt && item.genre === genre && item.mood === mood);
+            if (existingIndex > -1) {
+                // Optionally update the existing entry or just move it to the top
+                songHistory.splice(existingIndex, 1); // Remove old entry
+            }
+
+            const historyItem = { prompt, genre, mood, lyrics, imageUrl }; // Store everything
+            songHistory.unshift(historyItem);
+            if (songHistory.length > MAX_HISTORY) {
+                songHistory.pop();
+            }
+            saveHistory();
+            renderHistory();
+        }
+
+        function saveHistory() {
+            try { localStorage.setItem(HISTORY_KEY, JSON.stringify(songHistory)); }
+            catch (e) { console.error("Could not save history:", e); }
+        }
+
+        function loadHistory() {
+            try {
+                const stored = localStorage.getItem(HISTORY_KEY);
+                songHistory = stored ? JSON.parse(stored) : [];
+            } catch (e) { console.error("Could not load/parse history:", e); songHistory = []; }
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (songHistory.length === 0) {
+                 historyList.innerHTML = `<li class="no-history">No hay canciones en el historial.</li>`;
+             } else {
+                 songHistory.forEach((item, index) => {
+                     if (item && item.prompt) {
+                         const li = document.createElement('li');
+                         li.dataset.index = index;
+                         const textSpan = document.createElement('span');
+                         textSpan.className = 'history-text';
+                         textSpan.textContent = item.prompt; // Show prompt as main text
+                         const detailsSpan = document.createElement('span');
+                         detailsSpan.className = 'history-genre-mood';
+                         detailsSpan.textContent = `${item.genre} / ${item.mood}`; // Show genre/mood
+                         li.appendChild(textSpan);
+                         li.appendChild(detailsSpan);
+                         historyList.appendChild(li);
+                     }
+                 });
+             }
+        }
+
+        function handleHistoryClick(event) {
+            const li = event.target.closest('li'); // Find the clicked list item
+            if (li && li.dataset.index) {
+                const index = parseInt(li.dataset.index, 10);
+                const selectedItem = songHistory[index];
+                if (selectedItem) {
+                    // **CRUCIAL:** Call handleGeneration telling it to load from this history item
+                    handleGeneration(true, selectedItem);
+                } else {
+                    console.warn("Invalid history item clicked:", index);
+                }
+            }
+        }
+
+    </script>
+
+</body>
+</html>

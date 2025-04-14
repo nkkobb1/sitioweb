@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conceptos de Programación Avanzada</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Programación Avanzada --- */
+        :root {
+            --color-primary: #4f46e5; /* Indigo Intenso */
+            --color-secondary: #14b8a6; /* Teal Brillante */
+            --color-background: #111827; /* Gris Muy Oscuro (Casi Negro) */
+            --color-text: #e5e7eb; /* Gris Claro (Texto principal) */
+            --color-text-muted: #9ca3af; /* Gris Medio */
+            --color-modal-bg: #1f2937; /* Gris Oscuro (Fondo Modal) */
+            --color-border: #4b5563; /* Gris más oscuro para bordes */
+            --color-code-bg: #2d3748; /* Fondo para bloques de código */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.15);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.2);
+            --border-radius: 6px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; }
+        /* Usar Monoespaciada para títulos y logo */
+        h1, h2, h3, h4, .logo, #modal-title { font-family: 'Roboto Mono', monospace; font-weight: 700; }
+        .logo { color: var(--color-secondary); } /* Logo con color secundario */
+        h1.page-title { color: var(--color-primary); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem; display: inline-block; }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; } /* Grid un poco más ancho */
+        .title-item {
+            background-color: var(--color-modal-bg); padding: 1.5rem 1.25rem; border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center;
+            font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border);
+            display: flex; align-items: center; justify-content: center; min-height: 80px;
+            font-family: 'Inter', sans-serif; /* Fuente normal para items */
+             border-left: 4px solid transparent; /* Borde izquierdo para hover */
+        }
+        .title-item:hover {
+            transform: translateY(-4px); box-shadow: var(--shadow-md);
+            border-left-color: var(--color-secondary); /* Destacar borde izquierdo en hover */
+            background-color: #374151; /* Fondo ligeramente más claro al pasar */
+            color: #ffffff;
+        }
+        #generate-more-btn {
+             grid-column: 1 / -1; background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+             color: white; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius);
+             font-family: 'Inter', sans-serif; font-weight: bold; cursor: pointer; transition: var(--transition-normal);
+             margin-top: 2rem; letter-spacing: 0.5px;
+         }
+        #generate-more-btn:hover:not(:disabled) {
+             box-shadow: var(--shadow-lg); opacity: 0.9; transform: scale(1.02);
+         }
+        #generate-more-btn:disabled { background: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none;}
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.9); /* Overlay más opaco */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg); border-radius: var(--border-radius);
+            padding: 2.5rem; max-width: 950px; /* Más ancho */ width: 95%;
+            max-height: 90vh; min-height: 350px; /* Altura mínima asegurada */
+            overflow: hidden; position: relative; box-shadow: var(--shadow-lg);
+            display: flex; flex-direction: column; border: 1px solid var(--color-border);
+        }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: var(--color-text-muted); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.6rem; color: var(--color-background); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; line-height: 1; }
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: #ffffff; transform: rotate(90deg); }
+        #modal-title { color: var(--color-secondary); text-align: center; margin-bottom: 2rem; flex-shrink: 0; padding: 0 1.5rem; font-size: 2rem; line-height: 1.4; }
+        #modal-content { line-height: 1.8; color: var(--color-text); white-space: normal; overflow-y: auto; margin-bottom: 2rem; padding: 0 20px; flex-grow: 1; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border); }
+        #modal-content::-webkit-scrollbar { width: 10px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: 5px;}
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: 5px; border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Roboto Mono', monospace; margin-top: 2.2em; margin-bottom: 1.2em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.6em; }
+        #modal-content h2 { font-size: 1.45em; }
+        #modal-content h3 { font-size: 1.3em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.15em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilo para bloques de código */
+        #modal-content pre {
+            background-color: var(--color-code-bg);
+            color: #d1d5db; /* Texto gris claro para código */
+            padding: 1em;
+            margin: 1.5em 0;
+            border-radius: var(--border-radius);
+            overflow-x: auto; /* Scroll horizontal si el código es largo */
+            border: 1px solid var(--color-border);
+            font-family: 'Roboto Mono', monospace; /* Fuente monoespaciada para código */
+            font-size: 0.9em;
+            line-height: 1.5;
+            white-space: pre; /* Preservar espacios y saltos de línea */
+        }
+        #modal-content code { /* Estilo para código inline si se usa `code` */
+             background-color: var(--color-code-bg);
+             color: var(--color-secondary);
+             padding: 0.2em 0.4em;
+             border-radius: 3px;
+             font-family: 'Roboto Mono', monospace;
+             font-size: 0.9em;
+        }
+        #modal-content .formula { /* Reutilizado si la IA genera fórmulas */
+             text-align: center; font-family: 'Roboto Mono', monospace; font-size: 1.1em; padding: 0.8em;
+             margin: 1.2em 0; border: 1px solid var(--color-border); background-color: #374151;
+             border-radius: var(--border-radius); overflow-x: auto; white-space: nowrap; color: var(--color-text);
+        }
+        #modal-content .formula sub, #modal-content .formula sup { font-size: 0.8em; line-height: 0; position: relative; vertical-align: baseline; }
+        #modal-content .formula sub { top: 0.5em; }
+        #modal-content .formula sup { top: -0.5em; }
+
+        #modal-image-container { width: 100%; height: 280px; background-color: #374151; border-radius: var(--border-radius); overflow: hidden; display: none; align-items: center; justify-content: center; border: 1px solid var(--color-border); flex-shrink: 0; margin-top: 2rem; }
+        #modal-image-container.visible { display: flex; }
+        #modal-image-container img { width: 100%; height: 100%; object-fit: contain; display: none; }
+        #modal-image-container .spinner { border: 5px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; display: none; }
+        #modal-image-container .placeholder-icon { font-size: 3.5rem; color: var(--color-text-muted); display: none; } /* Icono de Código */
+        #modal-loading { text-align: center; padding: 4rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(31, 41, 55, 0.95); /* Fondo modal semi-transparente */ display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 70px; height: 70px; border: 7px solid var(--color-border); border-top-color: var(--color-secondary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 2rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.3rem; font-family: 'Roboto Mono'; letter-spacing: 1px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #5f2732; color: #fecaca; padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid var(--color-secondary); margin-top: 2rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.8rem; font-size: 1.2em;}
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-cogs mr-3 text-primary"></i> <!-- Icono relevante -->
+                     Prog Avanzada
+                 </h1>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-20">
+         <!-- Hero section -->
+         <section class="mb-16 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explorando Código Profundo</h1>
+             <p class="text-xl text-gray-400 mb-10 max-w-4xl mx-auto">Sumérgete en conceptos avanzados de programación con explicaciones detalladas por IA. Elige un tema para compilar tus conocimientos.</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-12">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-terminal text-secondary mr-2"></i> <!-- Icono relevante -->
+                 Conceptos Clave
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-xl">Inicializando módulos...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-10">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Conceptos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Compilando explicación...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-3xl md:text-4xl font-bold mb-6 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                 </div>
+                  <!-- Image Container (Initially Hidden) -->
+                 <div id="modal-image-container">
+                     <div class="spinner"></div>
+                      <i class="fas fa-brain placeholder-icon"></i> <!-- Icono Placeholder: cerebro, chip, código abstracto -->
+                     <img id="modal-image" alt="Visualización conceptual abstracta del concepto de programación" />
+                 </div>
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-bug"></i> <!-- Icono de error: Bug -->
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-400 py-8 mt-16 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Explicaciones generadas por IA. La programación requiere práctica y estudio riguroso. Verifica conceptos con documentación oficial y expertos.</p>
+              <p class="mt-2">© 2025 Conceptos Avanzados de Programación</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Algoritmos y Estructuras de Datos Avanzados
+            "Análisis de Complejidad Algorítmica (Big O, Omega, Theta) en Profundidad", "Algoritmos de Grafos: Dijkstra, A*, Floyd-Warshall, Bellman-Ford", "Árboles de Búsqueda Avanzados: B-Trees, B+ Trees, Árboles Rojo-Negro", "Programación Dinámica: Conceptos y Aplicaciones (Fibonacci, Mochila)", "Algoritmos Voraces (Greedy): Fundamentos y Ejemplos (Huffman, Kruskal, Prim)", "Algoritmos de Backtracking y Branch and Bound", "Algoritmos Probabilísticos y Aleatorizados (Monte Carlo, Las Vegas)", "Estructuras de Datos para Consultas de Rango (Segment Trees, Fenwick Trees)", "Hashing Avanzado: Hashing Universal, Hashing Perfecto, Cuckoo Hashing", "Flujo Máximo en Redes (Ford-Fulkerson, Edmonds-Karp)", "Algoritmos de String Matching (KMP, Boyer-Moore, Rabin-Karp)", "Geometría Computacional Básica (Convex Hull, Closest Pair)", "Teoría de la NP-Completitud: Conceptos Introductorios (P vs NP)", "Algoritmos de Aproximación para problemas NP-Hard", "Estructuras de Datos Persistentes", "Skip Lists: Una alternativa a los árboles balanceados", "Bloom Filters y sus aplicaciones",
+
+            // Concurrencia y Paralelismo
+            "Modelos de Concurrencia: Threads vs Procesos", "Sincronización: Mutex, Semáforos, Monitores, Variables Condicionales", "Problemas Clásicos de Concurrencia: Productor-Consumidor, Lectores-Escritores, Filósofos Cenando", "Race Conditions y Data Races: Detección y Prevención", "Deadlocks: Detección, Prevención y Recuperación", "Lock-Free y Wait-Free Programming: Conceptos y Técnicas", "Modelo de Actores (Erlang, Akka): Fundamentos", "Programación Asíncrona: Callbacks, Promesas, Async/Await", "Futures y Coroutines", "Paralelismo de Datos vs Paralelismo de Tareas", "MapReduce y Frameworks Similares (Spark)", "Memoria Transaccional de Software (STM)", "Modelos de Consistencia de Memoria", "Arquitecturas de GPU y Programación CUDA/OpenCL (Conceptos)",
+
+            // Diseño y Arquitectura de Software
+            "Principios SOLID en Profundidad (SRP, OCP, LSP, ISP, DIP)", "Patrones de Diseño GoF: Creacionales (Singleton, Factory, Builder...)", "Patrones de Diseño GoF: Estructurales (Adapter, Decorator, Facade, Proxy...)", "Patrones de Diseño GoF: Comportamiento (Observer, Strategy, Command, Iterator...)", "Inyección de Dependencias (DI) y Contenedores IoC", "Programación Orientada a Aspectos (AOP)", "Arquitectura Hexagonal (Puertos y Adaptadores)", "Arquitectura Limpia (Clean Architecture)", "Arquitectura Orientada a Servicios (SOA) vs Microservicios", "Patrones de Arquitectura de Microservicios (API Gateway, Service Discovery, Circuit Breaker)", "Comunicación entre Microservicios (Síncrona vs Asíncrona, REST vs gRPC vs Colas)", "Event Sourcing y CQRS (Command Query Responsibility Segregation)", "Diseño Orientado al Dominio (DDD): Conceptos Clave (Entidades, Agregados, Repositorios)", "Patrones de Diseño Funcional (Functor, Monad, Applicative)", "Anti-Patrones Comunes y Cómo Evitarlos",
+
+            // Sistemas Distribuidos y Redes
+            "Teorema CAP: Consistencia, Disponibilidad, Tolerancia a Particiones", "Modelos de Consistencia en Sistemas Distribuidos (Eventual, Fuerte)", "Algoritmos de Consenso Distribuido (Paxos, Raft)", "Bases de Datos Distribuidas: Replicación y Sharding", "Protocolo Two-Phase Commit (2PC)", "Caching Distribuido: Estrategias y Herramientas (Redis, Memcached)", "Balanceo de Carga: Algoritmos y Técnicas", "Message Queues (RabbitMQ, Kafka): Usos y Arquitecturas", "Protocolo TCP/IP: Funcionamiento Detallado (Handshake, Control de Flujo, Congestión)", "HTTP/2 y HTTP/3: Mejoras y Características", "WebSockets: Comunicación Bidireccional", "RPC (Remote Procedure Call) y gRPC", "Network Address Translation (NAT) y Firewalls", "Diseño de APIs RESTful Avanzado (HATEOAS, Versionado)", "GraphQL: Alternativa a REST",
+
+            // Lenguajes, Compiladores y Runtimes
+            "Gestión de Memoria: Recolección de Basura (Algoritmos Mark-Sweep, Copying, Generational)", "Stack vs Heap: Uso Avanzado y Errores Comunes (Stack Overflow, Use-After-Free)", "Análisis Léxico y Sintáctico (Parsing): LL, LR, AST", "Interpretadores vs Compiladores JIT (Just-In-Time)", "Máquinas Virtuales (JVM, CLR): Funcionamiento Interno", "Bytecode y su Ejecución", "Optimización de Compiladores: Técnicas Comunes", "Programación Funcional Avanzada: Inmutabilidad, Funciones Puras, Transparencia Referencial", "Tipos de Datos Algebraicos (ADTs) y Pattern Matching", "Metaprogramación y Reflexión", "Sistemas de Tipos Avanzados (Tipos Dependientes, Tipos Lineales - Conceptos)", "Interoperabilidad entre Lenguajes (FFI)",
+
+            // Bases de Datos Avanzadas
+            "Niveles de Aislamiento de Transacciones (Read Uncommitted, Read Committed, Repeatable Read, Serializable)", "Indexación Avanzada: Índices Compuestos, Índices Cobertos, Índices Espaciales", "Optimización de Consultas SQL: Análisis de Planes de Ejecución", "Bases de Datos NoSQL: Tipos (Documental, Clave-Valor, Columna Ancha, Grafo)", "Casos de Uso para Diferentes Tipos de NoSQL", "Bases de Datos NewSQL", "OLTP vs OLAP: Diferencias y Casos de Uso", "Data Warehousing y ETL",
+
+            // Seguridad Informática
+            "Criptografía Simétrica vs Asimétrica: Algoritmos Comunes (AES, RSA)", "Funciones Hash Criptográficas y Firmas Digitales", "Ataques Comunes a Aplicaciones Web (XSS, CSRF, SQL Injection) en Detalle", "Protocolos Seguros: TLS/SSL Funcionamiento Interno", "Autenticación vs Autorización: OAuth 2.0, OpenID Connect, JWT", "Secure Development Lifecycle (SDL)", "Análisis Estático y Dinámico de Seguridad de Código (SAST/DAST)", "Sandboxing y Técnicas de Aislamiento",
+
+            // Sistemas Operativos Avanzados
+            "Arquitectura del Kernel (Monolítico, Microkernel, Híbrido)", "Algoritmos de Planificación de CPU Avanzados", "Gestión de Memoria Virtual: Paginación y Segmentación Detallada", "Mecanismos de Comunicación Inter-Procesos (IPC) Avanzados (Memoria Compartida, Sockets)", "Sistemas de Archivos: Estructura Interna (Inodos, Journaling)", "Llamadas al Sistema (Syscalls): Interfaz Kernel-Usuario",
+
+            // Testing Avanzado
+            "Pruebas de Propiedad (Property-Based Testing)", "Pruebas de Mutación (Mutation Testing)", "Pruebas de Caos (Chaos Engineering)", "Test Doubles: Mocks, Stubs, Fakes, Spies - Diferencias Clave", "Pruebas de Integración y End-to-End Estratégicas", "Cobertura de Código: Métricas y Significado Real",
+
+            // Paradigmas y Conceptos Teóricos
+            "Cálculo Lambda: Fundamentos Teóricos de la Programación Funcional", "Teoría de Categorías para Programadores (Introducción)", "Programación Lógica (Prolog - Conceptos)", "Máquinas de Estado Finito y Autómatas", "Teoría de la Información Básica (Entropía, Compresión)",
+
+             // ... (Continuar añadiendo hasta acercarse a 400 o lo deseado)
+        ];
+        const programmingThemes = [
+            "algoritmos avanzados", "estructuras de datos complejas", "concurrencia y paralelismo",
+            "patrones de diseño de software", "arquitectura de sistemas", "sistemas distribuidos",
+            "programación funcional avanzada", "gestión de memoria y runtimes", "bases de datos avanzadas",
+            "seguridad informática aplicada", "compiladores e intérpretes", "redes y protocolos",
+            "principios de diseño (SOLID, DDD)", "testing avanzado", "conceptos teóricos de computación",
+            "microservicios", "programación asíncrona", "optimización de rendimiento"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un Ingeniero de Software Senior / Arquitecto de Sistemas con profunda experiencia teórica y práctica. Tu tarea es explicar conceptos de programación y ciencias de la computación de nivel AVANZADO de forma clara, precisa y estructurada. Asume que el lector tiene una base sólida en programación fundamental (variables, control de flujo, funciones, OOP básica). Desglosa el concepto, explica su propósito, sus mecanismos internos (cuando sea relevante), sus ventajas, desventajas y casos de uso comunes. Utiliza analogías si ayudan, pero prioriza la precisión técnica. Puedes usar pseudocódigo o descripciones conceptuales de código para ilustrar, pero evita bloques largos de código en un lenguaje específico a menos que sea indispensable. Estructura con párrafos lógicos y subtítulos (markdown #, ##, ###). El objetivo es una explicación detallada y profunda de aproximadamente 1200-1300 palabras. Basa tu explicación únicamente en el siguiente concepto avanzado:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un glosario de programación avanzada. Genera exactamente 15 conceptos o preguntas clave sobre temas complejos de programación, algoritmos, arquitectura o ciencias de la computación. Devuelve *solo* la lista de conceptos/preguntas, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (sin cambios)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImageContainer = document.getElementById('modal-image-container');
+        const modalImage = document.getElementById('modal-image');
+        const modalImageSpinner = modalImageContainer.querySelector('.spinner');
+        const modalImagePlaceholder = modalImageContainer.querySelector('.placeholder-icon');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // --- Variable to hold the current scroll listener --- (sin cambios)
+        let currentScrollHandler = null;
+
+        // ========== API FUNCTIONS ========== (sin cambios lógicos)
+        async function fetchTextFromApi(prompt, config) { /* ... */
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+         }
+        async function fetchExplanationText(conceptTitle) { /* ... */
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              // Ajustar longitud mínima si es necesario, 1200-1300 es el objetivo
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("unable to provide")) {
+                   throw new Error("La IA no pudo generar una explicación adecuada o suficientemente detallada para este concepto.");
+               }
+             return text;
+         }
+        async function fetchGeneratedTitles() { /* ... */
+             const randomTheme = getRandomElement(programmingThemes) || "conceptos de programación avanzada";
+             const specificPrompt = `Genera 15 conceptos o preguntas clave sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 10 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de conceptos.");
+             return titles.slice(0, 15);
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "advanced programming concept abstract";
+             const enhancedPrompt = `Abstract digital art representing the concept of '${safePromptText}'. Geometric patterns, data flow visualization, network connections, logical structures, algorithms in motion, futuristic tech interface, minimalist style. Focus on complexity and structure.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, specific code, source code, code snippet, syntax highlighting, variable names, function names, class names, UI elements, buttons, menus, logos, brands, realistic computer, server rack, keyboard, mouse, person typing, people, cartoon, drawing, simple diagram, graph with labels, specific programming language logo";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function (Added Code Block Handling) ==========
+        function formatExplanationText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+
+            // --- ORDERED REPLACEMENTS ---
+
+            // 1. Handle multi-line code blocks FIRST (```...```)
+            // Use non-greedy match .*? and the 's' flag to match across newlines
+            formatted = formatted.replace(/```([\s\S]*?)```/gs, (match, codeContent) => {
+                 // Basic HTML escaping for safety within the code block
+                 const escapedCode = codeContent
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+                // Use language-plaintext as default, no syntax highlighting here
+                return `<pre><code class="language-plaintext">${escapedCode.trim()}</code></pre>`;
+            });
+
+            // 2. Handle inline code (`...`) - Add this if needed
+            // formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // 3. Inner LaTeX-like elements (less likely for programming, but keep for robustness)
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+
+            // 4. Markdown Headings (multiline mode) - After code blocks
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+
+            // 5. Markdown Bold/Italics
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // 6. Handle Paragraphs (split by double newline AFTER other block elements)
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                // If it's already a heading, formula, or code block, keep it as is
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">') || block.startsWith('<pre>')) {
+                    return block;
+                }
+                // Otherwise, wrap in <p> and handle internal newlines as <br>
+                let content = block.replace(/\n/g, '<br>');
+                // Re-apply inline code formatting if it was split by paragraph logic
+                // content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+                return `<p>${content}</p>`;
+            }).join('');
+
+            return formatted;
+        }
+
+
+        // ========== MODAL FUNCTIONS ========== (sin cambios lógicos)
+        function showModal() { /* ... */ if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { /* ... */
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+                console.log("Scroll listener removed on hideModal.");
+            }
+            resetModalState();
+        }
+        function resetModalState() { /* ... */
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent || !modalImage || !modalImageSpinner || !modalImagePlaceholder || !modalImageContainer) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalImage.src = '';
+             modalImage.style.display = 'none';
+             modalImageSpinner.style.display = 'none';
+             modalImagePlaceholder.style.display = 'none';
+             modalImageContainer.classList.remove('visible');
+             modalImageContainer.style.display = 'none';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (sin cambios lógicos)
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+            if (!titleListContainer || !titlesLoading) return;
+            const shuffledTitles = shuffleArray([...titles]);
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No hay conceptos disponibles.</p>'; return; }
+            shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        async function handleTitleClick(title) { /* ... Lógica de scroll e imagen sin cambios ... */
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = '';
+            modalImageContainer.style.display = 'none';
+            modalImageContainer.classList.remove('visible');
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            if (currentScrollHandler) {
+                modalContent.removeEventListener('scroll', currentScrollHandler);
+                currentScrollHandler = null;
+            }
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                // Apply the enhanced formatter here
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Use formatted HTML
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalContent.scrollTop = 0; // Reset scroll AFTER content is visible
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare image (hidden)
+                modalImageSpinner.style.display = 'block';
+                const imageUrl = createPollinationsImageUrl(title);
+                 if (imageUrl) {
+                     modalImage.onload = () => { modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'none'; modalImage.style.display = 'block'; };
+                     modalImage.onerror = () => { console.error("Error loading image:", title); modalImageSpinner.style.display = 'none'; modalImagePlaceholder.style.display = 'block'; modalImage.style.display = 'none'; };
+                     modalImage.src = imageUrl;
+                 } else {
+                     console.error("Could not create image URL:", title);
+                     modalImageSpinner.style.display = 'none';
+                     modalImagePlaceholder.style.display = 'block';
+                 }
+
+                // Setup scroll listener for conditional image visibility
+                const scrollBuffer = 25; // Adjust buffer as needed
+                currentScrollHandler = () => {
+                    const isScrollable = modalContent.scrollHeight > modalContent.clientHeight;
+                    const isAtBottom = (modalContent.scrollTop + modalContent.clientHeight) >= (modalContent.scrollHeight - scrollBuffer);
+
+                    if (!isScrollable || isAtBottom) {
+                         if (!modalImageContainer.classList.contains('visible')) {
+                             console.log(`Showing image. Scrollable: ${isScrollable}, At Bottom: ${isAtBottom}`);
+                             modalImageContainer.classList.add('visible');
+                             modalImageContainer.style.display = 'flex';
+                         }
+                         if ((isScrollable || !isScrollable) && currentScrollHandler) {
+                            modalContent.removeEventListener('scroll', currentScrollHandler);
+                            currentScrollHandler = null;
+                            console.log("Scroll listener removed.");
+                         }
+                     }
+                };
+                modalContent.addEventListener('scroll', currentScrollHandler);
+                console.log("Scroll listener added.");
+                setTimeout(currentScrollHandler, 150); // Initial check
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalImageContainer.style.display = 'none';
+                modalContent.innerHTML = '';
+                 if (currentScrollHandler) {
+                    modalContent.removeEventListener('scroll', currentScrollHandler);
+                    currentScrollHandler = null;
+                 }
+            }
+        }
+
+        async function handleGenerateMoreTitles() { /* ... Adaptar texto del botón ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Sintetizando...'; // Texto botón
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("No se pudieron generar nuevos conceptos en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al generar conceptos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                  // Restaurar texto original del botón
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Conceptos';
+             }
+         }
+
+
+        // ========== INITIALIZATION ========== (sin cambios lógicos)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p style="color: red; font-size: 2em; text-align: center; margin-top: 50px;">Error crítico inicializando la aplicación. Revise la consola.</p>'; return; }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Historias de Detectives</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Historias de Detectives (Sin cambios visuales respecto a la versión anterior) --- */
+        :root {
+            --color-primary: #c0a172; /* Oro viejo / Latón apagado */
+            --color-secondary: #4a5568; /* Gris pizarra */
+            --color-background: #2d3748; /* Azul grisáceo oscuro */
+            --color-text: #e2e8f0; /* Gris muy claro (casi blanco) */
+            --color-text-muted: #a0aec0; /* Gris medio */
+            --color-modal-bg: #1a202c; /* Gris casi negro para el modal */
+            --color-border: #4a5568; /* Borde gris pizarra */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+            --border-radius: 6px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        h1.logo, h1.page-title, h2.section-title, #modal-title { font-family: 'Bitter', serif; font-weight: 700; }
+        h1.logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-text); }
+        h2.section-title { color: var(--color-primary); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.6rem; display: inline-block; }
+        #modal-title { color: var(--color-primary); }
+        .navbar { background-color: rgba(26, 32, 44, 0.85); backdrop-filter: blur(4px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+        .title-item {
+            background-color: var(--color-modal-bg); padding: 1.25rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm);
+            cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-text);
+            border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 75px;
+            font-family: 'Lato', sans-serif; border-left: 4px solid var(--color-secondary);
+        }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #2d3748; border-left-color: var(--color-primary); }
+        #generate-more-btn {
+            grid-column: 1 / -1; background-color: var(--color-primary); color: #1a202c; padding: 0.8rem 1.8rem; border: none;
+            border-radius: var(--border-radius); font-family: 'Bitter', serif; font-weight: bold; font-size: 1.1rem; cursor: pointer;
+            transition: var(--transition-normal); margin-top: 2rem; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: var(--shadow-sm);
+        }
+        #generate-more-btn:hover:not(:disabled) { background-color: #dab98a; box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: var(--color-secondary); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: #1a202c; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.88); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg); border: 1px solid var(--color-border); border-radius: var(--border-radius);
+            padding: 2.5rem 3rem; max-width: 1000px; width: 95%; max-height: 90vh; min-height: 350px; overflow: hidden;
+            position: relative; box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 18px; right: 18px; background: var(--color-secondary); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-modal-bg); transform: rotate(180deg); }
+        #modal-title { font-size: 2.2rem; text-align: center; margin-bottom: 2rem; flex-shrink: 0; padding: 0 1.5rem; line-height: 1.35; }
+        #modal-content {
+            line-height: 1.85; color: var(--color-text); white-space: normal; overflow-y: auto; padding: 0 15px 2rem 15px;
+            flex-grow: 1; min-height: 0; scrollbar-width: thin; scrollbar-color: var(--color-primary) #2d3748;
+        }
+        #modal-content::-webkit-scrollbar { width: 11px; }
+        #modal-content::-webkit-scrollbar-track { background: #2d3748; border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #2d3748; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: bold; font-family: 'Bitter', serif; }
+        #modal-content em { color: #b0c4de; font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Bitter', serif; margin-top: 2.4em; margin-bottom: 1.2em; color: var(--color-primary); border-bottom: 1px solid var(--color-secondary); padding-bottom: 0.6em; font-weight: bold; }
+        #modal-content h1 { font-size: 1.7em; }
+        #modal-content h2 { font-size: 1.5em; }
+        #modal-content h3 { font-size: 1.3em; color: var(--color-text); }
+        #modal-content h4 { font-size: 1.15em; color: var(--color-text-muted); border-bottom: none; }
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 3rem auto 1.5rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); filter: sepia(20%) contrast(90%); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; margin: 3rem auto 1.5rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(255, 255, 255, 0.15); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3.5rem; }
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 32, 44, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 65px; height: 65px; border: 7px solid var(--color-secondary); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.8rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.4rem; font-family: 'Bitter', serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); } /* Texto del modal de carga */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #5f3a3a; color: #fed7d7; padding: 1.4rem; border-radius: var(--border-radius); border: 1px solid #e53e3e; margin-top: 2rem; text-align: center; flex-shrink: 0; font-weight: bold; }
+        .error-msg i { margin-right: 0.8rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-800">
+     <!-- Header/Navbar (Sin cambios) -->
+     <nav class="navbar mb-12">
+         <div class="container mx-auto px-4 py-5 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                  <i class="fas fa-search text-3xl mr-4 text-yellow-600 transform -rotate-15"></i>
+                 <h1 class="logo text-4xl sm:text-5xl">
+                     Historias de Detectives
+                 </h1>
+                  <i class="fas fa-fingerprint text-3xl ml-4 text-yellow-600 transform rotate-15"></i>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content (Sin cambios estructurales) -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section (Texto adaptado) -->
+         <section class="mb-16 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-6">Generador de Misterios Inéditos</h1>
+             <p class="text-xl text-gray-300 mb-10 max-w-4xl mx-auto">Elige un título sugerente y deja que la IA teja una historia de detectives completamente nueva para ti. ¡Adéntrate en lo desconocido!</p>
+         </section>
+
+         <!-- Title List Container (Texto adaptado) -->
+         <section class="mb-12">
+             <h2 class="section-title text-3xl sm:text-4xl mb-10 text-center mx-auto">
+                 <i class="fas fa-lightbulb text-yellow-600 mr-3"></i> <!-- Bombilla/Idea -->
+                 Ideas para un Nuevo Caso
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Buscando inspiración...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-10">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Nuevos Misterios <!-- Texto del botón cambiado -->
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal (Sin cambios estructurales) -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator (Texto adaptado) -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Escribiendo el misterio...</p> <!-- Texto del loading cambiado -->
+             </div>
+
+             <!-- Content Area (Sin cambios estructurales) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-3xl md:text-4xl font-bold mb-6 text-center flex-shrink-0"></h2>
+                 <div id="modal-content" class="text-lg md:text-xl">
+                     <!-- La historia generada (HTML) va aquí -->
+                     <!-- La imagen y su placeholder se añadirán aquí vía JS -->
+                 </div>
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer (Texto adaptado) -->
+      <footer class="bg-gray-900 text-gray-500 py-8 mt-16 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Historias generadas por IA usando los títulos como inspiración creativa.</p>
+              <p class="mt-1">Cada relato es una pieza única de ficción detectivesca.</p>
+              <p class="mt-3">© 2025 Generador de Misterios</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+
+        // ***** LISTA DE TÍTULOS REVISADA PARA SER MÁS EVOCADORA / MENOS DIRECTA *****
+        const predefinedTitles = [
+            // Inspirados en Clásicos (Nombres y Lugares)
+            "Un Caso para Sherlock Holmes: El Enigma de la Calle Baker", "Poirot y el Secreto del Nilo Azul", "Miss Marple en la Aldea Silenciosa", "La Sombra de Sam Spade en San Francisco", "Marlowe y la Dama de Terciopelo Negro", "El Último Caso de Maigret en Montmartre", "Dupin y el Misterio del Manuscrito Cifrado", "El Padre Brown y la Paradoja del Reloj Roto", "Nero Wolfe y la Orquídea Venenosa", "Un Whodunit en el Orient Express", "El Misterio de la Habitación Cerrada con Llave", "La Maldición de los Baskerville Revisitada", "Sombras en la Mansión Styles", "El Eco de Roger Ackroyd", "Cita con la Muerte en Petra", "El Enigma de la Guía Telefónica", "Navidades Trágicas en la Mansión Escocesa", "Maldad Bajo el Sol del Mediterráneo", "Los Trabajos Inéditos de Hércules Poirot", "Un Cadáver en la Biblioteca del Lord", "Se Anuncia un Asesinato en Chipping Cleghorn", "El Tren de las 5:05 a Brighton", "Némesis en el Caribe", "El Legado del Halcón Maltés", "El Largo Adiós del Detective Solitario", "Lew Archer y las Olas de Santa Teresa", "Mike Hammer: Furia en la Ciudad", "Travis McGee y el Rescate en el Bayside Marina", "La Cosecha Roja de Continental Op", "La Carta Robada en el Barrio Latino", "Lord Peter y el Club de los Bibliófilos", "Ellery Queen y el Misterio del Último Acto", "Perry Mason y el Testigo Silencioso", "El Desafío Final de Albert Campion",
+            // Títulos Originales Evocadores (Noir, Clásico, Moderno)
+            "El Silencio de los Muelles", "La Sombra del Campanario", "Cenizas en la Biblioteca", "El Último Tren a Múnich", "El Secreto del Relojero Ciego", "La Dama del Abrigo Gris", "El Misterio del Callejón sin Salida", "Sangre en el Terciopelo Azul", "El Enigma de la Ciudad Dormida", "Niebla sobre el Puente de Brooklyn", "El Apartamento Olvidado", "La Partitura Inacabada", "El Círculo de Tiza Roja", "La Noche de las Máscaras Venecianas", "El Jardín de las Estatuas Silenciosas", "El Expediente del Colibrí", "La Conexión del Expreso Transiberiano", "Secretos Bajo la Lluvia Ácida", "El Filatelista Solitario", "El Hombre que Dibujaba Mapas Imposibles", "La Habitación del Eco", "El Olor del Azafrán", "La Sombra en el Espejo Roto", "El Caso de la Modelo Desaparecida", "Asesinato en el Primer Acto", "El Diamante Lágrima de Luna", "La Melodía del Cisne Negro", "El Legado del Alquimista", "El Club de los Filósofos Muertos", "La Carta que Nunca Llegó", "El Secreto de la Isla de los Susurros", "Venganza en Tinta Invisible", "El Coleccionista de Mariposas Nocturnas", "El Testamento del Titiritero", "El Laberinto de Cristal", "La Ciudad Bajo la Niebla Perpetua", "El Perfume Prohibido", "El Libro de las Sombras Robado", "El Último Baile de la Condesa", "Misterio en el Observatorio Astronómico", "El Enigma del Faro Apagado", "La Casa de las Puertas que Cambian", "El Gato que Sabía Demasiado", "El Reflejo en el Agua Helada", "El Secreto del Tren Fantasma", "La Clave Escondida en el Soneto", "El Caso del Crimen Perfecto Imperfecto", "Sombras en el Barrio Gótico", "El Robo del Huevo de Fabergé", "El Asesino del Tablero de Ajedrez", "La Maldición de la Esmeralda Perdida", "El Código Oculto en el Vitral", "El Fantasma de la Ópera de Praga", "La Verdad Escrita en las Estrellas", "El Doble Juego del Ilusionista", "El Misterio del Vino Envenenado", "La Conspiración del Reloj de Arena", "El Silencio de la Nieve Roja", "El Último Secreto de la Biblioteca de Alejandría", "El Retrato que Envejecía", "El Enigma de la Tumba Vacía", "La Huella Digital Imposible", "El Misterio del Orient Express Descarrilado", "Asesinato en el Festival de Jazz", "El Secreto del Camarín Número 7", "La Dama del Abanico de Nácar", "El Caso del Inventor Loco", "La Cripta Olvidada", "El Juego del Gato y el Ratón en el Museo", "El Misterio de la Ciudad Subterránea", "La Venganza del Escritor Fantasma", "El Tesoro Escondido del Pirata", "El Último Mensaje en la Botella", "La Red de Mentiras Perfecta", "El Secreto del Jardín Japonés", "El Caso de las Joyas Falsas", "El Asesino de la Máscara de Hierro", "El Misterio del Barco Hundido", "La Melodía que Mata", "El Enigma del Cuadro Robado", "La Clave en el Diario Olvidado", "El Secreto de la Mansión Embrujada", "El Asesinato en el Club de Campo", "La Trampa del Millonario Excéntrico", "El Misterio de la Estatua Llorona", "El Testamento Inesperado", "La Habitación Secreta del Castillo", "El Enigma de la Isla Prohibida", "El Ladrón de Guante Blanco", "El Secreto del Bosque Tenebroso", "El Caso del Actor Asesinado", "La Joya del Maharajá", "El Misterio del Circo Ambulante", "La Venganza del Pasado", "El Secreto del Monasterio Abandonado", "El Asesino del Tren Nocturno", "La Maldición del Faraón", "El Enigma del Mapa Estelar", "El Robo del Siglo", "El Secreto del Viñedo", "El Caso del Científico Desaparecido", "La Trampa en la Exposición de Arte", "El Misterio del Teatro Encantado", "La Herencia Peligrosa", "El Secreto de la Cueva Oculta", "El Asesino del Calendario", "La Conspiración Silenciosa", "El Misterio del Reloj Detenido", "La Venganza Escrita con Sangre", "El Secreto de la Antigua Fortaleza", "El Caso del Crimen Imposible", "La Dama Misteriosa del Lago", "El Enigma del Laberinto Verde", "El Ladrón Invisible", "El Secreto de la Biblioteca Prohibida", "El Asesino de la Ópera", "La Maldición de la Perla Negra", "El Misterio del Orient Express Moderno", "La Venganza Servida Fría", "El Secreto del Anticuario", "El Caso del Veneno Lento", "La Trampa de la Mansión Aislada", "El Misterio del Cuadro Viviente", "La Herencia Envenenada", "El Secreto de la Mina Abandonada", "El Asesino Poeta", "La Conspiración del Silencio", "El Misterio del Tiempo Perdido", "La Venganza del Relojero", "El Secreto del Templo Olvidado", "El Caso del Testigo Ciego", "La Dama de Hielo", "El Enigma de la Atlántida", "El Ladrón Fantasma", "El Secreto del Libro Maldito", "El Asesino del Zodiaco", "La Maldición de la Luna Llena", "El Misterio del Expreso de Medianoche", "La Venganza del Marionetista", "El Secreto del Faro Solitario", "El Caso del Doble Idéntico", "La Trampa de la Isla Desierta", "El Misterio de la Máquina del Tiempo", "La Herencia Oculta", "El Secreto de la Ciudad Perdida", "El Asesino de la Rosa Negra",
+            // Temas y Conceptos como Inspiración
+            "Un Misterio de 'Fair Play' Clásico", "El Caso de la Femme Fatale Inesperada", "Crónica de un Procedimiento Policial", "Un Enigma 'Cozy' en la Campiña Inglesa", "El Thriller Legal del Siglo", "Laberintos de un Thriller Psicológico", "Un Misterio en las Ruinas Romanas", "El Detective Amateur Tropieza con la Verdad", "El Juego Mortal de las Pistas Falsas", "La Gran Revelación en la Tormenta", "Cuando la Ciencia Forense Falla", "Un Homenaje a Edgar Allan Poe", "El Método Deductivo Llevado al Límite", "El Lado Oscuro del 'Hardboiled'", "Noir en las Calles de Tokio", "El Anti-Héroe se Enfrenta a su Pasado", "Atmósfera Gótica en Nueva Orleans", "La Detective que Rompió Moldes", "Suspense en la Estación Espacial", "Un Misterio con Toques Sobrenaturales", "Crimen y Castigo en el Siglo XXII", "El Enigma de la Inteligencia Artificial", "Secretos Familiares en la Vieja Europa", "El Último Caso del Detective Retirado", "Cuando el Pasado Vuelve para Matar", "Misterio en el Mundo del Arte", "El Silencio de los Inocentes: Una Variación", "Intriga Política en Washington D.C.", "El Misterio del Código Genético", "Un Crimen Casi Perfecto", "La Verdad Oculta en los Sueños", "El Detective con un Secreto Oscuro", "Un Caso Cerrado que se Reabre", "Misterio en el Camino de Santiago", "El Enigma de los Círculos de Cosecha", "La Red Social del Crimen", "Un Asesinato Transmitido en Vivo", "El Detective que Perdió la Memoria", "El Misterio del Pueblo Fantasma", "La Maldición del Tesoro Pirata", "El Último Baile Antes de Morir", "Secretos Enterrados Bajo la Arena", "El Asesino que Dejaba Poemas", "La Conspiración del Vaticano", "El Misterio del Viento Solar", "La Venganza de los Dioses Antiguos", "El Secreto del ADN Recombinante", "El Caso del Fantasma Vengador", "La Dama Escarlata", "El Enigma de la Caja China", "El Ladrón de Recuerdos", "El Secreto de la Ciudad Sumergida", "El Asesino de la Máscara Sonriente", "La Maldición del Ídolo Azteca", "El Misterio del Expreso de los Balcanes", "La Venganza Cibernética", "El Secreto del Monasterio Tibetano", "El Caso del Testigo Mudo que Habla", "La Trampa del Reality Show", "El Misterio de la Partitura Diabólica", "La Herencia del Templario", "El Secreto de la Selva Amazónica", "El Asesino Filósofo", "La Conspiración Lunar", "El Misterio del Hombre Invisible Real", "La Venganza del Cuadro Maldito", "El Secreto del Triángulo de las Bermudas", "El Caso del Crimen Virtual", "La Dama del Lago Ness", "El Enigma de Stonehenge", "El Ladrón de Identidades", "El Secreto del Libro de Thoth", "El Asesino Ninja", "La Maldición de Tutankamón Despierta", "El Misterio del Orient Express Espacial", "La Venganza Robótica", "El Secreto del Chamán", "El Caso del Político Corrupto", "La Trampa de la Realidad Aumentada", "El Misterio de la Aurora Boreal", "La Herencia Maldita", "El Secreto de la Isla de Pascua", "El Asesino del Origami", "La Conspiración Reptiliana", "El Misterio del Agujero Negro", "La Venganza del Golem", "El Secreto de El Dorado", "El Caso del Viajero en el Tiempo", "La Dama de las Camelias Venenosas", "El Enigma de las Líneas de Nazca", "El Ladrón Cuántico", "El Secreto de Shambhala", "El Asesino Alquimista", "La Maldición del Holandés Errante", "El Misterio del Transatlántico Fantasma", "La Venganza del Espíritu del Bosque", "El Secreto de la Fuente de la Juventud", "El Caso del Sueño Mortal", "La Trampa Holográfica", "El Misterio del Kraken", "La Herencia Atlante", "El Secreto de la Orden Secreta", "El Asesino del Tarot", "La Conspiración de los Iluminati", "El Misterio del Monstruo del Lago", "La Venganza de Medusa", "El Secreto del Santo Grial", "El Caso Imposible", "La Dama Espectral", "El Enigma de la Pirámide Sumergida", "El Ladrón de Almas", "El Secreto del Necronomicón", "El Asesino Silencioso", "La Maldición de la Momia Inca", "El Misterio del Vuelo Desaparecido", "La Venganza del Samurai", "El Secreto de la Ciudad Blanca", "El Caso del Robot Rebelde"
+            // (... más títulos evocadores ...)
+        ];
+
+        // ***** TEMAS REVISADOS PARA GENERAR IDEAS DE HISTORIAS *****
+        const detectiveThemes = [
+            "misterios en mansiones aisladas", "crímenes en el mundo del arte", "detectives en la época victoriana",
+            "casos con elementos sobrenaturales", "enigmas en ciudades lluviosas (noir)", "secretos familiares oscuros",
+            "misterios en trenes de lujo", "crímenes en cruceros", "detectives privados cínicos",
+            "asesinatos en pueblos pequeños", "casos de habitación cerrada", "thrillers psicológicos retorcidos",
+            "misterios históricos (Egipto, Roma, etc.)", "detectives amateurs inesperados", "conspiraciones políticas",
+            "crímenes relacionados con la tecnología", "misterios en entornos académicos", "casos en islas remotas",
+            "el mundo del espionaje y el misterio", "asesinos en serie con métodos extraños", "detectives con pasados turbulentos",
+            "misterios 'cozy' con encanto", "procedimientos policiales realistas", "crímenes en la alta sociedad"
+        ];
+
+        // ***** PROMPT PRINCIPAL MODIFICADO PARA CREAR HISTORIAS *****
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un talentoso escritor de misterio y ficción detectivesca, especializado en crear historias cortas atmosféricas y llenas de intriga. Tu tarea es escribir una historia corta de detectives completamente *nueva* y *original*, inspirada en el título proporcionado. **No analices el título si se refiere a una obra existente; úsalo solo como punto de partida creativo para tu propia invención.** La historia debe tener una atmósfera palpable (noir, clásica, moderna, según sugiera el título), un misterio central claro, un detective protagonista (puede ser clásico o inventado), pistas sutiles (y quizás alguna falsa), suspense creciente y una resolución satisfactoria (aunque no siempre completamente feliz). Intenta evitar clichés demasiado obvios. La historia debe tener aproximadamente 1200-1300 palabras. Basa tu historia completamente en el siguiente título como inspiración:",
+            timeoutSeconds: 150
+        };
+
+        // ***** PROMPT DE GENERACIÓN DE TÍTULOS MODIFICADO *****
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un escritor de misterio. Genera exactamente 15 títulos evocadores para *nuevas* historias cortas de detectives o misterio. Los títulos deben ser sugerentes y despertar la curiosidad. Devuelve *solo* la lista de títulos, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ==========
+
+        async function fetchTextFromApi(prompt, config) { // (Sin cambios funcionales)
+            const encodedPrompt = encodeURIComponent(prompt);
+            const encodedSystem = encodeURIComponent(config.systemPrompt);
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía o incompleta.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s) en escribir la historia. Intente de nuevo.`);
+                throw new Error(`Error de comunicación con la API: ${error.message}`);
+            }
+         }
+
+        // Renombrado para claridad, ahora FETCHEA HISTORIA
+        async function fetchGeneratedStory(storyTitle) {
+             // Usamos el textApiConfig modificado que pide CREAR historias
+             const text = await fetchTextFromApi(storyTitle, textApiConfig);
+              // Ajuste del mensaje de error si la IA no genera suficiente contenido
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("unable to create") || text.toLowerCase().includes("incapaz de crear")) {
+                   throw new Error("La IA no pudo generar una historia adecuada o suficientemente detallada para este título.");
+               }
+             return text;
+        }
+
+        async function fetchGeneratedTitles() { // (Sin cambios funcionales, usa titleGenerationConfig modificado)
+             const randomTheme = getRandomElement(detectiveThemes) || "nuevos misterios intrigantes";
+             const specificPrompt = `Genera 15 títulos evocadores para nuevas historias sobre ${randomTheme}`; // Adaptado
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) }; // Usa el config adaptado
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas nuevas."); // Adaptado
+             return titles.slice(0, 15);
+        }
+
+        function createPollinationsImageUrl(promptText, options = {}) { // (Sin cambios funcionales, el prompt ya era atmosférico)
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "classic detective story atmosphere";
+             const enhancedPrompt = `Atmospheric scene inspired by the detective story concept '${safePromptText}'. Film noir style, dramatic shadows and light, vintage elements (old office, typewriter, fedora, magnifying glass, foggy street, clues). Mysterious, evocative, painterly. Avoid text.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, book cover, labels, letters, captions, writing, numbers, diagrams, charts, graphs, UI, interface, menu, buttons, watermark, signature, multiple panels, collage, clear happy faces, bright daylight scene, modern technology, color photograph";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (Sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                 let content = block.replace(/\n/g, '<br>');
+                 return `<p>${content}</p>`;
+             }).join('');
+             return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+
+        function getRandomElement(arr) { /* ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]);
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No hay ideas disponibles.</p>'; return; } // Texto adaptado
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) { /* ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        // *** handleTitleClick *** MODIFICADO para llamar a fetchGeneratedStory
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title; // El título inspirador
+            modalContent.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Mostrar "Escribiendo el misterio..."
+
+            try {
+                // 1. Fetch la *historia generada*, no un análisis
+                const rawGeneratedStory = await fetchGeneratedStory(title); // <-- LLAMADA MODIFICADA
+                const formattedStory = formatExplanationText(rawGeneratedStory); // La función de formato sigue sirviendo
+
+                // 2. Oculta carga, muestra la historia generada PRIMERO
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedStory; // Inyecta la historia
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                // 3. *** RESET SCROLL *** después de que la historia esté visible
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after story content visible");
+
+                // 4. Prepara y añade placeholder/spinner para la imagen DENTRO de #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Creando escena conceptual...</p> <!-- Texto adaptado -->
+                `;
+                modalContent.appendChild(placeholderDiv); // Al final de la historia
+
+                // 5. Crea y añade elemento <img> (empieza a cargar)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Escena conceptual para la historia: ${title}`; // Alt adaptado
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Escena conceptual cargada.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                };
+                imgElement.onerror = () => {
+                    console.error("Error cargando escena conceptual para:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo visualizar la escena.</p> <!-- Texto adaptado -->
+                    `;
+                };
+
+                // Obtiene URL y asigna src DESPUÉS de añadir handlers
+                const imageUrl = createPollinationsImageUrl(title); // Usamos el título original como prompt para la imagen
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("No se pudo crear URL de escena para:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-times-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error generando URL de escena.</p> <!-- Texto adaptado -->
+                    `;
+                }
+
+            } catch (error) {
+                console.error("Fallo al generar/mostrar la historia:", error); // Mensaje adaptado
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error al crear la historia: ${error.message}`; // Mensaje adaptado
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+            }
+        }
+
+        async function handleGenerateMoreTitles() { // (Texto temático adaptado)
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando ideas...'; // Adaptado
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Llama a la función adaptada
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("No se encontraron nuevas ideas para misterios en este momento."); // Adaptado
+                 }
+             } catch (error) {
+                 console.error("Fallo generando ideas:", error); // Adaptado
+                 alert(`Error al buscar ideas: ${error.message}`); // Adaptado
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Nuevos Misterios'; // Adaptado
+             }
+         }
+
+        // ========== INITIALIZATION ========== (Sin cambios funcionales)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p style="color: #e53e3e; font-size: 2em; text-align: center; padding-top: 5em; font-family: Bitter, serif;">¡Error Fatal! No se puede abrir la máquina de escribir de misterios.</p>'; return; } // Error temático
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles); // Usa la lista de títulos revisada
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

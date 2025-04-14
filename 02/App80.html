@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Tecnologías del Futuro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes limpias y modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Tecnologías del Futuro --- */
+        :root {
+            --color-primary: #0ea5e9; /* Azul Cielo Vibrante */
+            --color-secondary: #8b5cf6; /* Púrpura Energético */
+            --color-background: #f8fafc; /* Blanco Hueso / Gris Muy Claro */
+            --color-text: #1f2937; /* Gris Oscuro Azulado */
+            --color-text-muted: #6b7280; /* Gris Medio */
+            --color-modal-bg: #ffffff; /* Blanco Puro para Modal */
+            --color-border: #e5e7eb; /* Borde Gris Claro */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px; /* Bordes ligeramente más redondeados */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; }
+        h1.logo, h1.page-title, h2.section-title, #modal-title { font-family: 'Poppins', sans-serif; font-weight: 700; }
+        h1.logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem; display: inline-block; }
+        #modal-title { color: var(--color-secondary); } /* Título del modal en color secundario */
+        .navbar { background-color: rgba(255, 255, 255, 0.9); /* Navbar claro semi-transparente */ backdrop-filter: blur(5px); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.25rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 600; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #f0f9ff; /* Azul muy claro hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(to right, var(--color-primary), var(--color-secondary)); color: white; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Poppins', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 2rem; }
+        #generate-more-btn:hover:not(:disabled) { box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); transform: translateY(-2px); }
+        #generate-more-btn:disabled { background: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.8); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem 2.5rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 350px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: var(--color-border); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 10; }
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: #ffffff; transform: rotate(90deg); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+        #modal-content {
+            line-height: 1.75;
+            color: var(--color-text);
+            white-space: normal;
+            overflow-y: auto;
+            padding: 0 10px 1.5rem 10px;
+            flex-grow: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content::-webkit-scrollbar { width: 10px; }
+        #modal-content::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid var(--color-border); }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-secondary); font-weight: bold; } /* Fuerte en color secundario */
+        #modal-content em { color: var(--color-primary); font-style: italic; font-weight: normal; } /* Énfasis en color primario */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Poppins', sans-serif; margin-top: 2.1em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 600; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-secondary); } /* h3 en color secundario */
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; font-weight: 600; }
+        #modal-content .formula { /* Mantener por si acaso */ text-align: center; font-family: 'Consolas', 'Courier New', Courier, monospace; font-size: 1.1em; padding: 0.8em; margin: 1.2em 0; border: 1px solid var(--color-border); background-color: #f9fafb; border-radius: var(--border-radius); overflow-x: auto; white-space: nowrap; }
+        #modal-content .formula sub, #modal-content .formula sup { font-size: 0.8em; line-height: 0; position: relative; vertical-align: baseline; }
+        #modal-content .formula sub { top: 0.5em; }
+        #modal-content .formula sup { top: -0.5em; }
+        /* Estilo para la imagen insertada al final del contenido */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); }
+        /* Estilo para el placeholder/spinner de la imagen final */
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0, 0, 0, 0.05); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; color: var(--color-border); }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-text); font-size: 1.2rem; font-family: 'Poppins'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: #fee2e2; color: #dc2626; padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid #fca5a5; margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 600; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none; }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
+             <div class="flex items-center text-center">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-rocket mr-3 text-blue-500"></i> <!-- Icono cohete -->
+                     Tecnologías del Futuro
+                     <i class="fas fa-lightbulb ml-3 text-purple-500"></i> <!-- Icono bombilla -->
+                 </h1>
+             </div>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explorando el Mañana, Hoy</h1>
+             <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">Sumérgete en las innovaciones que están dando forma a nuestro futuro. Selecciona una tecnología para descubrir su potencial y desafíos.</p>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-microchip text-blue-500 mr-2"></i> <!-- Icono microchip -->
+                 Conceptos Emergentes
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg">Explorando el horizonte tecnológico...</p>
+             </div>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Tecnologías
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Procesando el futuro...</p>
+             </div>
+
+             <!-- Content Area -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                 <!-- Text Content (Scrollable) - La imagen se añadirá aquí al final -->
+                 <div id="modal-content" class="text-base md:text-lg">
+                     <!-- Explanation text (HTML) goes here -->
+                     <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                 </div>
+                 <!-- NO HAY CONTENEDOR DE IMAGEN SEPARADO AQUÍ -->
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Explicaciones generadas por IA con fines informativos y educativos sobre tecnologías emergentes.</p>
+              <p class="mt-1">El futuro es complejo y está en constante cambio. Esta información refleja el conocimiento actual.</p>
+              <p class="mt-2">© 2025 Explorador Tecnológico</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Inteligencia Artificial (IA) y Aprendizaje Automático (ML)
+            "¿Qué es la Inteligencia Artificial (IA)?", "Inteligencia Artificial General (AGI): ¿Estamos cerca?", "Superinteligencia Artificial (ASI): Potencial y Peligros", "Aprendizaje Automático (Machine Learning): Fundamentos", "Aprendizaje Profundo (Deep Learning): Redes Neuronales", "Redes Neuronales Convolucionales (CNN) y Visión Artificial", "Redes Neuronales Recurrentes (RNN) y Procesamiento del Lenguaje Natural (NLP)", "Modelos de Lenguaje Grandes (LLM): GPT, BERT y más allá", "IA Explicable (Explainable AI - XAI)", "Ética en la Inteligencia Artificial: Sesgos y Responsabilidad", "IA en la Medicina: Diagnóstico y Descubrimiento de Fármacos", "IA en el Transporte: Vehículos Autónomos", "IA en las Finanzas: Algoritmos y Predicciones", "IA en el Arte y la Creatividad", "IA y el Futuro del Empleo", "Sistemas Multiagente (MAS)", "Aprendizaje por Refuerzo (Reinforcement Learning)", "Computación Afectiva: IA que entiende emociones", "Generative Adversarial Networks (GANs)", "IA Federada: Privacidad y Colaboración", "Hardware para IA: GPUs, TPUs y Neuromórficos", "El Problema del Alineamiento de la IA", "IA y Ciberseguridad: Ataque y Defensa", "Robótica Autónoma impulsada por IA", "IA en la Educación Personalizada", "Regulación de la Inteligencia Artificial", "Plataformas de IA como Servicio (AIaaS)", "Transfer Learning: Reutilizando Conocimiento", "Edge AI: Inteligencia en el Dispositivo", "IA Cuántica: Sinergias Futuras", "Auditoría de Algoritmos de IA", "IA y Descubrimiento Científico Acelerado", "Simulaciones Complejas con IA", "IA para la Sostenibilidad y el Cambio Climático", "El Concepto de 'Singularidad Tecnológica'", "Miedo a la IA: Mitos y Realidades", "Aprendizaje Autosupervisado", "Meta-aprendizaje: Aprendiendo a Aprender", "IA y Derechos Humanos", "IA Conversacional: Chatbots y Asistentes Virtuales Avanzados",
+
+            // Biotecnología, Salud y Neurotecnología
+            "Edición Genética CRISPR-Cas9: Revolución y Ética", "Terapia Génica: Corrigiendo Enfermedades Hereditarias", "Biología Sintética: Diseñando la Vida", "Secuenciación del Genoma de Nueva Generación (NGS)", "Medicina Personalizada basada en Genómica", "Nanomedicina: Robots a Escala Molecular", "Interfaces Cerebro-Computadora (BCI): Control Mental", "Neuroprótesis Avanzadas", "Estimulación Cerebral Profunda (DBS) para Enfermedades Neurológicas", "Mapeo Cerebral y Conectómica", "Medicina Regenerativa: Cultivo de Órganos", "Bioimpresión 3D de Tejidos y Órganos", "Longevidad y Terapias Antienvejecimiento", "Diagnóstico Médico Asistido por IA", "Cirugía Robótica de Precisión", "Sensores Biométricos Portátiles (Wearables)", "Microbioma Humano: El Segundo Genoma", "Vacunas de ARNm y su Futuro", "Optogenética: Controlando Neuronas con Luz", "Xenotrasplantes: Órganos Animales para Humanos", "Salud Digital y Telemedicina Avanzada", "Big Data en Salud: Oportunidades y Desafíos", "Farmacogenómica: Medicamentos a Medida", "Pruebas Diagnósticas Rápidas y en Casa", "Lucha contra la Resistencia a los Antibióticos", "Nutrición Personalizada y Nutrigenómica", "Salud Mental y Tecnología: Apps y Terapias Virtuales", "Edición de Epigenoma", "Monitorización Continua de Glucosa y Otros Biomarcadores", "Virus Oncolíticos: Usando Virus contra el Cáncer", "Inmunoterapia Personalizada contra el Cáncer", "Realidad Virtual y Aumentada en Medicina", "Biohacking: Modificando el Propio Cuerpo", "Ética de la Mejora Humana (Enhancement)", "Bioseguridad y Riesgos de la Biotecnología", "Medicina Espacial: Salud fuera de la Tierra", "Criopreservación: ¿Vida después de la Muerte?", "Terapia con Fagos: Alternativa a Antibióticos", "Edición Genética en la Agricultura (Cultivos Mejorados)",
+
+            // Energía, Medio Ambiente y Sostenibilidad
+            "Energía de Fusión Nuclear: El Santo Grial Energético", "Reactores Modulares Pequeños (SMR) de Fisión", "Energía Solar Fotovoltaica de Próxima Generación (Perovskitas)", "Almacenamiento de Energía a Gran Escala (Baterías, Hidrógeno)", "Redes Eléctricas Inteligentes (Smart Grids)", "Captura, Almacenamiento y Utilización de Carbono (CCUS)", "Producción de Hidrógeno Verde", "Energía Geotérmica Mejorada (EGS)", "Energía Eólica Marina Flotante", "Materiales Sostenibles y Economía Circular", "Agricultura Vertical y Cultivo en Interiores", "Carne Cultivada en Laboratorio y Proteínas Alternativas", "Tecnologías de Desalinización Eficientes", "Monitorización Ambiental con Satélites e IA", "Ciudades Inteligentes (Smart Cities): Gestión Optimizada", "Movilidad Eléctrica y Carga Inteligente", "Biocombustibles Avanzados", "Geoingeniería: Intervención Climática Deliberada", "Reciclaje Químico de Plásticos", "Construcción Sostenible y Materiales Inteligentes", "Gestión Inteligente del Agua", "Predicción Climática Mejorada con Supercomputación", "Restauración Ecológica Asistida por Tecnología", "Drones para Reforestación y Monitorización", "Iluminación LED Inteligente y Eficiente", "Internet de las Cosas (IoT) para la Eficiencia Energética", "Generación Distribuida de Energía", "Mercados de Carbono y Tecnologías Blockchain", "Vehículos de Hidrógeno", "Economía del Hidrógeno", "Fusión Fría: ¿Mito o Posibilidad?", "Energía de las Olas y las Mareas", "Optimización de Cadenas de Suministro Sostenibles", "Tecnologías para Reducir el Desperdicio Alimentario", "Edificios de Energía Cero Neto", "Moda Sostenible y Nuevos Textiles", "Minería Sostenible y Recuperación de Materiales", "Evaluación del Ciclo de Vida (LCA) de Tecnologías", "Adaptación Tecnológica al Cambio Climático",
+
+            // Computación, Información y Comunicación
+            "Computación Cuántica: Principios y Aplicaciones Potenciales", "Supremacía Cuántica: ¿Qué significa?", "Algoritmos Cuánticos (Shor, Grover)", "Internet Cuántico y Comunicación Segura", "Computación Neuromórfica: Inspirada en el Cerebro", "Computación Fotónica: Usando Luz para Calcular", "Redes 6G y Comunicaciones del Futuro", "Blockchain y Tecnologías de Registro Distribuido (DLT)", "Web3: La Web Descentralizada", "Organizaciones Autónomas Descentralizadas (DAO)", "Tokens No Fungibles (NFTs): Más Allá del Arte", "Identidad Digital Soberana (Self-Sovereign Identity - SSI)", "Computación en el Borde (Edge Computing)", "Computación en la Niebla (Fog Computing)", "Arquitecturas Serverless y Funciones como Servicio (FaaS)", "Avances en Ciberseguridad: IA y Criptografía Post-Cuántica", "Privacidad Diferencial y Computación Multipartita Segura", "Realidad Virtual (VR) Inmersiva y Social", "Realidad Aumentada (AR) y Computación Espacial", "Metaverso(s): ¿Qué son y cuál es su futuro?", "Interfaces de Usuario del Futuro (Gestos, Voz, BCI)", "Avances en Almacenamiento de Datos (ADN, Holográfico)", "Open Source Hardware y Software: Impulso a la Innovación", "Infraestructura como Código (IaC)", "Observabilidad y Monitorización de Sistemas Complejos", "Procesamiento Masivo de Datos (Big Data) en Tiempo Real", "Simulación y Modelado Computacional Avanzado", "Digital Twins: Réplicas Virtuales del Mundo Real", "Software Definido por Todo (SDx)", "Microservicios y Arquitecturas Nativas de la Nube", "Computación Confidencial", "Tecnologías de Búsqueda Semántica", "Redes Neuronales Gráficas (GNN)", "Programación Probabilística", "Formal Verification para Software Crítico", "Low-Code / No-Code Platforms", "Tecnologías Anti-deepfake", "Interoperabilidad de Datos y Estándares Abiertos",
+
+            // Robótica, Automatización y Vehículos Autónomos
+            "Robots Humanoides: Agilidad y Versatilidad", "Robótica Colaborativa (Cobots): Humanos y Robots Trabajando Juntos", "Robótica de Enjambre (Swarm Robotics)", "Robots Blandos (Soft Robotics)", "Vehículos Autónomos Nivel 5: Conducción sin Intervención", "Drones Autónomos para Entregas y Vigilancia", "Automatización Robótica de Procesos (RPA)", "Fábricas Inteligentes (Industria 4.0)", "Almacenes Totalmente Automatizados", "Robots para Agricultura de Precisión", "Robots Quirúrgicos y Asistenciales", "Exoesqueletos Robóticos para Industria y Rehabilitación", "Robots para Exploración Espacial y Submarina", "Inteligencia Artificial para la Navegación Robótica (SLAM)", "Manipulación Robótica Avanzada (Destreza Fina)", "Telepresencia Robótica", "Ética de la Robótica: ¿Derechos para los Robots?", "Impacto Social de la Automatización Masiva", "Vehículos Voladores Personales (eVTOLs)", "Hyperloop y Transporte de Alta Velocidad", "Navegación Marítima Autónoma", "Robots de Construcción", "Robots para Tareas Peligrosas (Desactivación de Bombas, Desastres)", "Impresión 3D en Robótica", "Sensores Robóticos Avanzados (Tacto, Olfato)", "Aprendizaje por Imitación en Robots", "Simulación Robótica para Entrenamiento y Pruebas", "Estándares de Seguridad para Robots Autónomos", "Interacción Humano-Robot (HRI) Natural", "Robots Sociales y Compañeros", "Mantenimiento Predictivo Asistido por Robots", "Logística Autónoma de Última Milla", "Robots Modulares y Reconfigurables", "Bio-robots y Robots Inspirados en la Naturaleza", "Control Robótico Basado en la Nube", "Gemelos Digitales para Sistemas Robóticos",
+
+            // Espacio, Materiales y Fabricación
+            "Cohetes Reutilizables (SpaceX, Blue Origin)", "Colonización de la Luna: Bases Permanentes", "Viajes Tripulados a Marte y Desafíos", "Minería de Asteroides: Recursos Espaciales", "Turismo Espacial Suborbital y Orbital", "Telescopios Espaciales de Nueva Generación (JWST y sucesores)", "Propulsión Espacial Avanzada (Iónica, Plasma, ¿Warp?)", "Hábitats Espaciales Inflables y Modulares", "Impresión 3D en el Espacio", "Satélites de Comunicación de Baja Órbita (Starlink, OneWeb)", "Energía Solar Basada en el Espacio (SBSP)", "Observación de la Tierra desde el Espacio: Precisión y Frecuencia", "Defensa Planetaria contra Asteroides (DART y sucesores)", "Búsqueda de Vida Extraterrestre (SETI) y Exoplanetas Habitables", "Grafeno y otros Materiales Bidimensionales", "Nanomateriales: Propiedades y Aplicaciones", "Metamateriales: Controlando Ondas (Luz, Sonido)", "Materiales Autorreparables (Self-Healing)", "Aerogeles: Materiales Ultraligeros", "Materiales con Memoria de Forma", "Impresión 3D (Fabricación Aditiva) de Metales y Cerámicas", "Impresión 4D: Objetos que Cambian con el Tiempo", "Fabricación Molecular y Nanofábricas", "Materiales Inteligentes (Smart Materials)", "Compuestos Avanzados (Fibra de Carbono, etc.)", "Superconductores a Temperatura Ambiente", "Bio-materiales y Materiales Biodegradables", "Recubrimientos Avanzados (Superhidrofóbicos, Antireflectantes)", "Cristales Fotónicos y Plasmónicos", "Fabricación Aditiva a Gran Escala", "Control de Calidad Automatizado en Fabricación", "Logística Inteligente en la Cadena de Suministro", "Personalización Masiva de Productos", "Materiales para Condiciones Extremas (Espacio, Fusión)", "Diseño Generativo Asistido por IA", "Textiles Inteligentes (E-Textiles)",
+
+            // Sociedad, Ética y Futuro Humano
+            "Transhumanismo: Mejorando la Condición Humana", "Posthumanismo: Más Allá de lo Humano", "Realidad Mixta (MR): Fusión de Mundos Físico y Digital", "El Futuro del Trabajo en la Era de la Automatización", "Renta Básica Universal (RBU): ¿Solución a la Automatización?", "Ética de la Edición Genética en Humanos", "Privacidad en la Era Digital y de la Vigilancia", "Noticias Falsas (Fake News) y Deepfakes: Desafíos a la Verdad", "Gobernanza de Tecnologías Emergentes", "Brecha Digital y Acceso Equitativo a la Tecnología", "Impacto Psicológico de la Tecnología (Redes Sociales, VR)", "Sistemas de Crédito Social y Vigilancia Estatal", "Futuro de la Democracia en la Era Digital", "Ciudades Resilientes y Adaptativas", "Economía Colaborativa (Sharing Economy) y su Evolución", "Propiedad Intelectual en la Era de la IA y la Impresión 3D", "Neuroética: Implicaciones de la Neurotecnología", "Longevidad Extrema: Impacto Social y Económico", "Educación del Futuro: Aprendizaje Adaptativo y Personalizado", "Guerra Autónoma y Armas Letales Autónomas (LAWS)", "Existential Risks (Riesgos Existenciales) de la Tecnología", "El Principio de Precaución en la Innovación", "Participación Ciudadana en Decisiones Tecnológicas", "Arte y Cultura Generados por IA", "El Futuro de las Relaciones Humanas y la Intimidad", "Exploración de la Conciencia y la IA", "Filosofía de la Tecnología", "Prospectiva Tecnológica: Métodos y Predicciones", "Tecno-optimismo vs Tecno-pesimismo", "Soberanía Tecnológica", "Desigualdad Global y Tecnología", "El rol de la Ciencia Ficción en imaginar el futuro"
+        ];
+        const futureTechThemes = [
+            "Inteligencia Artificial", "Aprendizaje Profundo", "Biotecnología", "Edición Genética", "Computación Cuántica", "Energía de Fusión", "Energías Renovables Avanzadas", "Robótica Humanoide", "Vehículos Autónomos", "Exploración Espacial", "Colonización de Marte", "Realidad Virtual y Aumentada", "Metaverso", "Nanotecnología", "Materiales Inteligentes", "Impresión 3D y 4D", "Interfaces Cerebro-Computadora", "Longevidad y Anti-envejecimiento", "Ciudades Inteligentes", "Internet de las Cosas (IoT)", "Blockchain y Web3", "Ciberseguridad del Futuro", "Automatización y Futuro del Trabajo", "Ética Tecnológica", "Transhumanismo"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un experto divulgador científico y analista de tendencias tecnológicas. Tu tarea es explicar conceptos y tecnologías del futuro de forma clara, precisa y atractiva para un público general interesado pero no necesariamente experto. Describe qué es la tecnología, cómo funciona (a nivel conceptual), sus aplicaciones potenciales, los desafíos técnicos y éticos, el estado actual de desarrollo y las perspectivas futuras. Utiliza analogías si es útil. El objetivo es una explicación completa y bien estructurada de aproximadamente 1200-1300 palabras. Basa tu explicación únicamente en el siguiente concepto o tecnología:",
+            timeoutSeconds: 150
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para un explorador de tecnologías futuras. Genera exactamente 15 nombres de tecnologías emergentes, conceptos futuristas o preguntas clave sobre el futuro tecnológico, adecuados para ser explicados en detalle. Devuelve *solo* la lista, una por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales, solo nombres si aplica)
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Contenedor de texto e imagen
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+
+        // ========== API FUNCTIONS ========== (Sin cambios en la lógica central)
+        async function fetchTextFromApi(prompt, config) { /* ... Idéntico ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`Error HTTP ${response.status}.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la API estaba vacía.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La solicitud a la API tardó demasiado (>${config.timeoutSeconds}s). Intente de nuevo.`);
+                 throw new Error(`Error de comunicación con la API: ${error.message}`);
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { /* ... Idéntico ... */
+             const text = await fetchTextFromApi(conceptTitle, textApiConfig);
+              if (text.trim().length < 800 || text.toLowerCase().includes("cannot fulfill") || text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de")) {
+                   throw new Error("La IA no pudo generar una explicación adecuada o suficientemente detallada para este concepto.");
+               }
+              return text;
+        }
+        async function fetchGeneratedTitles() { /* ... Idéntico, usa futureTechThemes ... */
+             const randomTheme = getRandomElement(futureTechThemes) || "tecnologías emergentes";
+             const specificPrompt = `Genera 15 tecnologías emergentes o conceptos clave sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             const text = await fetchTextFromApi(specificPrompt, configForThisRequest);
+             const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 5) throw new Error("No se pudieron generar suficientes ideas de tecnologías.");
+             return titles.slice(0, 15);
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado a TECH FUTURO
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "abstract future technology concept";
+             // Prompt ENFOCADO en abstracto, conceptual, futurista.
+             const enhancedPrompt = `Abstract conceptual art representing '${safePromptText}'. Futuristic, minimalist, technological aesthetic. Glowing lines, data streams, circuits, innovation, advanced concepts. Clean background.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             // NEGATIVE PROMPT: Evitar texto, diagramas, logos, personas, objetos reconocibles.
+             const negativePrompt = "text, words, labels, letters, titles, captions, writing, numbers, formulas, graphs, charts, diagrams, UI, interface, buttons, logo, watermark, signature, people, faces, hands, realistic photo, specific object, cluttered background, drawing, sketch";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... Idéntico ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            // Correcciones básicas de Markdown y LaTeX simple
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1'); // Quitar \text{}
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>'); // Subíndices simples
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−])\}?/g, (match, base, exponent) => { // Superíndices simples
+                const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`;
+            });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;'); // Flecha
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Bloque de fórmula simple
+            // Títulos Markdown
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            // Negrita y Cursiva Markdown
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Párrafos: Separar por doble salto de línea y envolver en <p>
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                // No envolver títulos o bloques de fórmula ya existentes
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) {
+                    return block;
+                }
+                // Reemplazar saltos de línea simples dentro de un bloque por <br>
+                let content = block.replace(/\n/g, '<br>');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Lógica sin cambios, scroll reset importante)
+        function showModal() { if(!storyModal) return; storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            if(!storyModal || !modalContent) return;
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            modalContent.scrollTop = 0; // Reset scroll del contenido
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() { // Lógica sin cambios
+             if (!modalLoadingIndicator || !modalStoryContentArea || !modalError || !modalTitle || !modalContent) return;
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = ''; // Limpia texto e imagen anterior
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Lógica sin cambios)
+        function getRandomElement(arr) { /* ... Idéntico ... */ if (!arr || arr.length === 0) return null; return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... Idéntico ... */ let ci = array.length, ri; while (ci > 0) { ri = Math.floor(Math.random() * ci); ci--; [array[ci], array[ri]] = [array[ri], array[ci]]; } return array; }
+        function createTitleItem(title) { /* ... Idéntico ... */ const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... Idéntico ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const shuffledTitles = shuffleArray([...titles]);
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (shuffledTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">No hay tecnologías disponibles.</p>'; return; }
+             shuffledTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... Idéntico ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; newTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+
+        // *** MODIFIED: handleTitleClick to append image inside #modal-content (Lógica central igual a la anterior) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            modalContent.innerHTML = ''; // Limpiar
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Mostrar carga
+
+            try {
+                // 1. Obtener y formatear texto
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 2. Ocultar carga, mostrar texto PRIMERO
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                 // 3. *** RESETEAR SCROLL *** ¡DESPUÉS de que el contenido sea visible!
+                modalContent.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // 4. Preparar y añadir placeholder para la imagen DENTRO de #modal-content
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-atom placeholder-icon"></i> <!-- Icono tech -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando visualización conceptual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Añadir al final del texto
+
+                // 5. Crear elemento imagen real (oculto inicialmente)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none'; // Ocultar hasta cargar
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove(); // Quitar placeholder
+                    imgElement.style.display = 'block'; // Mostrar imagen
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `
+                        <i class="fas fa-eye-slash placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">No se pudo cargar la visualización.</p>
+                    `; // Actualizar placeholder si hay error
+                };
+
+                // Obtener URL y asignar src DESPUÉS de añadir listeners
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir la imagen al final del contenido
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `
+                        <i class="fas fa-exclamation-circle placeholder-icon"></i>
+                        <p style="font-size: 0.8em; margin-top: 0.5rem;">Error al generar URL de imagen.</p>
+                    `;
+                }
+
+            } catch (error) { // Manejo de errores
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = `Error: ${error.message}`;
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Limpiar contenido parcial en caso de error
+            }
+        }
+
+        // *** handleGenerateMoreTitles con texto temático ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Explorando horizontes...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     generateMoreContainer.style.display = 'none';
+                     appendTitles(newTitles);
+                     if (titleListContainer.parentNode) {
+                         titleListContainer.parentNode.appendChild(generateMoreContainer);
+                     }
+                     generateMoreContainer.style.display = 'block';
+                 } else {
+                     alert("No se pudieron generar nuevas tecnologías en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al generar tecnologías: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Tecnologías';
+             }
+         }
+
+
+        // ========== INITIALIZATION ========== (Lógica sin cambios, texto de error temático opcional)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading) { console.error("Init fail."); document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 5em; font-family: sans-serif;">Error crítico: No se pudo inicializar el sistema de exploración tecnológica.</p>'; return; }
+            modalCloseBtn.addEventListener('click', hideModal);
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            displayTitles(predefinedTitles);
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>
