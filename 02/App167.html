@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecos de Tolstoi - Generador de Narrativas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Serif Clásicas -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados: Ecos de Tolstoi --- */
+        :root {
+            --color-primary: #8B4513; /* Marrón Silla de Montar (Tierra, Madera) */
+            --color-secondary: #556B2F; /* Verde Oliva Oscuro (Campo, Naturaleza) */
+            --color-tertiary: #B8860B; /* Oro Oscuro (Riqueza tenue, Iconos) */
+            --color-background: #fdfbf5; /* Blanco Pergamino / Hueso Muy Claro */
+            --color-text: #3a3a3a; /* Gris Oscuro Casi Negro (Texto Principal) */
+            --color-text-muted: #6c757d; /* Gris Suave (Metadatos, Placeholders) */
+            --color-modal-bg: #f8f4e9; /* Pergamino un poco más oscuro */
+            --color-border: #dcd0b8; /* Borde Sepia Claro */
+            --color-error-bg: #f4e6e6; /* Fondo error rosado muy pálido */
+            --color-error-text: #8B0000; /* Texto error rojo oscuro */
+            --color-error-border: #dca7a7; /* Borde error rosado */
+
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 4px; /* Bordes suavemente redondeados */
+            --transition-normal: all 0.3s ease-in-out;
+        }
+        body { font-family: 'Merriweather', serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.75; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Playfair Display', serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.7rem; display: inline-block; font-weight: 700; margin-bottom: 1.5rem;}
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(253, 251, 245, 0.9); /* Pergamino casi opaco */ backdrop-filter: blur(4px); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Merriweather', serif; }
+        #search-input::placeholder { color: var(--color-text-muted); font-style: italic; }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.15); outline: none; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .title-item { background-color: #fff; padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; min-height: 65px; font-family: 'Merriweather'; font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #fefaf0; }
+        .title-item i { margin-right: 0.7rem; color: var(--color-secondary); width: 16px; text-align: center; } /* Icono opcional */
+
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-secondary); color: var(--color-background); padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Playfair Display', serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; font-size: 1.1rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #4a5c25; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #cccccc; color: #888888; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(58, 58, 58, 0.85); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.8rem 2.2rem;
+            max-width: 980px; /* Un poco más ancho para texto */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-border); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; font-family: serif; /* Para que la 'x' sea más clásica */ }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.4; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 12px; margin-bottom: 1.2rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid #f8f4e9; }
+
+        #modal-content { padding: 0 5px; font-size: 1.05rem; /* Tamaño fuente legible */ }
+        #modal-content p { margin-bottom: 1.5em; text-align: justify; text-indent: 1.5em; /* Sangría típica */ }
+        #modal-content p:first-of-type { text-indent: 0; } /* Sin sangría en el primer párrafo */
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Playfair Display', serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 700; text-indent: 0; /* Sin sangría para títulos */ }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.15em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.02); box-shadow: var(--shadow-lg); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); font-family: 'Merriweather'; }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(184, 134, 11, 0.2); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-tertiary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; color: var(--color-tertiary); }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #fff; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.6; font-size: 0.95rem; }
+        .user-message { background-color: #e3dccf; color: var(--color-text); margin-left: auto; text-align: left; } /* Usuario - pergamino claro */
+        .ai-message { background-color: #f0ebe0; color: var(--color-text); margin-right: auto; text-align: left; border: 1px dashed var(--color-border); } /* IA - pergamino más claro, borde */
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); background-color: #fff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Merriweather'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.1); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #a0522d; } /* Marrón más oscuro */
+        #chat-send-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; font-style: italic; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(253, 251, 245, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid rgba(184, 134, 11, 0.2); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-primary); font-size: 1.4rem; font-family: 'Playfair Display'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Merriweather'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(58, 58, 58, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 90%; max-height: 90%; object-fit: contain; border: 3px solid var(--color-background); box-shadow: var(--shadow-lg); background-color: var(--color-modal-bg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-border); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); font-family: serif; }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body class="antialiased">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-feather-alt mr-3 text-gray-600"></i> <!-- Icono pluma -->
+                     Ecos de Tolstoi
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans">» Generador de Narrativas «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-5">Explorando el Alma Humana</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto font-light">Sumérgete en relatos que evocan la profundidad, el realismo y los dilemas morales del maestro ruso. Elige un título o busca una idea.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar por tema, personaje o dilema...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl text-center mx-auto">
+                 <i class="fas fa-book-open text-brown-700 mr-2"></i> <!-- Icono libro -->
+                 Semillas de Historias
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans italic">Consultando los archivos literarios...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans italic">» Ninguna entrada coincide con su búsqueda en los anales «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Nuevas Tramas
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Tejiendo la Narrativa...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                    <h3 class="text-center text-sm font-semibold text-gray-700 mb-2 font-sans border-b border-dashed border-gray-400 pb-1">Discusión Literaria</h3>
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Reflexionando sobre la consulta...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunte sobre la historia, temas o personajes...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-circle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Ilustración Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Narrativas generadas por IA, inspiradas en el estilo y temas de León Tolstoi.</p>
+              <p class="mt-1">Estas historias son creaciones ficticias con fines de exploración literaria.</p>
+              <p class="mt-2">© 2024 Estudio Literario Digital</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Temas de Clase y Sociedad
+            "El Dilema del Conde Vronsky", "La Dote de Katerina Ivanovna", "Un Siervo en la Corte del Zar", "El Orgullo del Mercader Smirnov", "La Caída de la Casa Bolkonsky", "La Ambición del Funcionario Cherdyakov", "Una Tarde en la Dacha", "El Terrateniente y la Sequía", "La Deuda de Honor del Capitán", "Secretos en el Salón de Baile de San Petersburgo", "El Maestro y el Mujik", "La Visita del Recaudador de Impuestos", "Una Boda Arreglada en la Nobleza", "El Legado del Viejo Príncipe", "La Vida en los Apartamentos de Moscú", "El Juicio del Campesino", "La Dama de Compañía y el Secreto", "El Regreso del Exiliado a su Estado", "La Caridad de la Princesa Elena", "Un Banquete en Tiempos de Escasez", "El Precio de la Entrada en Sociedad", "La Rebelión Silenciosa de los Siervos", "El Contraste entre la Ciudad y el Campo", "La Educación de un Joven Noble", "El Escándalo en la Ópera Imperial", "La Visita a los Parientes Pobres", "El Administrador Deshonesto", "La Lucha por la Herencia Familiar", "Un Día en la Vida de un Cochero", "El Código de Honor de la Guardia Imperial",
+            // Dilemas Morales y Espirituales
+            "La Confesión de Anna Mikhailovna", "La Búsqueda de Sentido de Pierre", "La Fe del Soldado Semyon", "El Pecado Oculto del Sacerdote", "Redención en los Campos de Trigo", "La Tentación del Monje Anatoly", "Una Cuestión de Conciencia", "El Perdón Imposible", "La Peregrinación a Optina Pustyn", "La Noche Oscura del Alma de Levin", "La Verdad en la Simplicidad", "El Peso de una Promesa Rota", "La Lucha contra la Vanidad", "Encontrar a Dios en la Naturaleza", "El Sacrificio de la Madre Superiora", "La Culpa del Jugador Arrepentido", "El Sermón que Cambió una Vida", "La Caridad Anónima", "El Significado del Sufrimiento", "La Muerte y la Revelación", "La Duda del Intelectual", "La Visita del Starets", "El Bautismo Tardío", "La Oración en el Campo de Batalla", "La Responsabilidad Moral del Artista", "El Ascetismo y la Sociedad", "La Parábola del Buen Samaritano Ruso", "El Encuentro con un Sectario", "La Lectura del Evangelio", "La Paz Interior Tras la Tormenta",
+            // Guerra y Paz
+            "El Bautismo de Fuego en Austerlitz", "La Retirada de Moscú en 1812", "Una Carta desde el Frente de Crimea", "La Vida en el Regimiento Preobrazhensky", "El Hospital de Campaña", "La Nostalgia del Soldado Lejos de Casa", "El Coraje Silencioso del Oficial", "La Devastación de la Guerra en la Aldea", "El Regreso del Héroe Tullido", "Prisionero de los Franceses", "La Estrategia del General Kutúzov", "Una Tregua Inesperada", "El Saqueo de la Finca", "La Viuda de Guerra", "El Reclutamiento Forzoso", "La Canción del Soldado", "El Miedo Antes del Combate", "La Propaganda Imperial", "El Tratado de Paz y sus Consecuencias", "La Camaradería en las Trincheras", "Recordando Borodino", "El Espía en el Campamento", "La Deserción y sus Motivos", "El Impacto Psicológico de la Violencia", "La Reconstrucción de la Patria", "El Debate sobre la Guerra Justa", "La Figura del Cosaco", "El Asedio de Sebastopol", "La Muerte de un Camarada", "La Paz Anhelada",
+            // Familia y Relaciones
+            "El Matrimonio de Natasha Rostova", "La Infidelidad en la Alta Sociedad", "El Amor Prohibido de la Gobernanta", "La Relación entre Padres e Hijos", "La Rivalidad entre Hermanos", "La Presión por Casarse Bien", "El Cuidado de los Ancianos", "Una Familia Dividida por la Política", "La Pérdida de un Hijo", "La Adopción de un Huérfano", "Secretos de Familia Revelados", "La Tensión entre Suegra y Nuera", "El Primer Amor de Juventud", "La Fuga de los Amantes", "La Educación de las Hijas", "El Patriarca Autoritario", "La Lealtad Conyugal a Prueba", "La Celebración de un Aniversario", "La Correspondencia Familiar", "El Divorcio Impensable", "La Vida de los Niños en la Finca", "El Deber Filial", "La Soledad del Viudo", "El Encuentro con un Amor Pasado", "La Reconciliación Familiar", "El Papel de la Mujer en el Hogar", "La Influencia de los Tíos y Tías", "Una Propuesta de Matrimonio Inesperada", "El Escándalo de un Nacimiento Ilegítimo", "El Legado de los Abuelos",
+            // Vida Rural y Naturaleza
+            "La Cosecha en la Estepa", "Un Día de Caza con los Perros", "La Vida del Campesino Libre", "El Invierno Ruso y la Supervivencia", "La Belleza del Bosque de Abedules", "El Trabajo en los Campos desde el Amanecer", "La Feria del Pueblo", "El Río Volga como Testigo", "La Conexión Espiritual con la Tierra", "La Tormenta de Nieve Aisladora", "El Cuidado de los Caballos", "La Pesca en el Lago Helado", "La Celebración de la Primavera Eslava", "El Incendio en la Aldea", "La Sabiduría del Viejo Granjero", "El Vínculo entre el Hombre y el Animal", "La Construcción de una Izba", "El Huerto Familiar", "La Amenaza de los Lobos", "La Tradición Oral en la Aldea", "La Recolección de Setas y Bayas", "El Paisaje como Reflejo del Alma", "La Rutina de las Estaciones", "La Visita del Médico Rural", "El Molino de Agua", "La Vida Comunitaria del Mir", "El Aprendizaje de los Oficios Rurales", "La Música Folclórica Campesina", "La Plaga que Azota los Cultivos", "La Sencillez de la Vida Campestre",
+            // Títulos Adicionales para Exhaustividad
+             "El Diario Secreto de la Condesa Lidia", "La Deuda del Juego", "El Filósofo Errante", "Una Lección de Humildad", "El Destino Ineludible", "La Intriga Política en el Senado", "El Artista Incomprendido", "La Epidemia de Cólera", "Un Viaje en Troika", "El Duelo por un Insulto Menor", "La Biblioteca del Erudito", "El Complot Anarquista", "La Visita a la Fábrica Textil", "El Sueño Premonitorio", "La Superstición Popular", "El Contrabandista de la Frontera", "Una Conversación sobre el Nihilismo", "El Maestro de Esgrima", "La Llegada del Ferrocarril", "El Legado de Pedro el Grande", "La Influencia de la Literatura Francesa", "El Debate Eslavófilo vs. Occidentalista", "La Caricatura Social", "El Retrato Psicológico", "La Búsqueda de la Autenticidad", "El Desencanto con la Civilización", "La Muerte de un Burócrata", "El Teatro de Moscú", "La Censura Imperial", "El Movimiento Decembrista", "La Crisis Existencial", "El Poder Redentor del Trabajo Manual", "La Educación Popular", "El Idealismo Juvenil", "La Desilusión de la Madurez", "El Recuerdo de la Infancia", "La Vejez y la Sabiduría", "El Encuentro Fortuito", "La Carta Perdida", "El Testamento Inesperado", "La Fuga a Siberia", "El Regreso Triunfal", "La Fiesta de San Juan", "El Icono Milagroso", "La Vida Monástica", "El Ermitaño del Bosque", "La Disputa Teológica", "El Amor Platónico", "La Venganza Fríamente Calculada", "El Perdón Incondicional", "La Simpleza como Virtud", "La Crítica a la Hipocresía Social", "El Sentido de la Historia", "La Rueda de la Fortuna", "El Azar y la Necesidad", "La Condición Humana", "Reflexiones sobre la Propiedad", "La Utopía Social", "El Valor de la Tradición", "La Ruptura con el Pasado", "El Exilio Interior", "La Melancolía Eslava", "La Alegría Efímera", "La Esperanza Inquebrantable", "El Paisaje Nevado", "El Sol de Primavera", "El Olor a Tierra Mojada", "El Sonido del Viento en la Estepa", "El Crujir de la Nieve", "El Canto del Ruiseñor", "La Majestad de las Montañas del Cáucaso", "El Murmullo del Río", "El Silencio del Bosque", "El Cielo Estrellado Ruso",
+             // ... [Continuar generando variaciones y combinaciones]
+        ];
+        const tolstoyThemes = [ // Para 'Generar Más'
+            "la aristocracia rusa del siglo XIX", "la vida campesina y los siervos", "dilemas morales y religiosos", "la guerra napoleónica", "la guerra de Crimea", "la búsqueda de sentido", "el matrimonio y la familia en Rusia", "la infidelidad y sus consecuencias", "la relación con la tierra y la naturaleza", "la crítica social", "la redención y el perdón", "la fe ortodoxa", "el conflicto entre deber y deseo", "la muerte y la mortalidad", "la educación y la filosofía", "el realismo psicológico", "San Petersburgo vs. Moscú", "la vida militar", "la caza y la vida rural", "el rol de la mujer"
+        ];
+        const textApiConfig = { // Para descripción principal (el cuento)
+            model: "mistral", // O un modelo más potente si está disponible y se requiere más coherencia estilística
+            systemPrompt: "Eres un narrador omnisciente con el estilo profundo, realista y reflexivo de León Tolstoi. Tu tarea es escribir una historia corta (aproximadamente 1200-1300 palabras) basada en el título proporcionado. Ambientada en la Rusia del siglo XIX (o un entorno similar apropiado), la narrativa debe explorar las complejidades de los personajes, sus luchas internas, dilemas morales, y su lugar en la sociedad. Utiliza descripciones detalladas del entorno y las emociones, explora temas como la fe, la familia, la clase social, la guerra, la búsqueda de sentido, o la conexión con la naturaleza. Adopta un tono grave pero humano, con introspección psicológica y ocasionales reflexiones filosóficas sobre la vida. El lenguaje debe ser rico y evocador, propio de la gran novela realista rusa. Basa tu historia únicamente en el siguiente título/premisa:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny", // Modelo rápido para chat
+            systemPrompt: "Actúa como un perspicaz lector y analista literario familiarizado con la obra de Tolstoi. Estás discutiendo la historia corta que se acaba de generar, cuyo título es '[TÍTULO_AQUÍ]'. Responde a las preguntas del usuario sobre esta narrativa específica: analiza los personajes, sus motivaciones, los temas presentes (morales, sociales, filosóficos), comenta el desarrollo de la trama, el estilo de escritura o las posibles influencias tolstoianas detectadas en el texto. Sé reflexivo, preciso y mantén la conversación centrada únicamente en la historia generada.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para nuevas narrativas al estilo de Tolstoi. Genera exactamente 15 títulos o premisas para cuentos ambientados en la Rusia del siglo XIX. Deben evocar temas como dilemas morales, clases sociales, vida rural, guerra, fe, o familia. Devuelve *solo* la lista de títulos/premisas, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Identicos a la versión anterior, sólo verificar que los IDs coincidan con el HTML)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentStoryTitle = null; // Renombrado para claridad
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             let systemPromptToUse = config.systemPrompt;
+             if (isChat && currentStoryTitle) {
+                 systemPromptToUse = chatApiConfig.systemPrompt.replace('[TÍTULO_AQUÍ]', currentStoryTitle); // Insertar título actual
+             }
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                      // Mensaje de error amigable - Adaptado
+                     throw new Error(`(Error ${response.status}) Nuestros escribas digitales parecen estar sobrecargados. Por favor, inténtelo de nuevo en unos momentos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta del oráculo literario llegó vacía. Quizás deba reformular la inspiración.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión con los archivos tardó demasiado (>${config.timeoutSeconds}s). Verifique su conexión o vuelva más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un contratiempo inesperado al consultar las musas digitales.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentStoryTitle) throw new Error("Error interno: No se ha establecido el contexto de la historia para el chat."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(tolstoyThemes) || "dilemas morales en la Rusia del siglo XIX";
+            const specificPrompt = `Genera 15 títulos/premisas para cuentos inspirados en ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 10 && line.length < 150);
+                     if (titles.length < 5) throw new Error("Las musas no ofrecieron suficientes nuevas ideas.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 550, nologo: true }; // Ratio más apaisado
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "escena de la vida rusa del siglo XIX";
+             // Prompt adaptado a estilo Tolstoi/Pintura realista rusa
+             const enhancedPrompt = `Oil painting in the style of 19th-century Russian realism (like Perov, Repin, Kramskoi) depicting a scene inspired by '${safePromptText}'. Focus on characters' expressions, mood, detailed clothing, and setting (rural landscape, dacha interior, St. Petersburg street). Muted color palette, dramatic or natural lighting. Avoid text and labels.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, signature, watermark, multiple images, collage, modern elements, photograph, cartoon, drawing, sketch, bright neon colors, abstract";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ==========
+        function formatExplanationText(rawText) {
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             // Quitar elementos de formato que la IA pueda añadir y no queramos
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1'); // \text{}
+             formatted = formatted.replace(/\\\[.*?\\\]/gs, ''); // Quitar bloques de fórmula completos \[ ... \]
+             formatted = formatted.replace(/\$.*?\$/gs, ''); // Quitar fórmulas inline $...$
+             // Encabezados (podrían no ser necesarios si la IA escribe prosa continua)
+             formatted = formatted.replace(/^#+\s+(.*)$/gm, '<h2>$1</h2>'); // Convertir cualquier # a H2 simple
+             // Negrita y Cursiva estándar
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             // Convertir saltos de línea dobles en párrafos <p>
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h')) return block; // Mantener encabezados si se crearon
+                 // Reemplazar saltos de línea simples DENTRO de un bloque por espacio
+                 let content = block.replace(/\n/g, ' ').trim();
+                 // Aplicar sangría con CSS en lugar de añadirla aquí
+                 return `<p>${content}</p>`;
+             }).join('');
+             return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios funcionales, sólo verificar IDs)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentStoryTitle = null; // Limpia el contexto
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Sin cambios funcionales)
+        function showFullscreenImage(imgSrc) { if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (Sin cambios funcionales, sólo verificar IDs y contexto)
+        function addChatMessage(message, sender) {
+             const msgDiv = document.createElement('div');
+             msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+             message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             msgDiv.innerHTML = message;
+             chatHistory.appendChild(msgDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) { const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled || !currentStoryTitle) return; // Asegurar contexto
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error del analista: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios funcionales)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; /* Optional icon: div.innerHTML = `<i class="fas fa-book"></i>`;*/ const textSpan = document.createElement('span'); textSpan.textContent = title; div.appendChild(textSpan); div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar alfabéticamente o por relevancia? Alfabético es más simple.
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans italic">» No se encontraron premisas en los archivos «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentStoryTitle = title; // SET CHAT CONTEXT
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-palette placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Evocando ilustración...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración inspirada en ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => { showFullscreenImage(imgElement.src); });
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-image-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Fallo al ilustrar.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL ilustración.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al tejer la narrativa.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.style.display = 'none'; // Ocultar chat si la historia principal falla
+            } finally {
+                // Asegurarse de que el chat esté visible si todo fue bien
+                if (!modalError.classList.contains('content-hidden')) {
+                     chatSection.style.display = 'flex'; // Mostrar chat incluso si hay error (puede ser útil)
+                } else if (modalStoryContentArea.classList.contains('content-hidden')) {
+                    // No hacer nada si el area principal sigue oculta
+                }
+                 else {
+                     chatSection.style.display = 'flex'; // Asegurar que el chat sea visible
+                 }
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando inspiración...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron descubrir nuevas tramas en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar inspiración: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Nuevas Tramas';
+             }
+         }
+
+         // *** Search Filter Function ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+             // (Verificar todos los IDs como en la versión anterior)
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: darkred; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: serif;">Error Crítico: Faltan componentes esenciales de la interfaz literaria.</p>';
+                 return;
+             }
+             // Listeners (sin cambios funcionales)
+             modalCloseBtn.addEventListener('click', hideModal);
+             storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+             generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+             searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+             searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+             chatSendBtn.addEventListener('click', handleSendMessage);
+             chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+             imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+             fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+             // Initial display
+             displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden');
+         }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

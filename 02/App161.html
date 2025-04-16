@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopedia Metahumana - Archivos AEGIS</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Limpias y Modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Enciclopedia Metahumana --- */
+        :root {
+            --color-primary: #0ea5e9; /* Azul Cielo Vibrante */
+            --color-secondary: #eab308; /* Amarillo Oro (Acento) */
+            --color-tertiary: #f43f5e; /* Rosa/Rojo Vibrante (Énfasis/Alerta) */
+            --color-background: #1f2937; /* Gris Azulado Oscuro */
+            --color-surface: #374151; /* Gris Medio Oscuro (Superficies Modales/Items) */
+            --color-text: #f3f4f6; /* Gris Muy Claro / Casi Blanco */
+            --color-text-muted: #9ca3af; /* Gris Claro */
+            --color-modal-bg: #111827; /* Gris/Azul Más Oscuro (Fondo Modal) */
+            --color-border: #4b5563; /* Borde Gris Medio */
+            --color-error-bg: #450a0a; /* Fondo error rojo muy oscuro */
+            --color-error-text: #fecaca;
+            --color-error-border: #ef4444;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+            --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+            --border-radius: 5px; /* Bordes suavemente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Roboto Condensed', sans-serif; font-weight: 700; letter-spacing: 0.5px; }
+        .logo { color: var(--color-primary); text-shadow: 0 0 6px rgba(14, 165, 233, 0.5); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(31, 41, 55, 0.85); backdrop-filter: blur(8px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-inset); transition: var(--transition-normal); font-family: 'Montserrat'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.25), var(--shadow-inset); outline: none; background-color: #4b5563; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.1rem; }
+        .title-item { background-color: var(--color-surface); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Montserrat'; font-size: 0.95rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #4b5563; border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), #3b82f6); /* Azul a Azul más oscuro */ color: white; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Roboto Condensed', sans-serif; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-transform: uppercase; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, #3b82f6, var(--color-primary)); box-shadow: var(--shadow-md); transform: scale(1.03); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-surface); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-modal-bg); transform: rotate(90deg); box-shadow: 0 0 8px var(--color-primary); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final + Chat fijo) */
+        #modal-story-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; }
+        /* Área Scrollable (Texto + Imagen) */
+        #modal-content-area { flex-grow: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-surface);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-surface); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Roboto Condensed', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 700;}
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-secondary); border-bottom: 1px dashed var(--color-border);}
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 15px var(--color-primary); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid var(--color-surface); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles (Fijo abajo) */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: auto; /* Empuja al fondo */ flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; background-color: var(--color-modal-bg); /* Fondo para tapar scroll */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: var(--color-background); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-surface);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-surface); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95em; }
+        .user-message { background-color: var(--color-primary); color: var(--color-background); margin-left: auto; text-align: right; font-weight: 400;}
+        .ai-message { background-color: var(--color-surface); color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.3rem; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); border-radius: var(--border-radius); font-family: 'Montserrat'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); background-color: #4b5563; }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: var(--color-modal-bg); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #38bdf8; } /* Azul más claro */
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 24, 39, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.3rem; font-family: 'Roboto Condensed'; text-shadow: 0 0 5px var(--color-primary); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Montserrat'; font-size: 0.95rem;}
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.97); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; backdrop-filter: blur(5px); }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: 0 0 25px var(--color-primary); border-radius: 3px; }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-surface); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-modal-bg); transform: scale(1.1) rotate(90deg); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-dna mr-3 text-sky-400"></i> <!-- Icono ADN -->
+                     Enciclopedia Metahumana
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">// ARCHIVOS AEGIS //</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Análisis de Fenómenos Parahumanos</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">Consulta la base de datos global sobre habilidades, orígenes y clasificaciones metahumanas. Acceso autorizado Nivel 4.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar habilidad, concepto o clasificación...">
+             <i class="fas fa-search text-gray-500"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-sky-400 mr-2"></i> <!-- Icono libro -->
+                 Índice de Expedientes
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Cargando índice de expedientes...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">-- No se encontraron expedientes que coincidan con los criterios de búsqueda --</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Solicitar Nuevos Informes
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Procesando Expediente...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Holds Scrollable Text + Fixed Chat) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text + Image Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <!-- Text Content (HTML) -->
+                     <div id="modal-content">
+                         <!-- Explanation text goes here -->
+                         <!-- Image and placeholder will be appended here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Analizando consulta...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta a la Dra. Reed sobre este expediente...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area (Relative to modal-story-content-area for positioning) -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-800 text-gray-400 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información compilada por la IA de AEGIS con fines analíticos y de clasificación. Basado en datos observados y teóricos.</p>
+              <p class="mt-1">Las clasificaciones de poder son estimaciones y pueden variar.</p>
+              <p class="mt-2">© AEGIS Institute - División de Estudios Parahumanos</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Habilidades Físicas
+            "Super Fuerza (Clase I-V)", "Super Velocidad (Subónica)", "Super Velocidad (Supersónica)", "Super Velocidad (Relativista/FTL)", "Invulnerabilidad (Resistencia Cinética)", "Invulnerabilidad (Resistencia Energética/Térmica)", "Durabilidad Mejorada", "Agilidad y Reflejos Sobrehumanos", "Resistencia Sobrehumana (Stamina)", "Factor Curativo Acelerado", "Regeneración Celular Avanzada", "Sentidos Agudizados (Vista, Oído, Olfato)", "Ecolocalización", "Visión Nocturna / Infrarroja / Ultravioleta", "Visión Microscópica / Telescópica", "Adaptación Fisiológica Reactiva", "Longevidad Extendida / Inmortalidad Biológica", "Respiración Acuática / Adaptación Anfibia", "Adaptación al Vacío Espacial", "Garras y Colmillos Retráctiles", "Piel Endurecida (Quitina, Ósea, Metálica)", "Densidad Muscular Extrema", "Control Biológico Autónomo (Ritmo cardíaco, etc.)", "Salto Mejorado", "Mimetismo Muscular", "Resistencia a Toxinas y Enfermedades", "Animación Suspendida Voluntaria", "Producción de Feromonas (Atracción/Repulsión)", "Generación de Veneno/Ácido Biológico", "Camuflaje Biológico (Cambio de color/textura)", "Producción de Telaraña Orgánica", "Miembros Adicionales (Brazos, Tentáculos)", "Fuerza de Agarre Excepcional", "Metabolismo Acelerado", "Estructura Ósea Reforzada", "Vuelo Biológico (Alas)",
+            // Habilidades Elementales
+            "Piroquinesis (Control del Fuego)", "Crioquinesis (Control del Hielo/Frío)", "Hidroquinesis (Control del Agua)", "Geoquinesis (Control de la Tierra/Roca)", "Aerokinesis (Control del Aire/Viento)", "Electroquinesis (Control de la Electricidad)", "Atmokinesis (Control del Clima)", "Magmakinesis (Control de la Lava)", "Fitokinesis (Control de las Plantas)", "Manipulación de la Arena/Cristal", "Manipulación del Metal (Ferrokinesis)", "Manipulación del Carbono", "Manipulación Lumínica (Fotokinesis)", "Manipulación Umbrática (Umbraquinesis/Oscuridad)", "Manipulación del Sonido (Sonoquinesis)", "Manipulación Magnética (Magnetokinesis)", "Manipulación del Plasma Elemental", "Control Térmico (Calor/Frío sin elemento)", "Absorción Elemental", "Transmutación Elemental", "Generación de Tormentas Eléctricas", "Creación de Constructos Elementales", "Mimetismo Elemental (Convertirse en elemento)", "Control de la Humedad", "Generación de Vibraciones Sísmicas", "Control Atmosférico Localizado", "Manipulación de la Presión del Aire", "Inducción de Congelación Instantánea", "Generación de Fuego Frío", "Manipulación del Ozono", "Control de la Contaminación Atmosférica", "Manipulación de Campos Electromagnéticos",
+            // Habilidades Mentales / Psíquicas
+            "Telepatía (Lectura Mental)", "Telepatía (Proyección Mental)", "Comunicación Telepática", "Control Mental / Subyugación", "Creación de Ilusiones Psíquicas", "Camuflaje Telepático / Mente Indetectable", "Escudo Psíquico / Defensa Mental", "Proyección Astral", "Telequinesis (Control de Objetos)", "Vuelo Telequinético", "Campo de Fuerza Telequinético", "Explosión Psiónica / Rayo Mental", "Empatía (Lectura/Manipulación Emocional)", "Precognición / Clarividencia", "Retrocognición (Visión del Pasado)", "Psicometría (Lectura de Objetos)", "Inteligencia Sobrehumana / Super-Genio", "Memoria Eidética / Procesamiento Acelerado", "Tecnopatía (Control de Tecnología)", "Ciberpatía (Interfaz Mental con Redes)", "Manipulación de Sueños", "Posesión Mental", "Transferencia de Conciencia", "Conciencia Cósmica (Limitada)", "Generación de Dolor Psíquico", "Manipulación de la Memoria", "Descarga Neuronal", "Construcción de Constructos Psíquicos", "Sentido del Peligro Psíquico ('Sentido Arácnido')", "Omnilingüismo Psíquico", "Anulación de Poderes (Base Psíquica)", "Inducción de Miedo/Pánico", "Empatía Animal / Control Animal", "Proyección de Emociones", "Mente Colectiva / Conciencia de Enjambre",
+            // Manipulación de Energía
+            "Generación de Rayos de Energía (Concusiva)", "Generación de Rayos de Energía (Térmica/Incineradora)", "Generación de Rayos de Energía (Desintegradora)", "Absorción de Energía (Cinética)", "Absorción de Energía (Energética)", "Redirección de Energía", "Manipulación de Energía Cósmica", "Manipulación de Fuerza Vital (Chi/Ki)", "Manipulación de Energía Nuclear (Radiación)", "Manipulación de Energía Gravitacional", "Manipulación de Energía Sónica", "Creación de Constructos de Energía Sólida", "Manipulación de la Luz Sólida", "Generación de Pulsos EMP", "Manipulación de Energía Cuántica", "Manipulación de Materia Oscura/Energía Oscura", "Conversión de Energía", "Sobrecarga Energética", "Campo de Estasis Energético", "Drenaje de Energía Vital", "Infusión de Energía (Potenciación)", "Generación de Ondas de Choque Energéticas", "Manipulación del Espectro Electromagnético", "Vuelo por Propulsión Energética", "Autodetonación Energética", "Generación de Calor/Frío Extremo (Energético)", "Manipulación de la Energía del Vacío (Punto Cero)", "Resistencia a la Energía",
+            // Manipulación de Materia / Biológica
+            "Transmutación de Materia (Alquimia)", "Manipulación Molecular", "Control de Densidad (Intangibilidad/Invulnerabilidad)", "Cambio de Forma (Metamorfosis)", "Elasticidad / Plasticidad Corporal", "Alteración de Tamaño (Crecimiento/Encogimiento)", "Mimetismo Animal", "Mimetismo Inorgánico (Piedra, Metal)", "Manipulación Ósea (Crecimiento, Proyectiles)", "Generación de Ácido/Base Corrosiva", "Bio-Electricidad", "Bio-Luminiscencia", "Manipulación Feromonal", "Manipulación Celular (Propia/Ajena)", "Desintegración Molecular Táctil", "Animación de Materia Inorgánica", "Petrificación Táctil", "Control de la Gravedad Personal", "Manipulación de Polímeros", "Generación de Esporas/Toxinas Biológicas", "Mimetismo de Poderes (Limitado/Táctil)", "Manipulación del Silicio", "Control de Plagas", "Manipulación del Vidrio", "Generación de Materia Orgánica", "Reanimación de Tejido Muerto (Necromancia limitada)", "Fusión Corporal", "Duplicación (Clones biológicos)", "Adaptación Pulmonar a cualquier Gas",
+            // Movimiento / Espacial
+            "Vuelo Atmosférico", "Vuelo Espacial", "Teleportación (Línea de Visión)", "Teleportación (A cualquier lugar conocido)", "Teleportación Grupal", "Viaje Interdimensional", "Intangibilidad / Fase", "Caminar por las Paredes / Adhesión Física", "Velocidad de Escape Orbital", "Manipulación de Portales", "Manipulación Espacial (Distorsión Local)", "Creación de Agujeros de Gusano (Pequeña escala)", "Salto Hiperespacial Personal", "Manipulación Vectorial (Redirección de Movimiento)", "Anclaje Espacial (Inmovilidad)", "Generación de Bolsillos Dimensionales", "Caminar sobre el Agua/Líquidos", "Desplazamiento Temporal (Limitado/Saltos)", "Manipulación de la Fricción", "Bucle Temporal Personal", "Conciencia Espacial Aguda", "Navegación Innata", "Generación de Plataformas de Vuelo", "Intangibilidad Selectiva", "Omnipresencia Localizada",
+            // Tecnológicas / Cibernéticas
+            "Ciber-Interfaz Neuronal Directa", "Implantes de Fuerza/Velocidad Mejorada", "Armamento Integrado (Cañones, Láseres)", "Blindaje Cibernético", "Sentidos Artificiales Mejorados (Radar, Sonar)", "Tecnoquinesis (Control de Máquinas)", "Tecno-Empatía (Comunicación con Máquinas)", "Asimilación Tecnológica (Nanobots)", "Generación de Campos de Fuerza Tecnológicos", "Hacking Neuronal", "Construcción Tecnológica Instantánea (Nanotec)", "Interfaz con Sistemas de Armas Globales", "Fuente de Poder Interna (Reactor Miniatura)", "Reparación Cibernética Autónoma", "Adaptadores de Interfaz Universal", "Proyección Holográfica Avanzada", "Control de Drones por Enjambre Mental", "Análisis de Datos a Velocidad Lumínica", "Anulación Tecnológica (Techno-EMP)", "Actualización de Software/Hardware Corporal", "Transferencia de Conciencia a Sistemas Digitales", "Creación de Armaduras de Poder (Mentalmente)",
+            // Mágicas / Místicas / Abstractas
+            "Manipulación de la Magia Arcana", "Lanzamiento de Hechizos", "Manipulación de la Realidad (Limitada)", "Invocación de Entidades", "Adivinación / Escudriñamiento Místico", "Encantamiento de Objetos", "Generación de Ilusiones Mágicas", "Necromancia", "Manipulación del Alma", "Manipulación de la Probabilidad (Buena/Mala Suerte)", "Manipulación del Caos", "Manipulación del Orden", "Conciencia Cósmica (Amplia)", "Poder Divino / Canalización Divina", "Resurrección (Propia/Ajena, con coste)", "Manipulación Conceptual (Ej: Borrar 'Fricción')", "Viaje en el Tiempo (Controlado)", "Absorción de Poderes", "Anulación de Poderes (Mágica/Conceptual)", "Inmortalidad Verdadera", "Regeneración Conceptual", "Toon Force / Física de Dibujos Animados", "Manipulación del Destino", "Conocimiento Intuitivo / Omnisciencia Limitada", "Generación de Milagros", "Control sobre la Vida y la Muerte", "Manipulación de Leyes Físicas", "Poder de la Palabra / Comandos de Realidad", "Bendición / Maldición", "Generación de Zonas Nulas de Magia", "Empatía Universal", "Manipulación de la Nada/Vacío",
+            // Conceptos y Temas
+            "Orígenes: Mutación Genética (Gen-X)", "Orígenes: Exposición a Radiación/Químicos", "Orígenes: Origen Alienígena", "Orígenes: Intervención Divina/Mística", "Orígenes: Avance Tecnológico/Cibernético", "Orígenes: Evolución Acelerada", "Clasificación de Poderes (Escala Numérica/Alfabética)", "Clasificación de Amenazas Metahumanas", "El Síndrome del Superhéroe (Psicología)", "Ética del Control Mental", "Ética de la Precognición (Libre Albedrío)", "Limitaciones de Poder Comunes", "Debilidades Específicas (Kriptonita-Like)", "El Concepto de 'Power Creep'", "Identidades Secretas: Necesidad y Riesgos", "Impacto Social de los Metahumanos", "Legislación Metahumana (Registro, Control)", "Organizaciones Gubernamentales (AEGIS, SHIELD-like)", "Organizaciones Terroristas Metahumanas", "El Rol de la Tecnología contra Metahumanos", "Fuentes de Poder Externas (Artefactos, Entidades)", "Entrenamiento y Control de Habilidades", "Poderes Latentes vs. Activos", "Sinergia de Poderes en Equipos", "El Costo Fisiológico de los Poderes", "Metahumanos en la Guerra", "El Miedo Público a los Metahumanos", "Integración vs. Segregación", "Arquetipo: El Boy Scout (Superman-like)", "Arquetipo: El Vigilante Oscuro (Batman-like)", "Arquetipo: El Embaucador (Loki-like)", "Arquetipo: El Monstruo Incomprendido (Hulk-like)", "Arquetipo: El Mago Supremo (Dr. Strange-like)", "Arquetipo: El Speedster (Flash-like)", "Arquetipo: El Telépata Omega", "Arquetipo: El Manipulador de la Realidad", "El Nexo entre Ciencia y Magia en Poderes", "Teorías sobre el Origen Universal de los Poderes", "Generaciones de Metahumanos", "Poderes 'Inútiles' o Situacionales", "El Potencial Infinito vs. Límites Humanos", "La Singularidad Metahumana", "Armas Anti-Metahumanos", "Explotación de Metahumanos", "Cultos Metahumanos", "Deportes Metahumanos", "Medicina Metahumana", "La Paradoja del Viaje en el Tiempo", "Universos Paralelos y Variantes Metahumanas", "Consecuencias Imprevistas del Uso de Poderes",
+        ];
+        const superhumanThemes = [
+            "habilidades físicas sobrehumanas", "control elemental", "poderes psíquicos", "manipulación de energía", "manipulación de materia", "habilidades de movimiento", "poderes biológicos", "mejoras tecnológicas", "habilidades mágicas o místicas", "poderes abstractos", "orígenes de superhumanos", "clasificación de poderes", "ética superheroica", "limitaciones de poder", "impacto social de metahumanos", "arquetipos de superhéroes", "debilidades metahumanas", "equipos de superhéroes", "organizaciones relacionadas con superhumanos", "villanos metahumanos", "ciencia vs magia en poderes", "viaje en el tiempo y dimensiones", "manipulación de la realidad", "regeneración y curación", "telepatía y telequinesis", "control del clima", "super velocidad", "super fuerza", "invulnerabilidad", "vuelo"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres la Dra. Evelyn Reed, bióloga parahumana senior y teórica principal en los Archivos AEGIS globales. Tu misión es proporcionar un análisis exhaustivo y detallado de la habilidad, concepto o arquetipo metahumano especificado. Debes incluir: 1. Definición clara y concisa. 2. Variaciones conocidas o teóricas. 3. Base científica/teórica plausible (incluso si es altamente especulativa, ej. física cuántica, biología exótica, energía extradimensional). 4. Clasificación de nivel de poder estimada (ej., Local, Urbano, Nacional, Continental, Planetario, Cósmico) y tipo (Ofensivo, Defensivo, Soporte, Utilidad). 5. Aplicaciones tácticas comunes o potenciales. 6. Limitaciones inherentes, debilidades conocidas o posibles contra-medidas. 7. Ejemplos notables (pueden ser hipotéticos o inspirados en arquetipos conocidos, evita nombres con copyright directo si no es el tema central). 8. Breves consideraciones éticas o sociales relevantes. Mantén un tono profesional, analítico y riguroso, digno de un informe clasificado. El informe debe tener entre 1200 y 1300 palabras. Basa tu análisis únicamente en el siguiente expediente:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny", // Modelo rápido para chat
+            systemPrompt: "Actúa como la Dra. Evelyn Reed de AEGIS. Responde preguntas de seguimiento *específicamente* sobre el expediente metahumano actualmente en pantalla ([Topic Placeholder]). Sé precisa, concisa y mantén el tono profesional y analítico. Cíñete a la información relacionada con este expediente.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un generador de nombres para la base de datos AEGIS. Genera exactamente 15 nombres concisos y evocadores de habilidades superhumanas, conceptos relacionados, clasificaciones, o fenómenos parahumanos. Busca variedad entre categorías (físico, mental, elemental, abstracto, tecnológico, etc.). Devuelve *únicamente* la lista, un ítem por línea, sin números, guiones ni texto introductorio/conclusión.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales, solo nombres)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area'); // Wrapper
+        const modalContentArea = document.getElementById('modal-content-area'); // Área scrollable (texto+img)
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Div para texto HTML
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentSuperhumanTopic = null; // Contexto para el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentSuperhumanTopic
+                ? `Actúa como la Dra. Evelyn Reed de AEGIS. Responde preguntas de seguimiento *específicamente* sobre el expediente metahumano '${currentSuperhumanTopic}'. Sé precisa, concisa y mantén el tono profesional y analítico. Cíñete a la información relacionada con este expediente.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`(Error ${response.status}) Nuestros sistemas están experimentando una carga inusual. Por favor, intente acceder al expediente nuevamente en unos momentos.`);
+                }
+                const text = await response.text();
+                if (!text || text.trim().length === 0) {
+                    throw new Error("La respuesta de la IA llegó vacía. Intente reformular su consulta.");
+                }
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') {
+                    throw new Error(`La conexión con los Archivos AEGIS excedió el tiempo límite (>${config.timeoutSeconds}s). Verifique su conexión o intente más tarde.`);
+                }
+                throw new Error(error.message || "Error desconocido al contactar los Archivos Centrales de AEGIS.");
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) {
+            if (!currentSuperhumanTopic) throw new Error("Error interno: Contexto del expediente no establecido para consulta.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(superhumanThemes) || "habilidades superhumanas generales";
+            const specificPrompt = `Genera 15 nombres/conceptos para expedientes sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+                     if (titles.length < 5) throw new Error("La IA no generó suficientes ideas para nuevos expedientes.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "superhuman ability concept art";
+            // Prompt mejorado para arte conceptual de poderes
+            const enhancedPrompt = `Conceptual artwork representing the superhuman ability or concept: '${safePromptText}'. Focus on visualizing the power's effect or nature (energy manifestation, physical distortion, psychic waves, elemental control). Dynamic composition, modern comic book or cinematic concept art style. Avoid text, labels, diagrams, specific copyrighted characters unless the prompt IS the character.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, watermark, signature, multiple panels, collage, realistic photograph, boring, static pose, simple background, UI elements";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (sin cambios)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalContentArea.scrollTop = 0; // Reset scroll del área de texto/imagen
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentSuperhumanTopic = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar alfabéticamente para consistencia
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">-- No hay expedientes disponibles en el índice --</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-aplicar filtro
+         }
+
+        // *** MODIFIED: handleTitleClick (contexto chat, scroll) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentSuperhumanTopic = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Poner texto
+                modalStoryContentArea.classList.remove('content-hidden'); // Mostrar área
+
+                modalContentArea.scrollTop = 0; // Reset scroll del área de texto/imagen
+                console.log("Scroll set to 0 after content visible");
+
+                // Placeholder y carga de imagen (dentro de #modal-content)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-atom placeholder-icon"></i> <!-- Icono átomo -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando representación visual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Representación conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Fallo en la visualización.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir al final de #modal-content
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL visualización.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el expediente.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                // chatSection.classList.add('content-hidden'); // Ocultar chat si falla carga principal
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando Nuevos Datos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron obtener nuevos informes en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al solicitar informes: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Solicitar Nuevos Informes';
+             }
+         }
+
+         // *** Search Filter Function (con normalización) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (sin cambios estructurales)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential UI components.");
+                document.body.innerHTML = '<p style="color: #f43f5e; font-size: 1.5em; text-align: center; padding-top: 3em;">++ ERROR CRÍTICO: Fallo al inicializar interfaz AEGIS. Componentes faltantes. ++</p>';
+                return;
+             }
+            // Listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

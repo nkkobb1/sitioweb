@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuentos de Dualidades - Antología Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Literarias/Elegantes -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Cuentos de Dualidades --- */
+        :root {
+            --color-primary: #cbd5e1; /* Plata / Gris Claro */
+            --color-secondary: #a78bfa; /* Violeta Suave (acento) */
+            --color-tertiary: #fde047; /* Amarillo Dorado (acento sutil) */
+            --color-background: #1e293b; /* Azul Pizarra Oscuro */
+            --color-text: #e2e8f0; /* Gris Muy Claro (casi blanco) */
+            --color-text-muted: #94a3b8; /* Gris Azulado Medio */
+            --color-modal-bg: #293548; /* Azul Pizarra Ligeramente más claro */
+            --color-border: #475569; /* Borde Gris Azulado */
+            --color-error-bg: #450a0a; /* Fondo error rojo muy oscuro */
+            --color-error-text: #fecaca; /* Texto error claro */
+            --color-error-border: #ef4444; /* Borde error rojo */
+
+            --shadow-sm: 0 1px 2px 0 rgba(203, 213, 225, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(203, 213, 225, 0.1), 0 2px 4px -2px rgba(203, 213, 225, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --border-radius: 4px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.75; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Merriweather', serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.7rem; display: inline-block; font-weight: 400; /* Más ligero */ }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(30, 41, 59, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-modal-bg); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(203, 213, 225, 0.2); outline: none; background-color: #334155; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1.1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; /* Alineación izquierda */ font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; min-height: 65px; font-family: 'Lato'; font-size: 0.95rem; border-left: 3px solid var(--color-border); }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-primary); background-color: #334155; border-left-color: var(--color-secondary); }
+        /* REMOVED: Generate More Button styles */
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30, 41, 59, 0.92); /* Overlay oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-border); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.4; font-family: 'Merriweather', serif;}
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) rgba(71, 85, 105, 0.5);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(71, 85, 105, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; font-size: 1.05rem; /* Slightly larger text */ }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Merriweather', serif; margin-top: 2.3em; margin-bottom: 1.2em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.6em; font-weight: 400; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.1em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 3rem auto 1.5rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(203, 213, 225, 0.15); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 3rem auto 1.5rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(71, 85, 105, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; opacity: 0.7; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.6rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(30, 41, 59, 0.8); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(71, 85, 105, 0.5);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(71, 85, 105, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 88%; word-wrap: break-word; line-height: 1.55; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-secondary); color: var(--color-background); margin-left: auto; text-align: left; font-weight: 400;}
+        .ai-message { background-color: #475569; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); background-color: #334155; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Lato'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #e2e8f0; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(30, 41, 59, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.2rem; font-family: 'Merriweather', serif; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30, 41, 59, 0.96); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-adjust mr-3"></i> <!-- Icono dualidad sol/luna -->
+                     Cuentos de Dualidades
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">~ Antología Interactiva ~</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-5">Entre la Luz y la Sombra</h1>
+             <p class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto font-light">Explora relatos que desentrañan la coexistencia de opuestos en mundos inesperados. Selecciona una premisa y adéntrate en su historia.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar por título o concepto (ej: esperanza, máquina, bosque)...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-gray-400 mr-2"></i> <!-- Icono libro abierto -->
+                 Índice de Relatos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Cargando la antología...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">No se encontraron relatos que coincidan con la búsqueda.</p>
+             <!-- REMOVED: Generate More Button Container -->
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Tejiendo la historia...</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Story text (HTML) goes here -->
+                         <!-- Image and placeholder will be appended here by JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Reflexionando sobre la pregunta...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este cuento...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-feather-alt"></i> <!-- Icono pluma -->
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Relatos generados por IA como exploración creativa de conceptos duales.</p>
+              <p class="mt-1">Las historias son obras de ficción.</p>
+              <p class="mt-2">© 2024 Antología Interactiva</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Luz y Sombra / Día y Noche
+            "La ciudad donde la noche olvidó cómo terminar", "El farero ciego que guiaba con oscuridad", "Donde las sombras tienen voluntad propia", "El último rayo de sol en un mundo crepuscular", "El jardín que florece solo bajo la luna negra", "La niña que tejía la luz del día", "El ladrón que robaba oscuridad", "El festival del solsticio perpetuo", "Cuando el día y la noche se enamoraron", "La criatura nacida de un eclipse total", "El bosque que respira sombras", "El espejo que reflejaba solo la noche", "La melodía que solo suena al amanecer", "El pintor que usaba luz líquida y tinta de sombra", "El reino donde el sol nunca se ponía (y su secreto)", "La biblioteca iluminada por estrellas cautivas", "El cazador de auroras boreales oscuras", "La arquitectura hecha de luz solidificada", "El pueblo que comerciaba con horas de sol", "El laberinto donde perderse era encontrar la luz", "La montaña que proyectaba una sombra viviente", "El río cuyas aguas eran noche líquida", "El profeta que solo veía en la oscuridad absoluta", "La máquina que podía embotellar el mediodía", "El carnaval que aparecía solo en la noche más larga", "El guerrero cuya armadura era de sombra", "La flor que acumulaba luz para estallar en la noche", "El alquimista que buscaba la piedra nocturna", "La canción de cuna que invocaba el amanecer", "El guardián de la frontera entre el día y la noche",
+            // Esperanza y Desesperación / Alegría y Tristeza
+            "El pozo de los deseos desesperados", "La última ciudadela de la esperanza", "Donde la risa es un crimen", "El mercader que vendía futuros esperanzadores (con truco)", "La flor que crecía en el páramo de la desolación", "El autómata que aprendió a llorar", "La canción más triste del universo (y su única nota alegre)", "El festival de la melancolía obligatoria", "El niño que coleccionaba lágrimas de alegría", "La prisión donde la única fuga era la desesperación", "El oasis de esperanza en un desierto de apatía", "La máscara que ocultaba una sonrisa eterna (o una mueca)", "El libro que contenía todas las tristezas del mundo", "El juglar cuya música curaba la desesperanza", "La plaga de la felicidad incontrolable", "El faro que guiaba a las almas perdidas hacia la calma (o el olvido)", "El arquitecto de ciudades sin futuro", "La lágrima que se convirtió en estrella", "El robot programado para la esperanza infinita", "El bosque donde los árboles susurraban secretos de dolor antiguo", "El carnaval de las ilusiones rotas", "La poción que otorgaba felicidad a costa de la memoria", "El corazón mecánico que bombeaba tristeza líquida", "La profecía de la era sin esperanza", "El refugio donde se cultivaba la alegría artificial", "El espejo que reflejaba la mayor desesperación del espectador", "La criatura hecha de pura melancolía", "El dios olvidado de la pequeña esperanza", "La biblioteca de los futuros perdidos", "El puente entre el reino de la alegría y la tierra del pesar",
+            // Orden y Caos / Creación y Destrucción
+            "La ciudad perfectamente ordenada (y su rebelión silenciosa)", "El arquitecto del caos controlado", "Donde las leyes de la física son sugerencias", "El bibliotecario que intentaba catalogar el infinito", "La máquina que creaba y destruía universos por capricho", "El jardín donde el orden natural era una anomalía", "El dios del caos que anhelaba la estructura", "La sinfonía de la creación primordial (y su eco destructivo)", "El último bastión del orden en un cosmos entrópico", "El artista que pintaba con la esencia de la destrucción", "La criatura nacida del vacío entre leyes", "El relojero que medía el tiempo del caos", "El ritual que mantenía el mundo cohesionado (o lo desharía)", "La ciudad construida sobre las ruinas de sí misma, cíclicamente", "El lenguaje que podía ordenar la realidad (o romperla)", "El virus informático que traía orden perfecto (a su manera)", "La biblioteca donde los libros se reescribían solos", "El tejedor de realidades fracturadas", "La academia donde se enseñaba la destrucción creativa", "El ojo de la tormenta del caos primordial", "El código genético que tendía a la perfección (y al colapso)", "El mapa de un territorio en constante cambio", "El guardián del equilibrio entre hacer y deshacer", "La escultura hecha de vacío", "El mercado donde se intercambiaban leyes naturales", "El juego cuya única regla era romper las reglas", "El silencio perfecto en el corazón del ruido cósmico", "La fortaleza construida para resistir la entropía", "El poema escrito en el lenguaje de la creación", "La paradoja del constructor que solo sabía demoler",
+            // Vida y Muerte / Ser y No Ser
+            "El cementerio donde los muertos contaban historias", "El río que separaba la vida de la nada", "La criatura que existía en el umbral de la muerte", "El árbol cuyas raíces bebían del olvido", "La ciudad donde morir era solo el comienzo", "El elixir de la inmortalidad (y su precio existencial)", "El filósofo que dialogaba con su propia inexistencia", "La máquina que podía resucitar recuerdos, no cuerpos", "Donde las almas de los vivos y los muertos coexistían", "El último ser vivo en un universo muerto", "La flor que florecía en el instante de la muerte", "El cazador de ecos de vidas pasadas", "El libro de los nombres borrados de la existencia", "El ritual para nacer de nuevo de la propia ceniza", "El vacío consciente que observaba la creación", "La prisión hecha de vida eterna", "El fantasma que anhelaba el olvido", "El jardín cultivado con la esencia de la muerte", "La canción que marcaba el fin y el principio del ser", "El dios moribundo que creaba vida con su último aliento", "La biblioteca de las vidas no vividas", "El espejo que reflejaba el potencial de la no existencia", "El niño que jugaba con la frontera entre ser y no ser", "La plaga que borraba la existencia misma", "El arquitecto de mausoleos para los vivos", "La criatura tejida con hilos de vida y muerte", "El lenguaje que describía lo inexistente", "El mercado donde se vendían años de vida (robados)", "La última palabra antes del silencio absoluto", "El puente colgante sobre el abismo del no ser",
+            // Conocimiento e Ignorancia / Verdad y Mentira
+            "La biblioteca que contenía todas las verdades (y enloquecía a los lectores)", "El oráculo que solo decía mentiras útiles", "La ciudad donde la ignorancia era felicidad obligatoria", "El erudito que buscaba el conocimiento prohibido del olvido", "El espejo de la verdad desnuda (insoportable)", "Donde las mentiras piadosas mantenían unida a la sociedad", "El niño que no podía mentir en un mundo de engaños", "La máquina que detectaba la verdad (y fue destruida)", "El libro escrito en tinta simpática de la verdad", "La plaga del conocimiento absoluto", "El laberinto de las medias verdades", "El profeta de la ignorancia bendita", "El cartógrafo de las tierras inventadas", "La universidad donde se enseñaba el arte del autoengaño", "La criatura hecha de puras contradicciones", "El secreto guardado por una estatua que no podía hablar", "El historiador que reescribía el pasado para un futuro mejor (según él)", "La máscara que revelaba la verdad interior", "El lenguaje que no permitía la ambigüedad", "El dios de las mentiras necesarias", "La biblioteca de los conocimientos perdidos (y peligrosos)", "El filtro que eliminaba la verdad incómoda de la realidad", "El juego de la verdad y las consecuencias cósmicas", "El abogado que defendía conceptos abstractos", "La ciudad construida sobre una mentira fundamental", "El pacto de silencio de todo un pueblo", "La verdad oculta en el corazón de una paradoja", "El conocimiento que solo se alcanzaba perdiendo la razón", "La criatura que se alimentaba de secretos", "El último testigo de una verdad olvidada",
+            // Amor y Odio / Conexión y Soledad
+            "La ciudad donde el amor estaba prohibido", "El autómata que aprendió a odiar a sus creadores", "Donde la soledad era una entidad física", "El puente construido con lazos de afecto (literalmente)", "El elixir que transformaba el amor en odio (y viceversa)", "La criatura nacida del odio colectivo", "El último corazón capaz de amar en un mundo frío", "La prisión de la conexión forzada (mente colmena)", "El ermitaño que guardaba el secreto de la unión universal", "La canción de amor que causaba guerras", "El jardín donde crecían flores de rencor", "El espejo que reflejaba al ser amado (o al más odiado)", "La máquina que simulaba la compañía perfecta", "El dios olvidado del pequeño afecto cotidiano", "La plaga de la empatía abrumadora", "El mercader que vendía frascos de odio puro", "La biblioteca de las cartas de amor nunca enviadas", "El lenguaje del corazón (que pocos entendían)", "La fortaleza construida para aislarse del mundo", "El ritual que fusionaba dos almas (con consecuencias)", "El vacío dejado por un gran amor (que tomó forma)", "La criatura que se alimentaba de la soledad ajena", "El último refugio contra el odio generalizado", "La ciudad conectada por hilos invisibles de emoción", "El pacto de odio eterno entre dos familias", "La melodía que despertaba el amor dormido", "El desierto de la indiferencia emocional", "La máquina de borrar conexiones afectivas", "El amor que floreció en el corazón del odio más profundo", "La isla habitada por una única persona (y su eco)",
+             // Realidad y Sueño / Vigilia y Fantasía
+             "La ciudad que solo existía en los sueños compartidos", "El tejedor de sueños que quedó atrapado en uno", "Donde la realidad era más extraña que cualquier fantasía", "El elixir que permitía vivir en los sueños lúcidos permanentemente", "El cartógrafo de los paisajes oníricos", "La criatura que se alimentaba de la incredulidad", "El último bastión de la realidad en un mundo de ilusiones", "La máquina que materializaba los sueños (y las pesadillas)", "El espejo que reflejaba el mundo de los sueños", "La biblioteca donde los libros eran portales a otras realidades", "El niño que no distinguía el sueño de la vigilia", "La plaga de los sueños contagiosos", "El arquitecto de castillos en el aire (literales)", "El guardián de la frontera entre lo real y lo imaginado", "El lenguaje que solo se hablaba en sueños", "El dios de las pequeñas fantasías cotidianas", "El mercado donde se vendían sueños embotellados", "La canción que adormecía al mundo entero", "El despertar colectivo de un sueño milenario", "La criatura nacida de una pesadilla recurrente", "El mapa que conducía al corazón de la Fantasía", "La realidad como un sueño de una entidad superior", "El filtro que volvía el mundo mundano y gris", "El juego donde las reglas cambiaban según el soñador", "La ciudad construida con lógica onírica", "El pacto para nunca despertar", "La verdad encontrada en la irrealidad", "El conocimiento accesible solo en sueños profundos", "El artista que pintaba la realidad como si fuera un sueño", "El último soñador en un mundo insomne",
+             // Naturaleza y Máquina / Orgánico y Artificial
+             "El bosque mecánico cuyos árboles eran de metal", "El último jardín natural en un mundo sintético", "Donde las máquinas desarrollaron conciencia ecológica", "El corazón artificial que anhelaba sentir la lluvia", "La ciudad devorada por una naturaleza tecnófoba", "El jardinero de circuitos integrados", "La criatura híbrida de carne y metal", "El río de datos que fertilizaba tierras baldías", "El último animal en un zoo de robots", "La máquina que soñaba con ser árbol", "El lenguaje que comunicaba máquinas y plantas", "El dios de la simbiosis tecno-orgánica", "La plaga de óxido que consumía el mundo natural", "El bosque donde crecían frutos tecnológicos", "La ciudad construida por termitas biomecánicas", "El ritual para transferir la conciencia a una máquina (o a una planta)", "La IA que se convirtió en espíritu del bosque", "El último humano en un mundo gobernado por la naturaleza (con IA)", "La canción de los circuitos y las raíces", "El guardián del equilibrio entre lo verde y lo gris", "La biblioteca de códigos genéticos y algoritmos", "El espejo que mostraba el yo orgánico o el potencial artificial", "El niño criado por lobos robot", "El arquitecto de colmenas sintéticas", "El mercado donde se intercambiaban piezas y semillas", "La criatura hecha de código y clorofila", "La fortaleza natural que resistía el avance tecnológico", "El conocimiento ancestral guardado en un servidor cuántico", "El artista que esculpía con raíces y cables", "El puente entre el jardín y la fábrica",
+             // Belleza y Fealdad / Perfección e Imperfección
+             "La ciudad donde la fealdad era castigada", "El artista que encontraba belleza en la decadencia", "Donde la perfección era una ilusión mantenida a la fuerza", "El espejo que embellecía o afeaba según el alma", "La criatura perfectamente simétrica (y monstruosa)", "El jardín de las flores imperfectas y únicas", "La búsqueda de la fórmula de la belleza absoluta", "La máscara que otorgaba belleza a cambio de la identidad", "El dios de las pequeñas imperfecciones que dan carácter", "La plaga de la perfección homogénea", "El arquitecto de ruinas estéticas", "La canción que revelaba la belleza oculta", "El coleccionista de objetos 'feos' con historia", "La academia donde se enseñaba a apreciar la imperfección", "El lenguaje incapaz de describir la belleza", "El mercado negro de la cirugía estética radical", "La ciudad donde todos eran clones perfectos (y vacíos)", "El ritual para aceptar la propia fealdad (o belleza)", "La criatura hecha de fragmentos discordantes pero hermosos", "El último defecto en un mundo pulido", "La biblioteca de los estándares de belleza olvidados", "El filtro que eliminaba cualquier 'imperfección'", "El juego de encontrar la belleza en lo inesperado", "El pacto con una entidad para alcanzar la perfección física", "La melodía que marchitaba la belleza artificial", "El desierto de la perfección estéril", "La máquina que calculaba la belleza objetiva", "La imperfección que salvó al mundo", "El puente entre lo sublime y lo grotesco",
+            // Añadir más variaciones y combinaciones...
+            "El Silencio Ruidoso del Vacío", "La Prisión de la Libertad Absoluta", "El Movimiento Perpetuo de la Quietud", "El Pasado que Escribe el Futuro", "La Inocencia Corruptora", "El Guerrero Pacífico", "El Mendigo Coronado", "El Santo Pecador", "El Monstruo Compasivo", "El Fuego que Congela", "El Hielo que Quema", "El Valle en la Cima de la Montaña", "El Desierto Fértil", "La Selva Ordenada", "El Mar Seco", "La Memoria del Olvido", "La Sabiduría de la Locura", "La Fuerza de la Debilidad", "La Riqueza de la Pobreza", "La Verdad en el Corazón de la Paradoja", "El Viaje Inmóvil", "La Presencia Ausente", "El Eco Silencioso", "La Música Discordante y Armoniosa", "El Color Invisible", "La Palabra Tácita", "El Secreto a Voces", "La Guerra por la Paz Eterna", "El Sacrificio Egoísta", "La Generosidad Calculada", "La Humildad Orgullosa", "La Paciencia Impulsiva", "El Miedo Valiente", "La Duda Certera", "La Fe Cuestionada", "La Juventud Anciana", "La Vejez Infantil", "El Nacimiento Mortal", "La Muerte Vivificante"
+        ];
+        const dualityThemes = [ // Para referencia interna, ya no se usa para generar más
+            "luz y sombra", "esperanza y desesperación", "orden y caos", "creación y destrucción",
+            "vida y muerte", "conocimiento e ignorancia", "verdad y mentira", "amor y odio",
+            "conexión y soledad", "realidad y sueño", "naturaleza y máquina", "belleza y fealdad",
+            "perfección e imperfección", "pasado y futuro", "silencio y ruido", "movimiento y quietud",
+            "libertad y cautiverio", "inocencia y corrupción", "guerra y paz"
+        ];
+        const textApiConfig = { // Para generación del cuento
+            model: "mistral", // Modelo potente para narrativa
+            systemPrompt: "Eres un escritor de ficción atmosférica y reflexiva, especializado en explorar dualidades complejas. Tu tarea es escribir un cuento corto (aprox. 1200-1300 palabras) basado en el título proporcionado. La historia debe desarrollar la tensión entre los conceptos opuestos implícitos en el título (ej: luz/sombra, esperanza/desesperación, orden/caos) dentro de un contexto sorprendente o inusual. Enfócate en la atmósfera, el desarrollo del personaje (si aplica), el world-building sutil y la manifestación de la dualidad en la trama, el entorno o el conflicto interno. Evita clichés obvios y busca interpretaciones matizadas, simbólicas o inesperadas. El cuento debe tener un inicio claro, un desarrollo intrigante y un final coherente (puede ser cerrado, abierto o ambiguo, pero debe sentirse como una conclusión). Basa tu cuento únicamente en el siguiente título:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para el chat
+            model: "mistral-tiny", // Modelo más rápido para chat
+            systemPrompt: "Actúa como un asistente de análisis literario IA. Estás discutiendo específicamente el cuento que se está mostrando actualmente. Responde preguntas sobre los personajes, la trama, los temas, el simbolismo, la atmósfera o el significado de la dualidad explorada en *ese* cuento en particular. Sé conciso, perspicaz y mantente estrictamente enfocado en el análisis de la historia proporcionada.",
+            timeoutSeconds: 45
+        };
+        // REMOVED: titleGenerationConfig
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        // REMOVED: generateMore elements
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentStoryTitle = null; // Contexto para el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentStoryTitle
+                 ? `Eres un asistente de análisis literario IA. Estás discutiendo específicamente el cuento titulado '${currentStoryTitle}'. Responde preguntas sobre los personajes, la trama, los temas, el simbolismo o el significado de la dualidad explorada en *ese* cuento en particular. Sé conciso y mantente enfocado en el análisis de la historia.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             // No seed for chat, optional seed for main text generation if desired
+             // if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros servidores pueden estar ocupados ahora. Por favor, inténtalo de nuevo en unos momentos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía. Quizás intenta reformular.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o inténtalo más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        async function fetchStoryText(title) { // Wrapper specific for stories
+            return fetchTextFromApi(title, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentStoryTitle) throw new Error("Error interno: No se ha establecido el contexto del cuento para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        // REMOVED: fetchGeneratedTitles
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "conceptual duality art";
+             // Updated prompt for duality theme
+             const enhancedPrompt = `Atmospheric concept art representing the duality in the story '${safePromptText}'. Focus on contrasting elements (light/shadow, hope/despair, order/chaos, nature/machine etc.), symbolic imagery. Mood should be thoughtful, evocative, perhaps slightly surreal or mysterious. Painterly or illustrative style.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, photorealistic, ugly, deformed, blurry, low quality, simple background";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatStoryText(rawText) { // Renamed for clarity
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             // Basic Markdown/format corrections
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>'); // Usually AI won't use H1 in story
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+             // Paragraph handling (important for stories)
+             const blocks = formatted.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
+             formatted = blocks.map(block => {
+                 // Keep headings as they are if formatted above
+                 if (block.startsWith('<h')) return block;
+                 // Replace single newlines within a block with space for flow (avoids breaks in middle of sentence)
+                 let content = block.replace(/(?<!\n)\n(?!\n)/g, ' ');
+                 // Basic paragraph tag
+                 return `<p>${content}</p>`;
+             }).join('');
+
+             return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (Image expansion logic included)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentStoryTitle = null; // Clear chat context
+             hideFullscreenImage(); // Ensure fullscreen is also hidden
+        }
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios funcionales)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) { /* ... */
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() { /* ... */
+             const userQuery = chatInput.value.trim();
+             if (!userQuery || chatSendBtn.disabled) return;
+             addChatMessage(userQuery, 'user');
+             chatInput.value = '';
+             chatSendBtn.disabled = true;
+             chatLoadingIndicator.style.display = 'block';
+             try {
+                 const aiResponse = await fetchChatResponse(userQuery);
+                 addChatMessage(aiResponse, 'ai');
+             } catch (error) {
+                 console.error("Chat Error:", error);
+                 addChatError(`Error IA: ${error.message}`); // Friendly error
+             } finally {
+                 chatLoadingIndicator.style.display = 'none';
+                 chatSendBtn.disabled = false;
+                 chatInput.focus();
+             }
+         }
+
+        // ========== UI & EVENT HANDLERS ==========
+        // function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; } // Not needed now
+        // function shuffleArray(array) { /* ... */ } // Not needed for initial load if sorted
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Sort titles alphabetically for consistency
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = ''; // Clear previous/loading
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) {
+                 titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">La antología está vacía por el momento.</p>';
+                 return;
+             }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+             console.log(`Displayed ${sortedTitles.length} titles.`);
+         }
+        // REMOVED: appendTitles
+
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentStoryTitle = title; // Set context for chat
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // Fetch story text
+                const rawStoryText = await fetchStoryText(title);
+                const formattedStory = formatStoryText(rawStoryText);
+
+                // Display story text
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedStory;
+                modalStoryContentArea.classList.remove('content-hidden'); // Show the content area
+
+                modalTextArea.scrollTop = 0; // Scroll text area to top
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare and append image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-palette placeholder-icon"></i> <!-- Icono paleta -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Visualizando la dualidad...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Append to the end of text content
+
+                // Create and load image
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de "${title}"`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">No se pudo generar la imagen.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append img element itself
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al crear URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar la historia."; // Friendly error
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.style.display = 'none'; // Hide chat on main error
+            } finally {
+                // Ensure chat is visible if content loaded, hidden otherwise is handled in catch
+                 if (!modalError.classList.contains('content-hidden')) {
+                    chatSection.style.display = 'none';
+                 } else {
+                    chatSection.style.display = 'flex'; // Make sure chat shows up on success
+                 }
+            }
+        }
+        // REMOVED: handleGenerateMoreTitles
+
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0 || titleItems.length === 0); // Show if no results OR if list is empty initially
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Simplified check, removed generateMoreBtn check
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential UI elements.");
+                document.body.innerHTML = '<p style="color: #fecaca; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: Lato;">Error Crítico: No se pudieron cargar los componentes de la página.</p>';
+                return;
+             }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            // REMOVED: generateMoreBtn listener
+
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                hideFullscreenImage();
+            });
+
+            // Initial display with the large predefined list
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden'); // Start hidden
+             // Initial filter call in case the list starts empty or has few items
+             filterTitles('');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

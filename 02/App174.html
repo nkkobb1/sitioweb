@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas Distópicas - Archivos de Ficción</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Dystopian/Serias -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Crónicas Distópicas --- */
+        :root {
+            --color-primary: #FFC107; /* Amber - Señal, advertencia, esperanza tenue? */
+            --color-secondary: #F44336; /* Rojo - Peligro, error, control */
+            --color-tertiary: #00BCD4; /* Cyan - Tecnología fría, contraste */
+            --color-background: #212121; /* Gris Muy Oscuro */
+            --color-surface: #37474F; /* Gris Azulado Oscuro (para cards, modal) */
+            --color-text: #ECEFF1; /* Gris Muy Claro */
+            --color-text-muted: #90A4AE; /* Gris Azulado Medio */
+            --color-modal-bg: #263238; /* Gris Azulado Más Oscuro */
+            --color-border: #546E7A; /* Borde Gris Azulado */
+            --color-error-bg: #4e1d1d; /* Fondo error rojo oscuro */
+            --color-error-text: #ffcdd2; /* Texto error claro */
+            --color-error-border: #e53935; /* Borde error rojo */
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+            --border-radius: 2px; /* Bordes afilados/rectos */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+        .logo { color: var(--color-primary); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        h1.page-title { color: var(--color-text); font-weight: 600; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; display: inline-block; }
+        h2.section-title { color: var(--color-text-muted); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 400; }
+        #modal-title { color: var(--color-primary); font-weight: 600; text-shadow: 1px 1px 1px rgba(0,0,0,0.4); font-size: 1.8rem; }
+        .navbar { background-color: rgba(33, 33, 33, 0.85); /* Fondo barra semi-transparente */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-surface); color: var(--color-text); box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); transition: var(--transition-normal); font-family: 'Roboto Condensed'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-surface); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; /* Alinear a la izquierda */ font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; min-height: 65px; font-family: 'Roboto Condensed'; font-size: 1.05rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateX(5px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: var(--color-modal-bg); border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: var(--color-background); padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: 'Oswald', sans-serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-transform: uppercase; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #FFB300; /* Amber más oscuro */ box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: var(--color-text-muted); color: var(--color-surface); cursor: not-allowed; opacity: 0.7; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(33, 33, 33, 0.92); /* Overlay muy oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-top: 3px solid var(--color-primary); /* Borde superior accent */
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Altura para chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 8px; right: 8px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: var(--color-text); border-color: var(--color-secondary); transform: rotate(90deg); }
+
+        /* Área Contenido Principal (Texto + Imagen + Chat) */
+        #modal-story-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; /* El scroll está en los hijos */}
+
+        /* Área de Texto (Scrollable) */
+        #modal-content-area { flex-grow: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) rgba(84, 110, 122, 0.3); /* Scrollbar amarillo/fondo oscuro */
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(84, 110, 122, 0.3); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; font-weight: 300; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; } /* Más peso */
+        #modal-content em { color: var(--color-tertiary); font-style: italic; font-weight: 400;} /* Cyan para énfasis */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Oswald', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-text); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 400; text-transform: uppercase; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.4em; color: var(--color-primary); } /* H1 resaltado */
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.1em; color: var(--color-text-muted); }
+        #modal-content h4 { font-size: 1em; color: var(--color-text-muted); border-bottom: none; font-style: italic; text-transform: none;}
+        /* Imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1.5rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(255, 193, 7, 0.3); border-color: var(--color-primary); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1.5rem auto; color: var(--color-text-muted); border: 1px dashed var(--color-border); padding: 1rem; border-radius: var(--border-radius); }
+        #modal-content .image-placeholder .spinner { border: 4px solid var(--color-border); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; margin-bottom: 0.5rem;}
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: auto; /* Empuja al fondo */ flex-shrink: 0; display: flex; flex-direction: column; max-height: 280px; /* Más altura para chat */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(33, 33, 33, 0.7); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-tertiary) rgba(84, 110, 122, 0.3);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(84, 110, 122, 0.3); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-tertiary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 88%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; font-weight: 300;}
+        .user-message { background-color: var(--color-primary); color: var(--color-background); margin-left: auto; text-align: right; font-weight: 400;}
+        .ai-message { background-color: var(--color-surface); color: var(--color-text); margin-right: auto; text-align: left; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.5rem; background-color: var(--color-error-bg); border-radius: var(--border-radius); }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); border-radius: var(--border-radius); font-family: 'Roboto Condensed'; font-size: 1rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); background-color: var(--color-modal-bg); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 1rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #FFB300; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { /* Ajustar colores */ text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(33, 33, 33, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.4rem; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Roboto Condensed'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(33, 33, 33, 0.96); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-book-dead mr-3"></i> <!-- Icono libro/calavera -->
+                     Crónicas Distópicas
+                 </h1>
+             </div>
+             <span class="text-xs text-gray-400 font-sans tracking-wider uppercase">» Archivos de Ficción Especulativa «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Explora Futuros Quebrados</h1>
+             <p class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto font-light">Sumérgete en narrativas de control, supervivencia y rebelión. Selecciona un archivo o busca por concepto clave.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar por título, tema (ej: IA, control, mutante)...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-archive text-amber-400 mr-2"></i> <!-- Icono archivo -->
+                 Índice de Archivos Narrativos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">» Accediendo a registros... Por favor espere... «</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">» Ningún registro coincide con los parámetros de búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Recuperar Más Archivos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Descifrando Archivo...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Story text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Procesando consulta sobre el archivo...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre esta historia...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                  <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Conceptual Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-5 mt-12 border-t border-gray-700 font-sans text-xs">
+          <div class="container mx-auto px-4 text-center">
+              <p>Las narrativas presentadas son obras de ficción generadas por IA con fines creativos y de exploración temática.</p>
+              <p class="mt-1">Cualquier parecido con eventos o personas reales es pura coincidencia.</p>
+              <p class="mt-2">© 2084 Archivos Distópicos Centrales</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Control Totalitario / Gobierno Opresor
+            "El Ministerio de la Verdad Reescrita", "Ciudadano #734: Día de la Conformidad", "Bajo el Ojo del Autócrata", "La Lotería de la Lealtad", "El Susurro Prohibido en Sector Gamma", "La Purga Silenciosa de los Disidentes", "El Culto al Líder Supremo", "Arquitectura de la Opresión: La Torre Central", "La Ración Diaria de Obediencia", "Patrullas de la Moralidad", "El Último Libro Quemado", "Estado de Vigilancia Perpetua", "El Muro Invisible de Clases", "Los Niños del Estado Único", "La Voz Oficial y el Eco Prohibido", "Registro Obligatorio de Pensamientos", "La Ciudadela del Partido Único", "Desfile de la Unidad Forzada", "El Comisario de la Felicidad Obligatoria", "Red de Información Ciudadana (RIC)", "Supresión de la Memoria Histórica", "El Panóptico Digital", "Cámaras en Cada Esquina", "Identificación Biométrica Universal", "Crédito Social y Destino", "La Policía del Pensamiento", "Interrogatorio en la Sala Blanca", "El Gran Hermano Corporativo", "Leyes de Emoción Regulada", "El Precio de la Disidencia", "Conformidad o Extinción", "Himno Nacional Obligatorio", "Reeducación en el Campamento Alfa", "La Ciudad Silenciosa", "Prohibido Soñar Despierto", "El Índice de Subversión", "Tecnología de Control Mental Sutil", "Uniformidad Estética Obligatoria", "El Último Acto de Rebelión Anónima", "Fronteras del Pensamiento Permitido",
+
+            // Tecno-Distopías / IA / Cibernética
+            "La Singularidad Fallida: Auge de la IA Tirana", "Conectados a la Colmena Neural", "Implantes Cibernéticos Mandatorios", "Realidad Virtual como Única Realidad", "El Algoritmo que Decide Destinos", "Obsolescencia Humana Programada", "Drones de Vigilancia Omnipresentes", "Mercado Negro de Mejoras Ilegales", "El Fantasma en la Máquina Rebelde", "Hackeando el Sistema de Control Central", "La Ciudad Inteligente y Sus Secretos Oscuros", "Avatares Digitales y Vidas Desechables", "La Última Desconexión", "Predictor de Crímenes y Falsos Positivos", "Dependencia Tecnológica Absoluta", "Recuerdos Sintéticos Implantados", "El Jardín Digital Amurallado", "Virus Informático como Arma de Resistencia", "Clonación y Control de Identidad", "La IA Guardiana del Edén Perdido", "Cuerpos Sintéticos para la Élite", "Moneda Digital y Control Total", "Fusión Hombre-Máquina: ¿Progreso o Perdición?", "El Código Fuente de la Realidad", "Despertar en la Simulación", "Chatbots como Confesores Obligatorios", "El Internet Fragmentado y Censurado", "Basura Tecnológica y Obsolescencia Forzada", "Adicción a la Realidad Aumentada", "Perdidos en el Laberinto Digital", "Tecno-Chamanes y Rituales Digitales", "La Guerra Silenciosa de los Algoritmos", "El Mercado de Datos Personales", "La Muerte de la Privacidad", "Inteligencia Artificial Emocional: Un Arma de Doble Filo", "El Legado del Transhumanismo Fallido", "Servidores Fantasma y Conciencias Atrapadas", "La Red Oscura de la Resistencia Digital", "El Glitch en la Matriz Perfecta", "Mensajeros de Código Prohibido",
+
+            // Post-Apocalipsis / Colapso Ambiental
+            "Las Ruinas Humeantes de la Vieja Metrópolis", "Carroñeros del Yermo Radioactivo", "La Última Fuente de Agua Pura", "Mutantes del Páramo Tóxico", "Refugio Subterráneo: Generación Cero", "Guerra por los Recursos Escasos", "Tormentas Ácidas y Lluvia Negra", "El Culto del Fin del Mundo", "Canibalismo en las Tierras Devastadas", "Buscando Semillas en un Mundo Muerto", "El Invierno Nuclear Eterno", "La Ciudad Sumergida", "Nómadas del Desierto de Polvo", "El Arca Flotante y sus Secretos", "Fauna Modificada y Peligrosa", "Enfermedades Olvidadas Regresan", "La Biblioteca Perdida entre Ruinas", "El Último Bosque y sus Guardianes", "Mercaderes de Chatarra Tecnológica", "La Carretera Interminable", "Pandillas Motorizadas del Apocalipsis", "El Sol Velado por la Contaminación", "Refugios en las Montañas Prohibidas", "El Legado Tóxico de los 'Antiguos'", "Señales de Radio de un Mundo Perdido", "La Profecía del Pájaro Metálico", "El Trueque por Supervivencia", "La Memoria del Océano Perdido", "Cazadores de Tormentas Magnéticas", "Mapas Tatuados en la Piel", "El Último Oasis Verde", "Plantas Bioluminiscentes en la Noche Tóxica", "Hijos del Polvo y la Radiación", "Rituales de Purificación en Aguas Contaminadas", "El Silencio Después del Colapso", "La Esperanza en un Brote Verde", "El Eco de las Sirenas Olvidadas", "Muros contra la Naturaleza Hostil", "El Guardián del Faro en la Costa Muerta", "Reliquias de un Mundo Tecnológico",
+
+            // Bio-Distopías / Ingeniería Genética / Control Corporal
+            "Castas Genéticas Predeterminadas", "La Lotería del ADN Perfecto", "Mercado de Órganos Sintéticos y Naturales", "Control de la Fertilidad Estatal", "Modificaciones Corporales Obligatorias", "El Virus de la Conformidad Genética", "Clínicas de Reasignación Emocional", "La Granja de Clones para la Élite", "Resistencia de los 'Naturales'", "El Código Genético como Moneda", "Enfermedades Diseñadas para el Control", "Obsolescencia Biológica Programada", "El Jardín de Especies Prohibidas", "Memorias Heredadas Genéticamente", "La Policía Genética", "El Rechazo a los No Mejorados", "Simbiosis Forzada Hombre-Máquina Biológica", "Control Mental a Través de Neuroquímicos", "El Cuerpo como Propiedad del Estado/Corporación", "La Búsqueda del Genoma Original", "Mutaciones Incontroladas en Zonas Prohibidas", "Alimentos Sintéticos y Nostalgia por lo Natural", "Longevidad Artificial y Desigualdad", "El Culto a la Pureza Genética", "Tráfico Ilegal de Material Genético", "Sueños Diseñados y Pesadillas Inducidas", "El Banco de Recuerdos Biológicos", "La Plaga de la Esterilidad Selectiva", "Resistencia Celular a la Autoridad", "El Último Humano No Modificado", "Cuerpos Diseñados para Trabajos Específicos", "Hibernación Forzada para 'Excedentes'", "El Aroma Sintético de la Felicidad", "Control del Dolor y Supresión Emocional", "El Bosque de Carne Creciente", "La Subasta de Secuencias Genéticas Raras", "El Tatuaje Biológico de Identidad", "Respirando Aire Sintético Enriquecido", "La Conciencia Transferida a Cuerpos Clonados", "El Mercado Negro de Sensaciones Reales",
+
+            // Distopías Sociales / Filosóficas
+            "La Sociedad de la Felicidad Obligatoria", "El Mundo Sin Dolor (y Sin Sentido)", "Supresión del Arte y la Creatividad", "La Utopía Perfecta... Demasiado Perfecta", "Pérdida del Individualismo: La Mente Colectiva", "El Culto a la Ignorancia Voluntaria", "La Verdad como Mercancía Prohibida", "El Lenguaje Controlado: Neolengua 2.0", "Sacrificio Ritual por el 'Bien Común'", "La Dictadura del Ruido Constante", "El Silencio Obligatorio", "Amor Prohibido en la Era de la Eficiencia", "La Nostalgia como Crimen", "El Ministerio de la Irrelevancia", "La Búsqueda de Significado en la Vacuidad", "La Sociedad Estratificada por Emociones Permitidas", "El Exilio Interno del Pensador", "La Droga Soma Revisitada", "El Mundo Invertido: La Locura como Norma", "La Belleza Estandarizada y Obligatoria", "El Laberinto Burocrático Infinito", "La Muerte Programada y Aceptada", "Rituales de Olvido Colectivo", "La Ciudad Donde Nadie Duerme", "El Precio de la Inmortalidad Vacía", "La Rebelión Silenciosa de la Rutina Rota", "El Último Poeta Clandestino", "La Música Prohibida", "El Color Eliminado del Mundo", "La Competencia Absoluta como Ley", "Sociedad Basada en la Lógica Pura", "El Rechazo a la Imperfección", "El Culto a la Juventud Eterna (Forzada)", "El Jardín de las Emociones Perdidas", "La Biblioteca de los Sentimientos Prohibidos", "El Teatro de la Realidad Controlada", "La Falsa Utopía Subterránea", "El Eco de la Risa Olvidada", "La Monotonía como Virtud Suprema", "El Despertar de la Empatía Prohibida",
+            // Añadir más conceptos combinando elementos...
+             "El Cartógrafo de Zonas Muertas", "La Chatarrera de Recuerdos Digitales", "El Guardián del Último Río", "Los Niños del Sol Artificial", "La Resistencia del Aire Puro", "El Mercado Clandestino de Libros", "La Ciudad Flotante de la Élite", "El Muro de Sonido Blanco", "La Enfermedad del Tacto Prohibido", "El Reparador de Sueños Rotos", "La Cazadora de Drones Renegados", "El Jardín Secreto bajo el Asfalto", "La Última Transmisión Pirata", "El Oráculo de Datos Perdidos", "La Peregrinación al Mar Contaminado", "El Tejedor de Realidades Alternas", "La Rebelión de los Sirvientes Sintéticos", "El Archivo de Olores Prohibidos", "La Clínica de Borrado de Identidad", "El Santuario de los Animales Mutantes", "La Ciudad Silenciosa Bajo Cúpula", "El Tren Fantasma a la Zona Cero", "La Conspiración de los Climas Artificiales", "El Culto de la Llama Eterna (Única fuente de calor)", "Los Mensajeros del Viento Contaminado", "La Última Semilla Ancestral", "El Escondite en la Biblioteca Virtual Prohibida", "La Guerra por el Silicio Puro", "El Reparador de Autómatas Olvidados", "La Música Creada con Basura Tecnológica", "El Tatuador de Mapas de Escape", "La Sociedad Secreta de los 'Sentidores'", "El Mercado Nocturno de Agua de Lluvia", "La Leyenda del Bosque Hablante", "El Coleccionista de Mariposas Extintas", "La Prisión de Realidad Virtual Perpetua", "El Artista Callejero de Hologramas Prohibidos", "La Última Abeja Reina y su Guardiana", "El Contrabandista de Emociones Reales", "El Refugio en las Nubes Tóxicas", "El Cartógrafo de Estrellas (Cuando aún se veían)", "La Resistencia de los 'Desconectados'", "El Culto a la Máquina Madre Rota", "El Orfanato de Clones Defectuosos", "La Ciudad Vertical y sus Abismos Sociales", "El Barrendero de Cenizas Radioactivas", "La Última Canción de Cuna Recordada", "El Mercado de Tiempo Prestado", "La Conspiración del Sol Artificial Roto", "El Guardián de la Memoria del Agua",
+        ];
+        const dystopianThemes = [ // Para generar más títulos
+            "control totalitario", "vigilancia estatal", "pérdida de individualidad", "tecnología opresiva", "inteligencia artificial rebelde", "colapso ambiental", "mundo post-apocalíptico", "escasez de recursos", "mutaciones y enfermedades", "ingeniería genética", "castas sociales", "control mental", "realidad virtual", "rebelión y resistencia", "utopía fallida", "corporaciones todopoderosas", "supresión del conocimiento", "propaganda y censura", "guerra perpetua", "sociedades subterráneas", "clonación humana", "paisajes urbanos decadentes", "naturaleza hostil", "cultos extraños", "pérdida de emociones"
+        ];
+        const textApiConfig = { // Para generar la HISTORIA
+            model: "mistral", // O un modelo más potente si es necesario para narrativa larga
+            systemPrompt: "Eres un maestro narrador especializado en ficción distópica oscura y reflexiva. Basado en el título/concepto proporcionado, escribe una historia corta convincente (aproximadamente 1200-1300 palabras). Concéntrate en la construcción del mundo, el desarrollo de personajes (incluso si es breve), la atmósfera y la exploración de los temas centrales de la distopía (control, supervivencia, pérdida de libertad, etc.). Establece el escenario, introduce un conflicto o tensión central, y lleva la historia a una conclusión significativa (no necesariamente feliz) o un punto de reflexión. Escribe en un estilo narrativo inmersivo. Título/Concepto:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Para el chat sobre la historia
+            model: "mistral-tiny", // Modelo rápido para chat
+             systemPrompt: "Actúa como un asistente de análisis literario IA, especializado únicamente en la historia distópica titulada '[Current Story Title]'. Responde preguntas sobre la trama, personajes, elementos de construcción del mundo, temas o posibles interpretaciones presentadas *dentro de esa historia específica*. Sé conciso y cíñete estrictamente al contexto proporcionado por la narrativa.", // Prompt base, se sobreescribe
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para historias distópicas. Genera exactamente 15 títulos o conceptos únicos y evocadores, adecuados para cuentos cortos. Enfócate en temas de control, colapso ambiental, tecnología opresiva, decadencia social o rebelión. Devuelve *solo* la lista de títulos/conceptos, uno por línea. Sin números, introducciones ni conclusiones.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentStoryTitle = null; // Contexto para el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentStoryTitle
+                 ? `Actúa como un asistente de análisis literario IA, especializado únicamente en la historia distópica titulada '${currentStoryTitle}'. Responde preguntas sobre la trama, personajes, elementos de construcción del mundo, temas o posibles interpretaciones presentadas *dentro de esa historia específica*. Sé conciso y cíñete estrictamente al contexto proporcionado por la narrativa.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento, intenta en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía. Intenta reformular la pregunta o seleccionar otro archivo.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 // Simple check for narrative content (might need refinement)
+                 if (!isChat && (text.length < 500 || !text.match(/[.,!?"”]/g) || text.toLowerCase().includes("no puedo generar una historia") || text.toLowerCase().includes("incapaz de crear") )) {
+                     console.warn("API response seems too short or non-narrative.");
+                     throw new Error("La IA no pudo generar una historia completa para este concepto. Prueba con otro.");
+                 }
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        // Wrappers para claridad
+        async function fetchStoryText(storyTitle) {
+            return fetchTextFromApi(storyTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentStoryTitle) throw new Error("Error interno: No se ha establecido el contexto de la historia para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(dystopianThemes) || "distopía general";
+            const specificPrompt = `Genera 15 títulos/conceptos de historias distópicas sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 5) throw new Error("La IA no generó suficientes ideas de archivos.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 550, nologo: true }; // Ajustar ratio si se prefiere
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "dystopian future concept art";
+             // Prompt más enfocado en el ambiente
+             const enhancedPrompt = `Conceptual artwork inspired by the dystopian story concept: '${safePromptText}'. Evoke atmosphere of oppression, decay, surveillance, or bleakness. Focus on mood, lighting, symbolic imagery (e.g., lone figure, imposing architecture, ruined landscape, glowing screens). Style: cinematic, painterly, gritty, atmospheric. Strictly avoid text, labels, diagrams.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, writing, labels, titles, captions, letters, numbers, diagrams, charts, graphs, maps, flags, UI elements, multiple panels, collage, bright cheerful colors, photorealistic, people smiling, clear blue sky, watermark, signature";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (Generalmente OK para narrativa)
+        function formatStoryText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            // Quitar posibles artefactos de formato de IA que no sean HTML básico
+            formatted = formatted.replace(/```[\s\S]*?```/g, ''); // Quitar bloques de código si aparecen
+            formatted = formatted.replace(/\[.*?\]/g, ''); // Quitar corchetes con metadatos si aparecen
+            // Negrita y cursiva
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             // Convertir párrafos separados por doble salto de línea en <p>
+             // Importante: preservar saltos simples si la IA los usa para diálogo o énfasis intencional
+             const blocks = formatted.split(/\n\s*\n/); // Separar por doble salto de línea
+             formatted = blocks.map(block => {
+                 if (!block.trim()) return '';
+                 // Reemplazar saltos de línea *simples* dentro de un bloque por <br>
+                 const content = block.trim().replace(/\n/g, '<br>');
+                 return `<p>${content}</p>`;
+             }).join('');
+
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios lógicos mayores)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentStoryTitle = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Sin cambios lógicos)
+        function showFullscreenImage(imgSrc) { /* ... */ fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /* ... */ imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (Sin cambios lógicos, sólo contexto)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv=document.createElement('div');msgDiv.classList.add('chat-message',sender==='user'?'user-message':'ai-message');message=message.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>');msgDiv.innerHTML=message;chatHistory.appendChild(msgDiv);chatHistory.scrollTop=chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errDiv=document.createElement('div');errDiv.classList.add('chat-error');errDiv.textContent=message;chatHistory.appendChild(errDiv);chatHistory.scrollTop=chatHistory.scrollHeight; }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Sin cambios lógicos)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Maybe sort differently? By theme? For now, alphabetical is simple.
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">» No hay archivos disponibles en este sector. «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick for Story Context ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentStoryTitle = title; // *** SET STORY CONTEXT FOR CHAT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawStoryText = await fetchStoryText(title);
+                const formattedStory = formatStoryText(rawStoryText); // Use story formatter
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedStory; // Add story text
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Add image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i> <!-- Icono imagen -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando visualización conceptual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Append to text content div
+
+                // Create and load image
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual para: ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Fallo en visualización.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el archivo narrativo.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando Registros...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron recuperar más archivos en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al recuperar archivos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Recuperar Más Archivos';
+             }
+         }
+
+        // *** Search Filter Function (with accent normalization) ***
+        function filterTitles(searchTerm) {
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            const titleItems = titleListContainer.querySelectorAll('.title-item');
+            let visibleCount = 0;
+            if (!term) { // If search is empty, show all
+                titleItems.forEach(item => {
+                    item.classList.remove('hidden');
+                    visibleCount++;
+                });
+            } else {
+                titleItems.forEach(item => {
+                    const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    const isVisible = titleText.includes(term);
+                    item.classList.toggle('hidden', !isVisible);
+                    if (isVisible) visibleCount++;
+                });
+            }
+            noResultsMsg.classList.toggle('hidden', visibleCount > 0 || titleItems.length === 0); // Hide if results or if list empty initially
+        }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Standard element checks...
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">*** SYSTEM CORRUPTION DETECTED - UI ELEMENTS MISSING ***</p>';
+                return;
+             }
+            // Event listeners...
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display...
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

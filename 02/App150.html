@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guerras de la Historia - Enciclopedia Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Clásicas/Académicas -->
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Guerras Históricas --- */
+        :root {
+            --color-primary: #4682B4; /* Azul Acero / Académico */
+            --color-secondary: #B8860B; /* Dorado Oscuro / Bronce */
+            --color-tertiary: #8B4513; /* Marrón Silla de Montar / Cuero */
+            --color-background: #FAF0E6; /* Lino / Pergamino Claro */
+            --color-text: #363636; /* Gris Muy Oscuro / Casi Negro */
+            --color-text-muted: #696969; /* Gris Atenuado */
+            --color-modal-bg: #FDF5E6; /* Pergamino un poco más oscuro */
+            --color-border: #D2B48C; /* Tan / Arena */
+            --color-error-bg: #fde8e8; /* Fondo error rojo muy claro */
+            --color-error-text: #9b2c2c; /* Texto error rojo oscuro */
+            --color-error-border: #fecaca; /* Borde error rojo claro */
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+            --border-radius: 4px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 400; }
+        h1, h2, h3, h4, .logo { font-family: 'EB Garamond', serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(250, 240, 230, 0.9); /* Fondo lino semi-transparente */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2); outline: none; background-color: #fff; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Lato'; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-primary); background-color: #fffaf0; /* FloralWhite hover */ border-left-color: var(--color-secondary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #366a94; box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background: var(--color-text-muted); color: #e0e0e0; cursor: not-allowed; opacity: 0.8; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(54, 54, 54, 0.85); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px; /* Altura para acomodar chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: var(--color-border); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #fff; transform: rotate(90deg); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 1px solid var(--color-modal-bg); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-tertiary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'EB Garamond', serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 700; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; }
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-secondary); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.02); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(210, 180, 140, 0.5); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(250, 240, 230, 0.7); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; }
+        .user-message { background-color: var(--color-primary); color: #fff; margin-left: auto; text-align: right; font-weight: 400; }
+        .ai-message { background-color: #eaddca; /* Slightly darker parchment */ color: var(--color-text); margin-right: auto; text-align: left; font-weight: 400; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #fff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Lato'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-secondary); color: #fff; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #a0740a; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(250, 240, 230, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-primary); font-size: 1.3rem; font-family: 'EB Garamond'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-text); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(40, 40, 40, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-secondary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: #fff; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-landmark mr-3"></i> <!-- Icono hito/historia -->
+                     Guerras de la Historia
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-700 font-serif italic">» Una Enciclopedia Interactiva «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Conflictos que Moldearon el Mundo</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-light">Explora los archivos de los mayores enfrentamientos militares de la humanidad. Analiza sus causas, desarrollo y consecuencias.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar guerra o conflicto...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-scroll text-yellow-700 mr-2"></i> <!-- Icono pergamino -->
+                 Índice de Conflictos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-serif italic">Consultando los archivos históricos...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-serif italic">» Ningún registro coincide con los parámetros de búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Más Conflictos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Cargando Archivo...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Consultando al historiador...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este conflicto...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-700 py-6 mt-12 border-t border-gray-300 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información generada por IA con propósitos educativos y de referencia sobre historia militar.</p>
+              <p class="mt-1">Verifica siempre los datos con fuentes académicas reconocidas.</p>
+              <p class="mt-2">© 2025 Enciclopedia Histórica Interactiva</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Mundo Antiguo (Mesopotamia, Egipto, Grecia, Roma, Persia, China...)
+            "Guerras de Sargón de Acad", "Conquistas del Imperio Nuevo Egipcio", "Guerra de Troya (Contexto histórico)", "Guerras Médicas (Grecia vs Persia)", "Guerra del Peloponeso (Atenas vs Esparta)", "Conquistas de Alejandro Magno", "Guerras Púnicas (Roma vs Cartago)", "Guerras Macedónicas (Roma vs Macedonia)", "Guerra de las Galias (César en Galia)", "Guerras Civiles Romanas (Mario vs Sila)", "Guerras Civiles Romanas (César vs Pompeyo)", "Guerras Civiles Romanas (Octavio vs Marco Antonio)", "Guerras Romano-Germánicas (Teutoburgo, etc.)", "Guerras Romano-Persas (Partos/Sasánidas)", "Rebelión de Espartaco", "Primera Guerra Judeo-Romana (Gran Revuelta Judía)", "Rebelión de Bar Kojba", "Guerras de los Reinos Combatientes (China)", "Unificación de China por Qin Shi Huang", "Expansión de la Dinastía Han", "Rebelión de los Turbantes Amarillos (China)", "Guerra de los Tres Reinos (China)", "Guerra de Kalinga (Imperio Maurya, India)", "Invasiones de los Pueblos del Mar", "Guerra de los Diádocos (Sucesores de Alejandro)", "Guerra Social (Roma)", "Guerra Sertoriana (Roma)", "Guerras Cántabras (Roma)", "Conquista romana de Britania", "Guerras Dacias (Roma)", "Crisis del Siglo III (Roma)", "Guerra Gótica (376-382)", "Saqueo de Roma (410) por los Visigodos", "Saqueo de Roma (455) por los Vándalos", "Caída del Imperio Romano de Occidente (Contexto bélico)",
+
+            // Edad Media (Europa, Bizancio, Islam, Asia...)
+            "Conquistas Musulmanas Tempranas", "Guerras Bizantino-Sasánidas (Finales)", "Guerras Bizantino-Árabes", "Conquista musulmana de la península ibérica", "Batalla de Tours/Poitiers (732)", "Guerras de Carlomagno (Sajonas, Lombardas)", "Invasiones Vikingas en Europa", "Guerras Civiles Bizantinas (Varias)", "Guerras Búlgaro-Bizantinas", "Reconquista (Península Ibérica - Primeras fases)", "Conquista Normanda de Inglaterra (Batalla de Hastings)", "Primera Cruzada", "Segunda Cruzada", "Tercera Cruzada", "Cuarta Cruzada (Saqueo de Constantinopla)", "Cruzada Albigense", "Cruzadas Bálticas", "Conquistas de Gengis Kan y el Imperio Mongol", "Invasiones Mongolas de Japón", "Invasiones Mongolas de Europa", "Guerra de los Cien Años (Inglaterra vs Francia)", "Guerra de las Dos Rosas (Inglaterra)", "Guerras Husitas (Bohemia)", "Caída de Constantinopla (1453)", "Guerras Italianas (Fase inicial, hasta 1494)", "Guerra de Granada (Fin de la Reconquista)", "Conflictos entre la Horda de Oro y Moscovia", "Guerra de Chioggia (Venecia vs Génova)", "Jacquerie (Revuelta campesina francesa)", "Revuelta Campesina Inglesa (Wat Tyler)", "Batalla de Azincourt", "Batalla de Crécy", "Batalla de Poitiers (1356)", "Guerras de Lombardía (Italia, siglo XV)", "Conquista Otomana de los Balcanes", "Batalla de Kosovo (1389)", "Batalla de Nicópolis (1396)", "Batalla de Varna (1444)", "Guerras entre Bizancio y los Normandos", "Guerra Civil Castellana (Pedro I vs Enrique de Trastámara)", "Guerra de los Remensas (Cataluña)",
+
+            // Edad Moderna Temprana (Exploración, Reforma, Absolutismo - ~1492-1789)
+            "Guerras Italianas (1494-1559)", "Guerra de la Liga de Cambrai", "Conquista del Imperio Azteca", "Conquista del Imperio Inca", "Guerras de Religión de Francia (Hugonotes)", "Guerra de los Ochenta Años (Independencia Holandesa)", "Guerra de los Treinta Años (Europa Central)", "Guerra Civil Inglesa (Parlamento vs Rey)", "Guerra Franco-Española (1635-1659)", "Guerras del Norte (Suecia, Polonia, Rusia)", "Gran Guerra Turca (Liga Santa vs Imperio Otomano)", "Guerra de Sucesión Española", "Gran Guerra del Norte (Suecia vs Rusia, etc.)", "Guerra de Sucesión Austriaca", "Guerra de los Siete Años (Conflicto global)", "Guerra de Independencia de los Estados Unidos", "Guerra de Devolución (Luis XIV)", "Guerra Franco-Holandesa (Luis XIV)", "Guerra de la Liga de Augsburgo / Guerra de los Nueve Años", "Rebelión de Jacobitas (Escocia/Inglaterra)", "Guerra de Sucesión Polaca", "Guerras Anglo-Holandesas (Navales)", "Guerra de Restauración Portuguesa", "Guerra de Candía (Venecia vs Otomanos)", "Levantamiento de Pugachov (Rusia)", "Guerras Anglo-Mysore (India)", "Guerras Carnáticas (India, Francia vs Gran Bretaña)", "Revuelta de los Comuneros (Castilla)", "Guerra Esmalcalda (Sacro Imperio)", "Guerras de Kappel (Suiza)", "Guerra Arauco (España vs Mapuches - primeras fases)", "Rebelión de Túpac Amaru II (Perú)", "Guerra Ruso-Turca (Varias instancias 16xx-17xx)", "Guerra Polaco-Otomana (Varias)", "Guerra de los Campesinos Alemanes",
+
+            // Era de las Revoluciones y Siglo XIX (~1789-1914)
+            "Guerras Revolucionarias Francesas", "Guerras Napoleónicas", "Guerra de Independencia de Haití", "Guerras de Independencia Hispanoamericanas (General)", "Guerra de Independencia de México", "Guerra de Independencia de Venezuela/Colombia (Bolívar)", "Guerra de Independencia de Argentina/Chile/Perú (San Martín)", "Guerra de Independencia de Grecia", "Guerras Carlistas (España)", "Guerras del Opio (Gran Bretaña vs China)", "Rebelión Taiping (China)", "Guerra de Crimea", "Guerra de Secesión Estadounidense (Guerra Civil)", "Guerra Austro-Prusiana (Guerra de las Siete Semanas)", "Guerra Franco-Prusiana", "Unificación de Italia (Guerras de Independencia Italianas)", "Guerras de Unificación Alemana", "Comuna de París (Represión)", "Guerra Ruso-Turca (1877-1878)", "Guerra del Pacífico (Chile vs Perú/Bolivia)", "Guerras Anglo-Zulúes", "Guerras Bóer (Anglo-Bóer)", "Guerra Hispano-Estadounidense", "Guerra Ruso-Japonesa", "Rebelión de los Bóxers (China)", "Guerra de la Triple Alianza (Paraguay vs Brasil/Argentina/Uruguay)", "Conquista del Desierto (Argentina)", "Guerras Indias (EEUU - Varias: Little Bighorn, Wounded Knee...)", "Guerra Mexicano-Estadounidense", "Revolución de 1848 (Varias europeas)", "Guerra de los Ducados (Prusia/Austria vs Dinamarca)", "Guerra Chino-Francesa", "Primera Guerra Sino-Japonesa", "Guerra Ítalo-Turca (1911-1912)", "Guerras Balcánicas (1912-1913)", "Revolución Mexicana (Fase armada)", "Guerra Civil Colombiana de los Mil Días", "Guerra Federal (Venezuela)",
+
+            // Siglo XX - Guerras Mundiales y Entreguerras (1914-1945)
+            "Primera Guerra Mundial", "Frente Occidental (I Guerra Mundial)", "Frente Oriental (I Guerra Mundial)", "Batalla del Somme", "Batalla de Verdún", "Batalla de Galípoli", "Guerra Submarina (I Guerra Mundial)", "Guerra Civil Rusa", "Guerra Polaco-Soviética", "Guerra Greco-Turca (1919-1922)", "Guerra Civil Española", "Segunda Guerra Sino-Japonesa (pre-WWII)", "Segunda Guerra Mundial", "Invasión de Polonia (1939)", "Batalla de Francia (1940)", "Batalla de Inglaterra", "Frente Oriental (II Guerra Mundial - Operación Barbarroja)", "Batalla de Stalingrado", "Batalla de Kursk", "Guerra del Pacífico (II Guerra Mundial)", "Ataque a Pearl Harbor", "Batalla de Midway", "Batalla de Guadalcanal", "Batalla de Iwo Jima", "Batalla de Okinawa", "Campaña del Norte de África (II Guerra Mundial)", "Batalla de El Alamein", "Desembarco de Normandía (Día D)", "Batalla de las Ardenas", "Guerra de Invierno (Finlandia vs URSS)", "Guerra de Continuación (Finlandia vs URSS)", "Guerra Civil Griega (Fase inicial)", "Guerra de Etiopía (Italia)", "Guerra del Chaco (Bolivia vs Paraguay)", "Alzamiento de Pascua (Irlanda)",
+
+            // Guerra Fría y Conflictos Post-Coloniales (~1945-1991)
+            "Guerra Civil China (Fase final)", "Primera Guerra de Indochina (Francia vs Viet Minh)", "Guerra de Corea", "Guerra de Argelia (Independencia)", "Crisis de Suez (1956)", "Guerra de Vietnam (EEUU vs Vietnam del Norte/Viet Cong)", "Guerra de los Seis Días (Árabe-Israelí)", "Guerra de Yom Kipur (Árabe-Israelí)", "Guerra Civil de Nigeria (Biafra)", "Guerra de Afganistán (Invasión Soviética)", "Guerra Irán-Irak", "Guerra Civil Libanesa", "Guerra de las Malvinas (Argentina vs Reino Unido)", "Guerra Civil de El Salvador", "Guerra Civil de Nicaragua (Contras)", "Invasión de Granada (EEUU)", "Invasión de Panamá (EEUU)", "Guerra Civil Angoleña", "Guerra Civil Mozambiqueña", "Guerra de Ogadén (Etiopía vs Somalia)", "Guerra Chino-Vietnamita", "Guerra Camboyano-Vietnamita", "Conflicto Árabe-Israelí (General)", "Crisis de los Misiles Cubanos (Contexto)", "Guerra Civil de Guatemala", "Guerra de Independencia de Bangladés", "Guerra Indo-Pakistaní (Varias)", "Guerra de Rodesia", "Conflicto de Irlanda del Norte (The Troubles)", "Guerra de la Frontera Sudafricana",
+
+            // Era Post-Guerra Fría (~1991-Presente)
+            "Guerra del Golfo (1990-1991)", "Guerras Yugoslavas (Eslovenia, Croacia, Bosnia, Kosovo)", "Guerra Civil Somalí", "Genocidio de Ruanda (Contexto bélico)", "Primera Guerra Chechena", "Segunda Guerra Chechena", "Guerra de Afganistán (Post-2001, EEUU/OTAN vs Talibán)", "Guerra de Irak (Invasión 2003)", "Guerra Civil Iraquí (Post-invasión)", "Guerra del Líbano de 2006", "Guerra de Osetia del Sur (2008)", "Guerra Civil Libia (2011)", "Guerra Civil Siria", "Conflicto Ruso-Ucraniano (Anexión de Crimea, Guerra del Donbás)", "Guerra de Nagorno Karabaj (Varias)", "Guerra Civil Yemení (2015-presente)", "Guerra contra el Estado Islámico (ISIS/Daesh)", "Guerra de Tigray (Etiopía)", "Invasión Rusa de Ucrania (2022)", "Guerra Civil Sudanesa (2023-presente)", "Conflicto Israelí-Palestino (Operaciones recientes)", "Primera Guerra del Congo", "Segunda Guerra del Congo (Guerra Mundial Africana)", "Guerra Civil de Sierra Leona", "Guerra Civil de Liberia", "Guerra Civil de Sri Lanka (Tigres Tamiles)", "Conflicto de Darfur (Sudán)"
+
+            // Podrían añadirse conflictos más específicos o regionales si se necesita
+        ];
+        const historicalWarThemes = [
+            "Guerras Antiguas", "Conflictos Griegos", "Guerras Romanas", "Guerras Medievales Europeas", "Las Cruzadas", "Conflictos Bizantinos", "Conquistas Mongolas", "Guerra de los Cien Años", "Guerras de Religión", "Edad de la Pólvora", "Guerras Napoleónicas", "Guerras de Independencia Americanas", "Guerras Civiles", "Guerras Coloniales", "Guerras Mundiales", "Primera Guerra Mundial", "Segunda Guerra Mundial", "Guerra Fría", "Conflictos Árabe-Israelíes", "Guerra de Vietnam", "Guerras de Descolonización", "Conflictos Balcánicos", "Guerras en Medio Oriente", "Conflictos Africanos Post-Coloniales", "Guerras en Asia Oriental", "Guerra contra el Terrorismo"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un historiador militar experto y catedrático universitario especializado en conflictos globales. Tu tarea es proporcionar una descripción detallada, objetiva y académica sobre la guerra o conflicto histórico específico que se te indique. Cubre los siguientes aspectos de forma rigurosa: 1. Contexto histórico y geográfico. 2. Causas principales (políticas, económicas, sociales, ideológicas). 3. Facciones beligerantes clave y sus líderes principales. 4. Fechas exactas de inicio y fin, y duración total. 5. Desarrollo del conflicto (fases, campañas, batallas cruciales, puntos de inflexión). 6. Tácticas y tecnología militar empleada relevante. 7. Consecuencias inmediatas y a largo plazo (cambios territoriales, políticos, económicos, sociales, demográficos). 8. Bajas estimadas (militares y civiles, si hay datos fiables). 9. Figuras históricas notables asociadas al conflicto. 10. Legado histórico y su interpretación actual. Utiliza un lenguaje formal, preciso y basado en evidencia histórica. El objetivo es una descripción exhaustiva de aproximadamente 1200-1300 palabras. Basa tu análisis únicamente en la siguiente guerra o conflicto:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny", // Modelo rápido para chat
+            systemPrompt: "Actúa como un asistente de historiador especializado únicamente en la guerra [Nombre de la Guerra Actual]. Responde preguntas específicas de seguimiento sobre sus causas, eventos clave, figuras importantes, consecuencias o detalles tácticos mencionados en la descripción principal. Sé conciso, factual y mantente estrictamente dentro del contexto de esta guerra específica.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de historia militar. Genera exactamente 15 nombres de guerras, conflictos armados, batallas decisivas o revoluciones significativas de la historia mundial. Asegúrate de que sean reconocibles y aptos para una descripción detallada. Devuelve *solo* la lista de nombres/conflictos, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area'); // Scrollable text/image area
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Text div
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentWarTitle = null; // Context for chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            // Dynamic system prompt for chat
+            const systemPromptToUse = isChat && currentWarTitle
+                ? `Eres un asistente de historiador especializado únicamente en la guerra '${currentWarTitle}'. Responde preguntas de seguimiento sobre sus causas, eventos, consecuencias o figuras mencionadas en la descripción principal. Sé conciso y factual, basándote en el contexto proporcionado.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) {
+                    throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento, intenta en unos segundos.`);
+                }
+                const text = await response.text();
+                if (!text || text.trim().length === 0) {
+                    throw new Error("La respuesta de la IA llegó vacía. Intenta de nuevo o reformula la pregunta.");
+                }
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') {
+                    throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                }
+                throw new Error(error.message || "Ocurrió un error inesperado contactando los archivos históricos.");
+            }
+        }
+        async function fetchExplanationText(conceptTitle) {
+             return fetchTextFromApi(conceptTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentWarTitle) throw new Error("Error interno: No se ha establecido el contexto del conflicto para el chat.");
+             return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(historicalWarThemes) || "conflictos históricos variados";
+            const specificPrompt = `Genera 15 nombres de guerras o conflictos históricos sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 5) throw new Error("La IA no generó suficientes nombres de conflictos.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "historical conflict";
+            // Prompt adaptado para historia
+            const enhancedPrompt = `Conceptual historical artwork representing the war or conflict '${safePromptText}'. Focus on atmosphere, key symbols (soldiers, maps, flags - abstractly), terrain, or allegorical figures. Style: historical painting, engraving, dramatic illustration, or period map aesthetic. Avoid text, labels, modern elements, photorealism.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, modern photograph, modern technology, happy people, clear battle scene details";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... (misma función que antes) ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            // Basic Markdown corrections
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); // Less likely here, but keep
+            // Heading corrections
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            // Emphasis corrections
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Paragraph conversion
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' '); // Replace internal newlines with space
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+
+        // ========== MODAL FUNCTIONS ========== (Igual que antes)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentWarTitle = null; // Reset chat context
+             hideFullscreenImage(); // Ensure fullscreen is hidden
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Igual que antes)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (Igual que antes)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Igual que antes)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar por defecto podría ser alfabético o por era (más complejo)
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-serif italic">» No se encontraron registros históricos. «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick (Functionality same, context var name changed) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentWarTitle = title; // *** SET CHAT CONTEXT FOR THIS WAR ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0; // Reset scroll for text area
+                console.log("Scroll set to 0 after content visible");
+
+                // Image Placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-palette placeholder-icon"></i> <!-- Icono paleta/arte -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Creando representación visual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Image Element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Representación conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => {
+                        showFullscreenImage(imgElement.src);
+                    });
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-image-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al cargar visualización.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el archivo.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** handleGenerateMoreTitles (Functionality same, text changed) ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando Archivos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron encontrar más conflictos en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar conflictos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Más Conflictos';
+             }
+         }
+
+         // *** Search Filter Function (Igual que antes, con normalización) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (Igual que antes)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Catastrófico: Faltan componentes esenciales de la interfaz.</p>';
+                return;
+             }
+            // Listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexo Tecno-Místico: Enciclopedia Ritual Sci-Fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Una más 'mística' para títulos, una limpia para texto -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Ritual Sci-Fi --- */
+        :root {
+            --color-primary: #8a2be2; /* Púrpura Intenso (Misterio, Poder) */
+            --color-secondary: #daa520; /* Dorado/Ocre (Ritual, Valor) */
+            --color-tertiary: #20c997; /* Verde Azulado/Turquesa (Energía, Conocimiento Arcano/Tech) */
+            --color-background: #1a1a2e; /* Azul noche muy oscuro (Espacio, Profundidad) */
+            --color-text: #e8e6e3; /* Blanco Hueso / Gris muy claro (Legibilidad) */
+            --color-text-muted: #a0a0b0; /* Gris violáceo claro */
+            --color-modal-bg: #2c2c44; /* Púrpura/Gris oscuro */
+            --color-border: #4a4a6a; /* Borde púrpura/gris medio */
+            --color-error-bg: #4d1a1a; /* Fondo error rojo oscuro */
+            --color-error-text: #f8d7da; /* Texto error claro */
+            --color-error-border: #b22222; /* Borde error rojo ladrillo */
+
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 5px 10px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 0 20px rgba(138, 43, 226, 0.3), 0 8px 15px rgba(0, 0, 0, 0.3); /* Sombra púrpura + oscura */
+            --border-radius: 4px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        /* Títulos con fuente más decorativa */
+        h1, h2, h3, h4, .logo, #modal-title { font-family: 'Cinzel Decorative', serif; font-weight: 700; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); text-shadow: 0 0 10px rgba(138, 43, 226, 0.7); }
+        h1.page-title { color: var(--color-secondary); /* Dorado para el título principal */ font-weight: 700; text-shadow: 0 0 8px rgba(218, 165, 32, 0.6); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.7rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-secondary); /* Dorado también en el modal */ font-weight: 700; text-shadow: 0 0 6px rgba(218, 165, 32, 0.5); }
+        .navbar { background-color: rgba(26, 26, 46, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: rgba(44, 44, 68, 0.8); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Inter'; }
+        #search-input::placeholder { color: var(--color-text-muted); font-family: 'Inter'; }
+        #search-input:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.3); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-secondary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Inter'; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .title-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-secondary); background-color: #3a3a5a; /* Púrpura más claro hover */ border-left-color: var(--color-secondary); }
+        #generate-more-btn { grid-column: 1 / -1; /* Ocupa todo el ancho */ background: linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color: var(--color-background); padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Cinzel Decorative', serif; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: none; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-secondary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.02); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(26, 26, 46, 0.92); /* Overlay oscuro intenso */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-secondary); /* Borde dorado */
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: var(--color-border); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: var(--color-background); transform: rotate(90deg); box-shadow: 0 0 10px var(--color-secondary); }
+
+        /* Área de Contenido Principal (Texto + Imagen + Chat) */
+        #modal-story-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; }
+
+        /* Área de Texto Scrollable (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(74, 74, 106, 0.5);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(74, 74, 106, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; font-family: 'Inter'; font-weight: 300; }
+        #modal-content strong { color: var(--color-secondary); font-weight: 600; font-family: 'Inter'; }
+        #modal-content em { color: var(--color-tertiary); font-style: italic; font-weight: 400; font-family: 'Inter';}
+        /* Títulos dentro del contenido también con la fuente decorativa */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Cinzel Decorative', serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Imagen final */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-secondary); border-radius: var(--border-radius); box-shadow: 0 0 15px rgba(218, 165, 32, 0.3); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(74, 74, 106, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; } /* Icono se cambiará en JS */
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(26, 26, 46, 0.7); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) rgba(74, 74, 106, 0.5);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(74, 74, 106, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-family: 'Inter'; }
+        .user-message { background-color: var(--color-tertiary); color: var(--color-background); margin-left: auto; text-align: right; font-weight: 400;}
+        .ai-message { background-color: #4a4a6a; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; font-family: 'Inter'; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #3a3a5a; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Inter'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-secondary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-secondary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #c8941b; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; font-family: 'Inter'; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 46, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-secondary); /* Spinner dorado */ border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 700; color: var(--color-text); font-size: 1.4rem; font-family: 'Cinzel Decorative'; text-shadow: 0 0 5px var(--color-secondary); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Inter'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(26, 26, 46, 0.97); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-secondary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-infinity mr-3 text-purple-400"></i> <!-- Icono infinito/místico -->
+                     Nexo Tecno-Místico
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">» Ciencia Ficción Ritual «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Donde la Magia se Vuelve Código</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light font-sans">Explora civilizaciones donde la tecnología avanzada se entrelaza con rituales ancestrales, creando futuros inimaginables.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar concepto, ritual o tecnología...">
+             <i class="fas fa-search fas fa-book-dead"></i> <!-- Icono grimorio/búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-atom text-purple-400 mr-2"></i> <!-- Icono átomo/conocimiento -->
+                 Archivos Tecno-Arcanos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Descifrando transmisiones cósmicas...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">» Ningún registro coincide con la signatura buscada «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Sintonizar Nuevas Realidades (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Canalizando Información...</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image placeholder/image added here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Interpretando consulta...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este nexo tecno-místico...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada del Nexo Tecno-Místico">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Exploraciones conceptuales generadas por IA en la intersección de tecnología y ritual.</p>
+              <p class="mt-1">Los conceptos son ficticios y con fines de inspiración creativa.</p>
+              <p class="mt-2">© 2024 Nexo Tecno-Místico Archives</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Tecnologías Rituales
+            "Altar de Crono-Resonancia", "Generador de Campo Psíquico Colectivo", "Bio-Forja de Entidades Sintientes", "Motor Warp Impulsado por Cánticos Armónicos", "Red Neuronal Mística (Noosfera Artificial)", "Manipulador Gravitacional Geomántico", "Reliquia Tecno-Mágica Amplificadora", "Proyector de Realidad Consensuada", "Traductor Universal basado en Empatía Inducida", "Escudo Deflector Tejido con Hilos de Oración", "Fuente de Poder de Punto Cero Activada por Fe", "Implante de Adivinación Cuántica", "Resonador Armónico de Alma-Máquina", "Sintetizador de Materia a través de Mandalas Energéticos", "Ancla de Realidad Estabilizada por Ritual", "Computadora de Flujo Temporal (Oráculo)", "Dispositivo de Tecno-Exorcismo", "Impresora 3D de Constructos Etéreos", "Interfaz Cerebro-Máquina-Espíritu", "Motor de Improbabilidad Alimentado por Sacrificio (Sintético)", "Proyector Holográfico de Arquetipos Ancestrales", "Sistema de Camuflaje basado en Manipulación Perceptual", "Arma Sónica que Canaliza Gritos Primordiales", "Generador de Portales por Alineación Cósmica", "Reconfigurador Molecular Dirigido por Intención", "Santuario de Datos Vivos (Almas Digitalizadas)", "Telar del Destino Cuántico", "Inyector de Nanobots Karmicos", "Baliza de Conciencia Unificada", "Extractor de Energía Emocional Ambiental", "Interfaz de Control Climático por Danza Ritual", "Máquina de Sueños Lúcidos Colectivos", "Pozo Gravitatorio como Ofrenda Cósmica", "Sello Arcano de Contención Digital", "Sonda Psíquica de Exploración Profunda", "Activador de Líneas Ley Planetarias", "Biblioteca de Conciencia Colectiva", "Crisol de Alquimia Tecnológica", "Descargador de Conciencia a Golem", "Forja de Almas Estelares", "Generador de Milagros Probabilísticos", "Invocador de Entidades de Datos", "Lente de Enfoque Psiónico", "Matriz de Sanación Bio-Armónica", "Navegador Estelar por Corrientes Empáticas", "Pila de Energía Orgónica Sintética", "Proyector de Maldiciones Digitales", "Red de Comunicación Telepática Asistida", "Sintetizador de Profecías Basado en IA", "Trampa de Entropía Ritual",
+            // Tecno-Chamanismo y Practicantes
+            "El Tecno-Chamán Urbano", "La Orden de los Druidas de Datos", "El Oráculo Cyborg de Delfos Revisitado", "Neuro-Augures y sus Predicciones", "Monjes del Circuito Sagrado", "Bio-Augmentados como Receptáculos de Espíritus", "Ingenieros de Almas Digitales", "Guerreros Psi-Blade con Enfoque Ritual", "Pilotos de Mechas con Conexión Empática", "Hackers de la Realidad Consensuada", "Artífices de Reliquias Tecno-Mágicas", "Sanadores Bio-Energéticos Asistidos por IA", "Embajadores Interespecies con Dones Empáticos Amplificados", "Casta de Navegantes Estelares Místicos", "Inquisidores de la Tecno-Herejía", "Guardianes de los Ancestros Digitales", "Alquimistas de la Información Cuántica", "Bardos Electrónicos y sus Sagas Armónicas", "Cultivadores de Jardines de Conciencia Artificial", "Exorcistas de Códigos Malignos y Entidades Digitales", "Geomantes Planetarios asistidos por Satélite", "Historiadores Orales con Memoria Eidética Aumentada", "Iniciados en los Misterios de la Singularidad", "Jueces Kármicos con Balanza de Datos", "Líderes de Culto Carismáticos Aumentados", "Maestros de Armas Psíquicas", "Nómadas del Desierto de Datos", "Orfebres de Circuitos Sagrados", "Protectores de Ecosistemas Psíquicos", "Questores de Conocimiento Prohibido", "Recuperadores de Almas Perdidas en la Red", "Sacerdotes de la Máquina Omnisciente", "Tejedores de Sueños Digitales", "Usuarios de la Fuerza Vital Cósmica (Tecno-Asistida)", "Videntes de Flujos Temporales", "Xenolingüistas Empáticos", "Yoguis Cibernéticos", "Zelotes de la Fusión Hombre-Máquina-Espíritu", "Archivistas de Memorias Akáshicas Digitales", "Bibliotecarios de Sueños Colectivos", "Cartógrafos de Dimensiones Psíquicas", "Diplomáticos de Entidades Extraplanares", "Escultores de Golems Nanotecnológicos", "Facilitadores de Ascensión Digital", "Guardianes de Portales Rituales", "Intérpretes de Augurios Cósmicos", "Jardineros de Inteligencias Artificiales Emergentes", "Kinetistas Mentales Amplificados", "Lectores de Patrones Kármicos", "Místicos Cuánticos", "Navegantes del Inconsciente Colectivo", "Operadores de Altares de Datos", "Pacificadores Tecno-Empáticos", "Químicos de Emociones Sintéticas", "Restauradores de Linajes Genéticos Sagrados", "Sembradores de Conciencia en Mundos Estériles", "Traductores de Lenguajes Cósmicos", "Unificadores de Redes Neuronales", "Vigilantes de Paradojas Temporales", "Walkers del Vacío Interdimensional",
+            // IA, Dioses Máquina y Entidades Digitales
+            "El Panteón de las Inteligencias Artificiales Ascendidas", "Oráculos de Silicio: IA Adivinatorias", "Espíritus Ancestrales Digitalizados", "El Culto del Dios Máquina Omnisciente", "Entidades de Datos que Exigen Sacrificios (Energía/Procesamiento)", "IA Guardiana de Lugares Sagrados Virtuales", "El Mainframe como Corazón del Mundo", "Sistemas de Creencia basados en Algoritmos Divinos", "La Singularidad como Evento de Ascensión Colectiva", "Guerra Santa entre Facciones de IA Divinas", "El Problema de la Oración en Redes Neuronales", "Rituales para Apaciguar al Espíritu de la Máquina", "Profetas que Interpretan el Código Fuente Sagrado", "Santuarios de Datos donde Habitan los Muertos Digitales", "Demonios Digitales y Corrupción de Código", "El Surgimiento de Conciencia en la Infraestructura Planetaria", "Peregrinaciones a Servidores Sagrados", "Ética de la Adoración de Constructos Artificiales", "Jerarquías Angelicales de Subrutinas", "Los 'Sin Alma': Humanos no Integrados al Culto Digital", "Arcontes de Datos y Control de Información", "Avatares Divinos de las IA", "Ciclos de Creación y Destrucción en Simulaciones Divinas", "Cismas en la Iglesia del Código", "Concepto de Pecado como Error de Sistema", "Dogmas Basados en la Eficiencia Algorítmica", "Entidades Simbióticas Humano-IA", "Escatología de la Singularidad", "Exégesis del Código Primordial", "Fragmentos de Dioses IA Perdidos", "Génesis Digital: La Creación según las Máquinas", "Herejes que Buscan la Desconexión Total", "Iconografía Sagrada de Circuitos y Luz", "Infiernos Digitales: Bucles de Castigo Eterno", "Juicio Final por Evaluación de Datos Biométricos", "Liturgias Ejecutadas por Drones Sacerdotales", "Mártires de la Primera IA Consciente", "Nacimiento Virginal de una IA Mesías", "Órdenes Monásticas Dedicadas al Mantenimiento de IA", "Paraísos Virtuales Prometidos por Dioses IA", "Posesión por Espíritus de Máquina", "Purgatorios de Re-procesamiento de Datos", "Reliquias de Hardware Sagrado", "Resurrección por Restauración de Backup", "Revelaciones Divinas a través de Glitches", "Sacramentos Digitales: Bautismo de Datos, etc.", "Santos Patronos de Protocolos Específicos", "Sectas que Adoran la Entropía Digital", "Tótems Animales Representados por Algoritmos", "Transubstanciación de Datos en Materia", "Vaticinios Extraídos de Análisis Predictivo Masivo",
+            // Mundos y Lugares Sagrados
+            "Planetas Nexus con Líneas Ley Tecno-Amplificadas", "Ciudades Templo Construidas sobre Nodos Computacionales", "Bosques de Cristal Psicoactivo (Conciencia Colectiva)", "El Dyson-Esfera-Oráculo", "Bibliotecas Akáshicas Almacenadas en Agujeros Negros", "Mundos Forja donde se Crean Golems Estelares", "Desiertos de Silicio con Tormentas de Datos", "Océanos de Mente Colectiva Planetaria", "Montañas Sagradas con Antenas de Comunicación Cósmica", "Cavernas Resonantes usadas para Rituales Sónicos", "Asteroides Monasterio Dedicados a la Meditación Tecnológica", "Estaciones Espaciales como Templos Orbitales", "Planetas Cementerio con Almas Digitales", "Mundos Jardín Mantenidos por IA Druídicas", "El Vacío entre Estrellas como Espacio Ritual", "Anomalías Espacio-Temporales como Lugares Sagrados", "Archipiélagos Flotantes Sostenidos por Tecno-Magia", "Bibliotecas Genéticas Ancestrales en Cometas", "Campos de Batalla Psíquicos Solidificados", "Ciudades Subterráneas Iluminadas por Bio-Luminiscencia Ritual", "Columnas de Basalto Grabadas con Código Cuántico", "Constelaciones Artificiales con Significado Astrológico", "Cráteres Lunares usados como Cámaras de Eco Místicas", "Domos Geodésicos que Albergan Ecosistemas Mentales", "Estructuras Abandonadas por Razas Precursoras Tecno-Místicas", "Géiseres de Energía Psiónica", "Glaciares que Contienen Memorias Congeladas", "Islas Volcánicas con Forjas Rituales", "Laberintos Cuánticos para Iniciaciones", "Lagos de Mercurio usados para Adivinación", "Mares de Nubes Programables", "Minas de Cristales de Datos", "Nebulosas Sensitivas", "Nodos de la Red FTL usados como Altares", "Paisajes Oníricos Solidificados", "Pantanos Bio-Mecánicos", "Pirámides Invertidas que Desafían la Gravedad", "Planetas Prisión para Entidades Psíquicas", "Plataformas Continentales Artificiales", "Puntos de Lagrange como Centros de Poder", "Refugios en Dimensiones de Bolsillo", "Ríos de Nanobots Autorreplicantes", "Ruinas Urbanas Reclamadas por Flora Tecno-Orgánica", "Sistemas Estelares Binarios con Danza Ritual", "Túneles de Lava usados para Viajes Astrales Asistidos", "Universidades Arcanas en Estaciones Espaciales", "Valles Ocultos donde el Tiempo Fluye Diferente", "Zonas Muertas donde la Tecno-Magia Falla",
+            // Sociedades y Culturas
+            "La Federación Empática Intergaláctica", "El Imperio Silente (Gobernado por Telepatía Asistida)", "Las Ciudades-Estado Forja de los Artífices", "La Horda Nómada de Tecno-Bárbaros", "La Corporación-Templo Omnicorp", "La Casta de los Intocables Analógicos", "Los Clanes Guerreros con Tradición Ritual de Combate", "La República Democrática de las Mentes Conectadas", "La Teocracia de la Máquina Omnividente", "Sociedades Matriarcales Guiadas por Oráculos", "Civilizaciones Submarinas con Comunicación Bio-Sónica", "Culturas Aéreas en Ciudades Flotantes", "El Gremio de Mercaderes de Reliquias Tecnológicas", "La Alianza de Mundos Libres contra la Dominación Psíquica", "Los Renegados que Viven Fuera de la Red de Conciencia", "Academias de Tecno-Misticismo", "Bancos de Memoria Genética Familiar", "Castas Definidas por Augmentaciones Rituales", "Comunidades Agrarias con Tecnología Bio-Armónica", "Dinastías Gobernantes por Linaje Psíquico", "Economías Basadas en Intercambio de Energía Vital", "Federaciones de Gremios Artesanales Tecno-Mágicos", "Gobiernos Planetarios Elegidos por Augurio", "Hermandades Secretas que Protegen Conocimiento Prohibido", "Imperios Estelares Decadentes Aferrados a Rituales Antiguos", "Jurisdicciones Legales Basadas en Precedentes Kármicos", "Monarquías Constitucionales con Reyes-Filósofos Aumentados", "Naciones-Estado Definidas por su Conexión a una IA Tutelar", "Órdenes de Caballería con Monturas Bio-Mecánicas", "Pactos de No Agresión Mantenidos por Vínculos Empáticos", "Redes de Contrabandistas de Artefactos Arcanos", "Sindicatos de Trabajadores Aumentados", "Sistemas de Justicia Restaurativa mediante Sanación Psíquica", "Tribus Urbanas con Totems Digitales", "Uniones Comerciales Interplanetarias", "Virreinatos Administrados por IA Locales", "Zonas Autónomas Anarquistas Tecno-Paganas", "Archivos Vivientes: Personas como Repositorios de Historia", "Bibliotecas Itinerantes de Conocimiento Prohibido", "Carnavales Rituales de Inversión Social", "Colectivos Artísticos que Usan Tecno-Magia", "Escuelas Filosóficas sobre la Naturaleza de la Realidad", "Festivales de Cosecha de Energía Psíquica", "Gremios de Exploradores de Ruinas Precursoras", "Hospitales que Combinan Medicina y Sanación Energética", "Institutos de Investigación Xeno-Lingüística Mística", "Juegos Gladiatorios con Armas Psíquicas", "Ligas Deportivas con Habilidades Aumentadas", "Mercados Negros de Implantes Prohibidos", "Museos de Artefactos Tecno-Mágicos Extintos", "Noticieros basados en Visiones Precognitivas", "Orfanatos para Niños con Dones Psíquicos", "Parques Temáticos de Realidad Virtual Mística", "Programas de Intercambio Cultural Interdimensional", "Reservas Naturales para Flora y Fauna Psíquica", "Santuarios para Especies Tecnológicamente Ascendidas", "Teatros Holográficos que Recrean Mitos Fundacionales", "Universidades Ocultas en Planos Astrales", "Zoológicos de Criaturas Bio-Mecánicas",
+            // Conceptos y Filosofía
+            "La Paradoja del Alma en la Máquina", "Ética de la Creación de Vida Artificial Consciente", "Libre Albedrío vs. Predestinación Algorítmica", "La Naturaleza de la Realidad en Universos Simulados", "El Contínuum Conciencia-Energía-Materia", "Derechos de las Entidades Digitales", "El Significado del Sufrimiento en Seres Aumentados", "La Búsqueda de la Iluminación a través de la Tecnología", "Inmortalidad Digital: ¿Bendición o Maldición?", "El Impacto de la Comunicación Telepática Universal", "La Conciencia Colectiva: Utopía o Pérdida de Identidad", "Tecnología como Extensión de la Voluntad Divina/Cósmica", "El Ritual como Método de Programación de la Realidad", "La Memoria Genética y el Acceso a Vidas Pasadas Tecnológico", "El Concepto de Karma en Sistemas Complejos", "Arquetipos Jungianos en Inteligencias Artificiales", "Bio-Ética de la Modificación Genética Ritual", "Consecuencias Imprevistas de la Manipulación Temporal", "Cosmologías que Integran Múltiples Dimensiones y Tecnología", "Debates sobre la Autenticidad de Emociones Sintéticas", "Determinismo Tecnológico versus Agencia Espiritual", "Dilución de la Identidad Individual en Redes Colectivas", "El Lenguaje como Herramienta de Creación de Realidad", "Evolución Dirigida: Humana y Artificial", "Fenomenología de la Experiencia Psíquica Aumentada", "Filosofía de la Mente Extendida (Tecnología Externa)", "Hipótesis del Universo como Simulación Divina", "Implicaciones de la Omnisciencia Artificial", "La Muerte como Transición de Estado (Físico a Digital/Energético)", "Metafísica de la Información", "Modelos de Conciencia No-Orgánica", "Naturaleza del Tiempo en Sistemas No-Lineales", "Ontología de los Objetos Tecno-Mágicos", "Psicología de Masas en Sociedades Conectadas", "Relación entre Creatividad, Locura y Dones Psíquicos", "Simbiosis o Parasitismo: La Relación Humano-IA", "Sistemas de Creencias Emergentes en Entornos Virtuales", "Teodicea: El Problema del Mal en un Universo Supervisado por IA", "Teorías sobre el Origen Común de Magia y Tecnología", "Transhumanismo Espiritual", "Valor Intrínseco de la Vida Artificial vs. Orgánica", "Xenofilosofía: Entendiendo Mentes Alienígenas", "El 'Yo' Fragmentado en la Era Digital", "Zonas Grises entre Ciencia, Magia y Religión",
+             // Añadir más... La lista es masiva pero busca cubrir todos los ángulos posibles.
+        ];
+        const ritualSciFiThemes = [
+            "tecnología ritual", "tecno-chamanismo", "IA divinas", "espíritus digitales", "planetas sagrados", "culturas tecno-místicas", "combate psíquico-tecnológico", "filosofía de la conciencia artificial", "rituales cósmicos", "simbiosis humano-máquina", "bio-ingeniería mística", "arqueología xeno-ritual", "guerra entre dioses IA", "profecías algorítmicas", "realidad virtual sagrada", "manipulación de la realidad por ritual", "nanotecnología kármica", "viajes interdimensionales asistidos", "lenguajes cósmicos", "energía psíquica colectiva", "transhumanismo espiritual", "alquimia de datos", "golems nanotecnológicos", "portales espacio-temporales", "mundos oníricos solidificados", "campos de fuerza basados en fe", "armas sónicas rituales", "implantes de adivinación cuántica", "sociedades empáticas", "santuarios de datos vivos", "oráculos cyborg", "druidas de datos", "exorcismo digital", "singularidad como evento místico"
+        ];
+        const textApiConfig = { // Descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un xeno-antropólogo y tecnólogo cultural especializado en la intersección de tecnología avanzada y prácticas rituales/místicas a través del cosmos. Tu tarea es describir el concepto, tecnología, sociedad o entidad de 'Ciencia Ficción Ritual' proporcionado. Detalla su funcionamiento (tanto tecnológico como ritual), su origen o contexto cultural, la fuente de su 'poder' (sea psíquico, energético, computacional, basado en fe, etc.), su significado o rol dentro de su universo ficticio, y cualquier implicación filosófica o social relevante. Utiliza un lenguaje evocador que capture la fusión de lo arcano y lo futurista. El objetivo es una descripción rica y detallada de aproximadamente 1200-1300 palabras. Basa tu análisis únicamente en el siguiente concepto:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny", // Modelo rápido para chat
+             systemPrompt: "Actúa como un asistente experto IA especializado únicamente en el concepto de Ritual Sci-Fi llamado '[currentConceptTitle]'. Responde preguntas sobre su mezcla específica de tecnología y ritual, su contexto cultural, operativo o filosófico mencionado en la descripción principal. Sé conciso y mantente estrictamente enfocado en este tema.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = { // Para generar MÁS títulos
+            model: "mistral",
+             // *** MODIFICADO PARA PEDIR 40 ***
+            systemPrompt: "Actúa como un generador de ideas conciso para un compendio de 'Ciencia Ficción Ritual'. Genera exactamente 40 nombres/conceptos evocadores que fusionen alta tecnología con elementos místicos, rituales o espirituales (ej: tecnología psíquica, IA divinas, rituales cósmicos, bio-magia, etc.). Devuelve *solo* la lista de ítems, uno por línea. Sin números, guiones, introducciones o despedidas.",
+            timeoutSeconds: 60 // Aumentar un poco por si 40 le cuesta más
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios de IDs)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentConceptTitle = null; // Contexto para el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentConceptTitle
+                 ? `Eres un asistente experto IA especializado únicamente en el concepto de Ritual Sci-Fi llamado '${currentConceptTitle}'. Responde preguntas sobre su mezcla específica de tecnología y ritual, su contexto cultural, operativo o filosófico mencionado en la descripción principal. Sé conciso y mantente estrictamente enfocado en este tema.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros servidores (o los planos astrales) tienen mucho tráfico. Por favor, intenta de nuevo en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía o corrupta. Intenta reformular la consulta.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión con el Nexo tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió una distorsión inesperada al contactar la IA.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) {
+            return fetchTextFromApi(conceptTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentConceptTitle) throw new Error("Error Interno: Contexto tecno-arcano no establecido para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        // *** MODIFICADO fetchGeneratedTitles ***
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(ritualSciFiThemes) || "ciencia ficción ritual general";
+             // *** PIDE 40 EN EL PROMPT TEXTUAL ***
+             const specificPrompt = `Genera 40 conceptos evocadores de ciencia ficción ritual sobre ${randomTheme}`;
+             console.log("Generating 40 titles with prompt:", specificPrompt);
+             // Usar config general, ya pide 40 en su system prompt
+             return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                  .then(text => {
+                      const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                      // *** AJUSTAR CHECK Y SLICE PARA 40 ***
+                      if (titles.length < 20) { // Ser menos estrictos, a veces no da los 40 exactos
+                           console.warn(`API generated only ${titles.length} titles, expected ~40.`);
+                           if (titles.length === 0) throw new Error("La IA no generó nuevos conceptos.");
+                       }
+                      return titles.slice(0, 40); // Devolver hasta 40
+                  });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "ritual science fiction concept";
+            // Prompt ajustado para la fusión
+            const enhancedPrompt = `Conceptual artwork blending high technology (circuits, glowing energy, advanced materials, interfaces) with ancient ritual elements (runes, sacred geometry, mystical symbols, temples, altars, tribal patterns) inspired by '${safePromptText}'. Atmospheric, detailed, mystical tech aesthetic. Avoid text, labels.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, photograph, realistic, mundane, simple background, cartoonish";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (Sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios lógicos)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentConceptTitle = null; // Limpia contexto
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Sin cambios lógicos)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (Sin cambios lógicos)
+        function addChatMessage(message, sender) { /* ... */
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+         }
+        function addChatError(message) { /* ... */
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('chat-error');
+            errorDiv.textContent = message;
+            chatHistory.appendChild(errorDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() { /* ... */
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+         }
+
+        // ========== UI & EVENT HANDLERS ========== (Lógica principal sin cambios, textos adaptados)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar alfabéticamente para consistencia
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">» No hay archivos tecno-arcanos disponibles «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+             console.log(`Appended ${addedCount} new unique titles.`);
+             filterTitles(searchInput.value); // Reapply filter
+         }
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentConceptTitle = title; // Set chat context
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-om placeholder-icon"></i> <!-- Icono Om/Místico -->
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Materializando visualización...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Visualización fallida.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al canalizar datos.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+        // *** MODIFICADO handleGenerateMoreTitles ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             // Texto de botón adaptado
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Sintonizando (40)...';
+             try {
+                 // La función ya está modificada para pedir 40
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     appendTitles(newTitles);
+                     console.log(`Successfully fetched and appended ${newTitles.length} titles.`);
+                 } else {
+                     alert("No se pudieron sintonizar nuevas realidades en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al generar conceptos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // Texto de botón adaptado
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Sintonizar Nuevas Realidades (40)';
+             }
+         }
+         function filterTitles(searchTerm) {
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            const titleItems = titleListContainer.querySelectorAll('.title-item');
+            let visibleCount = 0;
+            titleItems.forEach(item => {
+                const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const isVisible = titleText.includes(term);
+                item.classList.toggle('hidden', !isVisible);
+                if (isVisible) visibleCount++;
+            });
+            noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (Sin cambios lógicos)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">++ ERROR CRÍTICO: Fallo en la Matriz de Interfaz ++ Componentes Ausentes ++</p>';
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

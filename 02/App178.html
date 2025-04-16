@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paranoia Corporativa - Archivos Desclasificados</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Corporativas/Cyberpunk -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Paranoia Corporativa --- */
+        :root {
+            --color-primary: #08d9d6; /* Cyan Frío */
+            --color-secondary: #ff2e63; /* Rosa/Rojo Neón (Alerta/Contraste) */
+            --color-tertiary: #f8f32b; /* Amarillo Neón (Precaución/Info) */
+            --color-background: #0f1020; /* Azul/Negro Muy Oscuro */
+            --color-surface: #1a1c33; /* Azul/Gris Oscuro para superficies */
+            --color-text: #cdd6f4; /* Azul Pálido/Lavanda para texto */
+            --color-text-muted: #7f849c; /* Gris Azulado para texto secundario */
+            --color-modal-bg: #16182a; /* Fondo modal ligeramente más claro */
+            --color-border: #3b4261; /* Borde azul/gris oscuro */
+            --color-error-bg: #2e1a25; /* Fondo error rosa/rojo oscuro */
+            --color-error-text: #f7baba; /* Texto error claro */
+            --color-error-border: var(--color-secondary); /* Borde error */
+
+            --shadow-sm: 0 1px 3px 0 rgba(8, 217, 214, 0.1), 0 1px 2px 0 rgba(8, 217, 214, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(8, 217, 214, 0.15), 0 2px 4px -1px rgba(8, 217, 214, 0.08);
+            --shadow-lg: 0 0 20px -3px rgba(8, 217, 214, 0.2), 0 4px 6px -2px rgba(8, 217, 214, 0.1);
+            --border-radius: 2px; /* Bordes muy afilados, casi inexistentes */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        /* Efecto Glitch Sutil (Opcional, aplicar a elementos específicos) */
+        @keyframes glitch { 0%, 100% { transform: none; opacity: 1; } 25% { transform: skew(-0.5deg, -0.1deg); opacity: 0.9; } 50% { transform: none; opacity: 1; } 75% { transform: skew(0.5deg, 0.1deg); opacity: 0.9; } }
+        .glitch-subtle { animation: glitch 5s infinite alternate; }
+
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 300; background-image: radial-gradient(rgba(26, 28, 51, 0.5) 1px, transparent 1px); background-size: 15px 15px; /* Sutil grid */ }
+        h1, h2, h3, h4, .logo, button { font-family: 'Share Tech Mono', monospace; font-weight: 400; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); text-shadow: 0 0 6px rgba(8, 217, 214, 0.7); }
+        h1.page-title { color: var(--color-primary); font-weight: 400; text-shadow: 0 0 4px rgba(8, 217, 214, 0.5); }
+        h2.section-title { color: var(--color-text); border-bottom: 1px solid var(--color-primary); padding-bottom: 0.5rem; display: inline-block; font-weight: 400; }
+        #modal-title { color: var(--color-primary); font-weight: 400; text-shadow: 0 0 2px rgba(8, 217, 214, 0.4); font-size: 1.8rem; }
+        .navbar { background-color: rgba(15, 16, 32, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-surface); color: var(--color-text); box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); transition: var(--transition-normal); font-family: 'Share Tech Mono'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(8, 217, 214, 0.3); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-surface); padding: 1.2rem 0.8rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; /* Alineación a la izquierda */ font-weight: 400; color: var(--color-text-muted); border: 1px solid var(--color-border); display: flex; align-items: center; min-height: 60px; font-family: 'Share Tech Mono'; font-size: 0.9rem; border-left: 3px solid var(--color-border); }
+        .title-item i { margin-right: 0.7rem; color: var(--color-primary); opacity: 0.6; transition: opacity 0.2s ease;} /* Icono en item */
+        .title-item:hover { transform: translateY(-2px) scale(1.01); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-text); background-color: var(--color-modal-bg); border-left-color: var(--color-primary); }
+        .title-item:hover i { opacity: 1; }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: var(--color-background); padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #21ece8; box-shadow: var(--shadow-lg); }
+        #generate-more-btn:disabled { background-color: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 16, 32, 0.92); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 980px; /* Un poco más ancho */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Más alto para chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 30px rgba(8, 217, 214, 0.1); /* Sombra más difusa */
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius); width: 35px; height: 35px; font-size: 1.5rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: var(--color-text); border-color: var(--color-secondary); }
+        #modal-title { margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 8px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-surface);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 6px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-surface); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+
+        #modal-content { padding: 0 5px; font-size: 0.95rem; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-tertiary); font-style: normal; /* Itálica ya está en la fuente base */ }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Share Tech Mono', monospace; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 400; letter-spacing: 0.5px; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.1em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1em; color: var(--color-text-muted); border-bottom: none; }
+        /* Imagen y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: 0 0 10px rgba(8, 217, 214, 0.15); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; filter: saturate(0.9) contrast(1.1); }
+        #modal-content .final-image:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(8, 217, 214, 0.3); filter: saturate(1) contrast(1.1); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); opacity: 0.7; }
+        #modal-content .image-placeholder .spinner { border: 3px solid rgba(59, 66, 97, 0.8); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 280px; /* Un poco más de altura */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.6rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: var(--color-background); font-size: 0.9rem; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-surface);
+        }
+        #chat-history::-webkit-scrollbar { width: 5px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-surface); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 88%; word-wrap: break-word; line-height: 1.5; }
+        .user-message { background-color: var(--color-primary); color: var(--color-background); margin-left: auto; text-align: left; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+        .ai-message { background-color: var(--color-surface); color: var(--color-text); margin-right: auto; text-align: left; border: 1px solid var(--color-border); }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.85em; padding: 0.3rem; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); border-radius: var(--border-radius); font-family: 'Share Tech Mono'; font-size: 0.9rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); background-color: var(--color-modal-bg); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #21ece8; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.85em; color: var(--color-text-muted); display: none; font-family: 'Share Tech Mono';}
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 16, 32, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.2rem; font-family: 'Share Tech Mono'; text-shadow: 0 0 5px var(--color-primary); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.1rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Roboto Condensed'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 16, 32, 0.97); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 96%; max-height: 96%; object-fit: contain; border: 1px solid var(--color-primary); box-shadow: 0 0 25px rgba(8, 217, 214, 0.2); }
+        #fullscreen-close-btn { position: absolute; top: 15px; right: 20px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 50%; width: 40px; height: 40px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: var(--color-text); border-color: var(--color-secondary); transform: scale(1.05); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-building mr-2 opacity-80"></i> <!-- Icono edificio -->
+                     Paranoia Corporativa
+                 </h1>
+             </div>
+             <span class="text-xs text-gray-500 font-mono">// Archivos Desclasificados //</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Las Sombras de las Megacorps</h1>
+             <p class="text-lg text-gray-400 mb-8 max-w-3xl mx-auto font-light">Navega por los datos filtrados. Investiga las estructuras de poder, la tecnología de control y las fisuras en el sistema monolítico.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar corporación, sector, tecnología...">
+             <i class="fas fa-fingerprint fa-search"></i> <!-- Icono huella/búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-folder-open text-cyan-400 mr-2"></i> <!-- Icono carpeta -->
+                 Índice de Archivos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-mono">>>> Accediendo a la red de datos segura...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-mono">// Ningún archivo coincide con los criterios de búsqueda //</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Solicitar Nuevos Datos [Intel Drop]
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar Archivo">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>// Procesando archivo encriptado... //</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image and placeholder added here by JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <h3 class="text-sm font-semibold text-gray-400 mb-2 pl-1 font-mono">// Consulta Segura //</h3>
+                     <div id="chat-history">
+                         <!-- Chat messages -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Analizando consulta...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este archivo...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Vista Ampliada">&times;</button>
+          <img id="fullscreen-image" src="" alt="Visualización Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-black text-gray-600 py-5 mt-12 border-t border-gray-800 font-mono text-xs">
+          <div class="container mx-auto px-4 text-center">
+              <p>// Fuente: Red de Información Clandestina [CIC] - Datos generados por IA con fines narrativos //</p>
+              <p class="mt-1">// La información puede ser parcial o especulativa. Verifica con múltiples fuentes si es posible. //</p>
+              <p class="mt-2">// Secure Connection © 2084 //</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // --- MEGACORPORACIONES PRINCIPALES ---
+            "OmniCorp: El Coloso Global", "Aegis Dynamics: Seguridad y Control", "Cygnus BioTech: Ingeniería Genética y Wetware", "Helios Energy: Monopolio Energético", "NovaCom: Redes de Información y Propaganda", "Veridian EcoGroup: Agroindustria Sintética", "QuantumLeap Computing: IA y Procesamiento de Datos", "Armatech Industries: Fabricación de Armamento", "ChronoCorp Logistics: Transporte y Cadena de Suministro", "Nexus Holdings: Conglomerado Financiero", "Serenity Pharmaceuticals: Control Farmacológico", "Genesis Habitats: Desarrollo Urbano y Arcológico", "Cognito Solutions: Psico-tecnología y Neuromarketing", "Apex Robotics: Automatización y Mano de Obra Sintética", "Blackwater Mercenary Corp: Servicios Militares Privados", "Silentium Data Security: Encriptación y Guerra Cibernética",
+
+            // --- DIVISIONES Y PROYECTOS CORPORATIVOS ---
+            "OmniCorp: División de Vigilancia Urbana (UVD)", "Aegis Dynamics: Unidad de Respuesta Rápida (QRF)", "Cygnus BioTech: Proyecto Quimera (Bio-Augmentación)", "Helios Energy: Red de Fusión Fría 'Prometheus'", "NovaCom: Algoritmo de Predicción Social 'Oracle'", "Veridian EcoGroup: Programa 'NutriPaste Universal'", "QuantumLeap: IA Central 'DeepMind Alpha'", "Armatech: Programa 'Exterminador' (Droides de Combate)", "ChronoCorp: Rutas Suborbitales 'SkyLane'", "Nexus Holdings: Sistema de Crédito Social Unificado", "Serenity Pharma: Droga de Compliance 'Paxilax'", "Genesis Habitats: Arcológica 'Arcadia Prime'", "Cognito Solutions: Proyecto 'DreamWeaver' (Publicidad Subliminal)", "Apex Robotics: Serie 7 'WorkerBots'", "Blackwater: Operación 'Clean Sweep' (Supresión Disidencia)", "Silentium: Protocolo 'GhostNet' (Comunicaciones Secretas)", "OmniCorp: División de Asimilación Cultural", "Aegis Dynamics: Programa 'Pre-Crimen'", "Cygnus BioTech: Clonación y Reemplazo de Órganos", "Helios Energy: Control de la Red Eléctrica", "NovaCom: Filtrado y Censura de la InfoEsfera",
+
+            // --- UBICACIONES CLAVE ---
+            "Sector Cero: El Núcleo Corporativo", "Distrito Neo-Kyoto: Zona Tecnológica", "Sector Industrial 7: Factorías y Contaminación", "Las Zonas Bajas (Lowtown): Suburbios Olvidados", "El Sprawl: Megalópolis Interconectada", "Arcología Edén: Utopía Corporativa Aislada", "Mercado Negro 'The Circuit'", "Datahaven Clandestino 'The Archive'", "Prisión Corporativa 'Panopticon'", "Laboratorios Subterráneos de Cygnus", "Sede Central Flotante de OmniCorp 'Olympus'", "Complejo Minero de Asteroides de Helios", "Torres Residenciales 'VertiCubes'", "Centro de Reeducación de NovaCom", "Clínicas de Modificación Corporal 'BodyShop'", "Zona de Contención Biológica (Tras Incidente)", "Puerto Espacial 'Gateway Station'", "Distrito Financiero 'The Grid'", "Planta de Energía Geotérmica Sector 4", "Ruinas del Viejo Mundo (Pre-Corporativo)", "Embajada Corporativa (Zona Neutral)", "Centro de Entretenimiento 'HoloDrome'", "Mercado Gris de Implantes", "Red de Túneles de Servicio Olvidados", "Granja Vertical de Veridian",
+
+            // --- TECNOLOGÍA Y CYBERNETICS ---
+            "Implantes Cibernéticos Comunes (Ojo, Brazo)", "Wetware: Interfaz Neural Directa", "Bio-Augmentación: Mejoras Genéticas", "Neuro-Bloqueadores (Control Emocional)", "Drones de Vigilancia 'Ojos Flotantes'", "Red de Cámaras de Reconocimiento Facial", "Sistema de Crédito Social Digital", "Identificación Biométrica Obligatoria", "Armas No Letales de Control de Masas (Sónicas, EMP)", "Exoesqueletos de Trabajo Pesado", "Vehículos Autónomos de Transporte Corporativo", "Medicina Personalizada por ADN (Privilegiados)", "Clonación Terapéutica", "Inteligencia Artificial Débil (Asistentes, Control)", "Inteligencia Artificial Fuerte (Vigilancia, Estrategia)", "Realidad Aumentada Persistente (InfoVisor)", "Realidad Virtual Inmersiva (Escape)", "Hackeo Neuronal y Defensa Cibernética", "Tecnología de Camuflaje Óptico", "Armas de Energía Dirigida (Corporativas)", "Sintetizadores de Alimentos", "Sistemas de Filtración de Aire (Zonas Altas)", "Protocolos de Encriptación Cuántica", "Mercado Negro de Software Ilegal (Icebreakers)", "Implantes de Memoria Flash", "Generadores de Campo de Fuerza Personales (Élite)", "Sistemas de Rastreo Subdérmico", "Tecnología de Supresión de Identidad (Data Ghosts)", "Armamento Biológico Sintético",
+
+            // --- ROLES Y CLASES SOCIALES ---
+            "Ejecutivo Corporativo (Nivel Alto)", "Gerente Medio (Supervisor)", "Especialista Técnico (Ingeniero, Científico)", "Fuerzas de Seguridad Corporativa ('CorpSec')", "Trabajador de Factoría (Clase Baja)", "Ciudadano de Nivel 3 (Estándar)", "Ciudadano de Nivel 1 (Privilegiado)", "Sin-Identidad ('Ghost', Marginado)", "Contratista Independiente ('Runner', Mercenario)", "Hacker Clandestino ('Netrunner')", "Miembro de la Resistencia ('Cell Operative')", "Bio-Modificado (Augmented)", "Androide de Servicio", "Informativo/Periodista Clandestino", "Contrabandista de Datos/Tecnología", "Médico del Mercado Negro ('Ripperdoc')", "Cultista Anti-Corporativo", "Burócrata Corporativo", "Oficial de Cumplimiento (Compliance Officer)", "Operador de Propaganda (InfoSpinner)", "Guardaespaldas Cibernético", "Piloto de Drones Remoto", "Chatarrero Tecnológico (Scavenger)", "Mensajero de Datos (Data Courier)", "Inteligencia Artificial Rebelde (Rumor)",
+
+            // --- CONCEPTOS Y FENÓMENOS SOCIALES ---
+            "El Sistema de Crédito Social", "Propaganda Corporativa Constante", "Cultura de la Hiper-Productividad", "Obsolescencia Programada (Humana y Tecnológica)", "Control Informativo (La Verdad Oficial)", "Vigilancia Masiva y Pérdida de Privacidad", "Dependencia Tecnológica Extrema", "Desigualdad Social Extrema (Brecha Nivel 1-3)", "Contaminación Ambiental Ignorada", "Mercado Negro y Economía Sumergida", "Resistencia Organizada (Células Secretas)", "Espionaje Industrial entre Corporaciones", "Lavado de Cerebro Corporativo", "Censura y Manipulación Mediática", "Militarización de la Seguridad Privada", "Pérdida de Identidad Individual", "Adicción a la Realidad Virtual", "Gentrificación Tecnológica", "Sindicatos Corporativos (Controlados)", "Erosión de Derechos Humanos Básicos", "Culto a la Personalidad del CEO", "Normalización de la Violencia Corporativa", "Experimentos Sociales Corporativos", "Protocolos de Contención de Información", "La Búsqueda de Autonomía (Fuga)", "El Mito de la Meritocracia Corporativa", "Desinformación y Fake News", "Guerra Psicológica Corporativa", "Monocultura Impuesta",
+
+            // --- EVENTOS Y CONSPIRACIONES (EJEMPLOS) ---
+            "La Purga Silenciosa de Nexus Holdings", "El Incidente del Sector Gamma (Fuga Biológica)", "La Fusión Hostil OmniCorp-Veridian", "El Levantamiento Fallido de Lowtown", "El Escándalo del Wetware 'MindLeach'", "Descubrimiento del 'Proyecto Génesis Oscuro'", "El Apagón de Datos de NovaCom", "Asesinato del CEO de Cygnus BioTech", "La Masacre del Distrito Industrial 4", "El Virus Informático 'Cerberus'", "Rumores sobre la IA 'DeepMind Omega'", "La Desaparición de Activistas Anti-Corp", "Sabotaje en la Red Energética de Helios", "Filtración de los 'Archivos Armatech'", "La Verdad sobre las 'Zonas de Cuarentena'", "Conspiración del Agua Sintética", "El Mercado de Recuerdos Implantados", "Control Climático Artificial (Rumor)", "Experimentos con Viajes Temporales (Teoría Extrema)", "Infiltración de la Resistencia en Aegis", "El Culto del 'Engranaje Roto'", "Descubrimiento de Ruinas Alienígenas (Encubierto)", "El Protocolo 'Winter Contingency'", "La Red de Ejecutivos Disidentes", "El Mercado de Identidades Falsas",
+
+            // --- VIDA COTIDIANA Y DETALLES ---
+            "Transporte Público Autónomo Segregado", "Racionamiento de Recursos Básicos (Niveles Bajos)", "Entretenimiento Holográfico Obligatorio", "Módulos de Vivienda Estandarizados", "Comida Sintética Predominante", "Interacciones Sociales Mediadas por IA", "Publicidad Dirigida Neuronalmente", "Protocolos de Comunicación Corporativa", "Revisiones de Cumplimiento Aleatorias", "Implantes de Traducción Universal", "Moda Corporativa Estandarizada", "Gimnasios de Estimulación Muscular Eléctrica", "Clínicas de Salud Corporativas", "Redes Sociales Internas Vigiladas", "Mercados Virtuales Regulados", "Mascotas Robóticas", "Sistemas de Reciclaje de Ciclo Cerrado (Arcológicas)", "Deportes Corporativos Patrocinados (CombatBots)", "Drogas Recreativas Sintéticas Legales (Controladas)", "Festivales Corporativos Obligatorios", "Guarderías Corporativas (Adoctrinamiento Temprano)", "Cementerios Virtuales", "Contratos de Lealtad Vitalicia", "Programas de Recompensa por Denuncia", "Aplicaciones de Bienestar Corporativo (Vigilancia)",
+            // ... (Continuar expandiendo cada categoría)
+        ];
+        const corporateParanoiaThemes = [
+            "megacorporaciones", "control social", "vigilancia masiva", "cyberpunk", "distopía", "implantes cibernéticos", "wetware", "inteligencia artificial", "resistencia underground", "propaganda", "crédito social", "sectores urbanos", "arcológicas", "guerra corporativa", "espionaje industrial", "tecnología de control", "hackers y netrunners", "mercado negro", "clases sociales futuristas", "contaminación y ecocidio", "bioingeniería", "androides y sintéticos", "seguridad corporativa", "conspiraciones", "manipulación mediática"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un analista de inteligencia encubierto / periodista de investigación especializado en el complejo entramado de poder de las megacorporaciones en un futuro distópico (circa 2084). Tu tarea es redactar un informe desclasificado sobre el concepto, corporación, lugar o tecnología especificado. Detalla su función, historia (si es relevante), impacto en la sociedad y en el equilibrio de poder, tecnología subyacente, rumores o secretos asociados, y la atmósfera general que lo rodea (paranoia, control, opresión, resistencia). Utiliza un tono objetivo pero crítico, revelando las capas ocultas. Extensión: aproximadamente 1200-1300 palabras. Basa tu informe únicamente en el siguiente archivo:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+             model: "mistral-tiny", // Modelo rápido
+             systemPrompt: "Actúa como una IA de análisis de datos segura, proporcionando información adicional únicamente sobre el archivo actualmente abierto. Responde preguntas de seguimiento sobre sus detalles, implicaciones o conexiones mencionadas. Mantén un tono formal y discreto, propio de una comunicación clasificada.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un generador de nombres en clave para una base de datos de inteligencia sobre un mundo cyberpunk dominado por megacorporaciones. Genera exactamente 15 nombres evocadores de corporaciones, proyectos secretos, tecnologías de control, lugares clave o conceptos distópicos. Deben sonar plausibles dentro del género (ej: 'Proyecto Cerbero', 'Sector Umbra', 'NeuroCorp', 'Implante 'Oblivion''). Devuelve *solo* la lista, una por línea. Sin números, guiones ni comentarios.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales, solo IDs si se renombraron)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area'); // Scrollable text/image area
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Text content div
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Renombrado para generalidad
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentTopicTitle
+                 ? `Actúa como una IA de análisis de datos segura, proporcionando información adicional únicamente sobre el archivo '${currentTopicTitle}'. Responde preguntas de seguimiento sobre sus detalles, implicaciones o conexiones mencionadas. Mantén un tono formal y discreto.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) // Nuestros servidores tienen mucho tráfico en este momento, conexión inestable. Intenta en unos segundos. //`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("// La respuesta del servidor llegó corrupta o vacía. Intenta reformular la consulta. //");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`// La conexión con el servidor excedió el tiempo límite (${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde. //`);
+                 }
+                 throw new Error(error.message || "// Error desconocido al contactar el servidor central. //");
+             }
+        }
+        async function fetchExplanationText(topicTitle) {
+             return fetchTextFromApi(topicTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+             if (!currentTopicTitle) throw new Error("Error interno: Contexto del archivo no establecido para la consulta.");
+             return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(corporateParanoiaThemes) || "conceptos de paranoia corporativa";
+             const specificPrompt = `Genera 15 nombres/conceptos clave sobre ${randomTheme}`;
+             return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                  .then(text => {
+                      const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 4 && line.length < 150);
+                      if (titles.length < 5) throw new Error("La IA no generó suficientes nombres en clave.");
+                      return titles.slice(0, 15);
+                  });
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 550, nologo: true }; // Ajustar aspect ratio si se prefiere
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "corporate dystopia concept";
+             const enhancedPrompt = `Conceptual artwork depicting '${safePromptText}'. Corporate dystopia, cyberpunk noir aesthetic, towering oppressive architecture, rain-slicked streets, dim neon lights (cyan, magenta, yellow), sense of surveillance and paranoia. Focus on mood and atmosphere. Avoid clear human faces unless essential, no text/labels. Cinematic, gritty.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, titles, captions, writing, logo, branding, bright sunny day, cheerful, utopia, nature landscape, clear sky, cartoon, drawing, illustration, simple, clean lines, happy people, watermark, signature";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (Sin cambios)
+        function formatExplanationText(rawText) { /* ... (copy from previous version) ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios estructurales)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0; // Reset scroll del área de texto/imagen
+            console.log("Scroll reset on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTopicTitle = null; // Reset chat context
+             hideFullscreenImage(); // Ensure fullscreen is also hidden
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... (copy from previous version) ... */
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+         }
+        function hideFullscreenImage() { /* ... (copy from previous version) ... */
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+         }
+
+        // ========== CHAT FUNCTIONS ========== (Sin cambios estructurales)
+        function addChatMessage(message, sender) { /* ... (copy from previous version, check classes 'user-message', 'ai-message') ... */
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) { /* ... (copy from previous version, check class 'chat-error') ... */
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() { /* ... (copy from previous version) ... */
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`// Error IA: ${error.message} //`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        // *** MODIFIED: createTitleItem to add icon ***
+        function createTitleItem(title) {
+             const div = document.createElement('div');
+             div.className = 'title-item';
+             // Choose an icon based on keywords (simple example)
+             let iconClass = 'fa-file-alt'; // Default
+             const lowerTitle = title.toLowerCase();
+             if (lowerTitle.includes('corp') || lowerTitle.includes('industries') || lowerTitle.includes('dynamics') || lowerTitle.includes('holdings') || lowerTitle.includes('group')) iconClass = 'fa-building';
+             else if (lowerTitle.includes('sector') || lowerTitle.includes('district') || lowerTitle.includes('zone') || lowerTitle.includes('town') || lowerTitle.includes('city')) iconClass = 'fa-map-marker-alt';
+             else if (lowerTitle.includes('tech') || lowerTitle.includes('cyber') || lowerTitle.includes('implant') || lowerTitle.includes('drone') || lowerTitle.includes('ai') || lowerTitle.includes('net')) iconClass = 'fa-microchip';
+             else if (lowerTitle.includes('security') || lowerTitle.includes('aegis') || lowerTitle.includes('warden') || lowerTitle.includes('panopticon')) iconClass = 'fa-shield-alt';
+             else if (lowerTitle.includes('bio') || lowerTitle.includes('pharma') || lowerTitle.includes('gene') || lowerTitle.includes('med')) iconClass = 'fa-dna';
+             else if (lowerTitle.includes('project') || lowerTitle.includes('program') || lowerTitle.includes('protocol')) iconClass = 'fa-project-diagram';
+             else if (lowerTitle.includes('market') || lowerTitle.includes('nexus') || lowerTitle.includes('logistics') || lowerTitle.includes('credit')) iconClass = 'fa-chart-line';
+             else if (lowerTitle.includes('runner') || lowerTitle.includes('hacker') || lowerTitle.includes('resistance') || lowerTitle.includes('ghost')) iconClass = 'fa-user-secret';
+
+             div.innerHTML = `<i class="fas ${iconClass} fa-fw"></i> ${title}`; // Add icon
+             div.setAttribute('data-title', title);
+             div.addEventListener('click', () => handleTitleClick(title));
+             return div;
+         }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b)); // Keep sorted
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-mono">// No hay archivos en esta base de datos //</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); // Uses the modified function
+         }
+        function appendTitles(newTitles) { /* ... (copy from previous version, ensure it calls createTitleItem) ... */
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick - Renamed variable, checked error message usage ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentTopicTitle = title; // Set context
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0; // Reset scroll AFTER content visible
+                console.log("Scroll reset after content visible");
+
+                // Image Placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.75em; margin-top: 0.5rem;">// Generando visualización conceptual... //</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Image Element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual: ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.75em;margin-top:0.5rem;">// Visualización fallida //</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.75em;margin-top:0.5rem;">// Error URL visualización //</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "// Error desconocido al cargar archivo. //"; // Use friendly error
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles - Checked error message usage ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> // Procesando solicitud... //';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("// No se pudo obtener nueva información de la red. //"); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`// Error en la solicitud de datos: ${error.message} //`); // Use friendly error
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Solicitar Nuevos Datos [Intel Drop]';
+             }
+         }
+
+        // *** Search Filter Function (Added normalization) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 // Use data-title for filtering, ignore icon HTML
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0 || titleItems.length === 0); // Show if no results OR no items initially
+         }
+
+        // ========== INITIALIZATION ========== (Ensure all elements are selected)
+        function initApp() {
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !modalTextArea || !modalContent || !modalError || !modalLoadingIndicator || !modalStoryContentArea || !chatHistory || !chatLoadingIndicator || !chatSection || !fullscreenImage) {
+                 console.error("Initialization failed: Missing essential UI elements.");
+                 document.body.innerHTML = '<p style="color: #ff2e63; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: monospace;">// FATAL SYSTEM ERROR: UI Integrity Compromised. Connection Terminated. //</p>';
+                 return;
+              }
+             // Listeners (copy from previous, ensure IDs match)
+             modalCloseBtn.addEventListener('click', hideModal);
+             storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+             generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+             searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+             searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+             chatSendBtn.addEventListener('click', handleSendMessage);
+             chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+             imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+             fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+             // Initial display
+             displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden');
+         }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

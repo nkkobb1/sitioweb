@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Origami Avanzado - El Arte del Plegado</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes limpias y elegantes -->
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@300;400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Origami Avanzado --- */
+        :root {
+            --color-primary: #b45309; /* Marrón/Naranja (Madera/Papel) */
+            --color-secondary: #16a34a; /* Verde (Naturaleza/Bambú) */
+            --color-tertiary: #dc2626; /* Rojo (Sello/Acento Japonés) */
+            --color-background: #fefbf6; /* Blanco Hueso / Crema muy claro */
+            --color-text: #3f3f46; /* Gris Oscuro (Zinc 700) */
+            --color-text-muted: #71717a; /* Gris Medio (Zinc 500) */
+            --color-modal-bg: #ffffff; /* Blanco puro */
+            --color-border: #e7e5e4; /* Borde Gris Claro (Stone 200) */
+            --color-error-bg: #fef2f2; /* Fondo error rojo muy claro */
+            --color-error-text: #b91c1c; /* Texto error rojo oscuro */
+            --color-error-border: #fecaca; /* Borde error rojo claro */
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+            --border-radius: 6px; /* Bordes suavemente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Source Serif Pro', serif; font-weight: 600; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 600; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 600; }
+        #modal-title { color: var(--color-primary); font-weight: 600; }
+        .navbar { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); font-weight: 300; }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.2); outline: none; background-color: #fff; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Lato'; font-size: 0.95rem; line-height: 1.4; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #fffbeb; /* Amarillo muy pálido hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Lato', sans-serif; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #92400e; /* Marrón más oscuro */ box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: var(--color-text-muted); color: var(--color-border); cursor: not-allowed; opacity: 0.8; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(82, 82, 91, 0.85); /* Overlay gris neutro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            border-top: 5px solid var(--color-primary); /* Acento de color */
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #f3f4f6; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-tertiary); color: #ffffff; transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; font-weight: 300; } /* Texto principal más ligero */
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; font-weight: 400; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Source Serif Pro', serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 600; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; font-weight: 400;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease; background-color: #f8f8f8; /* Fondo claro si la imagen tiene transparencia */ }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-lg); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(113, 113, 122, 0.2); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #f9fafb; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-secondary); color: white; margin-left: auto; text-align: left; border-bottom-right-radius: 0; font-weight: 400;}
+        .ai-message { background-color: #e5e7eb; /* Gris claro */ color: var(--color-text); margin-right: auto; text-align: left; border-bottom-left-radius: 0; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.9rem; border: 1px solid var(--color-border); background-color: #fff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Lato'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.15); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #92400e; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-primary); font-size: 1.3rem; font-family: 'Source Serif Pro'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-text); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 251, 246, 0.96); /* Fondo crema casi opaco */ display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); background-color: white; }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); box-shadow: var(--shadow-sm); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-modal-bg); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-dove mr-3 text-yellow-600"></i> <!-- Icono Grulla -->
+                     Origami Avanzado
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wider">El Arte del Plegado Preciso</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explora la Maestría del Papel</h1>
+             <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto font-light">Descubre modelos complejos, técnicas sofisticadas y los secretos del diseño en origami. Selecciona un tema para desplegar su información.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar modelo, técnica o concepto...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-green-600 mr-2"></i> <!-- Icono libro -->
+                 Índice de Plegado
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Desplegando lista de modelos y técnicas...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">No se encontraron pliegues que coincidan con la búsqueda.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Más Pliegues
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Preparando el papel...</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image placeholder/spinner appended here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Consultando al maestro...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este modelo o técnica...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Modelo de Origami Ampliado">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Descripciones generadas por IA basadas en el conocimiento sobre origami avanzado.</p>
+              <p class="mt-1">Para diagramas precisos, consulta siempre fuentes especializadas y libros de autores.</p>
+              <p class="mt-2">© 2024 El Arte del Plegado</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Modelos Animales Complejos
+            "Dragón Ryujin 3.5 (Satoshi Kamiya)", "Ancient Dragon (Satoshi Kamiya)", "Bahamut (Satoshi Kamiya)", "Fénix 3.5 (Satoshi Kamiya)", "Escarabajo Ciervo Volante (Satoshi Kamiya)", "Escarabajo Hércules (Robert J. Lang)", "Tarántula (Robert J. Lang)", "Escorpión (Robert J. Lang)", "Caballo (Hideo Komatsu)", "Pegaso (Satoshi Kamiya)", "Grifo (Kade Chan)", "Quimera (Satoshi Kamiya)", "Oso Pardo (Quentin Trollip)", "León (Hideo Komatsu)", "Lobo (Nguyen Hung Cuong)", "Cangrejo Violinista (Brian Chan)", "Mantícora (Neal Elias)", "Ciervo (Roman Diaz)", "Águila Calva (Robert J. Lang)", "Búho Nival (Katsuta Kyohei)", "Pez Koi (Won Park - Billetes)", "Serpiente Cobra (Gen Hagiwara)", "Rinoceronte (Sipho Mabona)", "Mamut Lanudo (Satoshi Kamiya)", "Pulpo (Shuki Kato)", "Langosta (Brian Chan)", "Caballito de Mar (Beth Johnson)", "Pez Ángel (Satoshi Kamiya)", "Tiburón Martillo (Nguyen Ngoc Vu)", "Pteranodon (Satoshi Kamiya)", "Diplodocus (Satoshi Kamiya)", "Velociraptor (Satoshi Kamiya)", "Tiranosaurio Rex (Issei Yoshino)", "Gato Siamés (Joseph Wu)", "Perro Pastor Alemán (Hoang Tien Quyet)", "Zorro (Yoo Tae Yong)", "Panda Rojo (Andrey Ermakov)", "Colibrí (Gen Hagiwara)", "Mariposa Monarca (Michael LaFosse)", "Libélula (Marc Vigo)",
+
+            // Modelos Humanos/Mitológicos Complejos
+            "Violinista (Robert J. Lang)", "Samurai (Hojyo Takashi)", "Ángel (Neal Elias)", "Demonio / Oni (Satoshi Kamiya)", "Mago (Satoshi Kamiya)", "Guerrero Elfo (Satoshi Kamiya)", "Centauro (Satoshi Kamiya)", "Minotauro (Satoshi Kamiya)", "Bailarina (Hojyo Takashi)", "Jinete (Neal Elias)", "Pensador (Akira Yoshizawa)", "Ángel Caído (Tran Trung Hieu)", "Sirena (Satoshi Kamiya)", "Gárgola (Kade Chan)", "Ciclope (Satoshi Kamiya)", "Duende (Fernando Gilgado)", "Arlequín (Eric Joisel)", "Flautista (Eric Joisel)", "Máscara Noh (Komatsu Hideo)", "Figura Humana Base (Varios)", "Caballero Medieval (Shuki Kato)", "Vikingo (Hojyo Takashi)",
+
+            // Geométricos y Modulares Complejos
+            "Teselado Misterioso de Fujimoto", "Teselado Waterbomb (Variaciones Complejas)", "Teselado Spread Hexagons (Chris Palmer)", "Teselado de Baldosas Rombicas (Eric Gjerde)", "Estrella de Kawasaki (Variaciones Modulares)", "Cubo de Yoshimoto (Unidad)", "Icosaedro Estrellado (Heinz Strobl)", "Dodecaedro Estrellado (Rona Gurkewitz)", "Kusudama Electra (David Mitchell)", "Kusudama Venus (Ekaterina Lukasheva)", "Kusudama Estrella de Mar (Maria Sinayskaya)", "Kusudama de Flores Complejas (Tomoko Fuse)", "Unidad Sonobe (Variaciones Avanzadas)", "Unidad PHIZZ (Tom Hull)", "Unidad Curler (Herman Van Goubergen)", "Fractal de Menger en Origami (Jeannine Mosely)", "Poliedro de Leonardo (Variaciones)", "Anillo de Módulos PHiZZ", "Esfera Geodésica Modular (Varios)", "Cubo Mágico de Kawasaki", "Estrella Omega (Philip Shen)", "Teselado de Escamas de Dragón (Jeannine Mosely/Chris Palmer)", "Teselado Pinwheel (Shuzo Fujimoto)", "Teselado Tríada (Alessandro Beber)", "Teselado de Ondas (Gorän Konjevod)", "Caleidociclo Hexagonal", "Caleidociclo Cuadrado", "Origami Curvo (Erik Demaine)", "Superficie de Costa (Varios)", "Hiperboloide Modular", "Botella de Klein Modular (imposible pero conceptual)", "Catenoide Modular",
+
+            // Flores y Plantas Complejas
+            "Rosa de Kawasaki (Variaciones Avanzadas)", "Lirio Complejo (Satoshi Kamiya)", "Orquídea Phalaenopsis (Robert J. Lang)", "Flor de Loto Compleja (Varios)", "Girasol (Hideo Komatsu)", "Ramo de Rosas Modulares", "Planta Carnívora Venus Atrapamoscas (Satoshi Kamiya)", "Hoja de Arce Compleja (Satoshi Kamiya)", "Bonsái de Origami (Benjamin Parker)", "Cactus Saguaro (Beth Johnson)", "Cardo (Marc Vigo)", "Dalia (Naomiki Sato)", "Flor de Cerezo (Varios, complejos)", "Rosa de Cinco Pétalos (Naomiki Sato)", "Trébol de Cuatro Hojas (Varios)", "Orquídea Cattleya (Shu Sugamata)", "Amapola (Nick Robinson)", "Crisantemo (Soon Young Lee)", "Flor de Pascua (Poinsettia) (Varios)",
+
+            // Técnicas Avanzadas
+            "Plegado en Húmedo (Wet-Folding)", "Plisado en Caja (Box-Pleating)", "Diseño con Empaquetamiento de Círculos (Circle Packing)", "Diseño con TreeMaker (Robert J. Lang)", "Interpretación de Crease Patterns (CPs)", "Técnica de Grafting (Injerto de Pliegues)", "Closed Sink y Open Sink (Variaciones complejas)", "Spread Squash (Variaciones avanzadas)", "Swivel Fold (Variaciones complejas)", "Rabbit Ear (Variaciones y aplicaciones complejas)", "Petal Fold (Aplicaciones no triviales)", "Técnica de Teselado (Diseño y plegado)", "Diseño Modular (Conexiones y estabilidad)", "Uso de Metilcelulosa (MC) para preparar papel", "Técnica de Corrugación", "Dividir un borde en N partes iguales (Teorema de Haga)", "Plegado de Bases Complejas (Base Pájaro Modificada, Base Rana Modificada)", "Reducción de grosor en capas múltiples", "Pre-marcado (Pre-creasing) de CPs complejos", "Modelado y escultura final (Shaping)", "Plegado Inverso (Inside Reverse Fold) complejo", "Doble Plegado en Z", "Técnica de 'Unsink'", "Diseño Asistido por Ordenador (OrigamiDraw, Oripa)", "Bloqueo de capas (Locking folds)", "Origami Teselado Curvo", "Técnica de 'Collapse' de CPs",
+
+            // Conceptos y Teoría
+            "Matemáticas del Origami (Axiomas de Huzita-Hatori)", "Relación entre Origami y Fractales", "Algoritmos de Diseño en Origami", "Eficiencia de Bases (Square-based vs. Hex-based)", "Simetría en el Diseño de Origami", "El Problema del Plegado Plano (Flat Foldability)", "Origami Computacional", "Historia del Origami Moderno (Yoshizawa, Montroll, Lang, Kamiya)", "Tipos de Papel para Origami Avanzado (Washi, Lokta, Elefante, Doble Seda)", "Uso de Papel Metálico o Foil", "Creación de Papel Dúo Casero", "Teoría del Color en Origami Modular", "Estilos de Origami (Realista, Teselado, Modular, Acción)", "La Filosofía de Akira Yoshizawa", "El Legado de Neal Elias", "Impacto de Eric Joisel en el Plegado en Húmedo", "Origami y Educación Matemática", "Aplicaciones del Origami en Ciencia e Ingeniería (Stents, Airbags, Telescopios Espaciales)", "Conservación de Modelos de Origami", "Fotografía de Origami", "Software de Diseño de Origami (ReferenceFinder, TreeMaker)", "Comunidad Online de Origami (Foros, Redes)", "Convenciones Internacionales de Origami (Tanteidan, OUSA, BOS)", "Derechos de Autor y Diagramado en Origami",
+
+            // Añadir más... El botón 'Generar Más' puede añadir modelos menos conocidos o variaciones.
+        ];
+        const origamiThemes = [
+            "modelos animales complejos origami", "dragones origami", "insectos origami", "figuras humanas origami",
+            "origami modular avanzado", "kusudamas complejos", "teselados origami", "poliedros origami",
+            "flores origami realistas", "técnicas de plegado avanzado", "plegado en húmedo", "box-pleating",
+            "diseño de origami", "crease patterns (CP)", "circle packing origami", "TreeMaker origami",
+            "Satoshi Kamiya modelos", "Robert Lang modelos", "Hideo Komatsu modelos", "Neal Elias técnicas",
+            "Eric Joisel estilo", "origami matemático", "tipos de papel origami", "historia del origami moderno",
+            "origami curvo", "origami y ciencia"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un maestro origamista de renombre mundial, con décadas de experiencia en el plegado y diseño de modelos complejos. Describe el modelo, técnica o concepto de origami avanzado indicado. Incluye: Origen (si es conocido, autor), nivel de dificultad estimado (muy alto, extremo), tipo de papel recomendado, técnicas clave necesarias para plegarlo/entenderlo, características distintivas del modelo/técnica, consejos para el plegado o estudio, y su relevancia en el mundo del origami. Utiliza un lenguaje claro, preciso y apasionado por el arte del papel. El objetivo es una explicación detallada de aproximadamente 1200-1300 palabras. Basa tu explicación únicamente en el siguiente tema:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un asistente experto en origami, enfocado únicamente en el modelo o técnica que se está mostrando. Responde preguntas sobre pasos específicos (de forma conceptual, no diagramas), tipos de papel, consejos de plegado, o historia relacionada con este tema en particular. Sé conciso y útil.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de origami avanzado. Genera exactamente 15 nombres de modelos complejos (ej. 'Fénix 3.5 (Kamiya)'), técnicas avanzadas (ej. 'Plegado en Húmedo Detallado'), o conceptos de diseño (ej. 'Interpretación de CPs Complejos'). Devuelve *solo* la lista, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentOrigamiTopic = null; // Contexto para el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             // Dynamic System Prompt for Chat
+             const systemPromptToUse = isChat && currentOrigamiTopic
+                 ? `Eres un asistente experto en origami, enfocado únicamente en '${currentOrigamiTopic}'. Responde preguntas sobre pasos conceptuales, papel, consejos, o historia relacionados *solo* con este tema. Sé conciso y preciso.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros maestros plegadores están ocupados o la conexión falló. Por favor, inténtalo de nuevo en un momento.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta del maestro llegó en blanco. Intenta preguntar de otra manera.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión con el taller de origami tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al consultar al maestro origamista.");
+             }
+        }
+        // Wrappers
+        async function fetchExplanationText(topicTitle) {
+            return fetchTextFromApi(topicTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentOrigamiTopic) throw new Error("Error interno: No se estableció el tema de origami para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(origamiThemes) || "origami avanzado general";
+            const specificPrompt = `Genera 15 nombres de modelos, técnicas o conceptos de origami sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 5) throw new Error("La IA no pudo generar suficientes ideas de plegado.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 700, height: 700, nologo: true }; // Square format often better for origami
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "advanced origami model";
+             // Prompt focuses on the folded model itself
+             const enhancedPrompt = `High-quality photo of a complex origami model: '${safePromptText}'. Folded from a single sheet of textured paper (like Washi or Elephant Hide). Clean white background, studio lighting, sharp focus, intricate details visible. Style of Satoshi Kamiya or Robert J Lang.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             // Negative prompt to avoid unwanted elements
+             const negativePrompt = "diagram, instructions, arrows, numbers, letters, text, words, messy background, multiple models, hands, person, blurry, low quality, drawing, illustration, painting, watermark, signature";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (minor tweaks for readability)
+        function formatExplanationText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            // Basic Markdown and common artifacts
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula" style="text-align:center; font-style: italic; margin: 1em 0;">$1</p>'); // Style formulas if any
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Handle lists (simple unordered)
+            formatted = formatted.replace(/^\s*-\s+(.*)$/gm, '<li>$1</li>');
+            formatted = formatted.replace(/<\/li>\n<li>/g, '</li><li>'); // Clean up spacing between list items
+            formatted = formatted.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>'); // Wrap list items in <ul>
+            formatted = formatted.replace(/<\/ul>\s*<ul>/g, ''); // Merge adjacent lists
+
+            // Paragraph separation
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">') || block.startsWith('<ul>')) return block; // Keep existing structured blocks
+                let content = block.replace(/\n/g, ' '); // Replace internal newlines with spaces
+                return `<p>${content}</p>`;
+            }).join('');
+
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             // Reset Chat
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentOrigamiTopic = null; // Clear chat context
+             // Ensure image overlay is hidden
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Identical logic)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (Identical logic, uses currentOrigamiTopic)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Sort titles, maybe prioritize techniques/concepts slightly? (Complex sorting not implemented here)
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">No hay modelos o técnicas en el índice.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Reset general state
+            showModal();
+            modalTitle.textContent = title;
+            currentOrigamiTopic = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = ''; // Clear chat history
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando imagen del modelo...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Append to text content
+
+                // Create image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Modelo de origami: ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => { // Add click listener here
+                        showFullscreenImage(imgElement.src);
+                    });
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-paper-plane placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">No se pudo visualizar el modelo.</p>`; // Origami icon for error
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append image to the text content div
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar la información.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando inspiración...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se encontraron nuevos pliegues o técnicas en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar nuevos pliegues: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Más Pliegues';
+             }
+         }
+
+         // Search Filter Function (with accent normalization)
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Simplified check for brevity
+             if (!titleListContainer || !storyModal || !searchInput || !chatInput) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: var(--color-error-text); font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes esenciales de la interfaz.</p>';
+                 return;
+             }
+            // Event listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

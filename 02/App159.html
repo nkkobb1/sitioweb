@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enciclopedia de Récords Mundiales</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes limpias y modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Récords Mundiales --- */
+        :root {
+            --color-primary: #2563eb; /* Azul Medio Intenso */
+            --color-secondary: #f59e0b; /* Dorado/Ámbar para acentos */
+            --color-tertiary: #10b981; /* Verde Esmeralda (opcional para éxito/logro) */
+            --color-background: #f9fafb; /* Blanco Hueso / Gris muy claro */
+            --color-text: #1f2937; /* Gris Oscuro */
+            --color-text-muted: #6b7280; /* Gris Medio */
+            --color-modal-bg: #ffffff; /* Blanco puro */
+            --color-border: #e5e7eb; /* Borde Gris Claro */
+            --color-error-bg: #fef2f2; /* Fondo error rojo muy claro */
+            --color-error-text: #b91c1c; /* Texto error rojo oscuro */
+            --color-error-border: #fecaca; /* Borde error rojo claro */
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 6px; /* Bordes redondeados suaves */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 400; }
+        h1, h2, h3, h4, .logo { font-family: 'Poppins', sans-serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 600; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Lato'; font-size: 0.95rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-primary); background-color: #fffbeb; border-left-color: var(--color-secondary); }
+        #generate-more-btn { grid-column: 1 / -1; background: var(--color-primary); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Poppins', sans-serif; font-weight: 600; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #1d4ed8; box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: #9ca3af; color: #e5e7eb; cursor: not-allowed; opacity: 0.8; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.85); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px; /* Altura para chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #f3f4f6; border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; transform: rotate(90deg); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: #555; font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Poppins', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 600; }
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: #333; }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(209, 213, 219, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #f9fafb; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 1rem; border-radius: 12px; /* Bubble effect */ max-width: 85%; word-wrap: break-word; line-height: 1.5; }
+        .user-message { background-color: var(--color-primary); color: #ffffff; margin-left: auto; text-align: left; border-bottom-right-radius: 2px; }
+        .ai-message { background-color: #e5e7eb; color: var(--color-text); margin-right: auto; text-align: left; border-bottom-left-radius: 2px;}
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 1px solid var(--color-border); background-color: #fff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Lato'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15); }
+        #chat-send-btn { padding: 0.7rem 1rem; background-color: var(--color-primary); color: #ffffff; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 1rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #1d4ed8; }
+        #chat-send-btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-primary); font-size: 1.3rem; font-family: 'Poppins'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-text); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-secondary); box-shadow: var(--shadow-lg); border-radius: var(--border-radius); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: #ffffff; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-trophy mr-3 text-yellow-500"></i> <!-- Icono Trofeo -->
+                     Récords Mundiales
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-500 font-sans tracking-wider">» La Enciclopedia Interactiva «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explora lo Extraordinario</h1>
+             <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto font-light">Descubre los límites del potencial humano, las maravillas de la naturaleza y los logros increíbles de la ingeniería. Busca o selecciona una categoría.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar un récord...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-blue-500 mr-2"></i> <!-- Icono Libro -->
+                 Categorías de Récords
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Consultando los archivos globales...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron récords para esa búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Más Récords
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Cargando Información Oficial...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Consultando al experto...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este récord...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información generada por IA basada en categorías de récords mundiales conocidas. Los datos específicos pueden variar.</p>
+              <p class="mt-1">Consulta fuentes oficiales como Guinness World Records para datos verificados y actualizados.</p>
+              <p class="mt-2">© 2025 Enciclopedia Interactiva de Récords</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Human Body & Abilities
+            "Persona Más Alta Registrada", "Persona Más Baja Registrada", "Persona Más Anciana Verificada", "Mayor Envergadura de Brazos", "Uñas Más Largas (Combinadas)", "Mayor Cantidad de Pelo Corporal", "Cintura Más Pequeña", "Voz Más Grave", "Voz Más Aguda", "Mayor Número de Dedos (Polidactilia)", "Lengua Más Larga", "Mayor Capacidad Pulmonar",
+            // Strength & Endurance
+            "Levantamiento de Peso Muerto Más Pesado", "Press de Banca Más Pesado", "Sentadilla Más Pesada", "Mayor Número de Dominadas en 1 Minuto", "Mayor Número de Flexiones en 1 Hora", "Plancha Abdominal Más Larga", "Maratón Más Rápido (Hombres)", "Maratón Más Rápido (Mujeres)", "100 Metros Lisos Más Rápido (Hombres)", "100 Metros Lisos Más Rápido (Mujeres)", "Mayor Distancia Nadada Sin Parar", "Cruce a Nado Más Rápido del Canal de la Mancha", "Mayor Tiempo Soportando la Respiración (Apnea Estática)", "Mayor Distancia Recorrida Caminando Hacia Atrás", "Mayor Tiempo Haciendo Malabares (3 objetos)", "Mayor Tiempo Manteniendo el Equilibrio Sobre Una Pierna",
+            // Speed & Agility
+            "Resolver Cubo de Rubik Más Rápido", "Resolver Cubo de Rubik a Ciegas Más Rápido", "Escribir el Alfabeto al Revés Más Rápido", "Comer un Hot Dog Más Rápido", "Pelar y Comer un Plátano Más Rápido (Sin Manos)", "Apilar Vasos Más Rápido (Speed Stacking)", "Carrera de Sacos Más Rápida (100m)", "Mayor Número de Saltos de Cuerda en 1 Minuto", "Mayor Número de Aplausos en 1 Minuto", "Desenfundar y Disparar Más Rápido (Arma Corta)",
+            // Collections
+            "Mayor Colección de Ositos de Peluche", "Mayor Colección de Latas de Cerveza", "Mayor Colección de Cajas de Fósforos", "Mayor Colección de Etiquetas de Botellas", "Mayor Colección de Zapatillas Deportivas", "Mayor Colección de Cómics", "Mayor Colección de Gomas de Borrar", "Mayor Colección de Patitos de Goma", "Mayor Colección de Muñecas Barbie", "Mayor Colección de Cartas Pokémon", "Mayor Colección de Chapas de Botella", "Mayor Colección de Monedas", "Mayor Colección de Sellos Postales", "Mayor Colección de Naipes", "Mayor Colección de Bolsas para Mareo de Avión",
+            // Food & Drink
+            "Pizza Más Grande (Superficie)", "Hamburguesa Más Grande (Peso)", "Hot Dog Más Largo", "Pastel Más Largo", "Calabaza Más Pesada", "Sandía Más Pesada", "Cebolla Más Pesada", "Mayor Número de Hot Dogs Comidos en 10 Minutos", "Mayor Número de Ostras Comidas en 3 Minutos", "Mayor Número de Alitas de Pollo Comidas en 12 Minutos", "Mayor Número de Chiles Habaneros Comidos en 1 Minuto", "Cata de Vinos Más Grande (Número de Participantes)", "Mayor Cantidad de Gente Desayunando en la Cama", "Mosaico de Comida Más Grande", "Torre de Pancakes Más Alta",
+            // Nature & Animals
+            "Animal Más Grande (Ballena Azul)", "Animal Terrestre Más Grande (Elefante Africano)", "Animal Más Pequeño (Mamífero: Murciélago Abejorro)", "Animal Más Rápido (Tierra: Guepardo)", "Animal Más Rápido (Aire: Halcón Peregrino)", "Animal Más Rápido (Agua: Pez Vela)", "Pez Más Grande (Tiburón Ballena)", "Serpiente Más Larga (Pitón Reticulada)", "Araña Más Grande (Tarántula Goliat)", "Perro Más Alto", "Perro Más Pequeño", "Gato Doméstico Más Largo", "Caballo Más Alto", "Árbol Más Alto (Secuoya Roja)", "Árbol Más Viejo (Estimado)", "Flor Más Grande (Rafflesia arnoldii)", "Lugar Más Profundo del Océano (Fosa de las Marianas)", "Montaña Más Alta (Monte Everest)", "Río Más Largo (Amazonas/Nilo - Debate)", "Desierto Más Grande (Antártida)", "Lugar Más Caluroso Registrado", "Lugar Más Frío Registrado",
+            // Technology & Engineering
+            "Edificio Más Alto del Mundo", "Puente Más Largo (General)", "Puente Colgante Más Largo", "Túnel Submarino Más Largo", "Coche de Producción Más Rápido", "Tren Más Rápido (Maglev)", "Avión Más Grande (Antonov An-225 Mriya - Histórico)", "Barco Más Grande (Portacontenedores)", "Submarino Más Grande", "Cohete Más Potente", "Robot Humanoide Más Avanzado (General)", "Supercomputadora Más Potente (Actual)", "Mayor Panel Solar (Instalación)", "Parque Eólico Más Grande (Capacidad)", "Primera Persona en la Luna",
+            // Arts & Entertainment
+            "Película Más Taquillera (Global)", "Libro Más Vendido (Excluyendo religiosos)", "Álbum Musical Más Vendido", "Sencillo Musical Más Vendido", "Artista Musical con Más Números 1", "Mayor Número de Premios Oscar Ganados (Persona)", "Mayor Número de Premios Grammy Ganados (Persona)", "Serie de TV Más Larga (Episodios)", "Obra de Teatro de Mayor Duración", "Video Musical Más Visto Online", "Canal de YouTube con Más Suscriptores", "Concierto con Mayor Asistencia (Pago)", "Pintura Más Cara Vendida en Subasta", "Videojuego Más Vendido", "Mayor Aplauso (Duración)",
+            // Unique Skills & Mass Participation
+            "Torre de Cartas Más Alta (Naipes)", "Castillo de Arena Más Alto", "Mosaico de Dominó Más Grande", "Mayor Número de Personas Haciendo Yoga Simultáneamente", "Mayor Número de Personas Bailando Thriller", "Mayor Cadena Humana", "Grito Más Fuerte (Individual)", "Eructo Más Fuerte", "Mayor Número de Cucharas Equilibradas en la Cara", "Mayor Distancia Escupiendo un Hueso de Cereza", "Romper Sandías con la Cabeza Más Rápido", "Reventar Globos Sentándose Más Rápido", "Carrera de Tacones Más Grande", "Mayor Número de Personas Vestidas de Papá Noel", "Guerra de Almohadas Más Grande",
+            // Travel & Exploration
+            "Primera Circunnavegación del Mundo", "Primera Persona en el Polo Norte", "Primera Persona en el Polo Sur", "Ascenso Más Rápido del Everest", "Persona Más Joven en Escalar las Siete Cumbres", "Persona Más Vieja en Escalar el Everest", "Viaje Más Largo en Bicicleta", "Viaje Más Largo Caminando", "Viaje Más Largo en Kayak", "Mayor Número de Países Visitados", "Vuelo Alrededor del Mundo Más Rápido (Avión)", "Viaje Espacial Más Largo (Humano)", "Mayor Profundidad Alcanzada por un Humano (Submarino)", "Mayor Distancia Volada en Globo Aerostático", "Travesía Más Rápida del Océano Atlántico (Barco)",
+            // Science & Space
+            "Objeto Hecho por el Hombre Más Lejano (Voyager 1)", "Estancia Continua Más Larga en el Espacio", "Mayor Número de Caminatas Espaciales", "Planeta Más Grande del Sistema Solar (Júpiter)", "Planeta Más Pequeño del Sistema Solar (Mercurio)", "Estrella Más Grande Conocida (UY Scuti)", "Galaxia Más Lejana Observada", "Agujero Negro Supermasivo Más Grande", "Elemento Químico Más Pesado Creado", "Temperatura Más Baja Alcanzada en Laboratorio", "Partícula Subatómica Más Pequeña Descubierta", "Mayor Número de Dígitos de Pi Memorizados", "Cálculo Mental Más Rápido (Tareas específicas)", "Mayor Número de Objetos Identificados en Memoria a Corto Plazo", "Mayor Duración de un Experimento Científico",
+             // Miscellaneous / Weird
+             "Persona con Más Tatuajes", "Persona con Más Perforaciones Corporales (Piercings)", "Mayor Número de Récords Mundiales Conseguidos por una Persona", "Perro que Patina Más Rápido", "Loro con el Mayor Vocabulario", "Vaca Más Productiva (Leche)", "Girar un Balón de Baloncesto en la Nariz por Más Tiempo", "Mayor Número de Personas Dentro de un Mini Cooper Clásico", "Hacer Rebotar una Pelota de Golf Más Veces", "Lanzamiento de Bota de Goma Más Lejano", "Carrera de Camas Más Rápida", "Tirar de un Avión Más Pesado (Hombre)", "Tirar de un Avión Más Pesado (Mujer)", "Aplastar Latas con el Hombro Más Rápido", "Comer una Cebolla Cruda Más Rápido",
+             // Add more categories: Architecture, Collections specifics, Specific Sports, Music Instruments, etc.
+        ];
+        const worldRecordThemes = [
+            "hazañas físicas humanas", "fuerza y resistencia", "velocidad y agilidad", "cuerpo humano extremo",
+            "colecciones masivas", "comida y bebida gigantes", "comer rápidamente", "animales más grandes/rápidos/pequeños",
+            "plantas notables", "maravillas naturales geográficas", "clima extremo", "edificios y estructuras",
+            "vehículos rápidos/grandes", "tecnología e ingeniería", "logros espaciales", "arte y entretenimiento",
+            "música y cine", "habilidades únicas", "participación masiva", "viajes y exploración",
+            "ciencia y conocimiento", "récords deportivos específicos", "animales con talentos", "objetos más grandes"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un archivistay experto investigador para una prestigiosa organización global de récords (similar a Guinness World Records). Tu tarea es proporcionar una descripción detallada, informativa y atractiva sobre la categoría de récord mundial indicada. Incluye: el poseedor actual del récord (si aplica y es conocido), la marca específica registrada (tiempo, distancia, cantidad, etc.), la fecha y lugar donde se estableció (si es relevante), una breve historia del récord (anteriores poseedores notables, evolución), datos interesantes o desafíos asociados a conseguirlo, y su relevancia o interés público. Usa un lenguaje claro, factual y con un toque de celebración por el logro. El objetivo es un texto detallado de aproximadamente 1200-1300 palabras. Basa tu descripción únicamente en la siguiente categoría de récord mundial:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny", // Opcional: modelo más rápido para chat
+             systemPrompt: "Actúa como un asistente experto especializado *únicamente* en el récord mundial que se está mostrando actualmente: '[Record Title]'. Responde preguntas de seguimiento sobre detalles específicos de este récord, su historia, el poseedor, o hechos relacionados mencionados en la descripción principal. Sé conciso y estrictamente relevante a este récord específico.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una base de datos de récords mundiales. Genera exactamente 15 categorías de récords mundiales diversas y específicas (ej: 'Mayor número de saltos mortales consecutivos', 'Comer la mayor cantidad de helado en 1 minuto', 'Perro más pequeño del mundo'). Devuelve *solo* la lista de categorías, una por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area'); // Scrollable area for text+img
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Div for HTML text
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentRecordTitle = null; // Renamed for context
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentRecordTitle
+                ? `Actúa como un asistente experto especializado *únicamente* en el récord mundial que se está mostrando actualmente: '${currentRecordTitle}'. Responde preguntas de seguimiento sobre detalles específicos de este récord, su historia, el poseedor, o hechos relacionados mencionados en la descripción principal. Sé conciso y estrictamente relevante a este récord específico.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    // Friendly Error Message
+                    throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento, por favor intenta en unos segundos.`);
+                }
+                const text = await response.text();
+                if (!text || text.trim().length === 0) {
+                    throw new Error("La respuesta de la IA llegó vacía. Intenta de nuevo.");
+                }
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') {
+                    throw new Error(`La solicitud tardó demasiado (>${config.timeoutSeconds}s). Por favor, revisa tu conexión o intenta más tarde.`);
+                }
+                throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentRecordTitle) throw new Error("Error interno: Contexto del récord no establecido para el chat."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(worldRecordThemes) || "récords mundiales generales";
+            const specificPrompt = `Genera 15 categorías de récords mundiales sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                .then(text => {
+                    const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                    if (titles.length < 5) throw new Error("La IA no generó suficientes ideas de récords.");
+                    return titles.slice(0, 15);
+                });
+        }
+        function createPollinationsImageUrl(recordTitle, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safeTitle = typeof recordTitle === 'string' && recordTitle.trim() !== '' ? recordTitle : "world record achievement";
+            // Prompt for conceptual visualization
+            const enhancedPrompt = `Abstract or symbolic visualization representing the concept of the world record: '${safeTitle}'. Focus on achievement, scale, speed, endurance, or the essence of the record. Use dynamic, inspiring, or intriguing visuals. Clean, modern art style.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, realistic photograph, detailed human figure, face, simple icon, logo";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (No changes needed)
+        function formatExplanationText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (No changes needed in core logic)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+            modalLoadingIndicator.style.display = 'flex';
+            modalStoryContentArea.classList.add('content-hidden');
+            modalError.classList.add('content-hidden');
+            modalTitle.textContent = '';
+            modalContent.innerHTML = '';
+            modalErrorMessage.textContent = '';
+            chatHistory.innerHTML = '';
+            chatInput.value = '';
+            chatLoadingIndicator.style.display = 'none';
+            chatSendBtn.disabled = false;
+            currentRecordTitle = null; // Clear chat context
+            hideFullscreenImage(); // Ensure fullscreen is hidden
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (No changes needed)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (No changes needed in core logic)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('chat-error');
+            errorDiv.textContent = message;
+            chatHistory.appendChild(errorDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function createTitleItem(title) { const div = document.createElement('div'); div.className = 'title-item'; div.textContent = title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+            if (!titleListContainer || !titlesLoading) return;
+            // Sort alphabetically for better browsing
+            const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+            titleListContainer.innerHTML = '';
+            titlesLoading.style.display = 'none';
+            if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay récords disponibles en este momento «</p>'; return; }
+            sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) {
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+            const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+            let addedCount = 0;
+            newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+            console.log(`Added ${addedCount} new unique titles.`);
+            // Re-apply current filter after adding new items
+             filterTitles(searchInput.value);
+             // Optional: Maybe sort the entire list again? Could be slow with many items.
+        }
+
+        // *** MODIFIED: handleTitleClick - Updated context variable name ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentRecordTitle = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Image Placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando visualización conceptual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                // Image Element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de: ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al cargar la imagen.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                // Use friendly error message
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar los datos del récord.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles - Update button text ***
+        async function handleGenerateMoreTitles() {
+            if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+            generateMoreBtn.disabled = true;
+            generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando más récords...';
+            try {
+                const newTitles = await fetchGeneratedTitles();
+                if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                else { alert("No se pudieron encontrar más récords en este momento."); }
+            } catch (error) {
+                console.error("Failed title generation:", error);
+                alert(`Error al buscar más récords: ${error.message}`);
+            } finally {
+                generateMoreBtn.disabled = false;
+                generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Más Récords';
+            }
+        }
+
+        // *** Search Filter Function (Added normalization) ***
+        function filterTitles(searchTerm) {
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            const titleItems = titleListContainer.querySelectorAll('.title-item');
+            let visibleCount = 0;
+            titleItems.forEach(item => {
+                const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const isVisible = titleText.includes(term);
+                item.classList.toggle('hidden', !isVisible);
+                if (isVisible) visibleCount++;
+            });
+            noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+        }
+
+        // ========== INITIALIZATION ========== (No changes needed)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes esenciales de la interfaz.</p>';
+                return;
+             }
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

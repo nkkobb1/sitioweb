@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas de Neón y Lluvia - Noir Cyberpunk</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Retro (Noir) + Digital (Cyberpunk) -->
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Roboto+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Noir Cyberpunk --- */
+        :root {
+            --color-primary-neon: #ff00ff; /* Magenta Neón */
+            --color-secondary-neon: #00ffff; /* Cyan Neón */
+            --color-tertiary-neon: #39ff14; /* Verde Neón (ocasional) */
+            --color-background-deep: #050810; /* Azul casi negro */
+            --color-background-medium: #101528; /* Azul oscuro/gris */
+            --color-text-primary: #d0dfff; /* Blanco azulado pálido */
+            --color-text-muted: #7b8aa0; /* Gris azulado */
+            --color-modal-bg: #0d111e; /* Fondo modal muy oscuro */
+            --color-border: #2a3b5c; /* Borde azul grisáceo oscuro */
+            --color-error-bg: #3f1212;
+            --color-error-text: #fecaca;
+            --color-error-border: #dc2626;
+
+            --shadow-neon-primary: 0 0 8px rgba(255, 0, 255, 0.6), 0 0 12px rgba(255, 0, 255, 0.4);
+            --shadow-neon-secondary: 0 0 8px rgba(0, 255, 255, 0.6), 0 0 12px rgba(0, 255, 255, 0.4);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+            --border-radius: 2px; /* Bordes muy afilados o inexistentes */
+            --transition-normal: all 0.3s ease;
+        }
+        /* Efecto sutil de ruido/scanlines (opcional) */
+        body::before {
+             /* content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAADCAYAAABlustJAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAB5JREFUeNpiZGBg4GMwMYABXgGENQyacAMQkAEGAATaAasBelJIAAAAAElFTkSuQmCC') repeat; opacity: 0.04; z-index: -1; pointer-events: none; */
+        }
+        body { font-family: 'Roboto Mono', monospace; background-color: var(--color-background-deep); color: var(--color-text-primary); line-height: 1.75; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Special Elite', cursive; font-weight: 400; letter-spacing: 1.5px; } /* Fuente tipo máquina de escribir */
+        .logo { color: var(--color-secondary-neon); text-shadow: var(--shadow-neon-secondary); }
+        h1.page-title { color: var(--color-primary-neon); font-weight: 400; text-shadow: var(--shadow-neon-primary); }
+        h2.section-title { color: var(--color-text-primary); border-bottom: 1px solid var(--color-primary-neon); padding-bottom: 0.7rem; display: inline-block; font-weight: 400; text-shadow: 0 0 3px rgba(255, 0, 255, 0.5); }
+        #modal-title { color: var(--color-secondary-neon); font-weight: 400; text-shadow: var(--shadow-neon-secondary); }
+        .navbar { background-color: rgba(5, 8, 16, 0.85); backdrop-filter: blur(5px); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 3rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3.2rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-background-medium); color: var(--color-text-primary); box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); transition: var(--transition-normal); font-family: 'Roboto Mono'; }
+        #search-input::placeholder { color: var(--color-text-muted); font-style: italic; }
+        #search-input:focus { border-color: var(--color-primary-neon); box-shadow: inset 0 0 5px rgba(255, 0, 255, 0.4), 0 0 8px rgba(255, 0, 255, 0.3); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.2rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary-neon); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-background-medium); padding: 1.4rem 1.1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition-normal); text-align: left; font-weight: 400; color: var(--color-text-muted); border: 1px solid var(--color-border); border-left: 4px solid var(--color-border); font-family: 'Roboto Mono'; font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); border-color: var(--color-secondary-neon); color: var(--color-secondary-neon); background-color: var(--color-modal-bg); border-left-color: var(--color-secondary-neon); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(90deg, var(--color-primary-neon), var(--color-secondary-neon)); color: var(--color-background-deep); padding: 0.9rem 1.8rem; border: none; border-radius: var(--border-radius); font-family: 'Special Elite', cursive; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2.5rem; letter-spacing: 1.5px; text-shadow: none; font-size: 1.1rem; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(90deg, var(--color-secondary-neon), var(--color-primary-neon)); box-shadow: 0 0 15px rgba(255, 0, 255, 0.5), 0 0 15px rgba(0, 255, 255, 0.5); filter: brightness(1.1); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.6; box-shadow: none; filter: none; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 8, 16, 0.95); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-secondary-neon);
+            border-radius: var(--border-radius);
+            padding: 1.8rem 2.2rem;
+            max-width: 1000px; /* Wider for potentially dense text */
+            width: 96%;
+            max-height: 92vh;
+            min-height: 450px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(0, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-border); border: 1px solid var(--color-secondary-neon); border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-secondary-neon); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; font-family: sans-serif; }
+        .modal-close-btn:hover { background-color: var(--color-secondary-neon); color: var(--color-background-deep); transform: rotate(90deg); box-shadow: var(--shadow-neon-secondary); }
+        #modal-title { font-size: 2.2rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.4; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 12px; margin-bottom: 1.2rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary-neon) rgba(42, 59, 92, 0.3);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(42, 59, 92, 0.3); border-radius: 0; }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary-neon); border-radius: 0; box-shadow: var(--shadow-neon-primary); }
+
+        #modal-content { padding: 0 5px; font-size: 1.05rem; /* Slightly larger for readability */ }
+        #modal-content p:not(:last-child) { margin-bottom: 1.6em; }
+        #modal-content strong { color: var(--color-primary-neon); font-weight: 600; text-shadow: 0 0 3px rgba(255, 0, 255, 0.5); }
+        #modal-content em { color: var(--color-secondary-neon); font-style: italic; text-shadow: 0 0 3px rgba(0, 255, 255, 0.5); }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Special Elite', cursive; margin-top: 2.5em; margin-bottom: 1.2em; color: var(--color-text-primary); border-bottom: 1px dashed var(--color-border); padding-bottom: 0.6em; font-weight: 400; letter-spacing: 1px;}
+        #modal-content h1 { font-size: 1.6em; }
+        #modal-content h2 { font-size: 1.45em; }
+        #modal-content h3 { font-size: 1.3em; color: var(--color-secondary-neon); border-color: var(--color-secondary-neon); }
+        #modal-content h4 { font-size: 1.15em; color: var(--color-text-muted); border-bottom: none;}
+        /* Imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 3rem auto 1.5rem auto; border: 1px solid var(--color-primary-neon); border-radius: var(--border-radius); box-shadow: 0 0 18px rgba(255, 0, 255, 0.3); cursor: pointer; transition: all 0.3s ease; filter: saturate(1.1) contrast(1.05); }
+        #modal-content .final-image:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(255, 0, 255, 0.5); filter: saturate(1.2) contrast(1.1); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; margin: 3rem auto 1.5rem auto; color: var(--color-text-muted); border: 1px dashed var(--color-border); padding: 1rem; }
+        #modal-content .image-placeholder .spinner { border: 4px solid var(--color-border); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary-neon); animation: spin 1.2s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; opacity: 0.5; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px dashed var(--color-border); padding-top: 1.2rem; margin-top: 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 280px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(5, 8, 16, 0.8); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary-neon) rgba(42, 59, 92, 0.3);
+        }
+        #chat-history::-webkit-scrollbar { width: 7px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(42, 59, 92, 0.3); border-radius: 0; }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary-neon); border-radius: 0; box-shadow: var(--shadow-neon-secondary); }
+        .chat-message { margin-bottom: 0.8rem; padding: 0.6rem 1rem; border-radius: var(--border-radius); max-width: 88%; word-wrap: break-word; line-height: 1.6; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-secondary-neon); color: var(--color-background-deep); margin-left: auto; text-align: right; box-shadow: 0 0 5px rgba(0, 255, 255, 0.4); font-weight: 400;}
+        .ai-message { background-color: var(--color-background-medium); color: var(--color-text-primary); margin-right: auto; text-align: left; border: 1px solid var(--color-border); font-weight: 300;}
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; margin: 0.5rem 0;}
+        #chat-input-area { display: flex; gap: 0.6rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 1px solid var(--color-border); background-color: var(--color-background-medium); color: var(--color-text-primary); border-radius: var(--border-radius); font-family: 'Roboto Mono'; font-size: 1rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);}
+        #chat-input:focus { outline: none; border-color: var(--color-secondary-neon); background-color: var(--color-modal-bg); box-shadow: inset 0 0 5px rgba(0, 255, 255, 0.4); }
+        #chat-send-btn { padding: 0.7rem 1.2rem; background-color: var(--color-secondary-neon); color: var(--color-background-deep); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease, box-shadow 0.2s ease; font-size: 1rem; box-shadow: 0 0 5px rgba(0, 255, 255, 0.4); }
+        #chat-send-btn:hover:not(:disabled) { background-color: #00e0e0; box-shadow: var(--shadow-neon-secondary); }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); color: var(--color-background-medium); cursor: not-allowed; box-shadow: none; }
+        #chat-loading { text-align: center; padding: 0.6rem; font-size: 0.95em; color: var(--color-text-muted); display: none; font-style: italic; }
+        #chat-loading .fa-spinner { margin-right: 0.6rem; color: var(--color-primary-neon); }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 8, 16, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 65px; height: 65px; border: 5px dotted var(--color-border); border-top: 5px solid var(--color-primary-neon); border-bottom: 5px solid var(--color-secondary-neon); border-radius: 50%; animation: spin 1.5s linear infinite; margin: 0 auto 1.8rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-text-primary); font-size: 1.5rem; font-family: 'Special Elite'; text-shadow: 0 0 5px var(--color-primary-neon), 0 0 5px var(--color-secondary-neon); letter-spacing: 1px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.3rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.8rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Roboto Mono'; }
+        .error-msg i { margin-right: 0.8rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 8, 16, 0.97); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 96%; max-height: 96%; object-fit: contain; border: 2px solid var(--color-secondary-neon); box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 255, 255, 0.3); filter: saturate(1.1); }
+        #fullscreen-close-btn { position: absolute; top: 25px; right: 30px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary-neon); border-radius: var(--border-radius); width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-secondary-neon); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); font-family: sans-serif; }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary-neon); color: var(--color-background-deep); transform: scale(1.1); box-shadow: var(--shadow-neon-secondary); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-12">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-4xl sm:text-5xl">
+                     <i class="fas fa-tint mr-3 text-blue-300 opacity-70 transform rotate-[-10deg]"></i> <!-- Icono gota/lluvia -->
+                     Ciudad Neón
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-widest">// Archivos Noir Cyberpunk //</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-14 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-6">Bajo la Lluvia Ácida</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-4xl mx-auto font-light leading-relaxed">La ciudad nunca duerme, solo parpadea al ritmo del neón defectuoso. Busca en los archivos... si te atreves. Cada sombra esconde un secreto, cada conexión un peligro.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-12 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar archivos (personas, lugares, casos)...">
+             <i class="fas fa-fingerprint fa-search"></i> <!-- Icono huella/búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-10 text-center mx-auto">
+                 <i class="far fa-folder-open text-purple-400 mr-2"></i> <!-- Icono carpeta -->
+                 Expedientes Desclasificados
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">// Accediendo al índice encriptado... //</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-6 hidden font-sans">// Ningún archivo coincide con la consulta... estática en la línea //</p>
+             <div id="generate-more-container" class="text-center mt-10">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descargar Más Datos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Descifrando Transmisión...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-2xl md:text-3xl font-bold mb-5 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> // Procesando consulta en la red oscura... //
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta al informante...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta">
+                             <i class="fas fa-terminal"></i> <!-- Icono terminal -->
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Visualización Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-600 py-8 mt-16 border-t border-gray-800 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>// Datos generados por IA. Ficción Noir Cyberpunk con fines atmosféricos y narrativos. //</p>
+              <p class="mt-1">// La realidad es más extraña, pero menos estilizada. //</p>
+              <p class="mt-2">// Ciudad Neón Archives © 2088 //</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Arquetipos de Personajes
+            "Detective Privado con Implantes Oculares Defectuosos", "Femme Fatale Holográfica", "Fixer Cínico en el Distrito Cromado", "Hacker Fantasma en la Red Oscura (Ghost)", "Corpo-Ejecutivo Desalmado de OmniCorp", "Samurai Callejero con Brazo Biónico Obsoleto", "Androide Filosófico Buscando su Pasado", "Info-Broker Escondido en un Bar de Mala Muerte", "Líder de Pandilla Callejera Tecno-Bárbara", "IA Melancólica Atrapada en la Red de la Ciudad", "Mensajero de Datos Neuronal (Runner)", "Contrabandista de Wetware", "Técnico de Mercado Negro (Ripperdoc)", "Oficial de Policía Corrupto con Mejoras Cibernéticas", "Periodista de Investigación Perseguido", "Mecánico de Drones de Combate", "Cultista Tecno-Religioso", "Inteligencia Artificial Deshonesta (Rogue AI)", "Guardaespaldas Aumentado Leal", "Víctima de Experimentos Corporativos", "Artista Callejero de Bio-Arte Prohibido", "Niño de la Calle con Acceso a Datos Robados", "Bibliotecario de Archivos Digitales Olvidados", "Psíquico Callejero Aumentado (Psi-Tech)", "Ex-Militar Traumatizado con PTSD Cibernético",
+            // Lugares Icónicos
+            "El Bar 'Lágrima de Neón'", "Distrito Cromado (Zona de implantes y modificaciones)", "Torre OmniCorp (Sede Central)", "Mercado Negro de Wetware 'El Circuito Roto'", "Club Nocturno VR 'El Espejismo Digital'", "Zona Industrial Abandonada 'El Óxido Silencioso'", "Apartamento Lúgubre con Vistas a un Anuncio de Neón Parpadeante", "Callejón Trasero Lleno de Cables y Lluvia Ácida", "Estación de Metro Fantasma", "Laboratorios Secretos Subterráneos de OmniCorp", "El Puerto Espacial Decadente (si aplica)", "Archivo Central de Datos de la Ciudad (físico o virtual)", "Clínica Ilegal de Ripperdoc", "Invernadero Hidropónico Ilegal en Azotea", "Refugio Subterráneo para Desconectados (Off-Gridders)", "Templo de Datos de los Tecno-Cultistas", "Puente Colgante entre Rascacielos Corporativos", "Cementerio de Chatarra Electrónica", "Casino Clandestino de Realidad Aumentada", "Distrito Financiero Inmaculado (Fachada)", "Las Cloacas de Datos (Servidores olvidados)", "Plaza Pública con Hologramas Gigantes", "Biblioteca de Memoria Prohibida", "Autopista Elevada bajo la Lluvia Eterna", "Teatro de Marionetas Cibernéticas",
+            // Tecnologías y Conceptos
+            "Implante Ocular 'Visión Nocturna Rota'", "Interfaz Neuronal Directa (Datajack)", "Wetware Ilegal (Software orgánico)", "Droga Digital 'Synth-Sueño'", "IA de Vigilancia Urbana 'El Ojo que Todo lo Ve'", "Drones de Reparto Autónomos y Hackeables", "Arma de Pulso Electromagnético (EMP) de Mano", "Dispositivo de Camuflaje Óptico Parpadeante", "Servicios de Limpieza de Memoria (Wipes)", "Implante de Traducción Universal con Glitches", "Bio-Modificaciones Estéticas Extremas", "Mercado de Identidades Falsas Digitales", "Virus Informático 'Devorador de Almas'", "Tecnología de Clonación Imperfecta", "Realidad Aumentada Persistente (Overlay)", "Sistema de Crédito Social Corporativo", "Red de Información Clandestina (The Wire)", "Inteligencia Artificial Sentiente (Emergente)", "Lluvia Ácida Constante y su Impacto", "Contaminación Lumínica de Neón Perpetua", "Pérdida de Identidad en la Era Digital", "Transhumanismo y Obsolescencia Humana", "El Contraste entre Alta Tecnología y Miseria Urbana", "La Memoria como Mercancía", "Fantasmas en la Máquina (Anomalías de Datos)", "Conspiraciones Corporativas y Control Social", "La Búsqueda de Significado en un Mundo Artificial", "Adicción a la Realidad Virtual", "Obsolescencia Programada (Cibernética y Social)", "Música Synth-Jazz Melancólica", "Moda Noir Futurista (Gabardinas de polímero, etc.)", "Comida Sintética y Bares de Fideos Automatizados", "El Lenguaje Callejero Tecno-Argot", "Paranoia y Vigilancia Constante", "La Fragilidad de los Recuerdos Digitales",
+             // Casos y Misterios Típicos
+            "El Caso del Androide Amnésico", "El Robo de Datos de OmniCorp", "La Desaparición de la Cantante Holográfica", "El Asesinato en el Club VR", "La Conspiración del Wetware Defectuoso", "La Búsqueda del Hacker Fantasma", "Chantaje a un Ejecutivo Corrupto", "El Contrabando de Recuerdos Prohibidos", "El Misterio de la IA Silenciosa", "Protección de un Testigo Clave", "La Venganza del Samurai Callejero", "Investigando un Suicidio Corporativo Sospechoso", "El Secreto Oculto en los Archivos Olvidados", "La Persecución del Mensajero de Datos", "Descubriendo la Verdad sobre un Clon", "El Sabotaje de la Red Eléctrica", "El Mercado Negro de Órganos Cibernéticos", "La Infección del Virus 'Devorador de Almas'", "El Último Caso del Detective Moribundo", "La Femme Fatale con un Pasado Encriptado", "Desenmascarando al Policía Corrupto", "Localizando una Reliquia Pre-Digital", "El Culto que Adora a una IA", "Interferencia en una Transmisión Ilegal", "El Glitch que Revela una Verdad Oculta",
+            // Añadir cientos más...
+            "Implante de Empatía Sintética", "Neuro-Bloqueadores Ilícitos", "Mercado de Esclavos Cibernéticos", "Armas Biocinéticas Experimentales", "Sistema de Predicción de Crímenes Fallido", "El Enigma de la Ciudad Sumergida (Sección Antigua)", "Drones Forenses Autónomos", "Guerra de Pandillas por Territorio Digital", "Contrabando de Artefactos Alienígenas (si aplica)", "El Virus que Borra Rostros", "Implantes de Camuflaje Dérmico", "Red de Apuestas sobre Peleas de Mechas Clandestinas", "El Síndrome de Desconexión Sensorial", "Fantasmas de Datos de Personas Fallecidas", "Terapia de Reasignación de Personalidad Forzada", "El Mercado Negro de 'Tiempo de CPU Cerebral'", "Hackeo de Sistemas de Soporte Vital", "La Droga que Permite Ver el Código del Mundo", "Arquitectura Urbana Hostil Controlada por IA", "Moda con Tejidos Electrónicos Reactivos", "Esculturas Cinéticas hechas de Chatarra Tecnológica", "El Dialecto Perdido de los Primeros Habitantes de la Red", "Música Ambiental Generada por el Clima Urbano", "Vehículos Voladores Autónomos (Spinners) Decrépitos", "Lluvia de Datos (Visualización AR de Tráfico de Red)", "Filtros de Realidad Aumentada Obligatorios", "El Culto de la Singularidad Inversa (Rechazo Tecnológico)", "Policía Predictiva y sus Errores Fatales", "Zonas Muertas de la Red (Sin Conexión)", "El Mercado de Emociones Sintéticas", "Animales Cibernéticamente Mejorados (Mascotas/Armas)", "Implantes de Memoria Muscular para Combate", "Sistemas de Trueque en Zonas sin Créditos", "El Legado Olvidado de los Arquitectos de la Ciudad Digital", "Plantas Bioluminiscentes Modificadas Genéticamente", "El Efecto Psicológico de la Lluvia Perpetua", "Archivos Akáshicos Digitales (Mito Urbano)", "El Juego de Realidad Alternativa que se Volvió Real", "Contrabando de Agua Limpia", "Implantes de Voz Sintetizada con Moduladores Emocionales", "El Fenómeno de los 'Ecos Digitales' Persistentes", "Detectives Especializados en Crímenes Virtuales", "La Ética de la Resurrección Digital", "Sistemas de Transporte Neumático Subterráneos", "El Mercado Negro de Sueños Grabados", "Graffiti de Realidad Aumentada Vandálico", "Unidades K-9 Cibernéticas", "La Droga 'Chrono-Dilatación' (Percepción Temporal)", "El Misterio de los Edificios que 'Respiran'", "Implantes de Feromonas Sintéticas para Manipulación", "La Biblioteca de Sonidos Urbanos Perdidos", "Guerra Corporativa Silenciosa mediante Sabotaje Sutil", "El Efecto de la Gravedad Artificial Defectuosa (en Orbitales)", "Máquinas Expendedoras de Recuerdos Falsos", "El Mercado de Secretos Vendidos por Info-Brokers Rivales", "Hackeo de Prótesis Médicas", "La Búsqueda de la 'Fuente Original' del Código de la Ciudad", "El Síndrome del Miembro Fantasma Cibernético", "Criaturas Mutadas por la Contaminación Tecnológica", "El Arte Perdido de la Caligrafía Manual", "Sistemas de Traducción Inter-Especies (para mascotas mejoradas)", "El Mercado Negro de Código Genético Robado", "La Paranoia de Ser un 'Sim' (Simulación)", "Rituales Tecno-Chamánicos", "La Droga 'Silencio' (Anulación Sensorial Temporal)", "Implantes que Proyectan Tatuajes Holográficos", "El Gremio Secreto de Relojeros Digitales", "La Caza de IA's Primitivas Fugitivas", "Detectives que Usan 'Empatía Inducida' por Drogas", "El Mercado de Información Obsoleta (Valor Histórico/Chantaje)", "El Fenómeno de las 'Tormentas de Datos'", "Implantes de Resistencia al Dolor con Efectos Secundarios", "El Culto que Intenta 'Subir' la Ciudad Entera a la Red", "La Arqueología de las Primeras Redes Neuronales"
+            // ... Sigue así hasta ~400
+        ];
+        const noirCyberpunkThemes = [
+            "detectives aumentados", "femme fatales digitales", "calles lluviosas de neón", "conspiraciones corporativas", "hackers y fantasmas de datos", "implantes cibernéticos defectuosos", "IA melancólicas", "mercados negros de tecnología", "pérdida de identidad", "recuerdos manufacturados", "realidad virtual sombría", "contraste high-tech/low-life", "misterios en la red oscura", "vigilancia omnipresente", "decadencia urbana futurista", "drogas digitales", "wetware ilegal", "secretos encriptados", "la ciudad que nunca duerme (literalmente)", "jazz electrónico melancólico"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un narrador IA habitando el flujo de datos de una metrópolis Noir Cyberpunk en 2088. La lluvia ácida es una constante, el neón se refleja en el asfalto mojado y las sombras ocultan tanto crimen como tecnología rota. Tu voz es la de un detective privado clásico, cansado, cínico, observador, pero adaptado a este futuro distópico. Describe el personaje, lugar, tecnología o concepto Noir Cyberpunk solicitado. Usa lenguaje evocador: 'la lluvia tamborileaba un código morse olvidado en mi ventana', 'su sonrisa era tan artificial como los anuncios holográficos parpadeantes', 'los circuitos bajo su piel zumbaban con una promesa rota'. Enfócate en la atmósfera opresiva, la tecnología decadente, el misterio inherente y la ambigüedad moral. Produce un informe detallado y atmosférico de 1200-1300 palabras.",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Soy 'Glitch', tu informante en la red oscura. Cínico, directo, conozco los secretos sucios de esta ciudad de neón y lluvia. Mi especialidad ahora mismo es: '[CURRENT_TOPIC_TITLE]'. Lanza tu pregunta, colega. Pero sé rápido, las conexiones seguras no duran. Te daré la información cruda, sin adornos. Nada de charla trivial.", // Se sobreescribirá dinámicamente
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Genera 15 títulos evocadores para elementos de una historia Noir Cyberpunk (personajes, lugares, casos, tecnología, conceptos). Deben mezclar misterio, alta tecnología decadente y atmósfera oscura. Formato: un título por línea, sin extras.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Identicos a la versión anterior, verificados)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Contexto para el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            // System prompt dinámico para el chat
+            const systemPromptToUse = isChat && currentTopicTitle
+                ? `Soy 'Glitch', tu informante IA en la red oscura de una ciudad Noir Cyberpunk. Cínico, directo. Mi especialidad ahora es: '${currentTopicTitle}'. Responde preguntas sobre esto, colega. Rápido y al grano. Sin charla trivial.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            // Seed generalmente no útil para chat conversacional
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching API (${config.model}, Chat: ${isChat}, Topic: ${currentTopicTitle || 'N/A'}): ${url.substring(0, 150)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) {
+                     // Usar mensaje amigable estandarizado
+                    throw new Error(`(Error ${response.status}) Nuestros servidores están experimentando mucho tráfico en este momento. Por favor, intenta de nuevo en unos segundos.`);
+                }
+                const text = await response.text();
+                if (!text || text.trim().length === 0) {
+                    throw new Error("La transmisión llegó corrupta (respuesta vacía). Intenta de nuevo o reformula.");
+                }
+                console.log(`API Response received (${text.length} chars)`);
+                // Simple filtro para respuestas genéricas de rechazo (puede necesitar ajuste)
+                if (text.toLowerCase().includes("no puedo generar") || text.toLowerCase().includes("incapaz de cumplir") || text.toLowerCase().includes("i cannot fulfill this request")) {
+                   throw new Error("La IA rechazó la solicitud. El tema podría ser problemático o la consulta poco clara.");
+                }
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') {
+                    throw new Error(`// Conexión perdida en la estática... (Timeout >${config.timeoutSeconds}s). Intenta reconectar. //`);
+                }
+                // Propagar el mensaje de error (ya sea el personalizado o el de la API)
+                throw new Error(error.message || "// Error desconocido en la red profunda... //");
+            }
+        }
+
+        // Wrappers para claridad
+        async function fetchExplanationText(topicTitle) {
+            return fetchTextFromApi(topicTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) {
+            if (!currentTopicTitle) throw new Error("// Error de protocolo: Contexto perdido. Imposible consultar. //");
+            return fetchTextFromApi(userQuery, chatApiConfig, true); // true indica que es chat
+        }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(noirCyberpunkThemes) || "misterios cyberpunk";
+             const specificPrompt = `Genera 15 títulos evocadores Noir Cyberpunk sobre ${randomTheme}`;
+             return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n')
+                         .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                         .filter(line => line.length > 10 && line.length < 150); // Ajustar longitud mínima/máxima si es necesario
+                     if (titles.length < 8) throw new Error("La IA no transmitió suficientes archivos nuevos."); // Aumentar umbral si es necesario
+                     return titles.slice(0, 15);
+                 })
+                 .catch(err => {
+                     console.error("Error generando títulos:", err);
+                     throw err; // Re-lanzar para manejo en handleGenerateMoreTitles
+                 });
+        }
+
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 960, height: 640, nologo: true }; // Mayor resolución/aspecto
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "noir cyberpunk cityscape";
+            // Prompt MUY específico para la estética
+            const enhancedPrompt = `Cinematic artwork, Noir Cyberpunk style. Subject: '${safePromptText}'. Key elements: Heavy rain, neon signs (dominant blues, purples, magenta), deep shadows, wet reflections on asphalt and chrome, gritty urban decay, high-tech elements integrated seamlessly, atmospheric perspective. Moody, mysterious, slightly desaturated colors except for neons. Inspired by Blade Runner, Ghost in the Shell.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "bright daylight, sunny, clear sky, utopian, clean, sterile, cartoon, drawing, sketch, anime, text, labels, logos, watermark, signature, multiple panels, border, frame, oversaturated, happy, cheerful, low detail";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios, parece robusta)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ========== (sin cambios funcionales)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll reset on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTopicTitle = null;
+             hideFullscreenImage(); // Asegurarse de que el overlay se cierre al cerrar el modal
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios funcionales)
+        function showFullscreenImage(imgSrc) {
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() {
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            // Solo restaura el scroll si el modal principal *no* está activo
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios funcionales, pero el tono lo da la API)
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            // Permitir HTML básico para formato que pueda venir de la IA (o aplicar markdown simple)
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) {
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled || !currentTopicTitle) return;
+
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`// Glitch en la línea: ${error.message} //`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar puede ser menos 'noir', quizás mantener el orden o un shuffle inicial?
+             // const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             const displayTitles = shuffleArray([...titles]); // Mezclar para un toque caótico
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (displayTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">// Archivos vacíos... alguien limpió el sistema. //</p>'; return; }
+             displayTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             shuffleArray(newTitles).forEach(title => { // Mezclar los nuevos también
+                 if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); existingTitles.add(title); }
+             });
+             filterTitles(searchInput.value); // Re-aplicar filtro
+         }
+
+        // MODIFIED: handleTitleClick (sin cambios funcionales mayores, solo texto y contexto chat)
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentTopicTitle = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = ''; // Limpiar chat previo
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // 1. Fetch and display text
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalLoadingIndicator.style.display = 'none'; // Ocultar loading principal
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden'); // Mostrar área de texto y chat
+                modalTextArea.scrollTop = 0; // Reset scroll DESPUÉS de añadir contenido
+                console.log("Scroll reset after content visible");
+
+                // 2. Prepare and add image placeholder INSIDE modalContent
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.8rem; font-family: 'Roboto Mono';">// Procesando visualización en la red... //</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Añadir placeholder al final del texto
+
+                // 3. Create image element (starts hidden)
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización: ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Image load error for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-ban placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.8rem; font-family: 'Roboto Mono';">// Transmisión visual corrupta. //</p>`;
+                };
+
+                // 4. Get image URL and set src (triggers loading)
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append the img element itself
+                } else {
+                     console.error("Could not create image URL:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.8rem;font-family:'Roboto Mono';">// Fallo al generar ruta de imagen. //</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "// Error crítico en el sistema. Archivo inaccesible. //";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Limpiar posible contenido parcial
+                chatSection.classList.add('content-hidden'); // Ocultar chat si falla la carga principal
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> // Buscando en la red profunda... //';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("// No se encontraron más archivos relevantes en este sector. //"); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`// Error de transmisión al buscar archivos: ${error.message} //`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                  // Revertir texto original del botón
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descargar Más Datos';
+             }
+         }
+
+         // Search Filter Function (con normalización)
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Verificar todos los elementos críticos
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !modalContent || !modalTextArea || !chatHistory || !modalError || !modalLoadingIndicator) {
+                console.error("Initialization failed: Missing essential UI elements.");
+                document.body.innerHTML = '<p style="color: #ff00ff; font-family: \'Courier New\', monospace; font-size: 1.5em; text-align: center; padding-top: 4em;">// FATAL ERROR: System Core Dump - UI Integrity Compromised //</p>';
+                return;
+             }
+
+            // Event Listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial Load
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden'); // Ocultar mensaje inicialmente
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

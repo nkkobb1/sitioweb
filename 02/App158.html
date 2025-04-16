@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Origami Nivel Medio - Guía Interactiva de Plegado</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Elegantes/Japonesas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Origami --- */
+        :root {
+            --color-primary: #80CBC4; /* Teal Suave */
+            --color-secondary: #FFB74D; /* Naranja Claro */
+            --color-tertiary: #A5D6A7; /* Verde Claro */
+            --color-background: #FAF8F0; /* Blanco Hueso / Lino muy claro */
+            --color-text: #424242; /* Gris Oscuro */
+            --color-text-muted: #757575; /* Gris Medio */
+            --color-modal-bg: #FFFFFF; /* Blanco Puro */
+            --color-border: #E0E0E0; /* Borde Gris Claro */
+            --color-error-bg: #ffebee; /* Fondo error rojo muy claro */
+            --color-error-text: #c62828; /* Texto error rojo oscuro */
+            --color-error-border: #ef9a9a; /* Borde error rojo claro */
+
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 6px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 400; }
+        h1, h2, h3, h4, .logo { font-family: 'Noto Serif JP', serif; font-weight: 600; }
+        .logo { color: var(--color-primary); /* Teal suave */ }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: #BF360C; /* Marrón/Rojo Oscuro para título modal */ font-weight: 700; }
+        .navbar { background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #FFFFFF; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(128, 203, 196, 0.3); outline: none; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Lato'; font-size: 0.95rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: #BF360C; /* Marrón/Rojo oscuro */ background-color: #FFF8E1; /* Amarillo muy pálido */ border-left-color: var(--color-secondary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Noto Serif JP', serif; font-weight: 600; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #4DB6AC; /* Teal más oscuro */ box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #BDBDBD; /* Gris */ color: #757575; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(93, 64, 55, 0.8); /* Overlay Marrón translúcido */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #f1f1f1; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: white; transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p, #modal-content li { margin-bottom: 1.2em; line-height: 1.75; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; } /* Teal para énfasis */
+        #modal-content em { color: var(--color-secondary); font-style: italic; } /* Naranja para énfasis */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Noto Serif JP', serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5em; font-weight: 600;}
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.3em; }
+        #modal-content h3 { font-size: 1.15em; color: var(--color-secondary); } /* Naranja para H3 */
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos para listas ordenadas (pasos) */
+        #modal-content ol { list-style: decimal; margin-left: 2em; margin-bottom: 1.5em; }
+        #modal-content ul { list-style: disc; margin-left: 2em; margin-bottom: 1.5em; }
+
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; background-color: #f9f9f9; /* Fondo claro para imagen */ }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; color: var(--color-border); }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; background-color: #fdfdfa; /* Fondo muy claro para chat */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #FFFFFF; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95em;}
+        .user-message { background-color: var(--color-tertiary); color: #333; margin-left: auto; text-align: left; font-weight: 400;}
+        .ai-message { background-color: #ECEFF1; /* Gris muy claro AI */ color: var(--color-text); margin-right: auto; text-align: left; font-weight: 400; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.5rem; }
+        #chat-input-area { display: flex; gap: 0.5rem; padding: 0.5rem 0.2rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); background-color: #FFFFFF; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Lato'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(128, 203, 196, 0.2); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-secondary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #FFA726; /* Naranja más oscuro */ }
+        #chat-send-btn:disabled { background-color: #BDBDBD; cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid #E0E0E0; border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-text); font-size: 1.2rem; font-family: 'Noto Serif JP'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(250, 248, 240, 0.95); /* Fondo overlay muy claro */ display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-border); box-shadow: var(--shadow-lg); background-color: white; }
+        #fullscreen-close-btn { position: absolute; top: 25px; right: 30px; background: var(--color-modal-bg); border: 1px solid var(--color-border); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); box-shadow: var(--shadow-sm); }
+        #fullscreen-close-btn:hover { background-color: var(--color-text-muted); color: white; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-dove mr-3 text-teal-500"></i> <!-- Icono grulla/paloma -->
+                     Origami Intermedio
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wider">» Guía Interactiva de Plegado «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-5">Explora el Arte del Papel Plegado</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto font-light">Descubre y aprende a crear hermosas figuras de origami de nivel intermedio. Selecciona un modelo o busca para empezar.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar modelo (pájaro, caja, flor...).">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-shapes text-orange-400 mr-2"></i> <!-- Icono formas geométricas -->
+                 Modelos de Origami
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Cargando modelos disponibles...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron modelos con ese nombre «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Mostrar Más Modelos
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Cargando instrucciones...</p>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Instructions text (HTML) goes here -->
+                         <!-- Image and placeholder will be appended here via JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Procesando consulta...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este modelo...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada del Modelo de Origami">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Instrucciones e imágenes generadas por IA como guía educativa para origami.</p>
+              <p class="mt-1">La dificultad puede variar. ¡Paciencia y a plegar!</p>
+              <p class="mt-2">© 2025 Guía de Origami Interactivo</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Animales Clásicos y Populares
+            "Grulla Tradicional (Tsuru)", "Pájaro Flotante (Flapping Bird)", "Pez Koi", "Mariposa Elegante", "Rana Saltarina", "Cisne Clásico", "Pingüino Sencillo", "Zorro Astuto", "Perro Sentado", "Gato Siamés", "Conejo Orejudo", "Elefante Simplificado", "Tortuga Marina", "Búho Sabio", "Caballo Sencillo", "Delfín Curvo", "Murciélago", "Ardilla", "Oso Pardo", "Camello",
+            // Animales (Variaciones y Menos Comunes)
+            "Grulla con Variación de Alas", "Pato Mandarín", "Loro Colorido", "Pavo Real con Cola Sencilla", "Colibrí en Vuelo", "Libélula", "Cangrejo", "Pulpo de 8 Tentáculos (Simplificado)", "Serpiente Enrollada", "Lagarto", "Erizo", "Ratón Curioso", "Gaviota", "Paloma Mensajera", "Cigüeña", "Pez Ángel", "Caballito de Mar", "Estrella de Mar", "Medusa", "Calamar",
+            // Flores
+            "Lirio (Lily)", "Tulipán Abierto", "Rosa Tradicional (Kawasaki Simplificada)", "Flor de Iris", "Flor de Loto (Simplificada)", "Clavel", "Campanilla (Bellflower)", "Girasol Básico", "Flor de Cerezo (Sakura)", "Orquídea Sencilla", "Dalia Básica", "Flor de Cinco Pétalos Genérica", "Kusudama de Flores Simples (Unidad)", "Hoja de Arce", "Hoja de Roble",
+            // Cajas y Contenedores
+            "Caja Masu Tradicional", "Caja con Tapa Separada", "Caja Triangular", "Caja Hexagonal Sencilla", "Caja Estrella Pequeña", "Sobre Decorativo", "Sobre Corazón", "Bolsa de Regalo Sencilla", "Cesta Pequeña con Asa", "Plato Cuadrado", "Plato Rectangular", "Posavasos Geométrico", "Caja Abierta con Divisores (Base)", "Caja Joyero Básica", "Caja Alargada",
+            // Modelos de Acción
+            "Avión de Papel Clásico (varios modelos)", "Avión Jet Sencillo", "Barco de Vapor (Sampan)", "Copa que Sostiene Agua", "Pajarita Parlante", "Cubo Inflable", "Corazón Palpitante (Inflable)", "Cámara Fotográfica (Simplificada)", "Molino de Viento (Pinwheel)", "Saltamontes Saltador", "Pez que Mueve la Cola", "Boca que Habla", "Hombre Acróbata", "Conejito que Mueve Orejas", "Coche de Carreras Simple",
+            // Figuras Geométricas y Modulares (Básico/Medio)
+            "Unidad Sonobe (Base)", "Cubo Sonobe (6 unidades)", "Estrella Ninja (Shuriken)", "Pirámide Simple", "Diamante / Rombo", "Casa Tradicional", "Barco de Vela", "Sombrero Samurai (Kabuto)", "Marco de Fotos Simple", "Estrella de 8 Puntas (Modular Simple)", "Kusudama Electra (Unidad)", "Kusudama de Flores (Varias unidades)", "Dodecaedro Sonobe (30 unidades, repetitivo)", "Flecha Direccional", "Montaña Fuji",
+            // Decorativos y Otros
+            "Corazón con Alas", "Corazón Doble", "Farolillo de Papel (Simplificado)", "Abanico Plegable", "Marcapáginas de Esquina (Monstruo/Animal)", "Marcapáginas Grulla", "Kimono Sencillo", "Muñeca Japonesa Simplificada (Kokeshi-like)", "Árbol de Navidad Básico", "Copo de Nieve Simple", "Fantasma de Halloween", "Calabaza de Halloween", "Huevo de Pascua Decorado", "Servilletero Decorativo", "Diploma Enrollado",
+            // Técnicas y Bases (para referencia)
+            "Base Pájaro (Bird Base)", "Base Pez (Fish Base)", "Base Rana (Frog Base)", "Base Cuadrada (Preliminary Fold)", "Base Cometa (Kite Base)", "Base Bomba de Agua (Waterbomb Base)", "Pliegue Valle (Valley Fold)", "Pliegue Montaña (Mountain Fold)", "Pliegue Inverso Interior (Inside Reverse Fold)", "Pliegue Inverso Exterior (Outside Reverse Fold)", "Pliegue Hundido (Sink Fold - Básico)", "Pliegue Pétalo (Petal Fold)", "Pliegue Oreja de Conejo (Rabbit Ear Fold)", "Pliegue Squash (Squash Fold)", "Pliegue Libro (Book Fold)", "Pliegue Armario (Cupboard Fold)",
+            // Modelos ligeramente más complejos (Aún considerados intermedios por algunos)
+            "Dragón Chino Simplificado", "Pegaso Básico", "Unicornio Sencillo", "Grulla Modular (Unidad)", "Cisne 3D (Modular Básico)", "Rosa de Kawasaki (Versión Intermedia)", "Tucán", "Cacatúa", "Pavo Real (más detallado)", "Insecto Palo", "Escarabajo Rinoceronte (Simplificado)", "Mantarraya", "Ballena Jorobada", "Foca", "Morsa", "Reno / Ciervo", "Jirafa Sencilla", "Cebra", "León Básico", "Tigre Básico", "Panda Sentado", "Koala en Rama", "Canguro con Cría (Conceptual)", "Gallo", "Gallina con Pollitos (Conceptual)", "Águila en Vuelo", "Halcón Peregrino", "Bonsái de Papel (Conceptual)", "Ramo de Tulipanes", "Centro de Mesa Floral Simple", "Caja Octogonal", "Caja con Cierre de Solapa", "Caja Secreta Simple", "Barco Pirata Simplificado", "Cohete Espacial", "Robot Básico", "Dinosaurio (T-Rex Simplificado)", "Dinosaurio (Brontosaurio Simplificado)", "Castillo Simple", "Pagoda Básica", "Máscara Simple (Teatral)", "Gafas de Papel", "Corona Real", "Varita Mágica", "Guitarra Acústica Simple", "Piano de Cola Simple", "Violín Simple", "Tambor Pequeño", "Candelabro Simple", "Lámpara de Papel Decorativa", "Móvil Colgante (con varias figuras)", "Teselado Básico (Unidad Repetitiva)", "Esfera Modular Simple (Kusudama)",
+            // Añadir más variaciones y modelos específicos si es necesario...
+        ];
+        const origamiThemes = [
+            "animales de origami", "pájaros de origami", "flores de origami", "cajas de origami", "origami modular básico", "origami de acción", "figuras tradicionales japonesas", "origami decorativo", "origami geométrico", "vehículos de origami", "bases de origami", "técnicas de plegado", "origami para principiantes avanzados", "modelos de insectos origami", "origami marino"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un paciente y experimentado instructor de origami. Tu tarea es describir el proceso de plegado del modelo de origami de nivel medio solicitado. Proporciona instrucciones claras, paso a paso (usando terminología estándar: pliegue valle, montaña, inverso, squash, pétalo, etc.). Incluye consejos para alguien que aborda este nivel, menciona su origen o usos si es relevante, y sugiere tipo/tamaño de papel. Intenta ser una guía útil, ajustando la longitud según la complejidad del modelo (aprox. 800-1300 palabras). Basa tus instrucciones *únicamente* en el siguiente modelo:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+             systemPrompt: "Actúa como un asistente AI especializado únicamente en el modelo de origami '{currentModelTitle}'. Responde preguntas sobre sus pasos específicos, puntos difíciles, variaciones, o historia, basándote en la descripción principal. Sé conciso y enfocado en este modelo.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia de origami. Genera exactamente 15 nombres de modelos de origami de nivel intermedio (animales, flores, cajas, modulares, acción). Devuelve *solo* la lista de nombres, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Igual que la versión anterior)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        // ... (resto de elementos DOM iguales)
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+
+        // ========== State Variables ==========
+        let currentModelTitle = null; // Contexto para el chat
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentModelTitle
+                 ? `Eres un asistente AI especializado únicamente en el modelo de origami '${currentModelTitle}'. Responde preguntas sobre sus pasos específicos, puntos difíciles, variaciones, o historia, basándote en la descripción principal. Sé conciso y enfocado en este modelo.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento. Por favor, intenta de nuevo en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía. Intenta de nuevo o reformula la pregunta.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        async function fetchExplanationText(modelTitle) { // Wrapper
+            return fetchTextFromApi(modelTitle, textApiConfig, false);
+        }
+        async function fetchChatResponse(userQuery) { // Wrapper
+            if (!currentModelTitle) throw new Error("Error interno: No se ha establecido el contexto del modelo para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() { // Wrapper
+            const randomTheme = getRandomElement(origamiThemes) || "origami nivel medio";
+            const specificPrompt = `Genera 15 nombres de modelos de origami sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 80);
+                     if (titles.length < 5) throw new Error("La IA no generó suficientes ideas de modelos.");
+                     return titles.slice(0, 15);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { // Prompt adaptado
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 700, height: 700, nologo: true }; // Cuadrado para origami
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "origami model";
+            // Intentar sacar color/tipo de papel del título si es posible (simple)
+            let paperDesc = "crisp origami paper";
+            if (safePromptText.toLowerCase().includes("rojo")) paperDesc = "red origami paper";
+            else if (safePromptText.toLowerCase().includes("azul")) paperDesc = "blue origami paper";
+            else if (safePromptText.toLowerCase().includes("washi")) paperDesc = "patterned washi paper";
+            else if (safePromptText.toLowerCase().includes("kraft")) paperDesc = "brown kraft paper";
+
+            const enhancedPrompt = `Clean studio photograph of a finished origami '${safePromptText}' model. Folded from ${paperDesc}. Simple, well-lit background (e.g., white, light wood texture, bamboo mat). Focus on the folded form, clean lines, and paper texture. Single model centered. Avoid diagrams, hands, instructions.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "diagram, instructions, steps, arrows, lines, text, words, labels, hands, person, messy background, blurry, multiple models, drawing, illustration, painting, schematic";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ==========
+        function formatExplanationText(rawText) {
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+
+            // Pre-procesamiento: limpiar artefactos comunes de IA
+            formatted = formatted.replace(/```[\s\S]*?```/g, ''); // Quitar bloques de código si aparecen
+            formatted = formatted.replace(/\[.*?\]\(.*?\)/g, '$1'); // Quitar enlaces markdown, mantener texto
+
+            // Encabezados (asegurarse que haya espacio después de #)
+            formatted = formatted.replace(/^#+\s+(.*)$/gm, (match, p1) => {
+                let level = match.match(/^#+/)[0].length;
+                level = Math.min(level, 4); // Limitar a H4 máximo
+                return `<h${level}>${p1.trim()}</h${level}>`;
+            });
+
+            // Negrita y Cursiva
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // Listas (manejo básico, asume que la IA usa * o - para no ordenadas y 1. 2. para ordenadas)
+            // Convertir líneas de lista en <li>, agrupando bloques
+            const blocks = formatted.split(/\n\s*\n/); // Separar por párrafos/bloques
+            formatted = blocks.map(block => {
+                block = block.trim();
+                if (block.startsWith('<h')) return block; // No tocar encabezados
+
+                // Detectar listas ordenadas
+                if (/^\d+\.\s+/.test(block)) {
+                    const items = block.split('\n').map(line => line.trim().replace(/^\d+\.\s*/, ''));
+                    return '<ol>' + items.map(item => `<li>${item}</li>`).join('') + '</ol>';
+                }
+                // Detectar listas no ordenadas
+                else if (/^[\*\-]\s+/.test(block)) {
+                    const items = block.split('\n').map(line => line.trim().replace(/^[\*\-]\s*/, ''));
+                    return '<ul>' + items.map(item => `<li>${item}</li>`).join('') + '</ul>';
+                }
+                // Párrafos normales (reemplazar saltos internos con espacio)
+                else {
+                    return `<p>${block.replace(/\n/g, ' ')}</p>`;
+                }
+            }).join('');
+
+             // Limpieza final: eliminar <p> vacíos que pudieron generarse
+            formatted = formatted.replace(/<p>\s*<\/p>/g, '');
+
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Igual que la versión anterior)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0; console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = ''; chatInput.value = ''; chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false;
+             currentModelTitle = null; // Reset chat context
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Igual que la versión anterior)
+        function showFullscreenImage(imgSrc) { /*...*/ fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /*...*/ imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (Igual que la versión anterior)
+        function addChatMessage(message, sender) { /*...*/
+             const msgDiv = document.createElement('div');
+             msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+             message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             msgDiv.innerHTML = message;
+             chatHistory.appendChild(msgDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) { /*...*/
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+         }
+        async function handleSendMessage() { /*...*/
+             const userQuery = chatInput.value.trim();
+             if (!userQuery || chatSendBtn.disabled) return;
+             addChatMessage(userQuery, 'user');
+             chatInput.value = ''; chatSendBtn.disabled = true; chatLoadingIndicator.style.display = 'block';
+             try { const aiResponse = await fetchChatResponse(userQuery); addChatMessage(aiResponse, 'ai'); }
+             catch (error) { console.error("Chat Error:", error); addChatError(`Error IA: ${error.message}`); }
+             finally { chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; chatInput.focus(); }
+        }
+
+        // ========== UI & EVENT HANDLERS ========== (Igual, adaptando textos)
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar alfabéticamente es bueno para origami
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay modelos cargados «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             // Reordenar todo alfabéticamente O solo aplicar filtro? Aplicar filtro es más simple.
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick (Adaptar textos, setear currentModelTitle) ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentModelTitle = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Mostrar spinner principal
+
+            try {
+                // Fetch and display text instructions
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalLoadingIndicator.style.display = 'none'; // Ocultar spinner principal
+                modalContent.innerHTML = formattedExplanation; // Mostrar texto
+                modalStoryContentArea.classList.remove('content-hidden'); // Mostrar área de contenido
+                modalTextArea.scrollTop = 0; // Reset scroll del área de texto
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare image placeholder (within modalContent, after text)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando imagen del modelo...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Añadir placeholder al final del texto
+
+                // Create and load image
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Modelo de origami terminado: ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded successfully.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al cargar imagen.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir imagen al final del texto
+                } else {
+                    console.error("Could not create image URL for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el modelo.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Limpiar en caso de error
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        async function handleGenerateMoreTitles() { // Adaptar textos
+             if (!generateMoreBtn) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando más...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron encontrar más modelos en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar modelos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Mostrar Más Modelos';
+             }
+         }
+
+         // *** Search Filter Function (Igual) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (Igual)
+        function initApp() {
+            // Verificación de elementos esenciales (adaptar si IDs cambiaron)
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) {
+                console.error("Initialization failed: Missing essential UI elements.");
+                document.body.innerHTML = '<p style="color: #c62828; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes de la interfaz.</p>';
+                return;
+             }
+            // Listeners (Igual)
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Carga Inicial (Igual)
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>
