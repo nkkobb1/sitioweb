@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oráculo Cósmico Divertido</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet"> {/* Añadido font-weight 500 */}
+
+    <style>
+        :root {
+            --bg-color: #0a0514;
+            --primary-glow: #9f79f5;
+            --secondary-glow: #6ad7e5; /* Cian/Turquesa */
+            --accent-glow: #f5a6f0; /* Rosa/Magenta suave */
+            --text-color: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --card-bg: rgba(20, 15, 40, 0.88); /* Más opaco */
+            --border-color: rgba(159, 121, 245, 0.4);
+            --star-color-1: #ffffff;
+            --star-color-2: #d0d0ff;
+            --scrollbar-track-color: rgba(159, 121, 245, 0.1);
+            --scrollbar-thumb-color: rgba(159, 121, 245, 0.5);
+            --scrollbar-thumb-hover-color: rgba(159, 121, 245, 0.8);
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Roboto', sans-serif;
+            --transition-speed: 0.4s;
+            --section-border-color: rgba(106, 215, 229, 0.2); /* Borde sutil para secciones */
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        /* --- Fondo Animado Estrellado (sin cambios) --- */
+        .stars-bg { /* ... */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; overflow: hidden;
+        }
+        .star { /* ... */
+             position: absolute; background-color: var(--star-color-1); border-radius: 50%; box-shadow: 0 0 5px 1px var(--star-color-2); animation: twinkle 5s infinite ease-in-out alternate;
+        }
+        @keyframes twinkle { /* ... */
+             0% { opacity: 0.5; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- Contenedor Principal (sin cambios) --- */
+        .container { /* ... */
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px); padding: 40px 30px; border-radius: 20px; box-shadow: 0 0 30px rgba(159, 121, 245, 0.3); border: 1px solid var(--border-color); width: 90%; max-width: 700px; text-align: center; z-index: 1; transition: all var(--transition-speed) ease-out;
+        }
+
+        /* --- Header (sin cambios) --- */
+        header h1 { /* ... */
+             font-family: var(--font-display); font-size: 2.5em; color: var(--primary-glow); text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--secondary-glow); margin-bottom: 15px; letter-spacing: 2px;
+        }
+        .instructions { /* ... */
+            color: var(--text-muted); margin-bottom: 30px; font-size: 1.1em; line-height: 1.6;
+        }
+
+        /* --- Selector de Signos (sin cambios) --- */
+        .zodiac-selector { /* ... */
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 20px; margin-bottom: 40px;
+        }
+        .sign-button { /* ... */
+             background: none; border: 2px solid var(--border-color); color: var(--secondary-glow); padding: 15px 10px; border-radius: 10px; cursor: pointer; transition: all var(--transition-speed) ease; font-size: 1.8em; display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; overflow: hidden;
+        }
+         .sign-button::before { /* ... */ content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: radial-gradient(circle, rgba(159, 121, 245, 0.5) 0%, rgba(159, 121, 245, 0) 70%); border-radius: 50%; transform: translate(-50%, -50%); transition: width var(--transition-speed) ease, height var(--transition-speed) ease; z-index: 0; }
+         .sign-button:hover::before, .sign-button:focus::before { /* ... */ width: 200%; height: 200%; }
+         .sign-button .sign-name { /* ... */ font-size: 0.5em; color: var(--text-muted); margin-top: 5px; font-weight: 300; z-index: 1; transition: color var(--transition-speed) ease; }
+         .sign-button .sign-icon { /* ... */ z-index: 1; transition: transform var(--transition-speed) ease, color var(--transition-speed) ease; }
+         .sign-button:hover, .sign-button:focus { /* ... */ border-color: var(--primary-glow); box-shadow: 0 0 15px var(--primary-glow); color: var(--primary-glow); transform: translateY(-5px) scale(1.05); }
+         .sign-button:hover .sign-icon, .sign-button:focus .sign-icon { /* ... */ transform: scale(1.1); color: var(--primary-glow); }
+         .sign-button:hover .sign-name, .sign-button:focus .sign-name { /* ... */ color: var(--primary-glow); }
+         .sign-button.selected { /* ... */ border-color: var(--secondary-glow); background-color: rgba(106, 215, 229, 0.1); box-shadow: 0 0 20px var(--secondary-glow); color: var(--secondary-glow); transform: translateY(-2px) scale(1.02); }
+         .sign-button.selected .sign-icon { /* ... */ color: var(--secondary-glow); animation: pulse 1.5s infinite ease-in-out; }
+         .sign-button.selected .sign-name { /* ... */ color: var(--secondary-glow); font-weight: 400; }
+         @keyframes pulse { /* ... */ 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+
+        /* --- Display del Horóscopo (sin cambios estructurales) --- */
+        .horoscope-display { /* ... */
+             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 15px; padding: 30px 25px; /* Ajustar padding */ min-height: 280px; /* Aumentar para más contenido */ display: flex; flex-direction: column; /* Cambiado para mejor control */ justify-content: flex-start; align-items: center; /* Centra el contenido horizontalmente */ position: relative; opacity: 0; transform: translateY(20px) scale(0.95); transition: opacity var(--transition-speed) ease-out, transform var(--transition-speed) ease-out; visibility: hidden;
+        }
+        .horoscope-display.visible { /* ... */ opacity: 1; transform: translateY(0) scale(1); visibility: visible; }
+
+        /* --- Indicador de Carga (sin cambios) --- */
+        .loading-indicator { /* ... */
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3em; color: var(--primary-glow); opacity: 0; transition: opacity var(--transition-speed) ease; visibility: hidden; z-index: 10;
+        }
+        .loading-indicator.visible { /* ... */ opacity: 1; visibility: visible; animation: spin 2s linear infinite; }
+        @keyframes spin { /* ... */ 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* --- Contenido del Horóscopo (AHORA ES EL CONTENEDOR DEL SCROLL) --- */
+        /* Se renombra #horoscope-text a #horoscope-content-area para claridad */
+        #horoscope-content-area {
+            width: 100%;
+            max-height: 300px; /* Altura máxima ANTES del scroll */
+            overflow-y: auto;  /* Habilita scroll vertical */
+            padding-right: 15px; /* Espacio para scrollbar */
+            padding-left: 5px;
+            opacity: 0; /* Oculto inicialmente */
+            transition: opacity var(--transition-speed) ease var(--transition-speed); /* Transición */
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+            text-align: left; /* Alineación base para el texto */
+        }
+
+        /* Estilos para el scrollbar */
+        #horoscope-content-area::-webkit-scrollbar { width: 8px; }
+        #horoscope-content-area::-webkit-scrollbar-track { background: var(--scrollbar-track-color); border-radius: 4px; }
+        #horoscope-content-area::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb-color); border-radius: 4px; border: 2px solid var(--scrollbar-track-color); }
+        #horoscope-content-area::-webkit-scrollbar-thumb:hover { background-color: var(--scrollbar-thumb-hover-color); }
+
+        /* Mostrar contenido cuando esté cargado */
+        .horoscope-display.loaded #horoscope-content-area {
+             opacity: 1;
+        }
+        .horoscope-display.loading #horoscope-content-area {
+             opacity: 0;
+        }
+
+        /* --- Título General del Signo (Fuera del scroll) --- */
+        #horoscope-sign-title {
+            font-family: var(--font-display);
+            font-size: 2em; /* Ligeramente más grande */
+            color: var(--primary-glow); /* Color primario para destacar */
+            margin-bottom: 20px; /* Más espacio debajo */
+            text-shadow: 0 0 10px var(--primary-glow);
+            width: 100%; /* Ocupa todo el ancho */
+            text-align: center; /* Centrado */
+            opacity: 0; /* Transición similar */
+            transition: opacity var(--transition-speed) ease;
+        }
+        .horoscope-display.loaded #horoscope-sign-title {
+            opacity: 1;
+        }
+
+        /* --- Estilos para las Secciones Dentro del Scroll --- */
+        #horoscope-content-area h3 {
+            font-family: var(--font-display);
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--secondary-glow); /* Color secundario para títulos de sección */
+            margin-top: 20px; /* Espacio ANTES de cada sección (excepto la primera) */
+            margin-bottom: 8px; /* Espacio entre título y párrafo */
+            padding-bottom: 5px; /* Espacio bajo el texto del título */
+            border-bottom: 1px solid var(--section-border-color); /* Línea separadora sutil */
+            text-shadow: 0 0 5px var(--secondary-glow);
+        }
+        #horoscope-content-area h3:first-of-type {
+            margin-top: 0; /* Sin margen superior para el primer título */
+        }
+
+        #horoscope-content-area p {
+            font-size: 1.05em; /* Ligeramente más pequeño que el base */
+            line-height: 1.7;
+            color: var(--text-color);
+            margin-bottom: 15px; /* Espacio DESPUÉS de cada párrafo de sección */
+        }
+         /* Estilo para fallback si no hay secciones */
+         #horoscope-content-area.fallback-text p {
+            font-size: 1.1em;
+            text-align: center; /* Centrar si es solo un bloque */
+            margin-top: 10px;
+         }
+
+
+        /* --- Mensaje de Error (sin cambios) --- */
+        #error-message { /* ... */
+            color: #ff6b6b; margin-top: 20px; font-weight: bold; opacity: 0; transition: opacity var(--transition-speed) ease; height: 0; overflow: hidden; width: 100%; text-align: center;
+        }
+        #error-message.visible { /* ... */ opacity: 1; height: auto; }
+
+        /* --- Responsividad (Ajustar paddings/tamaños si es necesario) --- */
+        @media (max-width: 768px) {
+             body { padding-top: 20px; padding-bottom: 20px; }
+             header h1 { font-size: 2em; }
+             .instructions { font-size: 1em; }
+             .zodiac-selector { gap: 15px; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); }
+             .sign-button { font-size: 1.6em; padding: 12px 8px; }
+             .sign-button .sign-name { font-size: 0.45em; }
+             #horoscope-sign-title { font-size: 1.8em; margin-bottom: 15px;}
+             #horoscope-content-area { max-height: 250px; } /* Ajustar altura scroll */
+             #horoscope-content-area h3 { font-size: 1.3em; }
+             #horoscope-content-area p { font-size: 1em; }
+             .container { padding: 30px 20px;}
+             .horoscope-display { padding: 25px 20px; min-height: 250px;}
+        }
+         @media (max-width: 480px) {
+              header h1 { font-size: 1.8em; }
+              .instructions { font-size: 0.9em; }
+              .zodiac-selector { gap: 10px; grid-template-columns: repeat(3, 1fr); }
+              .sign-button { font-size: 1.5em; padding: 10px 5px; }
+              .sign-button .sign-name { font-size: 0.4em; }
+              #horoscope-sign-title { font-size: 1.6em;}
+              #horoscope-content-area { max-height: 220px;} /* Ajustar altura scroll */
+              #horoscope-content-area h3 { font-size: 1.2em; }
+              #horoscope-content-area p { font-size: 0.95em; }
+              .container { padding: 25px 15px;}
+              .horoscope-display { padding: 20px 15px; min-height: 220px;}
+         }
+
+    </style>
+</head>
+<body>
+
+    <div class="stars-bg" id="stars-container"></div>
+    <div class="container">
+        <header>
+            <h1>Oráculo Cósmico Divertido</h1>
+            <p class="instructions">Elige tu signo zodiacal para recibir una predicción cósmica (totalmente inventada y probablemente inútil, ¡pero divertida!)</p>
+        </header>
+        <main>
+            <div class="zodiac-selector"></div>
+            <div id="error-message"></div>
+            <!-- Contenedor del Horóscopo -->
+            <div class="horoscope-display" id="horoscope-display">
+                <div class="loading-indicator" id="loading-indicator">✨</div>
+                <!-- Título del Signo (Fuera del Scroll) -->
+                <h2 id="horoscope-sign-title"></h2>
+                <!-- Área de Contenido con Scroll -->
+                <div id="horoscope-content-area">
+                    <!-- Las secciones H3 y P se insertarán aquí -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        const signs = [
+            { name: 'Aries', icon: '♈', emoji: '🐏' }, { name: 'Tauro', icon: '♉', emoji: '🐂' },
+            { name: 'Géminis', icon: '♊', emoji: '👯' }, { name: 'Cáncer', icon: '♋', emoji: '🦀' },
+            { name: 'Leo', icon: '♌', emoji: '🦁' }, { name: 'Virgo', icon: '♍', emoji: '♍' },
+            { name: 'Libra', icon: '♎', emoji: '⚖️' }, { name: 'Escorpio', icon: '♏', emoji: '🦂' },
+            { name: 'Sagitario', icon: '♐', emoji: '🏹' }, { name: 'Capricornio', icon: '♑', emoji: '🐐' },
+            { name: 'Acuario', icon: '♒', emoji: '🏺' }, { name: 'Piscis', icon: '♓', emoji: '🐟' }
+        ];
+
+        // --- PALABRAS CLAVE PARA SECCIONES ---
+        const sectionKeywords = ['Amor:', 'Trabajo:', 'Dinero:', 'Salud:', 'Consejo:', 'Suerte:', 'Social:'];
+
+        // --- FALLBACKS CON PALABRAS CLAVE ---
+        const fallbackHoroscopes = {
+            'Aries': `
+Amor: Tu pasión arderá tanto que podrías derretir accidentalmente el helado de tu pareja. ¡Cuidado! Una declaración espontánea podría involucrar una coreografía improvisada.
+Trabajo: Te enfrentarás a un desafío laboral con la determinación de un carnero persiguiendo una zanahoria láser. ¡Nadie te detendrá! Aunque quizá deberías preguntar qué se supone que tienes que hacer primero.
+Dinero: Encontrarás una moneda perdida en el bolsillo de un abrigo viejo. ¡Eres rico! Bueno, casi. Resiste la tentación de invertirlo todo en chicles con sabor a aventura.
+Consejo: Canaliza tu energía imparable en algo constructivo, como aprender a tocar la gaita o construir el castillo de LEGO más épico jamás visto. ¡No intentes ambas cosas a la vez!`,
+            'Tauro': `
+Amor: La lealtad será tu fuerte, serás tan fiable como esa silla cómoda que nunca falla. Una velada romántica perfecta podría incluir una maratón de series y tu pijama favorito. ¡El glamour está sobrevalorado!
+Trabajo: Abordarás tus tareas con la paciencia de un árbol milenario... hasta que alguien se coma tu almuerzo. Entonces, libera al minotauro interior (pero solo un poquito). La constancia dará sus frutos (o al menos, evitará regañinas).
+Dinero: Tu habilidad para encontrar ofertas será legendaria. Podrías regatear el precio del aire si te lo propusieras. Considera abrir una cuenta de ahorros para "caprichos extremadamente cómodos".
+Consejo: Disfruta de los placeres simples: una buena siesta, una comida deliciosa, la sensación de calcetines recién lavados. La vida es demasiado corta para el estrés y los calcetines incómodos.`,
+            'Géminis': `
+Amor: Tu encanto dual atraerá a dos admiradores: una ardilla parlanchina y un buzón misterioso. La comunicación será clave, intenta no enviar señales contradictorias a ambos.
+Trabajo: Tu mente ágil saltará de una idea genial a otra, ¡como una pulga cósmica en un trampolín! Intenta aterrizar en una de vez en cuando y escribirla antes de que se escape. La multitarea es tu amiga... y tu enemiga.
+Dinero: Podrías encontrar dinero en lugares inesperados, como dentro de un libro sobre economía que nunca leíste. Gástalo sabiamente en algo que estimule tus dos personalidades: ¡quizás dos sombreros diferentes!
+Consejo: Abraza tu curiosidad insaciable. Pregúntale a un árbol por qué es verde, investiga la historia secreta de los clips... ¡El conocimiento (inútil) es poder!`,
+            // ... (AÑADE FALLBACKS CON KEYWORDS PARA TODOS LOS SIGNOS) ...
+            'Piscis': `
+Amor: Navegarás por las aguas del romance como un pez experto... o como uno que acaba de descubrir que el agua está mojada. Tu intuición te guiará, pero cuidado con confundir una señal de amor con una oferta de supermercado.
+Trabajo: Tu creatividad estará por las nubes (literalmente, podrías diseñar nubes más eficientes). Presenta tus ideas, aunque parezcan salidas de un sueño febril. Alguien podría entenderlas... eventualmente.
+Dinero: Soñarás con encontrar un tesoro pirata, pero la realidad será más bien encontrar un cupón de descuento para calcetines. ¡Algo es algo! No inviertas siguiendo los consejos de un pez dorado parlante.
+Consejo: Permítete soñar despierto, pero pon una alarma para volver a la realidad de vez en cuando. Escribe tus sueños más locos, podrían convertirse en una novela superventas... o en una lista de la compra muy rara.`
+        };
+
+
+        const selectorContainer = document.querySelector('.zodiac-selector');
+        const displayContainer = document.getElementById('horoscope-display');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        // --- Elementos renombrados/añadidos ---
+        const signTitleElement = document.getElementById('horoscope-sign-title');
+        const contentAreaElement = document.getElementById('horoscope-content-area');
+        const errorMessageElement = document.getElementById('error-message');
+        const starsContainer = document.getElementById('stars-container');
+
+        function createStars(numberOfStars) { /* ... (Sin cambios) ... */
+            for(let i=0;i<numberOfStars;i++){let star=document.createElement('div');star.classList.add('star');let size=Math.random()*3+1;star.style.width=`${size}px`;star.style.height=`${size}px`;star.style.top=`${Math.random()*100}%`;star.style.left=`${Math.random()*100}%`;star.style.animationDelay=`${Math.random()*5}s`;star.style.animationDuration=`${Math.random()*3+3}s`;starsContainer.appendChild(star);}
+        }
+        createStars(150);
+
+        signs.forEach(sign => { /* ... (Sin cambios) ... */
+            const button=document.createElement('button');button.classList.add('sign-button');button.dataset.sign=sign.name;button.innerHTML=`<span class="sign-icon" aria-hidden="true">${sign.icon}</span><span class="sign-name">${sign.name}</span>`;button.setAttribute('aria-label',`Seleccionar ${sign.name}`);button.addEventListener('click',()=>handleSignSelection(sign));selectorContainer.appendChild(button);
+        });
+
+        async function handleSignSelection(sign) {
+            console.log(`Sign selected: ${sign.name}`);
+            document.querySelectorAll('.sign-button').forEach(btn => btn.classList.remove('selected'));
+            const selectedButton = document.querySelector(`.sign-button[data-sign="${sign.name}"]`);
+            if (selectedButton) selectedButton.classList.add('selected');
+
+            // Ocultar contenido anterior y mostrar loading
+            displayContainer.classList.remove('loaded');
+            displayContainer.classList.add('visible', 'loading');
+            loadingIndicator.classList.add('visible');
+            errorMessageElement.classList.remove('visible');
+            signTitleElement.textContent = ''; // Limpiar título
+            contentAreaElement.innerHTML = ''; // Limpiar contenido estructurado
+            contentAreaElement.scrollTop = 0; // Reset scroll
+
+            try {
+                // --- PROMPT MODIFICADO ---
+                 const prompt = `Escribe un horóscopo DETALLADO, divertido, creativo y absurdo para ${sign.name} ${sign.emoji}.
+Organízalo en secciones CLARAS. Comienza líneas SEPARADAS exactamente con estas palabras clave seguidas de dos puntos (usa 3 o 4 de ellas):
+Amor: (descripción)
+Trabajo: (descripción)
+Dinero: (descripción)
+Salud: (descripción, ej. evita comer tiza)
+Consejo: (descripción final absurda)
+Asegúrate de que cada sección tenga 2-3 frases elaboradas y graciosas. No incluyas NINGÚN texto introductorio o de cierre, solo las secciones con sus keywords al inicio de línea.`;
+
+                 const encodedPrompt = encodeURIComponent(prompt);
+                 const url = `https://text.pollinations.ai/${encodedPrompt}`;
+
+                 console.log("Requesting URL:", url);
+                 const controller = new AbortController();
+                 const timeoutId = setTimeout(() => controller.abort(), 18000); // Timeout un poco más largo
+
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     console.warn(`API request failed with status ${response.status}. Using fallback.`);
+                     throw new Error('API Error');
+                 }
+
+                 const rawHoroscopeText = await response.text();
+
+                 // Comprobación básica
+                 if (!rawHoroscopeText || rawHoroscopeText.trim().length < 30 ) {
+                    console.warn("API response was empty or too short. Using fallback.");
+                    throw new Error('Invalid API Response Length');
+                 }
+
+                 console.log("Raw API Response:", rawHoroscopeText);
+                 // --- Mostrar el horóscopo procesado ---
+                 displayHoroscope(sign, rawHoroscopeText.trim());
+
+            } catch (error) {
+                 console.error("Error fetching horoscope or processing response:", error);
+                 let errorMsg = "¡Oh no! El cosmos está un poco revuelto. Usando predicción de emergencia...";
+                 if (error.name === 'AbortError') { errorMsg = "El oráculo tardó mucho en responder... Usando predicción de emergencia."; }
+                 else if (error.message === 'Invalid API Response Length'){ errorMsg = "La respuesta del oráculo fue muy corta... Usando predicción de emergencia."; }
+                 showError(errorMsg);
+                 setTimeout(() => {
+                    const fallbackText = fallbackHoroscopes[sign.name] || "Consejo: Hoy es un buen día para improvisar. El universo no nos dio el guion.";
+                    displayHoroscope(sign, fallbackText.trim()); // Mostrar fallback procesado
+                 }, 1500);
+            }
+        }
+
+        // --- FUNCIÓN MODIFICADA PARA PROCESAR Y MOSTRAR ---
+        function displayHoroscope(sign, rawText) {
+            loadingIndicator.classList.remove('visible');
+            signTitleElement.textContent = sign.name; // Mostrar título del signo
+            contentAreaElement.innerHTML = ''; // Limpiar área de contenido
+            contentAreaElement.classList.remove('fallback-text'); // Quitar clase fallback por defecto
+
+            let foundSections = false;
+            const lines = rawText.split('\n'); // Dividir por líneas
+            let currentParagraph = null;
+
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return; // Ignorar líneas vacías
+
+                let isKeywordLine = false;
+                for (const keyword of sectionKeywords) {
+                    if (trimmedLine.toLowerCase().startsWith(keyword.toLowerCase())) {
+                        // Es una línea de keyword
+                        foundSections = true;
+                        isKeywordLine = true;
+
+                        // Crear título de sección (H3)
+                        const sectionTitle = document.createElement('h3');
+                        sectionTitle.textContent = keyword.slice(0, -1); // Quitar los dos puntos ':'
+                        contentAreaElement.appendChild(sectionTitle);
+
+                        // Crear párrafo para el contenido de esta sección
+                        currentParagraph = document.createElement('p');
+                        const content = trimmedLine.substring(keyword.length).trim(); // Texto después del keyword
+                        if (content) {
+                            currentParagraph.textContent = content;
+                        } else {
+                            // Si no hay texto en la misma línea, preparamos el p para la siguiente línea
+                            currentParagraph.textContent = ''; // Inicializar vacío
+                        }
+                        contentAreaElement.appendChild(currentParagraph);
+                        break; // Keyword encontrada, pasar a la siguiente línea
+                    }
+                }
+
+                // Si no es una línea de keyword y ya tenemos un párrafo activo, añadir texto a ese párrafo
+                if (!isKeywordLine && currentParagraph) {
+                    // Añadir con un espacio si el párrafo ya tiene texto
+                    currentParagraph.textContent += (currentParagraph.textContent ? ' ' : '') + trimmedLine;
+                }
+                 // Si no es keyword y NO hay párrafo activo (texto antes de la primera keyword), manejar como fallback simple
+                 else if (!isKeywordLine && !foundSections) {
+                     // Si es la primera línea sin keyword, iniciar fallback
+                     if (!currentParagraph) {
+                         currentParagraph = document.createElement('p');
+                         contentAreaElement.appendChild(currentParagraph);
+                         contentAreaElement.classList.add('fallback-text'); // Añadir clase para estilo fallback
+                     }
+                     currentParagraph.textContent += (currentParagraph.textContent ? '\n' : '') + trimmedLine; // Añadir como texto plano
+                 }
+
+            });
+
+             // Si después de procesar todo, no encontramos secciones, mostramos todo como fallback
+             if (!foundSections && rawText) {
+                 console.log("No sections found, displaying as fallback text.");
+                 contentAreaElement.innerHTML = ''; // Limpiar posible contenido parcial
+                 const p = document.createElement('p');
+                 p.textContent = rawText; // Poner todo el texto raw
+                 contentAreaElement.appendChild(p);
+                 contentAreaElement.classList.add('fallback-text');
+             }
+
+
+            // Mostrar el contenedor principal
+            displayContainer.classList.remove('loading');
+            displayContainer.classList.add('loaded');
+            if(!displayContainer.classList.contains('visible')) {
+                displayContainer.classList.add('visible');
+             }
+            errorMessageElement.classList.remove('visible'); // Ocultar error si todo ok
+            contentAreaElement.scrollTop = 0; // Ir al inicio del scroll
+        }
+
+        function showError(message) {
+            errorMessageElement.textContent = message;
+            errorMessageElement.classList.add('visible');
+            loadingIndicator.classList.remove('visible');
+            displayContainer.classList.add('visible');
+            displayContainer.classList.remove('loading', 'loaded');
+            signTitleElement.textContent = " Interferencias Cósmicas"; // Título de error
+            contentAreaElement.innerHTML = ""; // Limpiar área de contenido
+        }
+
+    </script>
+
+</body>
+</html>

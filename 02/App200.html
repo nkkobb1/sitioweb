@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoAtlas Explorer - Impactante V2</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+      :root {
+        --bg-color: #121212; /* Negro más profundo */
+        --primary-color: #00aaff; /* Azul cian brillante */
+        --secondary-color: #1e1e1e; /* Gris muy oscuro */
+        --card-bg: #2a2a2a; /* Gris oscuro para tarjetas */
+        --text-primary: #f0f0f0; /* Blanco muy claro */
+        --text-secondary: #a0a0a0; /* Gris medio */
+        --accent-glow: rgba(0, 170, 255, 0.3);
+        --shadow-color: rgba(0, 0, 0, 0.5);
+        --border-color: rgba(255, 255, 255, 0.1);
+        --hero-gradient: linear-gradient(135deg, rgba(0, 170, 255, 0.1) 0%, rgba(30, 30, 30, 0) 60%);
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Roboto', sans-serif; /* Cambiamos a Roboto para un look más tech */
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        overflow-x: hidden;
+        background: var(--bg-color) url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Cg fill-rule="evenodd"%3E%3Cg fill="%231a1a1a" fill-opacity="0.4"%3E%3Cpath d="M0 40L40 0H0zM40 40V0L0 40z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E'); /* Sutil fondo geométrico */
+      }
+
+      .geo-container {
+        background-color: var(--secondary-color);
+        padding: 40px 50px;
+        border-radius: 16px;
+        box-shadow: 0 15px 40px var(--shadow-color);
+        width: 95%;
+        max-width: 900px; /* Más ancho */
+        text-align: center;
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+      }
+
+      h1 {
+        font-family: 'Poppins', sans-serif; /* Titulo con Poppins */
+        color: var(--primary-color);
+        margin-bottom: 35px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        font-size: 2.8em;
+        text-shadow: 0 0 10px var(--accent-glow);
+      }
+
+      .input-area {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 40px;
+        position: relative;
+      }
+
+      #locationInput {
+        flex-grow: 1;
+        padding: 18px 25px; /* Más padding */
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        font-size: 1.1em;
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      #locationInput:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px var(--accent-glow);
+      }
+
+      #fetchButton {
+        padding: 18px 30px;
+        background: linear-gradient(45deg, var(--primary-color), #0077cc); /* Gradiente azul */
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 700; /* Bold */
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        box-shadow: 0 5px 18px rgba(0, 170, 255, 0.3);
+      }
+
+      #fetchButton:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 170, 255, 0.5);
+      }
+      #fetchButton:active {
+        transform: translateY(0px);
+        box-shadow: 0 3px 12px rgba(0, 170, 255, 0.4);
+      }
+      #fetchButton:disabled {
+        background: #444;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      /* --- Overlay de Carga --- */
+      #loadingOverlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(30, 30, 30, 0.8); /* Fondo semitransparente */
+          display: none; /* Oculto por defecto */
+          justify-content: center;
+          align-items: center;
+          z-index: 10;
+          backdrop-filter: blur(5px); /* Efecto blur */
+      }
+       #loadingOverlay .spinner {
+          width: 60px;
+          height: 60px;
+          border: 6px solid var(--border-color);
+          border-top-color: var(--primary-color);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+       }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* --- Mensaje de Error --- */
+      #errorMessage {
+        color: #ff8080;
+        margin: 25px auto;
+        font-weight: 600;
+        min-height: 1.5em;
+        display: none;
+        background-color: rgba(255, 128, 128, 0.1);
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 128, 128, 0.3);
+      }
+
+      /* --- Contenedor General de Resultados --- */
+      #resultsWrapper {
+          margin-top: 40px;
+          opacity: 0;
+          transform: translateY(30px);
+          transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      }
+      #resultsWrapper.visible {
+          opacity: 1;
+          transform: translateY(0);
+      }
+
+      /* --- Sección Hero --- */
+      .hero-section {
+          display: flex;
+          align-items: center;
+          gap: 30px;
+          padding: 30px;
+          margin-bottom: 40px;
+          background: var(--card-bg) var(--hero-gradient); /* Fondo con gradiente sutil */
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
+          text-align: left;
+      }
+
+      .flag-placeholder {
+          flex-shrink: 0;
+          width: 100px;
+          height: 100px;
+          background-color: var(--secondary-color);
+          border-radius: 50%; /* Círculo */
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border: 2px solid var(--border-color);
+      }
+       .flag-placeholder i {
+           font-size: 3.5em;
+           color: var(--primary-color);
+           opacity: 0.7;
+       }
+
+      .location-details {
+         flex-grow: 1;
+      }
+
+      .location-name {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.2em;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+      }
+
+      .location-description {
+        font-size: 1em;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        max-width: 60ch; /* Limitar ancho de descripción */
+      }
+
+      /* --- Cuadrícula de Detalles --- */
+      .details-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Columnas adaptables */
+          gap: 25px;
+          perspective: 1000px;
+      }
+
+      /* --- Tarjeta de Dato --- */
+      .fact-card {
+        background-color: var(--card-bg);
+        padding: 25px 20px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out, background-color 0.3s ease, border-color 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-align: center;
+        min-height: 150px; /* Altura mínima para consistencia */
+      }
+
+      /* Animación aplicada por JS */
+      .fact-card.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .fact-card:hover {
+          background-color: var(--secondary-color);
+          border-color: var(--primary-color);
+          transform: translateY(-5px); /* Efecto hover */
+      }
+
+      .fact-card i {
+        font-size: 2.2em; /* Ligeramente más pequeños */
+        color: var(--primary-color);
+        margin-bottom: 8px;
+      }
+
+      .fact-label {
+        font-size: 0.85em;
+        color: var(--text-secondary);
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+
+      .fact-value {
+        font-size: 1.3em;
+        color: var(--text-primary);
+        font-weight: 700; /* Más bold */
+        word-wrap: break-word;
+      }
+
+      footer {
+          margin-top: 50px;
+          padding-top: 25px;
+          border-top: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          font-size: 0.85em;
+          opacity: 0.6;
+          text-align: center;
+      }
+      footer a {
+           color: var(--primary-color);
+           text-decoration: none;
+           transition: color 0.3s ease;
+       }
+      footer a:hover {
+           color: var(--text-primary);
+       }
+
+      /* --- Media Queries para Responsividad --- */
+      @media (max-width: 768px) {
+          .geo-container {
+              padding: 30px 25px;
+              max-width: 95%;
+          }
+          h1 { font-size: 2.2em; }
+          .input-area { flex-direction: column; }
+          .hero-section {
+              flex-direction: column; /* Apilar bandera y detalles */
+              text-align: center;
+              padding: 20px;
+          }
+          .location-name { font-size: 1.8em; }
+          .location-description { max-width: none; text-align: center;}
+          .details-grid {
+              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Ajuste para grid */
+              gap: 15px;
+          }
+          .fact-card { min-height: auto; }
+      }
+       @media (max-width: 480px) {
+           h1 { font-size: 1.8em; }
+           #locationInput, #fetchButton { font-size: 1em; padding: 15px 20px; }
+           .details-grid {
+               grid-template-columns: 1fr; /* Una columna en móviles */
+           }
+           .fact-label { font-size: 0.8em; }
+           .fact-value { font-size: 1.1em; }
+       }
+
+    </style>
+</head>
+<body>
+
+  <div class="geo-container">
+    <h1>GeoAtlas Explorer</h1>
+    <div class="input-area">
+      <input type="text" id="locationInput" placeholder="Introduce un país o ciudad...">
+      <button id="fetchButton" title="Obtener Datos">
+        <i class="fas fa-satellite-dish"></i> <!-- Icono diferente -->
+      </button>
+    </div>
+
+    <!-- Overlay de carga -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="errorMessage"></div>
+
+    <!-- Contenedor General de Resultados (para animación conjunta) -->
+    <div id="resultsWrapper">
+      <!-- Sección Hero (generada por JS) -->
+      <div class="hero-section" id="heroSection">
+        <!-- Ejemplo de estructura:
+        <div class="flag-placeholder">
+          <i class="fas fa-globe-americas"></i>
+        </div>
+        <div class="location-details">
+          <h2 class="location-name">Nombre del Lugar</h2>
+          <p class="location-description">Una breve descripción del lugar...</p>
+        </div>
+        -->
+      </div>
+
+      <!-- Cuadrícula de Detalles (generada por JS) -->
+      <div class="details-grid" id="detailsGrid">
+        <!-- Ejemplo de estructura tarjeta:
+        <div class="fact-card">
+          <i class="fas fa-landmark"></i>
+          <span class="fact-label">Capital</span>
+          <span class="fact-value">Ciudad Ejemplo</span>
+        </div>
+        -->
+      </div>
+    </div>
+
+    <footer>
+      Datos intentados por <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>. La precisión y formato dependen MUCHO de la IA.
+    </footer>
+  </div>
+
+  <script type="module">
+    const locationInput = document.getElementById('locationInput');
+    const fetchButton = document.getElementById('fetchButton');
+    const resultsWrapper = document.getElementById('resultsWrapper');
+    const heroSection = document.getElementById('heroSection');
+    const detailsGrid = document.getElementById('detailsGrid');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const errorMessage = document.getElementById('errorMessage');
+
+    const POLLINATIONS_TEXT_URL_BASE = "https://text.pollinations.ai/";
+
+    // --- Helper Functions ---
+    function showLoading(show) {
+      loadingOverlay.style.display = show ? 'flex' : 'none'; // Usar flex para centrar
+    }
+
+    function showError(message) {
+      resultsWrapper.classList.remove('visible'); // Ocultar resultados si hay error
+      heroSection.innerHTML = '';
+      detailsGrid.innerHTML = '';
+      errorMessage.textContent = message;
+      errorMessage.style.display = message ? 'block' : 'none';
+    }
+
+    function clearAll() {
+        errorMessage.style.display = 'none';
+        heroSection.innerHTML = '';
+        detailsGrid.innerHTML = '';
+        resultsWrapper.classList.remove('visible'); // Ocultar para animación
+    }
+
+    // --- Function to create and display results ---
+    function displayResults(data) {
+        clearAll();
+
+        // --- Populate Hero Section ---
+        heroSection.innerHTML = `
+            <div class="flag-placeholder">
+              <i class="fas fa-map-marked-alt"></i> <!-- Icono placeholder -->
+            </div>
+            <div class="location-details">
+              <h2 class="location-name">${data.locationName || 'Lugar Desconocido'}</h2>
+              ${data.description ? `<p class="location-description">${data.description}</p>` : ''}
+            </div>
+        `;
+
+        // --- Populate Details Grid ---
+        const facts = [
+            { label: 'Capital', value: data.capital, icon: 'fa-landmark' },
+            { label: 'Población', value: data.population, icon: 'fa-users' },
+            { label: 'Idioma(s)', value: data.language, icon: 'fa-language' },
+            { label: 'Moneda', value: data.currency, icon: 'fa-coins' },
+            { label: 'Continente/Región', value: data.continent, icon: 'fa-globe-americas' },
+            { label: 'Área', value: data.area, icon: 'fa-ruler-combined' }
+        ];
+
+        let cardIndex = 0; // Para animación escalonada
+        facts.forEach((fact) => {
+            if (fact.value) { // Solo añadir si hay valor
+                const card = document.createElement('div');
+                card.classList.add('fact-card');
+
+                card.innerHTML = `
+                    <i class="fas ${fact.icon}"></i>
+                    <span class="fact-label">${fact.label}</span>
+                    <span class="fact-value">${fact.value}</span>
+                `;
+                detailsGrid.appendChild(card);
+
+                // Animación escalonada para las tarjetas
+                setTimeout(() => {
+                    card.classList.add('visible');
+                }, cardIndex * 80); // Retraso menor (80ms)
+                cardIndex++;
+            }
+        });
+
+        // Hacer visible todo el wrapper de resultados para la animación principal
+         // Usar requestAnimationFrame para asegurar que el DOM se actualice antes de añadir la clase
+         requestAnimationFrame(() => {
+            resultsWrapper.classList.add('visible');
+         });
+
+
+         // Si no se mostró nada en la cuadrícula Y tampoco había descripción, mostrar un error
+         if (detailsGrid.children.length === 0 && !data.description && data.locationName) {
+             showError(`Se identificó ${data.locationName}, pero no se obtuvieron detalles específicos (Capital, Población, etc.) en el formato esperado.`);
+         } else if (!data.locationName && detailsGrid.children.length === 0 && !data.description) {
+            showError("No se pudo obtener ninguna información sobre el lugar introducido.");
+         }
+    }
+
+    // --- Main Fetch Function ---
+    async function fetchGeoData() {
+        const location = locationInput.value.trim();
+        if (!location) {
+            showError('Por favor, introduce un país o ciudad.');
+            return;
+        }
+
+        showLoading(true);
+        clearAll(); // Limpia todo antes de empezar
+        fetchButton.disabled = true;
+        fetchButton.innerHTML = '<i class="fas fa-sync fa-spin"></i>'; // Icono de carga
+
+        // Prompt AÚN MÁS DETALLADO Y ESTRICTO
+        const prompt = `Proporciona datos geográficos clave para "${location}". Responde EXCLUSIVAMENTE con líneas en formato "Etiqueta: Valor". Usa ESTAS ETIQUETAS EXACTAS:
+- Capital
+- Población
+- Idioma Principal
+- Moneda
+- Continente/Región
+- Área
+- Descripción Breve
+
+Si no encuentras un dato, OMITE LA LÍNEA POR COMPLETO. NO añadas introducciones, conclusiones, ni ningún otro texto. La descripción breve debe ser concisa (1-2 frases).
+
+Ejemplo de respuesta PERFECTA para 'Francia':
+Capital: París
+Población: ~65 millones
+Idioma Principal: Francés
+Moneda: Euro (EUR)
+Continente/Región: Europa Occidental
+Área: ~551,695 km²
+Descripción Breve: País de Europa Occidental conocido por su cultura, gastronomía y monumentos como la Torre Eiffel.
+
+Consulta ahora para: ${location}`;
+
+        const encodedPrompt = encodeURIComponent(prompt);
+        const requestUrl = POLLINATIONS_TEXT_URL_BASE + encodedPrompt;
+
+        console.log("Requesting URL:", requestUrl);
+
+        try {
+            const response = await fetch(requestUrl, { cache: "no-store" }); // Evitar caché
+            if (!response.ok) {
+                 const errorBody = await response.text().catch(() => "No se pudo leer el cuerpo del error.");
+                 throw new Error(`Error HTTP ${response.status}: ${response.statusText}. ${errorBody}`);
+            }
+
+            const responseText = await response.text();
+            console.log("Raw response text:", responseText);
+
+            if (!responseText) {
+                 throw new Error("La API devolvió una respuesta vacía.");
+            }
+
+            // --- Parsing Logic Mejorado ---
+            const lines = responseText.split('\n').filter(line => line.trim() !== '' && line.includes(':')); // Asegura que tenga ':'
+            const parsedData = {
+                locationName: location, // Guardamos el nombre original
+                capital: '',
+                population: '',
+                language: '',
+                currency: '',
+                continent: '',
+                area: '',
+                description: ''
+            };
+
+            lines.forEach(line => {
+                const parts = line.split(/:(.*)/s); // Divide en el primer ':'
+                if (parts.length >= 2) {
+                    const label = parts[0].trim().toLowerCase();
+                    const value = parts[1].trim();
+
+                    if (label.includes('capital')) parsedData.capital = value;
+                    else if (label.includes('población')) parsedData.population = value;
+                    else if (label.includes('idioma')) parsedData.language = value;
+                    else if (label.includes('moneda')) parsedData.currency = value;
+                    else if (label.includes('continente') || label.includes('región')) parsedData.continent = value;
+                    else if (label.includes('área') || label.includes('area')) parsedData.area = value;
+                    else if (label.includes('descripción')) parsedData.description = value;
+                }
+            });
+
+            console.log("Parsed data:", parsedData);
+
+            // Verifica si se obtuvo *algo*
+            if (Object.values(parsedData).some(val => val && val !== location)) {
+                 displayResults(parsedData);
+            } else {
+                // Si el parseo no encontró nada útil
+                showError(`No se pudieron extraer datos estructurados para "${location}" de la respuesta de la API. Intenta ser más específico o prueba con otro lugar.`);
+                console.warn("Parsing failed to extract expected key-value pairs from:", responseText);
+            }
+
+        } catch (error) {
+            console.error('Error fetching or parsing data:', error);
+            // Mostrar el mensaje de error completo puede ser útil para debug, pero quizás demasiado técnico para el usuario
+            showError(`Error: ${error.message || 'Ocurrió un problema al obtener los datos.'}`);
+
+        } finally {
+            showLoading(false);
+            fetchButton.disabled = false;
+            fetchButton.innerHTML = '<i class="fas fa-satellite-dish"></i>'; // Restaura icono
+        }
+    }
+
+    // --- Event Listeners ---
+    fetchButton.addEventListener('click', fetchGeoData);
+    locationInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        fetchGeoData();
+      }
+    });
+
+  </script>
+
+</body>
+</html>

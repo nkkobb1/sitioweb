@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Helper X - Asistente de Código</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Prism.js CSS (Okaidia Theme) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <!-- Prism.js Toolbar CSS (para botón Copiar) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css" rel="stylesheet" />
+
+
+    <style>
+      :root {
+        --bg-gradient-start: #1a1a2e;
+        --bg-gradient-end: #16213e;
+        --surface-color: #1f2947; /* Un azul/púrpura oscuro */
+        --primary-color: #00c6ff; /* Azul neón brillante */
+        --primary-hover: #00a5e0;
+        --text-primary: #e0e0e0;
+        --text-secondary: #a0a0c0;
+        --border-color: #3a3a5a;
+        --shadow-color: rgba(0, 198, 255, 0.1);
+        --error-color: #ff6b6b;
+        --success-color: #51cf66;
+        --code-bg: #282c34; /* Fondo clásico para código */
+
+        --font-sans: 'Inter', sans-serif;
+        --font-mono: 'Fira Code', monospace;
+
+        --border-radius: 8px;
+        --transition-speed: 0.3s;
+      }
+
+      /* Reset básico y configuración global */
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+         /* Soporte básico para esquema de color */
+        color-scheme: dark;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+        color: var(--text-primary);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Alinea arriba para ver contenido */
+        min-height: 100vh;
+        padding: 40px 20px;
+        font-size: 16px;
+        line-height: 1.6;
+        overflow-x: hidden; /* Prevenir scroll horizontal */
+      }
+
+      .container {
+        background-color: var(--surface-color);
+        padding: 30px 40px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--shadow-color);
+        width: 100%;
+        max-width: 750px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        transition: all var(--transition-speed) ease;
+      }
+
+      /* Header */
+      h1 {
+        font-size: 2.5em;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+      }
+
+      .subtitle {
+        color: var(--text-secondary);
+        margin-bottom: 35px;
+        font-size: 1.1em;
+      }
+
+      /* Input Area */
+      .input-area {
+        margin-bottom: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .input-area label {
+          font-size: 1.1rem;
+          font-weight: 500;
+          margin-bottom: -5px; /* Acercar al input */
+          color: var(--text-secondary);
+      }
+
+      .input-area input[type="text"] {
+        width: 100%;
+        padding: 14px 18px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        background-color: var(--bg-gradient-start); /* Fondo oscuro */
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+      }
+
+      .input-area input[type="text"]:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 198, 255, 0.2);
+      }
+
+      .input-area input[type="text"]::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.7;
+      }
+
+      button#generateButton {
+        background-color: var(--primary-color);
+        color: #111; /* Texto oscuro para contraste */
+        padding: 12px 30px;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 500;
+        font-family: var(--font-sans);
+        transition: background-color var(--transition-speed) ease, transform 0.1s ease, box-shadow var(--transition-speed) ease;
+        box-shadow: 0 4px 10px rgba(0, 198, 255, 0.2);
+      }
+
+      button#generateButton:hover:not(:disabled) {
+        background-color: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 198, 255, 0.3);
+      }
+
+       button#generateButton:active:not(:disabled) {
+         transform: translateY(0);
+         box-shadow: 0 4px 10px rgba(0, 198, 255, 0.2);
+       }
+
+      button#generateButton:disabled {
+        background-color: #555;
+        color: #999;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      /* Loader Animation */
+      .loader {
+        display: none; /* Oculto por defecto */
+        margin: 30px auto;
+        border: 4px solid var(--border-color);
+        border-left-color: var(--primary-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Results Area Styling */
+      .results-area {
+        margin-top: 35px;
+        text-align: left;
+        background-color: rgba(0,0,0,0.1); /* Fondo sutil */
+        padding: 25px;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        opacity: 0; /* Oculto inicialmente para animación */
+        transform: translateY(20px); /* Desplazado para animación */
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        max-width: 100%; /* Asegurar que no se desborde */
+        overflow: hidden; /* Prevenir desbordamiento interno */
+      }
+
+      .results-area.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .results-area h2 {
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        font-size: 1.4em;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+      }
+
+      /* Prism.js Code Block Styling */
+      pre[class*="language-"] {
+        background: var(--code-bg) !important; /* Forzar fondo */
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 1.5em !important; /* Más padding */
+        margin: 0 0 25px 0 !important; /* Margen inferior */
+        overflow: auto; /* Scroll si el código es largo */
+        font-family: var(--font-mono) !important;
+        font-size: 0.95em !important; /* Tamaño de fuente ligeramente ajustado */
+        line-height: 1.5 !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        position: relative; /* Para el botón de copiar */
+      }
+
+      /* Ajustes para que el botón de copiar de Prism Toolbar se vea bien */
+      div.code-toolbar > .toolbar {
+        opacity: 0; /* Oculto hasta hover */
+        transition: opacity var(--transition-speed) ease;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+      pre[class*="language-"]:hover div.code-toolbar > .toolbar {
+         opacity: 1; /* Mostrar en hover */
+      }
+
+      div.code-toolbar > .toolbar .toolbar-item button {
+          background: var(--primary-color) !important;
+          color: #111 !important;
+          border: none !important;
+          border-radius: 4px !important;
+          padding: 5px 10px !important;
+          box-shadow: none !important;
+          font-size: 0.85em !important;
+          transition: background-color var(--transition-speed) ease !important;
+      }
+       div.code-toolbar > .toolbar .toolbar-item button:hover {
+           background: var(--primary-hover) !important;
+       }
+
+      /* Explanation Area */
+      .explanation-content {
+        background-color: rgba(0, 0, 0, 0.15);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        font-size: 1em;
+        line-height: 1.7;
+      }
+      .explanation-content p {
+         margin-bottom: 10px; /* Espacio entre párrafos si los hay */
+      }
+      .explanation-content p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Error Message */
+      .error-message {
+        color: var(--error-color);
+        margin-top: 25px;
+        font-weight: 500;
+        background-color: rgba(255, 107, 107, 0.1);
+        border: 1px solid var(--error-color);
+        padding: 15px;
+        border-radius: var(--border-radius);
+        display: none; /* Oculto por defecto */
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+
+      .error-message.visible {
+        display: block;
+        opacity: 1;
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 50px;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+        opacity: 0.7;
+      }
+      footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color var(--transition-speed) ease;
+      }
+      footer a:hover {
+        color: var(--primary-hover);
+      }
+
+       /* Clases Utilitarias */
+      .hidden {
+        display: none;
+      }
+
+    </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Code Helper <span style="color: var(--primary-color);">X</span></h1>
+    <p class="subtitle">Tu asistente IA para entender conceptos de programación al instante.</p>
+
+    <div class="input-area">
+      <label for="conceptInput">Introduce un concepto (ej: bucle for en Python):</label>
+      <input type="text" id="conceptInput" placeholder="ej: 'clase en Java', 'async/await en JavaScript'...">
+      <button id="generateButton">Generar Explicación</button>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader" class="loader"></div>
+
+    <!-- Error Message Area -->
+     <div id="errorMessage" class="error-message"></div>
+
+    <!-- Results Area (inicialmente oculta) -->
+    <div id="resultsArea" class="results-area">
+      <!-- El contenido se generará aquí -->
+    </div>
+
+    <footer>
+      Potenciado por <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a> & <a href="https://prismjs.com/" target="_blank" rel="noopener noreferrer">Prism.js</a>
+    </footer>
+  </div>
+
+  <!-- Prism.js Core JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <!-- Prism.js Autoloader (carga lenguajes dinámicamente) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <!-- Configura Autoloader para buscar en la carpeta correcta -->
+   <script>Prism.plugins.autoloader.languages_path = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/';</script>
+  <!-- Prism.js Toolbar Plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+  <!-- Prism.js Copy to Clipboard Button Plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+
+
+  <script type="module">
+    const conceptInput = document.getElementById('conceptInput');
+    const generateButton = document.getElementById('generateButton');
+    const resultsArea = document.getElementById('resultsArea');
+    const loader = document.getElementById('loader');
+    const errorMessage = document.getElementById('errorMessage');
+
+    const POLLINATIONS_TEXT_URL_BASE = "https://text.pollinations.ai/";
+
+    // Función para mostrar/ocultar elementos con animación
+    function showElement(element) {
+        element.classList.remove('hidden');
+        // Forzar reflujo para que la transición funcione al quitar 'hidden' y añadir 'visible'
+        void element.offsetWidth;
+        element.classList.add('visible');
+    }
+
+    function hideElement(element) {
+        element.classList.remove('visible');
+        // Opcional: esconder completamente después de la transición
+        // element.addEventListener('transitionend', () => {
+        //     if (!element.classList.contains('visible')) {
+        //         element.classList.add('hidden');
+        //     }
+        // }, { once: true });
+    }
+
+     function displayError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove('hidden'); // Asegurar que no esté hidden
+         // Forzar reflujo
+        void errorMessage.offsetWidth;
+        errorMessage.classList.add('visible');
+         hideElement(resultsArea); // Ocultar resultados si hay error
+         loader.style.display = 'none'; // Ocultar loader
+    }
+
+    function clearError() {
+        errorMessage.classList.remove('visible');
+         // Opcional: Ocultar completamente tras la transición
+         errorMessage.addEventListener('transitionend', () => {
+             if (!errorMessage.classList.contains('visible')) {
+                 errorMessage.classList.add('hidden');
+             }
+         }, { once: true });
+    }
+
+
+    if (generateButton && conceptInput && resultsArea && loader && errorMessage) {
+        generateButton.addEventListener('click', async () => {
+            const concept = conceptInput.value.trim();
+            if (!concept) {
+                displayError('Por favor, introduce un concepto de programación.');
+                return;
+            }
+
+            // --- Iniciar proceso ---
+            clearError();
+            hideElement(resultsArea); // Ocultar resultados anteriores
+            resultsArea.innerHTML = ''; // Limpiar contenido anterior
+            loader.style.display = 'block'; // Mostrar loader
+            generateButton.disabled = true;
+            generateButton.textContent = 'Generando...';
+
+            try {
+                // --- Prompt Mejorado ---
+                const prompt = `Eres un asistente experto en programación llamado Code Helper X.
+Explica el concepto de programación: "${concept}".
+Tu respuesta DEBE seguir este formato ESTRICTO:
+1.  Un bloque de código de ejemplo claro y conciso que ilustre el concepto. Usa la sintaxis correcta para el lenguaje más probable asociado al concepto (p.ej., si pide 'clase en Java', usa Java). Encierra el código entre tres comillas invertidas (\`\`\`) y especifica el lenguaje si es posible (ej: \`\`\`python).
+2.  DEBAJO del bloque de código, añade la etiqueta "[EXPLICACION]".
+3.  Después de la etiqueta "[EXPLICACION]", proporciona una explicación detallada pero fácil de entender del código y del concepto.
+
+Ejemplo para "variable en Python":
+\`\`\`python
+# Esto es una variable llamada 'mensaje'
+mensaje = "Hola, Mundo!"
+print(mensaje)
+\`\`\`
+[EXPLICACION]
+Una variable es como una caja donde guardas información... (etc.)
+
+NO añadas saludos, introducciones ni despedidas. Solo el código y la explicación separados por [EXPLICACION].`;
+
+                const encodedPrompt = encodeURIComponent(prompt);
+                const requestUrl = POLLINATIONS_TEXT_URL_BASE + encodedPrompt;
+
+                console.log("Requesting URL:", requestUrl); // Debug
+
+                const response = await fetch(requestUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.status} - ${response.statusText}`);
+                }
+
+                const responseText = await response.text();
+                console.log("Raw response text:", responseText); // Debug
+
+                if (!responseText) {
+                     throw new Error('La API devolvió una respuesta vacía.');
+                }
+
+                // --- Procesar Respuesta ---
+                // Intentar dividir por la etiqueta personalizada
+                const parts = responseText.split('[EXPLICACION]');
+                let codePart = '';
+                let explanationPart = 'No se encontró explicación en el formato esperado.';
+
+                if (parts.length >= 2) {
+                    codePart = parts[0].trim();
+                    explanationPart = parts[1].trim();
+                } else {
+                    // Plan B: Si no encuentra la etiqueta, asumimos que lo primero es código
+                    // (menos fiable) - buscamos el primer bloque ```...```
+                     const codeMatch = responseText.match(/```(?:[a-z]+\n)?([\s\S]*?)```/);
+                     if (codeMatch && codeMatch[1]) {
+                        codePart = responseText; // Mostrar todo si no podemos separar bien
+                        explanationPart = "Formato no reconocido, mostrando respuesta completa como código (intenta de nuevo o refina el concepto).";
+                        console.warn("Could not split by [EXPLICACION], attempting fallback based on ```");
+                     } else {
+                         // Si ni siquiera hay ```, mostrar todo como explicación
+                         codePart = ''; // No hay código claro
+                         explanationPart = responseText;
+                          console.warn("Could not find [EXPLICACION] or ``` block.");
+                     }
+                }
+
+                // --- Crear HTML para Resultados ---
+                 resultsArea.innerHTML = `
+                    <h2>Ejemplo de Código</h2>
+                    <div class="code-container">
+                       <!-- Importante: La clase language-xxxx debe estar presente para Prism -->
+                       <!-- Autoloader intentará detectar, pero si no, poner un default -->
+                       <pre class="line-numbers"><code class="language-clike">${codePart.replace(/```(?:[a-z]+\n)?([\s\S]*?)```/, '$1').trim()}</code></pre>
+                    </div>
+
+                    <h2>Explicación</h2>
+                    <div class="explanation-content">
+                        <p>${explanationPart.replace(/\n/g, '<br>')}</p> <!-- Reemplazar saltos de línea por <br> -->
+                    </div>
+                `;
+
+                // --- Activar Resaltado y Mostrar ---
+                Prism.highlightAllUnder(resultsArea); // Resaltar sintaxis DESPUÉS de añadir al DOM
+                showElement(resultsArea);
+
+
+            } catch (error) {
+                console.error('Error:', error);
+                displayError(`Error: ${error.message}. Inténtalo de nuevo.`);
+            } finally {
+                // --- Limpieza Final ---
+                loader.style.display = 'none';
+                generateButton.disabled = false;
+                generateButton.textContent = 'Generar Explicación';
+            }
+        });
+
+    } else {
+         // Error si faltan elementos del DOM
+         console.error("Error crítico: No se encontraron elementos esenciales del DOM.");
+         if(errorMessage) { // Intentar mostrar error si el div existe
+             errorMessage.textContent = "Error de inicialización de la página.";
+             errorMessage.style.display = 'block';
+              errorMessage.style.opacity = '1';
+         }
+    }
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Rephraser Pro - Herramienta de Paráfrasis ✨</title>
+
+    <!-- Google Fonts Link -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+      :root {
+        /* Color Palette (Adaptable Light/Dark) */
+        --bg-gradient-start-light: #e0f7fa;
+        --bg-gradient-end-light: #b2ebf2;
+        --bg-gradient-start-dark: #1f2937;
+        --bg-gradient-end-dark: #111827;
+
+        --surface-bg-light: #ffffff;
+        --surface-bg-dark: #374151; /* Slightly lighter dark surface */
+
+        --text-primary-light: #111827;
+        --text-primary-dark: #f3f4f6;
+        --text-secondary-light: #4b5563;
+        --text-secondary-dark: #9ca3af;
+        --text-accent-light: #007bff;
+        --text-accent-dark: #60a5fa; /* Lighter blue for dark mode */
+
+        --accent-gradient-start: #3b82f6;
+        --accent-gradient-end: #9333ea;
+
+        --border-light: #d1d5db;
+        --border-dark: #4b5563;
+
+        --shadow-color-light: rgba(100, 116, 139, 0.2);
+        --shadow-color-dark: rgba(0, 0, 0, 0.4);
+        --shadow-light: 0 4px 6px -1px var(--shadow-color-light), 0 2px 4px -2px var(--shadow-color-light);
+        --shadow-medium: 0 10px 15px -3px var(--shadow-color-light), 0 4px 6px -4px var(--shadow-color-light);
+        --shadow-dark-light: 0 4px 6px -1px var(--shadow-color-dark), 0 2px 4px -2px var(--shadow-color-dark);
+        --shadow-dark-medium: 0 10px 15px -3px var(--shadow-color-dark), 0 4px 6px -4px var(--shadow-color-dark);
+
+        --success-light: #10b981;
+        --success-dark: #34d399;
+        --error-light: #ef4444;
+        --error-dark: #f87171;
+
+        /* Transitions & Animations */
+        --transition-fast: 0.2s ease-in-out;
+        --transition-medium: 0.3s ease-in-out;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      body {
+        font-family: 'Poppins', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Align to top to see initial state */
+        padding: 40px 20px;
+        background: linear-gradient(135deg,
+            light-dark(var(--bg-gradient-start-light), var(--bg-gradient-start-dark)),
+            light-dark(var(--bg-gradient-end-light), var(--bg-gradient-end-dark))
+        );
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        color: light-dark(var(--text-primary-light), var(--text-primary-dark));
+        overflow-x: hidden; /* Prevent horizontal scroll */
+      }
+
+      .container {
+        background-color: light-dark(var(--surface-bg-light), var(--surface-bg-dark));
+        padding: 40px 35px;
+        border-radius: 20px;
+        box-shadow: light-dark(var(--shadow-medium), var(--shadow-dark-medium));
+        width: 100%;
+        max-width: 700px;
+        text-align: center;
+        transition: background-color var(--transition-medium), box-shadow var(--transition-medium);
+      }
+
+      .header {
+        margin-bottom: 35px;
+      }
+
+      .title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, var(--accent-gradient-start), var(--accent-gradient-end));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        color: light-dark(var(--text-secondary-light), var(--text-secondary-dark));
+        font-weight: 300;
+      }
+
+      .input-section {
+        margin-bottom: 30px;
+        position: relative;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        padding: 18px 20px;
+        border-radius: 12px;
+        border: 2px solid light-dark(var(--border-light), var(--border-dark));
+        background-color: light-dark(var(--bg-gradient-start-light), #2d3748); /* Slightly different dark bg */
+        color: light-dark(var(--text-primary-light), var(--text-primary-dark));
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        resize: vertical;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        box-shadow: light-dark(var(--shadow-light), var(--shadow-dark-light));
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent-gradient-start);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-gradient-start) 30%, transparent);
+      }
+
+      .paraphrase-button {
+        padding: 15px 35px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(90deg, var(--accent-gradient-start), var(--accent-gradient-end));
+        border: none;
+        border-radius: 50px; /* Pill shape */
+        cursor: pointer;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-size var(--transition-medium);
+        background-size: 100% 100%;
+        box-shadow: light-dark(var(--shadow-light), var(--shadow-dark-light));
+        margin-top: 15px;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+      }
+
+      .paraphrase-button:hover {
+        transform: translateY(-3px);
+        box-shadow: light-dark(var(--shadow-medium), var(--shadow-dark-medium));
+        background-size: 150% 150%;
+      }
+
+      .paraphrase-button:active {
+        transform: translateY(-1px);
+      }
+
+      .paraphrase-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+       /* Loading Spinner Animation */
+       .paraphrase-button .spinner {
+        display: none; /* Hidden by default */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+       }
+
+       .paraphrase-button.loading .button-text {
+         visibility: hidden; /* Hide text when loading */
+       }
+       .paraphrase-button.loading .spinner {
+         display: block; /* Show spinner */
+       }
+
+       @keyframes spin {
+         to { transform: translate(-50%, -50%) rotate(360deg); }
+       }
+
+      /* Results Section Styling */
+      .output-section {
+        margin-top: 40px;
+      }
+
+      .results-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: light-dark(var(--text-secondary-light), var(--text-secondary-dark));
+        margin-bottom: 25px;
+        text-align: left;
+      }
+
+      .results-container {
+        display: grid;
+        gap: 20px;
+        /* Responsive grid columns */
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .paraphrase-card {
+        background-color: light-dark(var(--surface-bg-light), var(--surface-bg-dark));
+        padding: 25px 20px;
+        border-radius: 15px;
+        border: 1px solid light-dark(var(--border-light), var(--border-dark));
+        box-shadow: light-dark(var(--shadow-light), var(--shadow-dark-light));
+        text-align: left;
+        position: relative;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity var(--transition-medium) ease-out, transform var(--transition-medium) ease-out, box-shadow var(--transition-fast);
+      }
+
+      .paraphrase-card.fade-in {
+         opacity: 1;
+         transform: translateY(0);
+      }
+
+      .paraphrase-card:hover {
+         box-shadow: light-dark(var(--shadow-medium), var(--shadow-dark-medium));
+         transform: translateY(-5px) scale(1.01);
+      }
+
+      .paraphrase-text {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 15px;
+        color: light-dark(var(--text-primary-light), var(--text-primary-dark));
+      }
+
+      .copy-button {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        color: light-dark(var(--text-secondary-light), var(--text-secondary-dark));
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: color var(--transition-fast), background-color var(--transition-fast);
+      }
+
+      .copy-button:hover {
+        color: light-dark(var(--text-accent-light), var(--text-accent-dark));
+        background-color: light-dark(rgba(0, 123, 255, 0.1), rgba(96, 165, 250, 0.1));
+      }
+
+      .copy-button .fa-check {
+        display: none; /* Hide check initially */
+        color: light-dark(var(--success-light), var(--success-dark));
+      }
+
+      .copy-button.copied .fa-copy {
+        display: none; /* Hide copy icon when copied */
+      }
+      .copy-button.copied .fa-check {
+        display: inline-block; /* Show check icon */
+      }
+
+
+      /* Error Message Styling */
+      .error-message {
+        color: light-dark(var(--error-light), var(--error-dark));
+        margin-top: 20px;
+        font-weight: 500;
+        min-height: 1.5em;
+        display: none; /* Hidden initially */
+        background-color: light-dark(rgba(239, 68, 68, 0.1), rgba(248, 113, 113, 0.1));
+        border: 1px solid light-dark(var(--error-light), var(--error-dark));
+        padding: 10px 15px;
+        border-radius: 8px;
+      }
+
+      /* Footer */
+      footer {
+        margin-top: 50px;
+        padding-top: 20px;
+        border-top: 1px solid light-dark(var(--border-light), var(--border-dark));
+        color: light-dark(var(--text-secondary-light), var(--text-secondary-dark));
+        font-size: 0.9em;
+        opacity: 0.8;
+      }
+       footer a {
+        color: light-dark(var(--text-accent-light), var(--text-accent-dark));
+        text-decoration: none;
+        transition: color var(--transition-fast);
+       }
+       footer a:hover {
+        text-decoration: underline;
+       }
+    </style>
+</head>
+<body>
+
+  <div class="container">
+    <header class="header">
+      <h1 class="title">Rephraser Pro</h1>
+      <p class="subtitle">Introduce tu texto y obtén alternativas frescas al instante.</p>
+    </header>
+
+    <main>
+      <section class="input-section">
+        <textarea
+          id="inputText"
+          placeholder="Escribe o pega aquí la oración que quieres parafrasear..."
+          rows="5"
+        ></textarea>
+        <button id="paraphraseButton" class="paraphrase-button">
+          <span class="button-text">Parafrasear</span>
+          <span class="spinner"></span>
+        </button>
+      </section>
+
+      <section id="outputSection" class="output-section" style="display: none;"> <!-- Hidden initially -->
+        <h2 class="results-title">Alternativas Sugeridas:</h2>
+        <div id="resultsContainer" class="results-container">
+          <!-- Paraphrased results will be injected here -->
+        </div>
+      </section>
+
+      <div id="errorMessage" class="error-message" role="alert">
+        <!-- Error messages will appear here -->
+      </div>
+    </main>
+
+     <footer>
+      Desarrollado con <i class="fas fa-heart" style="color: #e11d48;"></i> y la API de <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai</a>.
+    </footer>
+  </div>
+
+  <script type="module">
+    // --- DOM Elements ---
+    const inputText = document.getElementById('inputText');
+    const paraphraseButton = document.getElementById('paraphraseButton');
+    const outputSection = document.getElementById('outputSection');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const errorMessage = document.getElementById('errorMessage');
+
+    const POLLINATIONS_TEXT_URL_BASE = "https://text.pollinations.ai/";
+
+    // --- Functions ---
+
+    /**
+     * Shows a loading state on the button.
+     * @param {boolean} isLoading - Whether to show the loading state.
+     */
+    function setLoading(isLoading) {
+      paraphraseButton.disabled = isLoading;
+      if (isLoading) {
+        paraphraseButton.classList.add('loading');
+      } else {
+        paraphraseButton.classList.remove('loading');
+      }
+    }
+
+    /**
+     * Displays an error message.
+     * @param {string} message - The error message to display.
+     */
+    function displayError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block'; // Show error element
+      outputSection.style.display = 'none'; // Hide results section
+    }
+
+    /**
+     * Clears any previous error messages.
+     */
+    function clearError() {
+      errorMessage.textContent = '';
+      errorMessage.style.display = 'none'; // Hide error element
+    }
+
+    /**
+     * Copies text to the clipboard and provides visual feedback.
+     * @param {string} text - The text to copy.
+     * @param {HTMLButtonElement} buttonElement - The button that was clicked.
+     */
+    async function copyToClipboard(text, buttonElement) {
+      try {
+        await navigator.clipboard.writeText(text);
+        // Visual feedback
+        const iconCopy = buttonElement.querySelector('.fa-copy');
+        const iconCheck = buttonElement.querySelector('.fa-check');
+
+        buttonElement.classList.add('copied'); // Add class to manage icon visibility via CSS
+
+        // Revert after a short delay
+        setTimeout(() => {
+          buttonElement.classList.remove('copied');
+        }, 1500);
+
+      } catch (err) {
+        console.error('Error al copiar al portapapeles:', err);
+        // Optionally show a small error message near the button
+      }
+    }
+
+    /**
+     * Creates a result card element.
+     * @param {string} text - The paraphrased text.
+     * @param {number} index - The index for animation delay.
+     * @returns {HTMLDivElement} - The created card element.
+     */
+    function createResultCard(text, index) {
+      const card = document.createElement('div');
+      card.classList.add('paraphrase-card');
+
+      const paragraph = document.createElement('p');
+      paragraph.classList.add('paraphrase-text');
+      paragraph.textContent = text;
+
+      const copyBtn = document.createElement('button');
+      copyBtn.classList.add('copy-button');
+      copyBtn.setAttribute('title', 'Copiar texto');
+      copyBtn.innerHTML = '<i class="fas fa-copy"></i><i class="fas fa-check"></i>'; // Both icons inside
+      copyBtn.addEventListener('click', () => copyToClipboard(text, copyBtn));
+
+      card.appendChild(paragraph);
+      card.appendChild(copyBtn);
+
+      // Staggered animation using transition-delay
+      card.style.transitionDelay = `${index * 0.08}s`; // Slight delay for each card
+
+      return card;
+    }
+
+    // --- Event Listener ---
+    paraphraseButton.addEventListener('click', async () => {
+      const originalText = inputText.value.trim();
+
+      // 1. Validation
+      if (!originalText) {
+        displayError('Por favor, introduce una oración para parafrasear.');
+        inputText.focus();
+        return;
+      }
+
+      // 2. Reset UI
+      clearError();
+      setLoading(true);
+      resultsContainer.innerHTML = ''; // Clear previous results
+      outputSection.style.display = 'none'; // Hide results initially
+
+      try {
+        // 3. Prepare Prompt & URL
+        const prompt = `Reformula la siguiente oración de 5 formas diferentes y creativas, manteniendo el significado original. Presenta cada alternativa en una nueva línea, sin numeración ni viñetas: "${originalText}"`;
+        const encodedPrompt = encodeURIComponent(prompt);
+        const requestUrl = POLLINATIONS_TEXT_URL_BASE + encodedPrompt;
+
+        console.log("Requesting URL:", requestUrl);
+
+        // 4. Fetch from API
+        const response = await fetch(requestUrl);
+
+        if (!response.ok) {
+          throw new Error(`Error de red: ${response.status} ${response.statusText}`);
+        }
+
+        const responseText = await response.text();
+        console.log("Raw API Response:", responseText);
+
+        // 5. Process Response
+        if (!responseText) {
+            throw new Error("La API devolvió una respuesta vacía.");
+        }
+
+        const paraphrasedSentences = responseText
+            .split('\n') // Split by newline
+            .map(line => line.trim()) // Trim whitespace
+            .filter(line => line.length > 0 && line !== originalText); // Filter empty lines and the original sentence if returned
+
+        // 6. Display Results
+        if (paraphrasedSentences.length > 0) {
+            outputSection.style.display = 'block'; // Show the results section
+
+            paraphrasedSentences.forEach((sentence, index) => {
+                const card = createResultCard(sentence, index);
+                resultsContainer.appendChild(card);
+                // Trigger the animation slightly after appending
+                setTimeout(() => card.classList.add('fade-in'), 10);
+            });
+
+        } else {
+            // If API responded but parsing failed or returned nothing useful
+             displayError("No se pudieron generar alternativas. La respuesta de la API puede no ser válida.");
+             console.warn("Could not parse valid sentences from response:", responseText);
+        }
+
+      } catch (error) {
+        console.error('Error en el proceso de paráfrasis:', error);
+        displayError(`Ocurrió un error: ${error.message}. Inténtalo de nuevo.`);
+      } finally {
+        // 7. Final UI State
+        setLoading(false);
+      }
+    });
+
+    // Optional: Clear error when user starts typing again
+    inputText.addEventListener('input', clearError);
+
+  </script>
+
+</body>
+</html>

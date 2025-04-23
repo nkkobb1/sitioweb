@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explícamelo Fácil (ELI5) - Mejorado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient-start: #6a11cb;
+            --bg-gradient-end: #2575fc;
+            --text-light: #f8f9fa; /* Fondo de bocadillo en modo claro */
+            --text-very-dark: #111; /* Texto DENTRO de bocadillo en modo claro */
+            --text-dark: #343a40; /* Texto general oscuro */
+            --accent-color: #ffcc00;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.2);
+            --button-bg: var(--accent-color);
+            --button-text: var(--text-very-dark); /* Texto oscuro en botón */
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --border-radius: 15px;
+            --font-family: 'Poppins', sans-serif;
+        }
+
+        /* --- MODO OSCURO --- */
+        @media (prefers-color-scheme: dark) {
+             :root {
+                --bg-gradient-start: #1a1a2e;
+                --bg-gradient-end: #16213e;
+                --text-light: #e0e0e0; /* Fondo de bocadillo en modo oscuro (sigue siendo claro) */
+                --text-very-dark: #1a1a2e; /* Texto DENTRO de bocadillo en modo oscuro (AHORA MUY OSCURO) */
+                --text-dark: #f8f9fa; /* Texto general claro en modo oscuro */
+                --card-bg: rgba(0, 0, 0, 0.2);
+                --input-bg: rgba(0, 0, 0, 0.3);
+                --button-text: var(--text-very-dark); /* Mantenemos texto oscuro en botón */
+             }
+             /* Corrección específica para el bocadillo en modo oscuro */
+             .explanation-bubble {
+                 color: var(--text-very-dark) !important; /* Forzar texto muy oscuro */
+                 background: var(--text-light) !important; /* Forzar fondo claro */
+             }
+             /* Asegurar que la 'cola' del bocadillo también use el color de fondo correcto */
+             .explanation-bubble::before {
+                 border-color: transparent transparent var(--text-light) transparent !important;
+             }
+        }
+
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            background-attachment: fixed;
+            color: var(--text-dark); /* Color de texto general */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 40px 50px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 32px 0 var(--shadow-light);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+        }
+
+        .character-guide {
+             width: 80px;
+             height: 80px;
+             background-color: var(--accent-color);
+             border-radius: 50%;
+             margin: -80px auto 20px auto;
+             display: flex; justify-content: center; align-items: center;
+             font-size: 2.5em;
+             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+             position: relative;
+             animation: float 3s ease-in-out infinite;
+             color: var(--button-text); /* Color del emoji/icono */
+        }
+         .character-guide::before, .character-guide::after {
+            content: ''; position: absolute; width: 8px; height: 12px;
+            background-color: var(--button-text); /* Ojos del color del texto del botón */
+            border-radius: 50%; top: 35%;
+         }
+        .character-guide::before { left: 30%; }
+        .character-guide::after { right: 30%; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 2.5em; margin-bottom: 10px; font-weight: 700;
+            color: var(--text-light); /* Título siempre claro sobre fondo degradado */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        p.subtitle {
+            font-size: 1.1em; margin-bottom: 30px;
+            color: var(--text-light); /* Subtítulo claro */
+            opacity: 0.85;
+        }
+
+        .input-area { margin-bottom: 30px; position: relative; }
+
+        #conceptInput {
+            width: 100%; padding: 18px 25px; font-size: 1.1em;
+            border: none; border-radius: 50px; background-color: var(--input-bg);
+            color: var(--text-light); /* Texto dentro del input claro */
+            font-family: inherit; transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #conceptInput::placeholder { color: rgba(255, 255, 255, 0.6); }
+        #conceptInput:focus {
+            outline: none; background-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 0 3px rgba(var(--accent-color), 0.5), inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #explainButton {
+            padding: 15px 40px; font-size: 1.2em; font-weight: 600;
+            border: none; border-radius: 50px; background-color: var(--button-bg);
+            color: var(--button-text); cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        #explainButton:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); filter: brightness(1.1); }
+        #explainButton:active { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+        #explainButton:disabled {
+            background-color: #aaa; color: #555; cursor: not-allowed;
+            transform: none; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            filter: grayscale(80%);
+        }
+
+        #resultArea {
+            margin-top: 40px; min-height: 150px; position: relative;
+            text-align: left; padding: 20px; background: rgba(0, 0, 0, 0.05); /* Fondo muy sutil */
+            border-radius: var(--border-radius); transition: opacity 0.5s ease;
+            opacity: 0; transform: translateY(20px);
+        }
+        #resultArea.visible { opacity: 1; transform: translateY(0); }
+
+        /* --- BOCADILLO DE EXPLICACIÓN - ALTO CONTRASTE --- */
+        .explanation-bubble {
+            background: var(--text-light); /* Fondo siempre claro */
+            color: var(--text-very-dark); /* Texto siempre MUY oscuro */
+            padding: 18px 25px; /* Más padding */
+            border-radius: var(--border-radius);
+            margin-bottom: 18px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.18); /* Sombra más notable */
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            max-width: 100%; /* Ocupa el ancho disponible */
+            font-size: 1.05em; /* Ligeramente más grande */
+            line-height: 1.6; /* Mejor espaciado de línea */
+        }
+        .explanation-bubble::before { /* Cola del bocadillo */
+           content: ""; position: absolute; top: -10px; left: 30px;
+           border-width: 0 10px 10px 10px; border-style: solid;
+           border-color: transparent transparent var(--text-light) transparent; /* Usa el color de fondo claro */
+        }
+        .explanation-bubble.show { opacity: 1; transform: scale(1); }
+
+
+        .loader { display: none; margin-top: 30px; }
+        .loader.visible { display: block; }
+        .loader span {
+            display: inline-block; width: 10px; height: 10px;
+            background-color: var(--accent-color); border-radius: 50%;
+            margin: 0 5px; animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .loader span:nth-child(1) { animation-delay: -0.32s; }
+        .loader span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+        .error-message {
+             display: none; margin-top: 30px; color: #f8d7da;
+             background-color: #721c24; padding: 12px 18px; /* Más padding */
+             border-radius: 8px; /* Bordes más suaves */
+             border: 1px solid #f5c6cb; font-weight: 600;
+         }
+         .error-message.visible { display: inline-block; animation: shake 0.5s ease-in-out; }
+        @keyframes shake { /* Misma animación shake */
+          10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); }
+          30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); }
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 30px 25px; }
+            h1 { font-size: 2em; }
+            .character-guide { width: 60px; height: 60px; margin-top: -60px; font-size: 2em;}
+            #conceptInput, #explainButton { font-size: 1em; padding: 15px 20px; }
+             .explanation-bubble { padding: 15px 20px; font-size: 1em;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Puedes reemplazar el emoji por un SVG o <img> -->
+        <div class="character-guide" aria-hidden="true">💡</div>
+        <h1>Explícamelo Fácil</h1>
+        <p class="subtitle">Introduce un concepto y te lo explicaré de forma súper sencilla.</p>
+
+        <div class="input-area">
+            <input type="text" id="conceptInput" placeholder="Ej: Agujero negro, Fotosíntesis, Blockchain...">
+        </div>
+
+        <button id="explainButton">¡Explicar!</button>
+
+        <div class="loader" id="loader"><span></span><span></span><span></span></div>
+        <div class="error-message" id="errorMessage"></div>
+
+        <div id="resultArea">
+            <!-- La explicación aparecerá aquí -->
+        </div>
+    </div>
+
+    <script>
+        const conceptInput = document.getElementById('conceptInput');
+        const explainButton = document.getElementById('explainButton');
+        const resultArea = document.getElementById('resultArea');
+        const loader = document.getElementById('loader');
+        const errorMessage = document.getElementById('errorMessage');
+
+        const API_BASE_URL = "https://text.pollinations.ai/";
+
+        explainButton.addEventListener('click', handleExplanationRequest);
+        conceptInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') handleExplanationRequest();
+        });
+
+        async function handleExplanationRequest() {
+            const concept = conceptInput.value.trim();
+            if (!concept) {
+                showError("Por favor, introduce un concepto.");
+                return;
+            }
+
+            explainButton.disabled = true;
+            loader.classList.add('visible');
+            resultArea.classList.remove('visible');
+            resultArea.innerHTML = '';
+            hideError();
+
+            try {
+                // --- PROMPT MEJORADO ---
+                // Pide explicación para un niño un poco mayor (8-10) y MÁS detalle.
+                const prompt = `Explica el concepto "${concept}" de forma muy simple y clara, como si hablaras con un niño curioso de unos 8-10 años.
+Intenta usar analogías fáciles de entender.
+Desglósalo en 2 o 3 ideas clave si es posible.
+Proporciona un poco más de detalle que una sola frase, pero mantén el lenguaje muy sencillo y sin jerga.
+IMPORTANTE: Responde únicamente con la explicación directa, sin frases introductorias como "Claro, aquí tienes..." o despedidas.`;
+                // --- FIN PROMPT MEJORADO ---
+
+                const encodedPrompt = encodeURIComponent(prompt);
+                const requestUrl = API_BASE_URL + encodedPrompt;
+
+                console.log("Requesting URL:", requestUrl);
+
+                const response = await fetch(requestUrl);
+
+                if (!response.ok) {
+                    // Intentar leer el cuerpo del error si existe
+                    let errorDetails = `Error ${response.status} de la API.`;
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) {
+                             // Limitar longitud del mensaje de error
+                             errorDetails += ` Detalle: ${errorText.substring(0, 100)}${errorText.length > 100 ? '...' : ''}`;
+                        }
+                    } catch(e) { /* Ignorar si no se puede leer */ }
+                    throw new Error(errorDetails);
+                }
+
+                const explanationText = await response.text();
+                console.log("Raw explanation:", explanationText);
+
+                if (!explanationText || explanationText.trim().length < 10) { // Considerar respuesta muy corta como error
+                     throw new Error("La API devolvió una respuesta muy corta o vacía. Intenta reformular el concepto.");
+                 }
+
+                displayExplanation(explanationText);
+
+            } catch (error) {
+                console.error("Error fetching explanation:", error);
+                // Mostrar mensaje de error al usuario de forma más clara
+                showError(`¡Ups! ${error.message || "No se pudo obtener la explicación. Inténtalo de nuevo."}`);
+            } finally {
+                loader.classList.remove('visible');
+                explainButton.disabled = false;
+            }
+        }
+
+        function displayExplanation(text) {
+             resultArea.classList.add('visible');
+             // Intenta dividir por párrafos (saltos de línea dobles) o frases.
+             let segments = text.split(/\n\s*\n/).map(s => s.trim()).filter(s => s.length > 0); // Dividir por párrafos
+
+             // Si no hay párrafos, intentar dividir por frases
+             if (segments.length <= 1) {
+                segments = text
+                    .split(/[.!?]+(?=\s|$)/) // Divide por ., !, ? seguidos de espacio o fin de línea
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0)
+                    .map((s, index, arr) => s + (index < arr.length ? '.' : '')); // Re-añadir punto (o el que fuera) - Simplificado a punto.
+             }
+
+
+            let delay = 50; // Empezar animación antes
+            segments.forEach(segment => {
+                if (!segment || segment.length < 3) return; // Saltar segmentos muy cortos o vacíos
+
+                const bubble = document.createElement('div');
+                bubble.classList.add('explanation-bubble');
+                bubble.textContent = segment; // Ya tiene puntuación (o debería)
+                resultArea.appendChild(bubble);
+
+                setTimeout(() => {
+                    bubble.classList.add('show');
+                }, delay);
+                delay += 400; // Stagger más pronunciado
+            });
+
+             // Si después de todo, no hay segmentos válidos
+             if (resultArea.childElementCount === 0 && text.length > 0) {
+                 const bubble = document.createElement('div');
+                 bubble.classList.add('explanation-bubble');
+                 bubble.textContent = text;
+                 resultArea.appendChild(bubble);
+                 setTimeout(() => { bubble.classList.add('show'); }, 50);
+             }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('visible');
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('visible');
+            errorMessage.textContent = '';
+        }
+
+    </script>
+
+</body>
+</html>

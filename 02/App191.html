@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colección de Códigos p5.js - Flores Interactivas (con Visualización)</title>
+
+    <!-- 1. Incluir la librería p5.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <!-- Opcional: si usas p5.sound, etc. añádelo aquí -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script> -->
+
+    <!-- ### INICIO: ESTILOS CSS (Igual que antes) ### -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            line-height: 1.6;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5em;
+            font-weight: 700;
+        }
+
+        .code-container-wrapper {
+            background-color: #ffffff;
+            border: 1px solid #dce1e6;
+            border-radius: 12px;
+            margin-bottom: 2.5em;
+            padding: 1.8em;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .code-title {
+            font-size: 1.6em;
+            margin-top: 0;
+            margin-bottom: 0.6em;
+            color: #1d2129;
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.3em;
+        }
+
+        .code-description {
+            font-size: 1em;
+            color: #606770;
+            margin-bottom: 1.2em;
+            line-height: 1.7;
+        }
+
+        /* Contenedor de Previsualización con Sketch */
+        .code-preview {
+            margin-bottom: 1.5em;
+            padding: 1em;
+            background-color: #f8f9fa;
+            border: 1px solid #dce1e6; /* Borde sólido ahora */
+            border-radius: 8px;
+            display: flex; /* Para centrar el canvas */
+            justify-content: center;
+            align-items: center;
+            min-height: 200px; /* Asegura espacio vertical */
+            overflow: hidden; /* Para contener el canvas */
+        }
+        /* Estilo específico para el contenedor del sketch si es necesario */
+        .sketch-container {
+            /* Podrías añadir bordes redondeados al canvas si quisieras, pero p5 lo crea directamente */
+             box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Sombra sutil al canvas */
+             line-height: 0; /* Evita espacio extra debajo del canvas */
+        }
+
+
+        .code-block-container {
+            position: relative;
+            margin-bottom: 1.2em;
+        }
+
+        .code-block-container pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 1.8em;
+            padding-top: 3.5em;
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid #3e4451;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.3);
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.92em;
+            line-height: 1.55;
+            white-space: pre;
+        }
+
+        .code-block-container pre code {
+            font-family: inherit;
+            background: none;
+            padding: 0;
+            color: inherit;
+            text-shadow: none;
+        }
+
+        .copy-code-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(145deg, #4e5d78, #3b475f);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-family: inherit;
+            font-weight: 500;
+            transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.85;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10; /* Asegura que esté sobre el <pre> */
+        }
+
+        .copy-code-button:hover {
+            background: linear-gradient(145deg, #5a6b8a, #45536e);
+            opacity: 1;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        }
+
+        .copy-code-button:active {
+            transform: scale(0.96);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .copy-code-button svg {
+            width: 1.1em;
+            height: 1.1em;
+            vertical-align: middle;
+        }
+
+        .copy-feedback {
+            display: inline-block;
+            margin-left: 5px;
+            font-weight: 600;
+            color: #c3e6cb;
+            font-size: 0.9em;
+        }
+        .copy-feedback.error {
+            color: #f5c6cb;
+        }
+
+        .code-explanation {
+            background-color: #e9f5ff;
+            border-left: 5px solid #007bff;
+            padding: 1.2em 1.8em;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.98em;
+            color: #333;
+            margin-top: 1em;
+        }
+        .code-explanation h4 {
+            margin-top: 0;
+            margin-bottom: 0.6em;
+            color: #0056b3;
+            font-weight: 600;
+        }
+        .code-explanation ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+            list-style: disc;
+        }
+        .code-explanation li {
+            margin-bottom: 0.6em;
+        }
+        .code-explanation li::marker {
+            color: #007bff;
+        }
+        .code-explanation code { /* Estilo para `code` en explicaciones */
+            background-color: #e8e8e8;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .code-container-wrapper { padding: 1.2em; }
+            .code-title { font-size: 1.4em; }
+            .code-block-container pre { padding: 1.2em; padding-top: 3.2em; font-size: 0.88em; }
+            .copy-code-button { top: 10px; right: 10px; padding: 7px 11px; font-size: 0.8em; }
+            .code-explanation { padding: 1em 1.2em; font-size: 0.95em; }
+            /* Ajustar tamaño de preview/canvas en móvil si es necesario */
+             .code-preview { min-height: 150px; }
+        }
+         @media (max-width: 480px) {
+             h1 { font-size: 1.8em; }
+            .code-title { font-size: 1.25em; }
+             .code-block-container pre { font-size: 0.82em; }
+             .code-preview { min-height: 180px; /* Puede necesitar más espacio vertical en móvil */ }
+         }
+    </style>
+    <!-- ### FIN: ESTILOS CSS ### -->
+
+</head>
+<body>
+
+    <h1>Colección de Códigos p5.js - Flores Interactivas (con Visualización)</h1>
+
+    <!-- ====================================================== -->
+    <!-- === BLOQUE DE CÓDIGO 1 === -->
+    <!-- ====================================================== -->
+    <div class="code-container-wrapper">
+        <h3 class="code-title">Ejemplo 1: Flor con Partículas y Ruido Perlin</h3>
+        <p class="code-description">
+            Este código utiliza p5.js para crear una flor cuyas partículas (pétalos) se mueven orgánicamente usando ruido Perlin y siguen sutilmente la posición del ratón. Explora conceptos de sistemas de partículas y movimiento basado en ruido.
+        </p>
+        <!-- Contenedor para el Sketch P5.js -->
+        <div class="code-preview">
+            <div id="sketch-container-1" class="sketch-container"></div>
+        </div>
+        <!-- Bloque de código para mostrar y copiar -->
+        <div class="code-block-container">
+            <pre><code class="language-javascript" id="code-snippet-1">
+let particles = [];
+let petalColor;
+let centerColor;
+
+function setup() {
+  createCanvas(400, 400);
+  petalColor = color(255, 100, 0); // Orange
+  centerColor = color(255, 200, 0); // Yellow
+
+  // Create initial particles for petals
+  for (let i = 0; i < 150; i++) {
+    particles.push(new Particle());
+  }
+}
+
+function draw() {
+  background(100, 150, 100); // Greenish background
+
+  // Draw flower center
+  fill(centerColor);
+  ellipse(width / 2, height / 2, 75, 75);
+
+  // Update and display particles (petals)
+  for (let particle of particles) {
+    particle.update();
+    particle.display();
+  }
+}
+
+class Particle {
+  constructor() {
+    this.pos = createVector(width / 2, height / 2); // Start at center
+    this.angle = random(TWO_PI);
+    this.speed = random(0.5, 1.5);
+    this.noiseOffset = random(1000); // Unique offset for Perlin noise
+    this.size = random(5, 10);
+    this.distanceFromCenter = random(30, 120); // Petal length
+  }
+
+  update() {
+    // Apply Perlin noise to movement
+    let noiseFactor = map(noise(this.noiseOffset), 0, 1, -0.2, 0.2); // Adjust noise range
+    this.angle += noiseFactor;
+    this.noiseOffset += 0.01;
+
+    // Follow Mouse
+    let angleToMouse = atan2(mouseY - height / 2, mouseX - width / 2);
+    let angleDifference = angleToMouse - this.angle;
+    this.angle += angleDifference * 0.01; // Smoothly adjust angle to mouse
+
+    // Update position
+    this.pos.x = width / 2 + cos(this.angle) * this.distanceFromCenter;
+    this.pos.y = height / 2 + sin(this.angle) * this.distanceFromCenter;
+  }
+
+  display() {
+    noStroke();
+    fill(petalColor);
+    ellipse(this.pos.x, this.pos.y, this.size, this.size);
+  }
+}</code></pre>
+            <button class="copy-code-button" data-clipboard-target="#code-snippet-1" title="Copiar Código">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                <span class="copy-feedback"></span>
+            </button>
+        </div>
+        <div class="code-explanation">
+            <h4>Notas Adicionales:</h4>
+            <ul>
+                <li>La variable <code>noiseOffset</code> asegura que cada partícula tenga un patrón de movimiento único y orgánico.</li>
+                <li>El cálculo <code>angleDifference * 0.01</code> crea un efecto de seguimiento suave del cursor del ratón, no instantáneo.</li>
+                <li>Puedes experimentar ajustando los valores en <code>random()</code> para cambiar la apariencia y comportamiento de los pétalos/partículas.</li>
+            </ul>
+        </div>
+    </div>
+    <!-- === FIN BLOQUE DE CÓDIGO 1 === -->
+
+
+    <!-- ====================================================== -->
+    <!-- === BLOQUE DE CÓDIGO 2 === -->
+    <!-- ====================================================== -->
+    <div class="code-container-wrapper">
+        <h3 class="code-title">Ejemplo 2: Flor con Partículas y Fuerza de Atracción</h3>
+        <p class="code-description">
+            Este ejemplo simula pétalos como partículas que son atraídas hacia un punto central (el centro de la flor) usando un cálculo de fuerzas simple. Demuestra cómo simular interacciones básicas de física vectorial en p5.js.
+        </p>
+        <div class="code-preview">
+            <div id="sketch-container-2" class="sketch-container"></div>
+        </div>
+        <div class="code-block-container">
+            <pre><code class="language-javascript" id="code-snippet-2">
+let particles = [];
+let attractionPoint;
+
+function setup() {
+  createCanvas(500, 500);
+  attractionPoint = createVector(width / 2, height / 2); // Center of the flower
+
+  // Create particles for the petals
+  for (let i = 0; i < 50; i++) {
+    let angle = map(i, 0, 50, 0, TWO_PI);
+    let petal = new Particle(attractionPoint.x + cos(angle) * 50, attractionPoint.y + sin(angle) * 50);
+    particles.push(petal);
+  }
+}
+
+function draw() {
+  background(100,150,100); // Green background
+
+  // Draw flower center
+  fill(255, 204, 0); // Yellow
+  noStroke();
+  ellipse(attractionPoint.x, attractionPoint.y, 75, 75);
+
+  // Update and display particles
+  for (let particle of particles) {
+    let force = attractionForce(particle.position, attractionPoint);
+    particle.applyForce(force);
+    particle.update();
+    particle.display();
+  }
+}
+
+function attractionForce(position, target) {
+  let force = p5.Vector.sub(target, position);
+  let distance = force.mag();
+  distance = constrain(distance, 5, 200); // Limit the distance
+  let strength = map(distance, 5, 200, 0.15, 0.01);  // Adjust strength for bloom effect
+  force.setMag(strength);
+  return force;
+}
+
+class Particle {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    this.velocity = createVector(0, 0);
+    this.acceleration = createVector(0, 0);
+    this.diameter = 25;
+    this.color = color(255, 100, 0); // Orange color
+  }
+
+  applyForce(force) {
+    this.acceleration.add(force);
+  }
+
+  update() {
+    this.velocity.add(this.acceleration);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0); // Reset acceleration
+    this.velocity.limit(2);
+  }
+
+  display() {
+    fill(this.color);
+    noStroke();
+    ellipse(this.position.x, this.position.y, this.diameter, this.diameter);
+  }
+}</code></pre>
+             <button class="copy-code-button" data-clipboard-target="#code-snippet-2" title="Copiar Código">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                <span class="copy-feedback"></span>
+            </button>
+        </div>
+        <div class="code-explanation">
+             <h4>Notas Adicionales:</h4>
+             <ul>
+                <li>La función <code>attractionForce</code> calcula un vector que apunta desde la posición de la partícula hacia el punto de atracción (centro).</li>
+                <li>La fuerza (<code>strength</code>) se mapea inversamente a la distancia: las partículas más cercanas son atraídas con más fuerza (<code>0.15</code>), mientras que las más lejanas lo son menos (<code>0.01</code>).</li>
+                <li><code>constrain()</code> evita fuerzas excesivamente grandes o pequeñas.</li>
+                <li><code>velocity.limit(2)</code> evita que las partículas se aceleren indefinidamente.</li>
+             </ul>
+        </div>
+    </div>
+    <!-- === FIN BLOQUE DE CÓDIGO 2 === -->
+
+
+    <!-- ====================================================== -->
+    <!-- === BLOQUE DE CÓDIGO 3 === -->
+    <!-- ====================================================== -->
+    <div class="code-container-wrapper">
+        <h3 class="code-title">Ejemplo 3: Flor con Pétalos Estáticos e Interactividad Simple</h3>
+        <p class="code-description">
+           Una flor más simple donde los pétalos son elipses dibujadas estáticamente en cada frame. La longitud y el ángulo de los pétalos se ven afectados por la posición horizontal y vertical del ratón, respectivamente, creando una interacción directa.
+        </p>
+         <div class="code-preview">
+            <div id="sketch-container-3" class="sketch-container"></div>
+        </div>
+        <div class="code-block-container">
+            <pre><code class="language-javascript" id="code-snippet-3">
+function setup() {
+  createCanvas(500, 500);
+  angleMode(DEGREES);
+}
+
+function draw() {
+  background(50, 100, 50); // Dark green background
+
+  // Flower center properties
+  let centerX = 250;
+  let centerY = 250;
+  let centerSize = 50;
+  let petalColor = color(255, 100, 0);  // Vibrant Orange
+  let centerColor = color(255, 200, 0);  // Yellow
+
+  // Draw the flower center
+  fill(centerColor);
+  noStroke();
+  ellipse(centerX, centerY, centerSize, centerSize);
+
+  // Petal properties
+  let numPetals = 20;
+  // Petal length influenced by mouse distance from center
+  let petalLength = dist(mouseX, mouseY, centerX, centerY) / 5 + 30;
+  let petalWidth = 10;
+
+  // Draw the petals
+  for (let i = 0; i < numPetals; i++) {
+    // Angle influenced by mouseX position
+    let angle = i * (360 / numPetals) + map(mouseX, 0, width, -10, 10);
+
+    // Calculate petal position based on angle and length
+    let x = centerX + petalLength * cos(angle);
+    let y = centerY + petalLength * sin(angle);
+
+    // Draw the petal
+    push(); // Isolate transformations
+    translate(x, y); // Move to petal's base position
+    rotate(angle + 90); // Rotate petal to point outwards from center
+    fill(petalColor);
+    ellipse(0, 0, petalWidth, petalLength); // Draw the petal shape
+    pop(); // Restore original transformation state
+  }
+}</code></pre>
+            <button class="copy-code-button" data-clipboard-target="#code-snippet-3" title="Copiar Código">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                <span class="copy-feedback"></span>
+            </button>
+        </div>
+        <div class="code-explanation">
+             <h4>Notas Adicionales:</h4>
+             <ul>
+                <li><code>angleMode(DEGREES)</code> se usa para trabajar con ángulos en grados (0-360).</li>
+                <li>La longitud del pétalo (<code>petalLength</code>) aumenta cuanto más lejos está el ratón del centro de la flor (calculado con <code>dist()</code>).</li>
+                <li>La posición X del ratón (<code>mouseX</code>) introduce una pequeña rotación adicional a todos los pétalos (usando <code>map()</code>), dándoles un ligero "giro".</li>
+                <li><code>push()</code> y <code>pop()</code> son esenciales para aislar las transformaciones (<code>translate</code>, <code>rotate</code>) de cada pétalo y evitar que afecten a los siguientes.</li>
+             </ul>
+        </div>
+    </div>
+    <!-- === FIN BLOQUE DE CÓDIGO 3 === -->
+
+
+    <!-- ====================================================== -->
+    <!-- === BLOQUE DE CÓDIGO 4 === -->
+    <!-- ====================================================== -->
+    <div class="code-container-wrapper">
+        <h3 class="code-title">Ejemplo 4: Flor con Pétalos Bezier y Follaje Simple</h3>
+        <p class="code-description">
+            Este código dibuja una flor con pétalos creados usando curvas Bezier para una forma más orgánica. La forma y longitud de los pétalos responden a la posición X e Y del ratón. Además, añade un fondo simple de "follaje" simulado con elipses aleatorias.
+        </p>
+        <div class="code-preview">
+            <div id="sketch-container-4" class="sketch-container"></div>
+        </div>
+        <div class="code-block-container">
+            <pre><code class="language-javascript" id="code-snippet-4">
+function setup() {
+  createCanvas(600, 600);
+  angleMode(DEGREES); // Use degrees for angle calculations
+}
+
+function draw() {
+  background(100, 150, 90); // Greenish background for foliage
+
+  // Foliage simulation (simple random ellipses)
+  for (let i = 0; i < 100; i++) {
+    let x = random(0, width);
+    let y = random(height/2, height); // Concentrate foliage at the bottom half
+    let size = random(5, 20);
+    let colorOffset = map(mouseY, 0, height, -20, 20); //Shift color slightly based on mouseY
+    fill(50, 150 + colorOffset, 40, 150); // Semi-transparent green
+    noStroke();
+    ellipse(x, y, size, size);
+  }
+
+  // Flower properties
+  let centerX = width / 2;
+  let centerY = height / 2 - 50; // Shift flower up a bit
+  let petalColor = color(255, 120, 0); // Orange
+  let centerColor = color(255, 204, 0); // Yellow
+
+  // Flower center
+  fill(centerColor);
+  noStroke(); // Ensure center has no stroke
+  ellipse(centerX, centerY, 80, 80);
+
+  // Petals
+  let numPetals = 12;
+  for (let i = 0; i < numPetals; i++) {
+    push(); // Isolate transformations
+    translate(centerX, centerY); // Move origin to flower center
+    rotate(i * 360 / numPetals); // Rotate for each petal
+
+    // Petal animation controlled by mouse
+    // Angle/Curve of the petal sides based on mouseX
+    let petalAngle = map(mouseX, 0, width, -15, 15);
+    // Length of the petal based on mouseY
+    let petalLength = map(mouseY, 0, height, 50, 100);
+
+    // Draw petal using bezier curves for a smoother shape
+    fill(petalColor);
+    noStroke();
+    beginShape();
+    vertex(0, 0); // Start at the center
+    // Control points define the curve outward
+    bezierVertex(petalLength / 3, -10 - petalAngle, petalLength / 3 * 2, -10 - petalAngle, petalLength, 0);
+    // Control points define the curve inward, back to center
+    bezierVertex(petalLength / 3 * 2, 10 + petalAngle, petalLength / 3, 10 + petalAngle, 0, 0);
+    endShape(CLOSE); // Close the shape back to the start vertex
+    pop(); // Restore original transformation state
+  }
+}</code></pre>
+            <button class="copy-code-button" data-clipboard-target="#code-snippet-4" title="Copiar Código">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                <span class="copy-feedback"></span>
+            </button>
+        </div>
+        <div class="code-explanation">
+             <h4>Notas Adicionales:</h4>
+             <ul>
+                <li>El "follaje" es puramente decorativo y se dibuja primero para que la flor quede encima. Su color cambia sutilmente con <code>mouseY</code>.</li>
+                <li><code>bezierVertex(cx1, cy1, cx2, cy2, x, y)</code> dibuja una curva Bezier desde el punto anterior hasta (x, y), usando (cx1, cy1) y (cx2, cy2) como puntos de control que "tiran" de la curva.</li>
+                <li>Se usan dos llamadas a <code>bezierVertex</code> para formar los dos lados curvos del pétalo.</li>
+                <li>La variable <code>petalAngle</code> (influenciada por <code>mouseX</code>) afecta la posición Y de los puntos de control, cambiando la curvatura del pétalo.</li>
+                <li>La variable <code>petalLength</code> (influenciada por <code>mouseY</code>) afecta la posición X de los puntos de control y el punto final del pétalo, cambiando su longitud.</li>
+             </ul>
+        </div>
+    </div>
+    <!-- === FIN BLOQUE DE CÓDIGO 4 === -->
+
+
+    <!-- ====================================================== -->
+    <!-- === BLOQUE DE CÓDIGO 5 === -->
+    <!-- ====================================================== -->
+    <div class="code-container-wrapper">
+        <h3 class="code-title">Ejemplo 5: Flor con Pétalos Rectangulares y Ruido Orgánico</h3>
+        <p class="code-description">
+            Este ejemplo utiliza pétalos rectangulares simples, pero introduce ruido Perlin (<code>noise()</code>) para desplazar ligeramente la posición de cada pétalo en cada frame, dándole un aspecto más orgánico y tembloroso. La rotación general de los pétalos también está influenciada por la posición X del ratón.
+        </p>
+         <div class="code-preview">
+            <div id="sketch-container-5" class="sketch-container"></div>
+        </div>
+        <div class="code-block-container">
+            <pre><code class="language-javascript" id="code-snippet-5">
+function setup() {
+  createCanvas(600, 600);
+  angleMode(DEGREES);
+  noStroke(); // Apply noStroke globally here
+}
+
+function draw() {
+  background(80, 120, 80); // Dark green background for leaves
+
+  // Flower center properties
+  let centerX = width / 2;
+  let centerY = height / 2;
+  let centerColor = color(255, 204, 0); // Yellow-orange color
+  let centerRadius = 50;
+
+  // Draw the flower center
+  fill(centerColor);
+  ellipse(centerX, centerY, centerRadius * 2, centerRadius * 2);
+
+  // Petal properties
+  let petalColor = color(255, 100, 0); // Orange color
+  let petalLength = 100;
+  let petalWidth = 10;
+  let numPetals = 20;
+
+  // Interactive petal angle offset based on mouseX
+  let petalAngleOffset = map(mouseX, 0, width, -20, 20);
+
+  // Draw petals using a loop
+  for (let i = 0; i < numPetals; i++) {
+    push(); // Save current transformation state
+    translate(centerX, centerY); // Move origin to flower center
+    // Rotate each petal based on its index and the mouse-controlled offset
+    rotate(i * (360 / numPetals) + petalAngleOffset);
+
+    // Apply Perlin noise to petal position for an organic look
+    // Use 'i' and 'frameCount' to get varying noise values over time and per petal
+    let noiseX = map(noise(i, frameCount * 0.01), 0, 1, -5, 5);
+    let noiseY = map(noise(i + 10, frameCount * 0.01), 0, 1, -5, 5); // Offset second noise call
+    translate(noiseX, noiseY); // Apply the small noise-driven displacement
+
+    // Draw the petal (a simple rectangle starting at the rotated origin)
+    fill(petalColor);
+    // rect(x, y, width, height) - here x=0, y=0 because we translated the origin
+    rect(0, 0, petalLength, petalWidth);
+    pop(); // Restore previous transformation state
+  }
+}</code></pre>
+             <button class="copy-code-button" data-clipboard-target="#code-snippet-5" title="Copiar Código">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                <span class="copy-feedback"></span>
+            </button>
+        </div>
+        <div class="code-explanation">
+             <h4>Notas Adicionales:</h4>
+             <ul>
+                <li><code>noStroke()</code> se llama en <code>setup()</code> para desactivar los bordes en todas las formas por defecto.</li>
+                <li>El ángulo base de cada pétalo se calcula con <code>i * (360 / numPetals)</code>. A esto se suma <code>petalAngleOffset</code>, que varía con <code>mouseX</code>.</li>
+                <li>La función <code>noise(x, y)</code> devuelve un valor pseudoaleatorio pero suave (ruido Perlin) basado en sus argumentos. Usar <code>i</code> (índice del pétalo) y <code>frameCount * 0.01</code> (tiempo que avanza lentamente) genera un movimiento tembloroso y único para cada pétalo.</li>
+                <li><code>map(noise(...), 0, 1, -5, 5)</code> toma el resultado de <code>noise()</code> (que suele estar entre 0 y 1) y lo escala a un rango pequeño (-5 a 5 píxeles) para el desplazamiento.</li>
+                <li>El <code>translate(noiseX, noiseY)</code> se aplica *después* de la rotación, moviendo ligeramente cada pétalo desde su posición base rotada.</li>
+                <li>El pétalo se dibuja con <code>rect(0, 0, ...)</code> porque el origen (0,0) ya ha sido trasladado y rotado a la posición correcta.</li>
+             </ul>
+        </div>
+    </div>
+    <!-- === FIN BLOQUE DE CÓDIGO 5 === -->
+
+
+    <!-- ### INICIO: JAVASCRIPT (Funcionalidad Copiar + Instancias p5.js) ### -->
+    <script>
+        // --- Funcionalidad Botón Copiar ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyButtons = document.querySelectorAll('.copy-code-button');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-clipboard-target');
+                    const codeElement = document.querySelector(targetId);
+                    if (codeElement) {
+                        const codeToCopy = codeElement.innerText;
+                        const feedbackElement = button.querySelector('.copy-feedback');
+                        navigator.clipboard.writeText(codeToCopy).then(() => {
+                            if (feedbackElement) {
+                                feedbackElement.textContent = '¡Copiado!';
+                                feedbackElement.classList.remove('error');
+                                button.setAttribute('title', 'Copiado al portapapeles');
+                            }
+                            setTimeout(() => {
+                                if (feedbackElement) feedbackElement.textContent = '';
+                                button.setAttribute('title', 'Copiar Código');
+                            }, 2500);
+                        }).catch(err => {
+                            console.error('Error al copiar el código: ', err);
+                            if (feedbackElement) {
+                                feedbackElement.textContent = 'Error';
+                                feedbackElement.classList.add('error');
+                                button.setAttribute('title', 'Error al copiar');
+                            }
+                            setTimeout(() => {
+                                if (feedbackElement) {
+                                    feedbackElement.textContent = '';
+                                    feedbackElement.classList.remove('error');
+                                }
+                                button.setAttribute('title', 'Copiar Código');
+                            }, 3000);
+                        });
+                    } else {
+                         console.error('No se encontró el elemento de código con el ID:', targetId);
+                         // Optional: Add visual feedback for this error too
+                    }
+                });
+            });
+
+            // --- Crear Instancias p5.js ---
+            // (Asegurarse de que el DOM esté listo)
+
+            // Sketch 1: Partículas y Ruido Perlin
+            const sketch1 = ( p ) => {
+              let particles = [];
+              let petalColor;
+              let centerColor;
+
+              class Particle {
+                constructor() {
+                  this.pos = p.createVector(p.width / 2, p.height / 2);
+                  this.angle = p.random(p.TWO_PI);
+                  this.speed = p.random(0.5, 1.5); // Not strictly used in this version's update, but kept
+                  this.noiseOffset = p.random(1000);
+                  this.size = p.random(5, 10);
+                  this.distanceFromCenter = p.random(30, 120);
+                }
+
+                update() {
+                  let noiseFactor = p.map(p.noise(this.noiseOffset), 0, 1, -0.03, 0.03); // Adjusted noise range slightly
+                  this.angle += noiseFactor;
+                  this.noiseOffset += 0.01;
+
+                  // Follow Mouse using p.mouseX, p.mouseY, p.width, p.height
+                  let angleToMouse = p.atan2(p.mouseY - p.height / 2, p.mouseX - p.width / 2);
+                  // Ensure angle difference calculation handles wrap-around (optional but good practice)
+                  let angleDifference = angleToMouse - this.angle;
+                   while (angleDifference < -p.PI) angleDifference += p.TWO_PI;
+                   while (angleDifference > p.PI) angleDifference -= p.TWO_PI;
+                   this.angle += angleDifference * 0.02; // Slightly faster follow
+
+                  // Update position using p.cos, p.sin
+                  this.pos.x = p.width / 2 + p.cos(this.angle) * this.distanceFromCenter;
+                  this.pos.y = p.height / 2 + p.sin(this.angle) * this.distanceFromCenter;
+
+                  // Keep particles within canvas bounds (optional)
+                  // this.pos.x = p.constrain(this.pos.x, 0, p.width);
+                  // this.pos.y = p.constrain(this.pos.y, 0, p.height);
+                }
+
+                display() {
+                  p.noStroke();
+                  p.fill(petalColor);
+                  p.ellipse(this.pos.x, this.pos.y, this.size, this.size);
+                }
+              } // End Particle Class
+
+              p.setup = () => {
+                p.createCanvas(400, 400); // Use desired size for preview
+                petalColor = p.color(255, 100, 0, 200); // Added some alpha
+                centerColor = p.color(255, 200, 0);
+                particles = []; // Reset particles on setup
+                for (let i = 0; i < 150; i++) {
+                  particles.push(new Particle());
+                }
+              };
+
+              p.draw = () => {
+                p.background(100, 150, 100);
+                p.fill(centerColor);
+                p.noStroke();
+                p.ellipse(p.width / 2, p.height / 2, 75, 75);
+                for (let particle of particles) {
+                  particle.update();
+                  particle.display();
+                }
+              };
+            }; // End sketch1 definition
+            new p5(sketch1, 'sketch-container-1'); // Instantiate sketch 1
+
+
+            // Sketch 2: Fuerza de Atracción
+            const sketch2 = ( p ) => {
+              let particles = [];
+              let attractionPoint;
+              let centerColorInst;
+              let petalColorInst;
+
+              // Need p5.Vector and Particle class inside or accessible
+              const { Vector } = p.constructor; // Get p5.Vector
+
+              class Particle {
+                constructor(x, y) {
+                  this.position = p.createVector(x, y);
+                  this.velocity = p.createVector(0, 0);
+                  this.acceleration = p.createVector(0, 0);
+                  this.diameter = 25;
+                  this.color = petalColorInst; // Use color defined in setup
+                }
+                applyForce(force) {
+                  this.acceleration.add(force);
+                }
+                update() {
+                  this.velocity.add(this.acceleration);
+                  this.position.add(this.velocity);
+                  this.acceleration.mult(0);
+                  this.velocity.limit(3); // Slightly increased limit
+                }
+                display() {
+                  p.fill(this.color);
+                  p.noStroke();
+                  p.ellipse(this.position.x, this.position.y, this.diameter, this.diameter);
+                }
+              } // End Particle Class
+
+              function attractionForce(position, target) {
+                  // Use Vector.sub or p.createVector(target.x, target.y).sub(position)
+                  let force = Vector.sub(target, position);
+                  let distance = force.mag();
+                  distance = p.constrain(distance, 5, 200);
+                  // Make strength decrease faster initially, then slower
+                  let strength = p.map(distance, 5, 200, 0.2, 0.005);
+                  force.setMag(strength);
+                  return force;
+              }
+
+              p.setup = () => {
+                p.createCanvas(400, 400); // Adjusted size
+                centerColorInst = p.color(255, 204, 0);
+                petalColorInst = p.color(255, 100, 0, 180); // Added alpha
+                attractionPoint = p.createVector(p.width / 2, p.height / 2);
+                particles = []; // Reset
+                for (let i = 0; i < 50; i++) {
+                  let angle = p.map(i, 0, 50, 0, p.TWO_PI);
+                  // Start particles further out for better initial effect
+                  let startRadius = p.random(80, 120);
+                  let petal = new Particle(attractionPoint.x + p.cos(angle) * startRadius, attractionPoint.y + p.sin(angle) * startRadius);
+                  particles.push(petal);
+                }
+              };
+
+              p.draw = () => {
+                p.background(100, 150, 100);
+                p.fill(centerColorInst);
+                p.noStroke();
+                p.ellipse(attractionPoint.x, attractionPoint.y, 75, 75);
+                for (let particle of particles) {
+                  let force = attractionForce(particle.position, attractionPoint);
+                  particle.applyForce(force);
+                  // Add a little random push outwards slightly
+                  // let randomPush = p5.Vector.random2D().mult(0.01);
+                  // particle.applyForce(randomPush);
+                  particle.update();
+                  particle.display();
+                }
+              };
+            }; // End sketch2 definition
+            new p5(sketch2, 'sketch-container-2');
+
+
+            // Sketch 3: Pétalos Estáticos Interactivos
+            const sketch3 = ( p ) => {
+              let petalColorInst;
+              let centerColorInst;
+
+              p.setup = () => {
+                p.createCanvas(400, 400); // Adjusted size
+                p.angleMode(p.DEGREES);
+                 petalColorInst = p.color(255, 100, 0);
+                 centerColorInst = p.color(255, 200, 0);
+              };
+
+              p.draw = () => {
+                p.background(50, 100, 50);
+                let centerX = p.width / 2;
+                let centerY = p.height / 2;
+                let centerSize = 50;
+
+                p.fill(centerColorInst);
+                p.noStroke();
+                p.ellipse(centerX, centerY, centerSize, centerSize);
+
+                let numPetals = 20;
+                // Use p.dist, p.mouseX, p.mouseY
+                let mouseDist = p.dist(p.mouseX, p.mouseY, centerX, centerY);
+                // Ensure mouse interaction happens within canvas
+                 let mappedMouseX = p.constrain(p.mouseX, 0, p.width);
+                 let mappedMouseY = p.constrain(p.mouseY, 0, p.height);
+                 let interactiveDist = p.dist(mappedMouseX, mappedMouseY, centerX, centerY);
+
+                // Base length + interactive part, constrained
+                let baseLength = 40;
+                let interactiveLength = p.map(interactiveDist, 0, p.width/2, 0, 60); // Map distance to length addition
+                let petalLength = p.constrain(baseLength + interactiveLength, 30, 100); // Min/Max length
+
+                let petalWidth = 10;
+                // Use p.map for angle interaction
+                let angleOffset = p.map(mappedMouseX, 0, p.width, -15, 15); // Map mouseX to angle offset
+
+                for (let i = 0; i < numPetals; i++) {
+                  let angle = i * (360 / numPetals) + angleOffset;
+                  // Use p.cos, p.sin
+                  let x = centerX + petalLength * p.cos(angle);
+                  let y = centerY + petalLength * p.sin(angle);
+
+                  p.push();
+                  p.translate(x, y);
+                  p.rotate(angle + 90); // Rotate petal to point outwards
+                  p.fill(petalColorInst);
+                  p.noStroke(); // Ensure no stroke on petals
+                  p.ellipse(0, 0, petalWidth, petalLength);
+                  p.pop();
+                }
+              };
+            }; // End sketch3 definition
+            new p5(sketch3, 'sketch-container-3');
+
+
+            // Sketch 4: Pétalos Bezier y Follaje
+            const sketch4 = ( p ) => {
+              let petalColorInst;
+              let centerColorInst;
+              let foliageColor;
+
+              p.setup = () => {
+                p.createCanvas(400, 400); // Adjusted size
+                p.angleMode(p.DEGREES);
+                 petalColorInst = p.color(255, 120, 0);
+                 centerColorInst = p.color(255, 204, 0);
+                 // Pre-calculate foliage base color
+                 foliageColor = p.color(50, 150, 40, 150);
+              };
+
+              p.draw = () => {
+                p.background(100, 150, 90);
+
+                 // Constrain mouse interaction to canvas
+                 let mappedMouseX = p.constrain(p.mouseX, 0, p.width);
+                 let mappedMouseY = p.constrain(p.mouseY, 0, p.height);
+
+                // Foliage - Use p.random, p.map, p.fill, p.noStroke, p.ellipse
+                p.noStroke();
+                for (let i = 0; i < 50; i++) { // Reduced foliage count for performance
+                  let x = p.random(0, p.width);
+                  let y = p.random(p.height / 2, p.height);
+                  let size = p.random(5, 20);
+                  let colorOffsetY = p.map(mappedMouseY, 0, p.height, -20, 20);
+                  // Adjust alpha based on mouse Y? Maybe not necessary.
+                  // Set fill color directly using components
+                  p.fill(p.red(foliageColor), p.green(foliageColor) + colorOffsetY, p.blue(foliageColor), p.alpha(foliageColor));
+                  p.ellipse(x, y, size, size);
+                }
+
+                let centerX = p.width / 2;
+                let centerY = p.height / 2 - 30; // Adjusted shift
+                p.fill(centerColorInst);
+                p.noStroke(); // Ensure no stroke
+                p.ellipse(centerX, centerY, 60, 60); // Adjusted size
+
+                let numPetals = 12;
+                p.fill(petalColorInst); // Set fill once for all petals
+                p.noStroke();
+
+                for (let i = 0; i < numPetals; i++) {
+                  p.push();
+                  p.translate(centerX, centerY);
+                  p.rotate(i * 360 / numPetals);
+
+                  let petalAngle = p.map(mappedMouseX, 0, p.width, -15, 15);
+                  let petalLength = p.map(mappedMouseY, 0, p.height, 40, 80); // Adjusted range
+
+                  // Use p.beginShape, p.vertex, p.bezierVertex, p.endShape
+                  p.beginShape();
+                  p.vertex(0, 0);
+                  // Simplified control points slightly
+                  let cp1x = petalLength / 3;
+                  let cp1y = -10 - petalAngle;
+                  let cp2x = petalLength / 1.5; // Adjusted second control point x
+                  let cp2y = -10 - petalAngle;
+                  let endX = petalLength;
+                  let endY = 0;
+                  p.bezierVertex(cp1x, cp1y, cp2x, cp2y, endX, endY);
+
+                  // Mirrored control points for the other side
+                  let cp3x = petalLength / 1.5;
+                  let cp3y = 10 + petalAngle;
+                  let cp4x = petalLength / 3;
+                  let cp4y = 10 + petalAngle;
+                  p.bezierVertex(cp3x, cp3y, cp4x, cp4y, 0, 0);
+                  p.endShape(p.CLOSE);
+                  p.pop();
+                }
+              };
+            }; // End sketch4 definition
+            new p5(sketch4, 'sketch-container-4');
+
+
+             // Sketch 5: Pétalos Rectangulares y Ruido
+            const sketch5 = ( p ) => {
+                let centerColorInst;
+                let petalColorInst;
+
+                p.setup = () => {
+                    p.createCanvas(400, 400); // Adjusted size
+                    p.angleMode(p.DEGREES);
+                    p.noStroke(); // Global noStroke
+                    centerColorInst = p.color(255, 204, 0);
+                    petalColorInst = p.color(255, 100, 0);
+                };
+
+                p.draw = () => {
+                    p.background(80, 120, 80);
+                    let centerX = p.width / 2;
+                    let centerY = p.height / 2;
+                    let centerRadius = 40; // Adjusted size
+
+                    p.fill(centerColorInst);
+                    p.ellipse(centerX, centerY, centerRadius * 2, centerRadius * 2);
+
+                    let petalLength = 80; // Adjusted size
+                    let petalWidth = 8;  // Adjusted size
+                    let numPetals = 20;
+
+                    // Constrain mouse interaction to canvas
+                    let mappedMouseX = p.constrain(p.mouseX, 0, p.width);
+                    let petalAngleOffset = p.map(mappedMouseX, 0, p.width, -25, 25); // Increased range
+
+                    for (let i = 0; i < numPetals; i++) {
+                        p.push();
+                        p.translate(centerX, centerY);
+                        p.rotate(i * (360 / numPetals) + petalAngleOffset);
+
+                        // Use p.map, p.noise, p.frameCount
+                        // Added a second dimension to noise for more variation
+                        let noiseX = p.map(p.noise(i, p.frameCount * 0.01), 0, 1, -4, 4);
+                        let noiseY = p.map(p.noise(i + 10, p.frameCount * 0.01), 0, 1, -4, 4);
+                        p.translate(noiseX, noiseY);
+
+                        p.fill(petalColorInst);
+                        p.rect(0, -petalWidth / 2, petalLength, petalWidth); // Center rect on origin
+                        p.pop();
+                    }
+                };
+            }; // End sketch5 definition
+            new p5(sketch5, 'sketch-container-5');
+
+
+        }); // End DOMContentLoaded listener
+    </script>
+    <!-- ### FIN: JAVASCRIPT ### -->
+
+</body>
+</html>

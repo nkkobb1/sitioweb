@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Cronovisor Histórico</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        --bg-color: #1a1d24; /* Azul noche profundo */
+        --surface-color: #252a34; /* Un poco más claro */
+        --primary-color: #00a8ff; /* Azul eléctrico vibrante */
+        --accent-color: #ffc107; /* Ámbar/Oro para detalles */
+        --text-color: #e8e8e8;
+        --text-secondary-color: #b0b0b0;
+        --shadow-color: rgba(0, 168, 255, 0.2);
+        --error-color: #ff4d4d;
+        --border-radius-main: 12px;
+        --font-main: 'Poppins', sans-serif;
+        --font-headings: 'Playfair Display', serif; /* Serif para un toque histórico */
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-main);
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Alinea arriba para ver el contenido al cargar */
+        min-height: 100vh;
+        padding: 30px 15px;
+        background-image: radial-gradient(circle at top left, rgba(0, 168, 255, 0.05), transparent 40%),
+                          radial-gradient(circle at bottom right, rgba(255, 193, 7, 0.05), transparent 50%);
+      }
+
+      .chronovisor-container {
+        background-color: var(--surface-color);
+        border-radius: var(--border-radius-main);
+        padding: 30px 40px;
+        width: 95%;
+        max-width: 750px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 15px var(--shadow-color);
+        border: 1px solid rgba(0, 168, 255, 0.1);
+        text-align: center;
+        transition: all 0.3s ease-out;
+      }
+
+      h1 {
+        font-family: var(--font-headings);
+        color: var(--primary-color);
+        margin-bottom: 10px;
+        font-size: 2.5em;
+        letter-spacing: 1px;
+      }
+
+      .subtitle {
+        color: var(--text-secondary-color);
+        margin-bottom: 30px;
+        font-size: 1.1em;
+      }
+
+      .input-area {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap; /* Para responsividad */
+      }
+
+      #topicInput {
+        flex-grow: 1;
+        padding: 15px 20px;
+        border: 1px solid rgba(0, 168, 255, 0.3);
+        border-radius: 8px;
+        background-color: rgba(0, 0, 0, 0.2);
+        color: var(--text-color);
+        font-size: 1em;
+        outline: none;
+        transition: all 0.3s ease;
+        min-width: 200px; /* Ancho mínimo */
+      }
+
+      #topicInput:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 10px var(--shadow-color);
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+
+      #generateButton {
+        padding: 15px 30px;
+        background: linear-gradient(45deg, var(--primary-color), #007bff);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 168, 255, 0.2);
+      }
+
+      #generateButton:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 168, 255, 0.4);
+        filter: brightness(1.1);
+      }
+
+      #generateButton:active:not(:disabled) {
+         transform: translateY(0);
+         box-shadow: 0 4px 15px rgba(0, 168, 255, 0.2);
+      }
+
+       #generateButton:disabled {
+        background: #555;
+        cursor: not-allowed;
+        box-shadow: none;
+        opacity: 0.6;
+      }
+
+      /* --- Indicador de Carga Futurista --- */
+      .loading-indicator {
+        display: none; /* Oculto por defecto */
+        margin: 40px auto;
+        width: 60px;
+        height: 60px;
+        position: relative;
+      }
+      .loading-indicator::before,
+      .loading-indicator::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 4px solid transparent;
+      }
+      .loading-indicator::before {
+        border-top-color: var(--primary-color);
+        animation: spin 1.5s linear infinite;
+      }
+      .loading-indicator::after {
+        border-bottom-color: var(--accent-color);
+        animation: spin 2s linear infinite reverse;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .loading-indicator.active {
+        display: block; /* Mostrar cuando carga */
+      }
+
+      /* --- Área de Resultados --- */
+      .results-area {
+        margin-top: 40px;
+        opacity: 0; /* Oculto por defecto para animación */
+        transform: translateY(20px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        text-align: left;
+      }
+      .results-area.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .image-display {
+        margin-bottom: 30px;
+        text-align: center; /* Centrar imagen y placeholder */
+      }
+      .image-display img {
+        max-width: 100%;
+        height: auto;
+        max-height: 400px; /* Límite para que no sea enorme */
+        border-radius: var(--border-radius-main);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        border: 3px solid var(--accent-color);
+        background-color: #333; /* Color mientras carga */
+        min-height: 200px; /* Evita colapso antes de cargar */
+        object-fit: cover; /* Asegura que cubra bien */
+      }
+
+      .content-display h2 {
+        font-family: var(--font-headings);
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        font-size: 1.8em;
+        border-bottom: 2px solid var(--accent-color);
+        padding-bottom: 5px;
+        display: inline-block; /* Para que el borde se ajuste */
+      }
+
+      .summary-section p {
+        color: var(--text-color);
+        line-height: 1.7;
+        font-size: 1.05em;
+        margin-bottom: 30px;
+        background: rgba(0,0,0,0.1);
+        padding: 15px;
+        border-radius: 8px;
+      }
+
+      .key-dates-section ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      /* --- Estilo de Línea de Tiempo Simple --- */
+      .key-dates-section li {
+        position: relative;
+        padding: 15px 0 15px 45px; /* Espacio para el icono y línea */
+        margin-bottom: 15px;
+        border-left: 3px solid var(--primary-color);
+        background: rgba(0, 168, 255, 0.05);
+        border-radius: 0 5px 5px 0;
+        transition: all 0.3s ease;
+      }
+
+      .key-dates-section li::before { /* El punto en la línea de tiempo */
+        content: '';
+        position: absolute;
+        left: -11px; /* Centrado sobre la línea */
+        top: 18px;
+        width: 18px;
+        height: 18px;
+        background-color: var(--accent-color);
+        border: 3px solid var(--surface-color);
+        border-radius: 50%;
+        z-index: 1;
+        transition: all 0.3s ease;
+      }
+
+       .key-dates-section li:hover {
+        background: rgba(0, 168, 255, 0.1);
+        border-left-color: var(--accent-color);
+       }
+       .key-dates-section li:hover::before {
+         background-color: var(--primary-color);
+         transform: scale(1.1);
+       }
+
+      .key-dates-section .date-year {
+        font-weight: 600;
+        color: var(--accent-color);
+        margin-right: 10px;
+      }
+      .key-dates-section .date-event {
+        color: var(--text-secondary-color);
+        line-height: 1.5;
+      }
+
+      /* --- Mensaje de Error --- */
+      .error-message {
+        color: var(--error-color);
+        margin-top: 20px;
+        background-color: rgba(255, 77, 77, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid var(--error-color);
+        display: none; /* Oculto por defecto */
+        font-weight: 600;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .error-message.visible {
+        display: block;
+        opacity: 1;
+      }
+
+      /* --- Responsividad --- */
+      @media (max-width: 600px) {
+        .chronovisor-container {
+          padding: 20px;
+        }
+        h1 {
+          font-size: 2em;
+        }
+        .input-area {
+          flex-direction: column;
+        }
+        #topicInput, #generateButton {
+          width: 100%;
+        }
+        .content-display h2 {
+          font-size: 1.5em;
+        }
+        .key-dates-section li {
+            padding-left: 35px; /* Menos padding */
+        }
+        .key-dates-section li::before {
+            left: -9px; /* Ajustar posición del punto */
+            width: 14px;
+            height: 14px;
+            top: 20px;
+        }
+      }
+
+    </style>
+</head>
+<body>
+
+  <div class="chronovisor-container">
+    <h1>El Cronovisor Histórico</h1>
+    <p class="subtitle">Viaja en el tiempo con IA: introduce un evento o personaje.</p>
+
+    <div class="input-area">
+      <input type="text" id="topicInput" placeholder="Ej: Revolución Francesa, Leonardo da Vinci...">
+      <button id="generateButton">Visualizar Evento</button>
+    </div>
+
+    <div id="loadingIndicator" class="loading-indicator"></div>
+    <div id="errorMessage" class="error-message"></div>
+
+    <div id="resultsArea" class="results-area">
+      <div id="imageDisplay" class="image-display">
+        <img id="eventImage" src="" alt="Representación histórica generada por IA" style="display: none;">
+        <!-- Podrías poner un placeholder SVG aquí si quieres -->
+      </div>
+      <div id="contentDisplay" class="content-display" style="display: none;">
+        <section class="summary-section">
+          <h2 id="summaryTitle">Resumen</h2>
+          <p id="summaryText"></p>
+        </section>
+        <section class="key-dates-section">
+          <h2 id="datesTitle">Fechas Clave</h2>
+          <ul id="datesList">
+            <!-- Las fechas se añadirán aquí dinámicamente -->
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const topicInput = document.getElementById('topicInput');
+    const generateButton = document.getElementById('generateButton');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorMessage = document.getElementById('errorMessage');
+    const resultsArea = document.getElementById('resultsArea');
+    const imageDisplay = document.getElementById('imageDisplay');
+    const eventImage = document.getElementById('eventImage');
+    const contentDisplay = document.getElementById('contentDisplay');
+    const summaryTitle = document.getElementById('summaryTitle');
+    const summaryText = document.getElementById('summaryText');
+    const datesTitle = document.getElementById('datesTitle');
+    const datesList = document.getElementById('datesList');
+
+    const POLLINATIONS_TEXT_URL_BASE = "https://text.pollinations.ai/";
+    const POLLINATIONS_IMAGE_URL_BASE = "https://image.pollinations.ai/prompt/";
+
+    function showLoading(isLoading) {
+      loadingIndicator.classList.toggle('active', isLoading);
+      generateButton.disabled = isLoading;
+      if (isLoading) {
+        resultsArea.classList.remove('visible');
+        contentDisplay.style.display = 'none';
+        eventImage.style.display = 'none';
+        errorMessage.classList.remove('visible'); // Ocultar errores previos al cargar
+      }
+    }
+
+    function displayError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add('visible');
+        resultsArea.classList.remove('visible'); // Ocultar resultados si hay error
+         contentDisplay.style.display = 'none';
+         eventImage.style.display = 'none';
+    }
+
+    function parsePollinationsResponse(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+        let summaryLines = [];
+        let dateLines = [];
+        let readingDates = false;
+        const dateKeywords = ['fechas clave', 'key dates', 'cronología', 'timeline', 'hitos:', 'acontecimientos:'];
+
+        for (const line of lines) {
+            const lowerLine = line.toLowerCase();
+            let isKeywordLine = false;
+            for (const keyword of dateKeywords) {
+                if (lowerLine.startsWith(keyword)) {
+                    readingDates = true;
+                    isKeywordLine = true;
+                    break; // No añadir la línea de keyword como fecha
+                }
+            }
+
+            if (isKeywordLine) continue; // Saltar la línea de título "Fechas Clave"
+
+            // Heurística simple: si la línea parece una fecha (empieza con número/año)
+            // o si ya estamos leyendo fechas, la consideramos una fecha.
+            const looksLikeDate = /^\d{3,4}(\s|:|-|,)/.test(line) || /^(c\.|circa)\s*\d{3,4}/i.test(line);
+
+            if (readingDates || looksLikeDate) {
+                 if (line.length > 5) { // Evitar líneas muy cortas como fechas
+                    dateLines.push(line);
+                    readingDates = true; // Asegurarse de seguir leyendo fechas
+                 } else if (!looksLikeDate && summaryLines.length > 0) {
+                     // Si no parece fecha y ya tenemos resumen, podría ser parte del resumen aún
+                     summaryLines.push(line);
+                 }
+
+            } else {
+                summaryLines.push(line);
+            }
+        }
+
+         // Si no se encontraron fechas explícitamente, intentar tomar las últimas líneas
+         if (dateLines.length === 0 && summaryLines.length > 3) {
+             const potentialDateLines = summaryLines.slice(-Math.min(5, Math.floor(summaryLines.length / 2))); // Tomar hasta 5 últimas o la mitad
+             const remainingSummary = summaryLines.slice(0, summaryLines.length - potentialDateLines.length);
+             if (potentialDateLines.some(line => /^\d{3,4}(\s|:|-|,)/.test(line))) { // Si alguna parece fecha
+                dateLines = potentialDateLines;
+                summaryLines = remainingSummary;
+             }
+         }
+
+
+        const summary = summaryLines.join('\n').replace(/\n+/g, '\n').trim() || "No se pudo generar un resumen.";
+        const dates = dateLines
+                        .map(line => {
+                            const match = line.match(/^(\d{3,4}(\s*-\s*\d{3,4})?|[cC]irca\s*\d{3,4}|[cC]\.\s*\d{3,4})\s*(:|–|-)?\s*(.*)/);
+                            if (match && match[4]) {
+                                return { year: match[1].trim(), event: match[4].trim() };
+                            } else if (line.includes(':')) { // Fallback más simple
+                                const parts = line.split(/:(.+)/);
+                                if (parts.length === 2 && parts[0].trim() && parts[1].trim()) {
+                                     return { year: parts[0].trim(), event: parts[1].trim() };
+                                }
+                            }
+                             // Si no hay formato claro, usar toda la línea como evento (año desconocido)
+                            return { year: " ", event: line };
+                        })
+                        .filter(d => d.event); // Filtrar si no se pudo extraer evento
+
+        return { summary, dates };
+    }
+
+
+    if (generateButton && topicInput) {
+        generateButton.addEventListener('click', async () => {
+            const topic = topicInput.value.trim();
+            if (!topic) {
+                displayError('Por favor, introduce un evento o personaje histórico.');
+                return;
+            }
+
+            showLoading(true);
+            errorMessage.classList.remove('visible'); // Ocultar errores anteriores
+
+            // --- 1. Generar y mostrar la imagen ---
+            const imagePrompt = encodeURIComponent(`${topic}, historical illustration, dramatic lighting, epic`);
+            const imageUrl = `${POLLINATIONS_IMAGE_URL_BASE}${imagePrompt}?width=1024&height=576&seed=${Date.now()}`; // Seed aleatorio para variedad
+            eventImage.src = imageUrl;
+            eventImage.alt = `Representación histórica de ${topic} generada por IA`;
+            eventImage.style.display = 'block'; // Mostrar la imagen (o su espacio)
+            imageDisplay.style.display = 'block'; // Asegurarse que el contenedor es visible
+
+            // Opcional: Manejar error de carga de imagen
+            eventImage.onerror = () => {
+                console.error("Error loading image from Pollinations.");
+                // Podrías ocultar la imagen o mostrar un placeholder de error
+                eventImage.style.display = 'none';
+                // No necesariamente detenemos la carga del texto
+            };
+
+            // --- 2. Generar el texto (resumen y fechas) ---
+            try {
+                const textPrompt = `Eres un historiador conciso. Proporciona un resumen breve (2-3 párrafos) sobre "${topic}". Luego, lista las fechas clave más importantes relacionadas con "${topic}" bajo un encabezado como "Fechas Clave:", "Cronología:", o similar. Formato de fechas: "AÑO: Descripción del evento". Sé claro y directo.
+Ejemplo de Fechas Clave:
+1789: Toma de la Bastilla
+1793: Ejecución de Luis XVI`;
+
+                const encodedTextPrompt = encodeURIComponent(textPrompt);
+                const requestUrl = POLLINATIONS_TEXT_URL_BASE + encodedTextPrompt;
+
+                const response = await fetch(requestUrl);
+                if (!response.ok) {
+                    throw new Error(`Error de red o API: ${response.status}`);
+                }
+                const responseText = await response.text();
+
+                if (!responseText) {
+                    throw new Error("La API devolvió una respuesta vacía.");
+                }
+
+                // --- 3. Procesar texto y actualizar DOM ---
+                const { summary, dates } = parsePollinationsResponse(responseText);
+
+                summaryTitle.textContent = `Resumen: ${topic}`;
+                summaryText.textContent = summary;
+                datesTitle.textContent = `Fechas Clave: ${topic}`;
+
+                datesList.innerHTML = ''; // Limpiar lista anterior
+                if (dates.length > 0) {
+                    dates.forEach(date => {
+                        const li = document.createElement('li');
+                        const yearSpan = document.createElement('span');
+                        yearSpan.className = 'date-year';
+                        yearSpan.textContent = date.year || ' '; // Mostrar algo si no hay año
+
+                        const eventSpan = document.createElement('span');
+                        eventSpan.className = 'date-event';
+                        eventSpan.textContent = date.event;
+
+                        li.appendChild(yearSpan);
+                        li.appendChild(eventSpan);
+                        datesList.appendChild(li);
+                    });
+                } else {
+                    datesList.innerHTML = '<li>No se pudieron extraer fechas clave del texto generado.</li>';
+                }
+
+                contentDisplay.style.display = 'block'; // Mostrar contenido de texto
+                resultsArea.classList.add('visible'); // Hacer visible toda el área con animación
+
+
+            } catch (error) {
+                console.error("Error fetching or processing historical data:", error);
+                displayError(`No se pudo obtener la información: ${error.message}`);
+            } finally {
+                showLoading(false); // Ocultar indicador y habilitar botón
+            }
+        });
+
+        // Permitir buscar con Enter en el input
+        topicInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Evitar submit si estuviera en un form
+                generateButton.click(); // Simular click en el botón
+            }
+        });
+
+    } else {
+        console.error("No se encontraron elementos esenciales del DOM.");
+        displayError("Error interno: Faltan elementos en la página.");
+    }
+
+  </script>
+
+</body>
+</html>

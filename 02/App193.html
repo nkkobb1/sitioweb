@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traductor Contextual Avanzado</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Iconos (Ejemplo con Font Awesome - necesitas registrarte y obtener tu kit o usar CDN público) -->
+    <!-- Reemplaza con tu kit o un CDN público si lo usas -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+    <style>
+      :root {
+        --primary-color: #6d28d9; /* Violeta */
+        --secondary-color: #db2777; /* Rosa */
+        --text-light: #f9fafb;
+        --text-dark: #1f2937;
+        --bg-light: #ffffff;
+        --bg-dark: #111827;
+        --card-bg-light: rgba(255, 255, 255, 0.6);
+        --card-bg-dark: rgba(31, 41, 55, 0.6); /* Gris oscuro semi-transparente */
+        --border-light: rgba(209, 213, 219, 0.5);
+        --border-dark: rgba(75, 85, 99, 0.5);
+        --shadow-color-light: rgba(109, 40, 217, 0.2);
+        --shadow-color-dark: rgba(0, 0, 0, 0.4);
+        --error-color: #ef4444;
+
+        --font-main: 'Inter', sans-serif;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-main);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        padding: 20px;
+        color: light-dark(var(--text-dark), var(--text-light)); /* Adaptación básica light/dark */
+        overflow-x: hidden;
+      }
+
+      @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      .translator-container {
+        width: 95%;
+        max-width: 800px;
+        background: light-dark(var(--card-bg-light), var(--card-bg-dark));
+        border-radius: 20px;
+        padding: 35px 40px;
+        box-shadow: 0 10px 30px var(--shadow-color-dark);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px); /* Safari */
+        border: 1px solid light-dark(var(--border-light), var(--border-dark));
+        position: relative;
+        overflow: hidden; /* Para contener efectos internos */
+        transition: background 0.3s ease, border 0.3s ease;
+      }
+
+      .app-title {
+        text-align: center;
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, var(--text-light), #e0c3fc); /* Gradient text */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: var(--text-light); /* Fallback for browsers not supporting gradient text */
+      }
+       .app-subtitle {
+          text-align: center;
+          font-size: 0.95rem;
+          color: light-dark(rgba(55, 65, 81, 0.9), rgba(209, 213, 219, 0.8));
+          margin-bottom: 30px;
+      }
+
+
+      .translation-panels {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start; /* Alinea los paneles arriba */
+        gap: 20px; /* Espacio inicial, se ajustará después */
+        position: relative; /* Para posicionar el botón swap */
+        flex-direction: column; /* Stack verticalmente por defecto */
+      }
+
+       @media (min-width: 768px) { /* Layout horizontal en pantallas más grandes */
+          .translation-panels {
+              flex-direction: row;
+              gap: 15px; /* Ajusta el espacio para el botón */
+          }
+      }
+
+      .panel {
+        flex: 1; /* Ocupa espacio disponible */
+        width: 100%; /* Ocupa todo el ancho en modo columna */
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .language-selector {
+        position: relative;
+      }
+
+      /* Estilo base para los botones de selección de idioma */
+      .lang-select-button {
+          width: 100%;
+          background: light-dark(rgba(255, 255, 255, 0.5), rgba(55, 65, 81, 0.7));
+          color: light-dark(var(--text-dark), var(--text-light));
+          border: 1px solid light-dark(var(--border-light), var(--border-dark));
+          border-radius: 8px;
+          padding: 10px 15px;
+          font-size: 0.95rem;
+          cursor: pointer;
+          text-align: left;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          transition: background 0.2s ease, border-color 0.2s ease;
+      }
+       .lang-select-button:hover {
+          background: light-dark(rgba(255, 255, 255, 0.7), rgba(75, 85, 99, 0.8));
+          border-color: light-dark(rgba(107, 114, 128, 0.6), rgba(107, 114, 128, 0.6));
+      }
+
+      .lang-flag {
+        margin-right: 8px;
+        font-size: 1.1em; /* Ajusta tamaño del emoji */
+      }
+
+      /* Contenedor de opciones (oculto por defecto) */
+      .lang-options {
+          display: none; /* Oculto por defecto */
+          position: absolute;
+          top: calc(100% + 5px); /* Debajo del botón */
+          left: 0;
+          width: 100%;
+          max-height: 200px;
+          overflow-y: auto;
+          background: light-dark(var(--bg-light), var(--bg-dark));
+          border: 1px solid light-dark(var(--border-light), var(--border-dark));
+          border-radius: 8px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          z-index: 10;
+          opacity: 0;
+          transform: translateY(-10px);
+          transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+       .lang-options.active {
+          display: block;
+          opacity: 1;
+          transform: translateY(0);
+       }
+
+      .lang-option {
+          padding: 10px 15px;
+          cursor: pointer;
+          transition: background 0.15s ease;
+      }
+       .lang-option:hover {
+           background: light-dark(rgba(229, 231, 235, 0.7), rgba(55, 65, 81, 0.9));
+      }
+      .lang-option.selected {
+         background: light-dark(rgba(209, 213, 219, 0.8), rgba(75, 85, 99, 1));
+         font-weight: 500;
+      }
+
+
+      textarea {
+        width: 100%;
+        min-height: 150px; /* Altura mínima */
+        resize: vertical; /* Permitir redimensionar verticalmente */
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid light-dark(var(--border-light), var(--border-dark));
+        background: light-dark(rgba(243, 244, 246, 0.7), rgba(55, 65, 81, 0.7));
+        color: light-dark(var(--text-dark), var(--text-light));
+        font-family: var(--font-main);
+        font-size: 1rem;
+        transition: border-color 0.3s ease, background 0.3s ease;
+      }
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        background: light-dark(rgba(255, 255, 255, 0.8), rgba(75, 85, 99, 0.8));
+      }
+       textarea#outputText {
+          background: light-dark(rgba(229, 231, 235, 0.6), rgba(31, 41, 55, 0.6)); /* Ligeramente diferente */
+          cursor: default;
+       }
+
+
+      .swap-button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 15px 0; /* Espacio vertical en modo columna */
+      }
+
+      @media (min-width: 768px) { /* Posicionamiento absoluto en modo fila */
+          .swap-button-container {
+              position: absolute;
+              left: 50%;
+              top: 50%; /* Centrado verticalmente respecto a los paneles */
+              transform: translate(-50%, -50%);
+              margin: 0;
+              z-index: 5; /* Asegura que esté sobre los paneles */
+          }
+       }
+
+
+      #swapButton {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: var(--text-light);
+        border: none;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 10px var(--shadow-color-light);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      #swapButton:hover {
+        transform: rotate(180deg) scale(1.1);
+        box-shadow: 0 6px 15px var(--shadow-color-light);
+      }
+      #swapButton:active {
+         transform: rotate(180deg) scale(0.95);
+      }
+
+
+      .translate-button-container {
+        text-align: center;
+        margin-top: 30px;
+      }
+
+      #translateButton {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        color: var(--text-light);
+        border: none;
+        border-radius: 10px;
+        padding: 15px 35px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-size 0.3s ease;
+        box-shadow: 0 5px 15px var(--shadow-color-light);
+        background-size: 200% auto; /* Para animación de hover */
+      }
+      #translateButton:hover {
+        background-position: right center; /* Cambia la dirección del gradiente */
+        box-shadow: 0 8px 20px var(--shadow-color-light);
+        transform: translateY(-2px);
+      }
+       #translateButton:active {
+          transform: translateY(0px) scale(0.98);
+          box-shadow: 0 3px 10px var(--shadow-color-light);
+       }
+      #translateButton:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .feedback-area {
+        margin-top: 20px;
+        text-align: center;
+        min-height: 2em; /* Evita saltos de layout */
+        position: relative; /* Para el spinner */
+      }
+
+      #errorMessage {
+        color: var(--error-color);
+        font-weight: 500;
+      }
+
+      /* Spinner de carga */
+      .loader {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid var(--text-light);
+        width: 25px;
+        height: 25px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto; /* Centrar */
+        display: none; /* Oculto por defecto */
+      }
+       @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Animación para el texto traducido */
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      #outputText.fade-in {
+          animation: fadeIn 0.5s ease forwards;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 40px;
+        font-size: 0.85rem;
+        color: light-dark(rgba(55, 65, 81, 0.7), rgba(209, 213, 219, 0.6));
+      }
+       footer a {
+          color: light-dark(var(--primary-color), #a78bfa); /* Lila claro para dark mode */
+          text-decoration: none;
+          font-weight: 500;
+       }
+       footer a:hover {
+          text-decoration: underline;
+       }
+
+    </style>
+</head>
+<body>
+
+  <div class="translator-container">
+    <h1 class="app-title">Traductor Contextual</h1>
+    <p class="app-subtitle">Traduce frases con IA manteniendo el sentido.</p>
+
+    <div class="translation-panels">
+      <!-- Panel Izquierdo (Entrada) -->
+      <div class="panel" id="panel-source">
+        <div class="language-selector">
+          <button class="lang-select-button" id="sourceLangButton" aria-haspopup="listbox" aria-expanded="false">
+            <span class="selected-lang">
+              <span class="lang-flag" id="sourceFlag">🇺🇸</span>
+              <span id="sourceLangName">Inglés</span>
+            </span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="lang-options" id="sourceLangOptions" role="listbox">
+            <!-- Opciones se llenarán con JS -->
+          </div>
+        </div>
+        <textarea id="inputText" placeholder="Escribe aquí la frase a traducir..."></textarea>
+      </div>
+
+      <!-- Botón de Intercambio -->
+      <div class="swap-button-container">
+        <button id="swapButton" aria-label="Intercambiar idiomas">
+          <i class="fas fa-exchange-alt"></i>
+        </button>
+      </div>
+
+      <!-- Panel Derecho (Salida) -->
+      <div class="panel" id="panel-target">
+         <div class="language-selector">
+          <button class="lang-select-button" id="targetLangButton" aria-haspopup="listbox" aria-expanded="false">
+             <span class="selected-lang">
+              <span class="lang-flag" id="targetFlag">🇪🇸</span>
+              <span id="targetLangName">Español</span>
+            </span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+           <div class="lang-options" id="targetLangOptions" role="listbox">
+            <!-- Opciones se llenarán con JS -->
+          </div>
+        </div>
+        <textarea id="outputText" placeholder="Traducción..." readonly></textarea>
+      </div>
+    </div>
+
+    <div class="translate-button-container">
+      <button id="translateButton">Traducir <i class="fas fa-language"></i></button>
+    </div>
+
+    <div class="feedback-area">
+      <div class="loader" id="loader"></div>
+      <div id="errorMessage"></div>
+    </div>
+
+    <footer>
+      Powered by <a href="https://pollinations.ai/" target="_blank" rel="noopener noreferrer">Pollinations.ai Text API</a>
+    </footer>
+  </div>
+
+  <script type="module">
+    // --- Configuración ---
+    const POLLINATIONS_TEXT_URL_BASE = "https://text.pollinations.ai/";
+
+    // --- Datos de Idiomas (Simplificado) ---
+    // Puedes añadir más idiomas aquí
+    const languages = [
+      { code: 'en', name: 'Inglés', flag: '🇺🇸', apiName: 'English' },
+      { code: 'es', name: 'Español', flag: '🇪🇸', apiName: 'Spanish' },
+      { code: 'fr', name: 'Francés', flag: '🇫🇷', apiName: 'French' },
+      { code: 'de', name: 'Alemán', flag: '🇩🇪', apiName: 'German' },
+      { code: 'it', name: 'Italiano', flag: '🇮🇹', apiName: 'Italian' },
+      { code: 'pt', name: 'Portugués', flag: '🇵🇹', apiName: 'Portuguese' },
+      { code: 'ja', name: 'Japonés', flag: '🇯🇵', apiName: 'Japanese' },
+      { code: 'zh', name: 'Chino', flag: '🇨🇳', apiName: 'Chinese' },
+      // Añade más si quieres...
+    ];
+
+    // --- Elementos del DOM ---
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const translateButton = document.getElementById('translateButton');
+    const swapButton = document.getElementById('swapButton');
+    const loader = document.getElementById('loader');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Selectores de Idioma
+    const sourceLangButton = document.getElementById('sourceLangButton');
+    const targetLangButton = document.getElementById('targetLangButton');
+    const sourceLangOptions = document.getElementById('sourceLangOptions');
+    const targetLangOptions = document.getElementById('targetLangOptions');
+    const sourceFlag = document.getElementById('sourceFlag');
+    const sourceLangName = document.getElementById('sourceLangName');
+    const targetFlag = document.getElementById('targetFlag');
+    const targetLangName = document.getElementById('targetLangName');
+
+    // --- Estado Inicial ---
+    let sourceLangCode = 'en';
+    let targetLangCode = 'es';
+
+    // --- Funciones ---
+
+    // Llena los menús desplegables de idiomas
+    function populateLangOptions(optionsContainer, currentLangCode, type) {
+      optionsContainer.innerHTML = ''; // Limpiar opciones existentes
+      languages.forEach(lang => {
+        const option = document.createElement('div');
+        option.classList.add('lang-option');
+        option.dataset.code = lang.code;
+        option.setAttribute('role', 'option');
+        option.innerHTML = `<span class="lang-flag">${lang.flag}</span> ${lang.name}`;
+        if (lang.code === currentLangCode) {
+          option.classList.add('selected');
+          option.setAttribute('aria-selected', 'true');
+        } else {
+           option.setAttribute('aria-selected', 'false');
+        }
+
+        option.addEventListener('click', () => {
+          if (type === 'source') {
+            sourceLangCode = lang.code;
+            updateLangButton(sourceLangButton, sourceFlag, sourceLangName, lang);
+          } else {
+            targetLangCode = lang.code;
+            updateLangButton(targetLangButton, targetFlag, targetLangName, lang);
+          }
+          // Cerrar el dropdown después de seleccionar
+          optionsContainer.classList.remove('active');
+           optionsContainer.previousElementSibling.setAttribute('aria-expanded', 'false'); // Actualiza aria del botón
+        });
+        optionsContainer.appendChild(option);
+      });
+    }
+
+    // Actualiza el botón de selección de idioma
+    function updateLangButton(button, flagEl, nameEl, lang) {
+        flagEl.textContent = lang.flag;
+        nameEl.textContent = lang.name;
+        // Actualizar selección visual en las opciones si el menú está abierto
+        const options = button.nextElementSibling.querySelectorAll('.lang-option');
+         options.forEach(opt => {
+             opt.classList.toggle('selected', opt.dataset.code === lang.code);
+             opt.setAttribute('aria-selected', opt.dataset.code === lang.code ? 'true' : 'false');
+         });
+    }
+
+    // Muestra/Oculta las opciones de idioma
+    function toggleLangOptions(optionsContainer, button) {
+        const isActive = optionsContainer.classList.toggle('active');
+        button.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+
+        // Cerrar el otro dropdown si está abierto
+         const otherOptions = optionsContainer.id === 'sourceLangOptions' ? targetLangOptions : sourceLangOptions;
+         const otherButton = optionsContainer.id === 'sourceLangOptions' ? targetLangButton : sourceLangButton;
+          if (otherOptions.classList.contains('active')) {
+              otherOptions.classList.remove('active');
+              otherButton.setAttribute('aria-expanded', 'false');
+          }
+    }
+
+    // Función principal de traducción
+    async function translateText() {
+      const textToTranslate = inputText.value.trim();
+      const targetLanguage = languages.find(l => l.code === targetLangCode);
+      const sourceLanguage = languages.find(l => l.code === sourceLangCode);
+
+      if (!textToTranslate) {
+        showError("Por favor, introduce texto para traducir.");
+        return;
+      }
+      if (!targetLanguage) {
+          showError("Idioma destino no válido."); // No debería pasar con el selector
+          return;
+      }
+       if (sourceLangCode === targetLangCode) {
+          outputText.value = textToTranslate; // Si son iguales, solo copia
+          return;
+       }
+
+
+      showLoading(true);
+      outputText.value = ''; // Limpiar salida
+      outputText.classList.remove('fade-in'); // Remover clase de animación
+
+      // Construir el prompt para Pollinations, pidiendo contexto
+      const prompt = `Translate the following phrase from ${sourceLanguage.apiName} to ${targetLanguage.apiName}. Maintain the original context and nuance as much as possible. Only provide the translation, without any introductory text or comments. Phrase: "${textToTranslate}"`;
+
+      const encodedPrompt = encodeURIComponent(prompt);
+      const requestUrl = POLLINATIONS_TEXT_URL_BASE + encodedPrompt;
+
+      console.log("Requesting URL:", requestUrl); // Para depuración
+
+      try {
+        const response = await fetch(requestUrl);
+
+        if (!response.ok) {
+          let errorDetails = `HTTP error! status: ${response.status}`;
+            try {
+               const errorText = await response.text();
+               // A veces Pollinations da HTML de error, intenta extraer texto útil
+               const match = errorText.match(/<pre>(.*?)<\/pre>/s);
+               errorDetails += ` - ${match ? match[1].trim() : errorText.substring(0, 100)}`;
+            } catch (e) { /* Ignorar */ }
+            throw new Error(errorDetails);
+        }
+
+        const translation = (await response.text()).trim();
+        console.log("Raw translation:", translation);
+
+        // Intenta limpiar la respuesta si Pollinations añade algo extra
+        // Esto es muy básico, podría necesitar ajustes
+        let cleanedTranslation = translation;
+        // Quitar comillas al inicio/final si las añade
+        if (cleanedTranslation.startsWith('"') && cleanedTranslation.endsWith('"')) {
+            cleanedTranslation = cleanedTranslation.substring(1, cleanedTranslation.length - 1);
+        }
+        // Quita frases introductorias comunes (ajustar según respuestas reales)
+        const introPhrases = [
+            `translation:`,
+            `in ${targetLanguage.apiName}:`,
+            `the translation is:`,
+            `${targetLanguage.apiName}:`
+        ];
+         introPhrases.forEach(phrase => {
+            if (cleanedTranslation.toLowerCase().startsWith(phrase)) {
+                cleanedTranslation = cleanedTranslation.substring(phrase.length).trim();
+            }
+         });
+
+
+        outputText.value = cleanedTranslation;
+        outputText.classList.add('fade-in'); // Añadir animación
+
+      } catch (error) {
+        console.error('Error during translation:', error);
+        showError(`Error: ${error.message}`);
+        outputText.value = ''; // Limpiar en caso de error
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Intercambia idiomas y texto
+    function swapLanguages() {
+      // Intercambiar códigos
+      [sourceLangCode, targetLangCode] = [targetLangCode, sourceLangCode];
+
+      // Intercambiar texto en los textareas
+      [inputText.value, outputText.value] = [outputText.value, inputText.value];
+
+      // Actualizar los botones y las opciones seleccionadas
+      const sourceLang = languages.find(l => l.code === sourceLangCode);
+      const targetLang = languages.find(l => l.code === targetLangCode);
+      updateLangButton(sourceLangButton, sourceFlag, sourceLangName, sourceLang);
+      updateLangButton(targetLangButton, targetFlag, targetLangName, targetLang);
+      populateLangOptions(sourceLangOptions, sourceLangCode, 'source'); // Repopular para marcar selección correcta
+      populateLangOptions(targetLangOptions, targetLangCode, 'target');
+
+      // Limpiar error si había uno
+      showError('');
+       outputText.classList.remove('fade-in');
+    }
+
+    // Muestra/oculta el spinner y deshabilita/habilita el botón
+    function showLoading(isLoading) {
+      loader.style.display = isLoading ? 'block' : 'none';
+      translateButton.disabled = isLoading;
+      if (isLoading) {
+        errorMessage.textContent = ''; // Limpiar error al empezar a cargar
+      }
+    }
+
+    // Muestra un mensaje de error
+    function showError(message) {
+      errorMessage.textContent = message;
+    }
+
+    // --- Inicialización y Event Listeners ---
+
+    // Llenar opciones de idioma al cargar
+    populateLangOptions(sourceLangOptions, sourceLangCode, 'source');
+    populateLangOptions(targetLangOptions, targetLangCode, 'target');
+
+    // Listeners para abrir/cerrar dropdowns
+    sourceLangButton.addEventListener('click', () => toggleLangOptions(sourceLangOptions, sourceLangButton));
+    targetLangButton.addEventListener('click', () => toggleLangOptions(targetLangOptions, targetLangButton));
+
+    // Cerrar dropdowns si se hace clic fuera
+    document.addEventListener('click', (event) => {
+        if (!sourceLangButton.contains(event.target) && !sourceLangOptions.contains(event.target)) {
+            sourceLangOptions.classList.remove('active');
+             sourceLangButton.setAttribute('aria-expanded', 'false');
+        }
+        if (!targetLangButton.contains(event.target) && !targetLangOptions.contains(event.target)) {
+            targetLangOptions.classList.remove('active');
+            targetLangButton.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+
+    // Listener para el botón de traducir
+    translateButton.addEventListener('click', translateText);
+
+    // Listener para el botón de intercambiar
+    swapButton.addEventListener('click', swapLanguages);
+
+    // Opcional: Traducir al presionar Enter en el input (con Ctrl o Cmd)
+    inputText.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault(); // Evita nueva línea
+            translateText();
+        }
+    });
+
+  </script>
+
+</body>
+</html>

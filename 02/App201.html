@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Esquemas Pro v2.1 (Corregido)</title>
+
+    <!-- Google Fonts (Ejemplo: Poppins) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Iconos (Ejemplo: Feather Icons via CDN) -->
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <style>
+        :root {
+            --bg-gradient-start: #1f2023;
+            --bg-gradient-end: #2c2d31;
+            --surface-color: #2a2b2f;
+            --primary-color-start: #6a11cb;
+            --primary-color-end: #2575fc;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --text-placeholder: #666;
+            --accent-glow: rgba(66, 133, 244, 0.3);
+            --error-color: #ff6b6b;
+            --card-bg: #34353a;
+            --border-color: #444;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --font-family: 'Poppins', sans-serif;
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Changed to flex-start for scrolling */
+            min-height: 100vh;
+            padding: 40px 20px; /* Added padding top/bottom */
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            background-color: var(--surface-color);
+            padding: 40px 50px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px var(--shadow-color);
+            width: 100%;
+            max-width: 800px; /* Increased max-width slightly */
+            text-align: center;
+            transition: all var(--transition-speed) ease;
+            margin-bottom: 40px; /* Space at the bottom */
+        }
+
+        .app-title {
+            font-size: 2.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+             background: linear-gradient(90deg, var(--primary-color-start), var(--primary-color-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .app-subtitle {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        #topicInput {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px 20px;
+            font-family: var(--font-family);
+            font-size: 1em;
+            color: var(--text-primary);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            resize: vertical;
+            transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+
+        #topicInput::placeholder {
+            color: var(--text-placeholder);
+            font-weight: 300;
+        }
+
+        #topicInput:focus {
+            outline: none;
+            border-color: var(--primary-color-end);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .generate-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 35px;
+            font-family: var(--font-family);
+            font-size: 1.1em;
+            font-weight: 500;
+            color: #fff;
+            background: linear-gradient(90deg, var(--primary-color-start), var(--primary-color-end));
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-button i {
+            margin-left: 10px;
+            width: 20px;
+            height: 20px;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .generate-button:hover:not(:disabled) { /* Added :not(:disabled) */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+         .generate-button:hover:not(:disabled) i.feather-arrow-right-circle { /* Target specific icon */
+            transform: translateX(3px);
+         }
+
+        .generate-button:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .generate-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .generate-button:disabled .feather-loader { /* Show loader icon when disabled */
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            margin-left: 10px; /* Ensure space for loader */
+             width: 20px;
+             height: 20px;
+        }
+         .generate-button:disabled .feather-arrow-right-circle { /* Hide default icon */
+             display: none;
+         }
+
+        /* --- Loader Icon (used inside button) --- */
+        .feather-loader {
+            display: none; /* Hide by default */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Output Section --- */
+        .output-section {
+            margin-top: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            text-align: left;
+        }
+
+        .output-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .output-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+         .output-title i {
+             margin-right: 12px;
+             color: var(--primary-color-end);
+             width: 24px;
+             height: 24px;
+         }
+         .output-title .topic-highlight {
+             background: linear-gradient(90deg, var(--primary-color-start), var(--primary-color-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-style: italic;
+            margin-left: 8px; /* Space before topic */
+         }
+
+        .outline-part {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px; /* Increased padding */
+            margin-bottom: 25px; /* Increased spacing */
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px var(--shadow-color);
+            opacity: 0;
+            transform: scale(0.95);
+            animation: card-fade-in 0.5s ease forwards;
+        }
+
+        .outline-part:nth-child(1) { animation-delay: 0.1s; }
+        .outline-part:nth-child(2) { animation-delay: 0.25s; } /* Adjusted delay */
+        .outline-part:nth-child(3) { animation-delay: 0.4s; } /* Adjusted delay */
+         /* Add more delays if more sections are possible */
+        .outline-part:nth-child(4) { animation-delay: 0.55s; }
+
+        @keyframes card-fade-in {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .part-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.4em; /* Slightly larger */
+            font-weight: 600; /* Bolder */
+            color: var(--text-primary);
+            margin-bottom: 20px; /* More space below title */
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color); /* Separator line */
+        }
+         .part-title i {
+            margin-right: 12px;
+            color: var(--primary-color-end);
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0; /* Prevent icon shrinking */
+         }
+
+        .part-content {
+            color: var(--text-secondary);
+            line-height: 1.8; /* Increased line height */
+            font-weight: 300;
+        }
+
+        /* Styling for generated paragraphs */
+        .part-content p {
+            margin-bottom: 1.2em; /* Space between paragraphs */
+        }
+        .part-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Styling for generated lists */
+        .part-content ul {
+            list-style: none; /* Remove default bullets */
+            padding-left: 10px; /* Indentation for the whole list */
+            margin-top: 10px;
+        }
+
+        .part-content li {
+            position: relative;
+            padding-left: 30px; /* Space for custom marker */
+            margin-bottom: 1em; /* Space between list items */
+            color: var(--text-primary); /* Make list items slightly brighter */
+            font-weight: 400; /* Slightly bolder list items */
+        }
+         .part-content li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Custom list marker */
+        .part-content li::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 0.6em; /* Adjust vertical alignment */
+            width: 10px; /* Larger marker */
+            height: 10px; /* Larger marker */
+            background: linear-gradient(135deg, var(--primary-color-start), var(--primary-color-end));
+            border-radius: 3px; /* Squarish */
+            transform: rotate(45deg); /* Diamond shape */
+        }
+
+         /* Styling for potential Thesis (if parsable) */
+         .part-content p.thesis-statement { /* Target <p> with class */
+            font-style: italic;
+            font-weight: 500;
+            color: var(--text-primary);
+            padding: 10px 15px;
+            border-left: 3px solid var(--primary-color-end);
+            margin: 1em 0;
+            background-color: rgba(44, 45, 49, 0.5); /* Slight bg tint */
+            border-radius: 0 var(--border-radius) var(--border-radius) 0; /* Rounded corners */
+        }
+        .part-content p.thesis-statement strong { /* Style the "Tesis:" part */
+             background: linear-gradient(90deg, var(--primary-color-start), var(--primary-color-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 600;
+        }
+
+        /* --- Error Message --- */
+        .error-message {
+            display: none;
+            margin-top: 25px;
+            padding: 15px 20px;
+            background-color: rgba(255, 107, 107, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+             display: flex; /* Use flex for icon alignment */
+            align-items: center;
+        }
+         .error-message i {
+             margin-right: 10px;
+             width: 20px;
+             height: 20px;
+             flex-shrink: 0;
+         }
+        .error-message.visible {
+             display: flex; /* Change to flex when visible */
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+             .app-container {
+                padding: 30px 20px; /* Reduced padding */
+            }
+            .app-title {
+                font-size: 2em;
+            }
+            .app-subtitle {
+                font-size: 1em;
+                 margin-bottom: 30px;
+            }
+             .generate-button {
+                padding: 12px 25px;
+                font-size: 1em;
+            }
+             .output-title {
+                 font-size: 1.3em;
+             }
+              .part-title {
+                 font-size: 1.2em; /* Adjusted */
+             }
+              .outline-part {
+                  padding: 20px; /* Reduced padding */
+              }
+              .part-content li {
+                  padding-left: 25px; /* Adjust list padding */
+              }
+              .part-content li::before {
+                  left: 0; /* Adjust marker position */
+                  top: 0.7em;
+                  width: 8px;
+                  height: 8px;
+              }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1 class="app-title">Constructor de Esquemas</h1>
+        <p class="app-subtitle">Introduce tu tema y la IA creará una estructura sólida para tu ensayo.</p>
+
+        <div class="input-section">
+            <textarea id="topicInput" placeholder="Ej: El impacto de la inteligencia artificial en el mercado laboral..."></textarea>
+            <button id="generateButton" class="generate-button">
+                Generar Esquema
+                <i data-feather="arrow-right-circle"></i>
+                <i data-feather="loader" class="feather-loader"></i> <!-- Loader icon inside button -->
+            </button>
+        </div>
+
+        <div id="errorMessage" class="error-message">
+             <i data-feather="alert-triangle"></i> <!-- Error Icon -->
+            <span><!-- Error message text goes here --></span>
+        </div>
+
+        <div id="outputSection" class="output-section">
+            <!-- El contenido del esquema se generará aquí -->
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        const topicInput = document.getElementById('topicInput');
+        const generateButton = document.getElementById('generateButton');
+        const outputSection = document.getElementById('outputSection');
+        const errorMessageContainer = document.getElementById('errorMessage');
+        const errorMessageText = errorMessageContainer.querySelector('span');
+
+        const POLLINATIONS_TEXT_URL_BASE = "https://text.pollinations.ai/";
+
+        generateButton.addEventListener('click', async () => {
+            const topic = topicInput.value.trim();
+
+            if (!topic) {
+                showError('Por favor, introduce un tema para el ensayo.');
+                return;
+            }
+
+            // --- Iniciar estado de carga ---
+            generateButton.disabled = true;
+            outputSection.classList.remove('visible');
+            outputSection.innerHTML = '';
+            hideError();
+
+            try {
+                // Prompt ligeramente ajustado para ser más explícito con el formato deseado
+                const prompt = `Crea un esquema detallado y bien estructurado para un ensayo sobre el tema "${topic}".
+                Formatea la respuesta claramente con las siguientes secciones exactas, usando las palabras clave en negrita como encabezados:
+
+                **Introducción:**
+                [Contenido de la introducción aquí. Incluye gancho, contexto y tesis. Separa párrafos con doble salto de línea. Indica la tesis claramente, por ejemplo: Tesis: ...]
+
+                **Puntos Clave:**
+                [Lista de 3-5 puntos principales aquí. Usa guiones (-) o asteriscos (*) para cada punto principal. Puedes añadir subpuntos con sangría o anidados si es posible.]
+
+                **Conclusión:**
+                [Contenido de la conclusión aquí. Resume puntos, reafirma tesis y ofrece reflexión final. Separa párrafos con doble salto de línea.]
+
+                Asegúrate de usar **exactamente** esas palabras clave en negrita para marcar el inicio de cada sección. No añadas texto antes de "**Introducción:**" ni después de "**Conclusión:**".`;
+
+
+                const encodedPrompt = encodeURIComponent(prompt);
+                const requestUrl = POLLINATIONS_TEXT_URL_BASE + encodedPrompt;
+
+                console.log("Requesting URL:", requestUrl);
+                const response = await fetch(requestUrl);
+
+                if (!response.ok) {
+                    let errorDetails = `Error HTTP: ${response.status}`;
+                    try {
+                        const errorText = await response.text();
+                        errorDetails += ` - ${errorText.substring(0, 100)}...`;
+                    } catch (e) { /* Ignorar */ }
+                    throw new Error(errorDetails);
+                }
+
+                const responseText = await response.text();
+                console.log("Raw response text:", responseText); // <-- MUY IMPORTANTE PARA DEBUG
+
+                if (!responseText) {
+                    throw new Error("La API devolvió una respuesta vacía.");
+                }
+
+                displayOutline(responseText, topic);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Ocurrió un error: ${error.message}`);
+                 outputSection.classList.remove('visible');
+            } finally {
+                // --- Finalizar estado de carga ---
+                generateButton.disabled = false;
+                feather.replace(); // Re-run Feather to ensure icons are correct
+            }
+        });
+
+        function displayOutline(responseText, topic) {
+             outputSection.innerHTML = '';
+
+             // **Añadir Log del objeto parseado para depuración**
+             const outline = parseOutline(responseText);
+             console.log("Parsed outline object:", outline); // <-- MUY IMPORTANTE PARA DEBUG
+
+             // **Condición de error revisada**
+             if (!outline || (!outline.introduction.length && !outline.keyPoints.length && !outline.conclusion.length)) {
+                 showError("No se pudo extraer una estructura de esquema válida de la respuesta. Revisa la 'Raw response text' y el 'Parsed outline object' en la consola.");
+                 // No mostrar nada si no se pudo parsear
+                 outputSection.classList.remove('visible');
+                 return; // Salir de la función si no hay nada que mostrar
+             }
+
+            // Crear título dinámico
+            const title = document.createElement('h2');
+            title.classList.add('output-title');
+            title.innerHTML = `<i data-feather="file-text"></i> Esquema para: <span class="topic-highlight">${escapeHtml(topic)}</span>`;
+            outputSection.appendChild(title);
+
+            // Crear Tarjeta de Introducción
+            if (outline.introduction.length > 0) {
+                outputSection.appendChild(createOutlineCard(
+                    'Introducción',
+                    'log-in',
+                    outline.introduction
+                ));
+            } else {
+                 console.warn("No introduction content found after parsing.");
+            }
+
+
+            // Crear Tarjeta de Puntos Clave
+             if (outline.keyPoints.length > 0) {
+                 outputSection.appendChild(createOutlineCard(
+                    'Puntos Clave',
+                    'list',
+                    outline.keyPoints
+                ));
+            } else {
+                 console.warn("No key points content found after parsing.");
+            }
+
+            // Crear Tarjeta de Conclusión
+            if (outline.conclusion.length > 0) {
+                 outputSection.appendChild(createOutlineCard(
+                    'Conclusión',
+                    'log-out',
+                    outline.conclusion
+                ));
+            } else {
+                 console.warn("No conclusion content found after parsing.");
+            }
+
+            feather.replace(); // Re-aplicar iconos a los elementos recién creados
+            outputSection.classList.add('visible'); // Hacer visible la sección
+        }
+
+        function createOutlineCard(title, iconName, contentData) {
+            const card = document.createElement('div');
+            card.classList.add('outline-part');
+
+            const cardTitle = document.createElement('h3');
+            cardTitle.classList.add('part-title');
+            cardTitle.innerHTML = `<i data-feather="${iconName}"></i> ${escapeHtml(title)}`;
+
+            const cardContent = document.createElement('div');
+            cardContent.classList.add('part-content');
+
+            if (!contentData || contentData.length === 0) {
+                 cardContent.innerHTML = `<p><i>(No se encontró contenido para esta sección)</i></p>`;
+            } else if (title === 'Introducción' || title === 'Conclusión') {
+                 contentData.forEach(item => {
+                    const element = document.createElement('p');
+                     // Handle thesis object structure for Introduction
+                    if (title === 'Introducción' && typeof item === 'object' && item.hasOwnProperty('isThesis')) {
+                         element.innerHTML = item.isThesis ? `<strong>Tesis:</strong> ${escapeHtml(item.text).replace(/\n/g, '<br>')}` : escapeHtml(item.text).replace(/\n/g, '<br>');
+                         if (item.isThesis) {
+                             element.classList.add('thesis-statement');
+                         }
+                    } else if (typeof item === 'string') { // Handle simple string paragraphs (for Conclusion or if Intro format differs)
+                         element.innerHTML = escapeHtml(item).replace(/\n/g, '<br>');
+                    } else {
+                        console.warn("Unexpected item format in Intro/Conclusion:", item);
+                    }
+
+                    cardContent.appendChild(element);
+                });
+            } else if (title === 'Puntos Clave') {
+                const list = document.createElement('ul');
+                contentData.forEach(itemText => {
+                    if (typeof itemText === 'string') {
+                         const listItem = document.createElement('li');
+                         // Process simple markdown (bold, italic) - basic example
+                         let processedText = escapeHtml(itemText);
+                         processedText = processedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+                         processedText = processedText.replace(/\*(.*?)\*/g, '<em>$1</em>');       // Italic
+                         processedText = processedText.replace(/\n/g, '<br>'); // Allow line breaks within a point
+                         listItem.innerHTML = processedText;
+                         list.appendChild(listItem);
+                    } else {
+                         console.warn("Unexpected item format in Key Points:", itemText);
+                    }
+                });
+                if (list.hasChildNodes()) {
+                    cardContent.appendChild(list);
+                } else {
+                     cardContent.innerHTML = `<p><i>(No se encontraron puntos clave en la lista)</i></p>`;
+                }
+
+            }
+
+            card.appendChild(cardTitle);
+            card.appendChild(cardContent);
+            return card;
+        }
+
+        // --- Heavily Revised Parsing Function ---
+        function parseOutline(rawText) {
+            console.log("Starting parseOutline function...");
+             if (!rawText) return { introduction: [], keyPoints: [], conclusion: [] };
+
+            // --- 1. Pre-cleaning ---
+            let text = rawText.replace(/\r\n/g, '\n'); // Normalize newlines
+            // Remove common conversational fluff (add more as needed)
+            text = text.replace(/^aquí tienes el esquema:?\s*/i, '');
+            text = text.replace(/^claro, aquí está el esquema:?\s*/i, '');
+            text = text.replace(/espero que esto ayude.?\s*$/i, '');
+            text = text.replace(/¡mucho éxito con tu ensayo!?\s*$/i, '');
+            text = text.trim();
+             console.log("Cleaned text:", text);
+
+
+            // --- 2. Define Section Markers ---
+            // Using Regex for more flexibility (case-insensitive, optional bold/markdown, optional colon)
+            const introMarker = /^(#+\s*|\*\*\s*)?introducci(ó|o)n\s*(\*\*)?\s*?:?/i;
+            const pointsMarker = /^(#+\s*|\*\*\s*)?(puntos clave|key points|desarrollo|cuerpo|body)\s*(\*\*)?\s*?:?/i;
+            const conclusionMarker = /^(#+\s*|\*\*\s*)?conclusi(ó|o)n\s*(\*\*)?\s*?:?/i;
+            const thesisMarker = /^(#+\s*|\*\*\s*)?tesis|thesis statement\s*(\*\*)?\s*?:?/i; // Separate marker for thesis
+
+
+             // --- 3. Split into Potential Blocks ---
+             // Split by lines that look like section headers (heuristics!)
+             const lines = text.split('\n');
+             let sections = { intro: '', points: '', conclusion: '', unknown: '' };
+             let currentSectionKey = 'unknown'; // Start collecting unknown text first
+
+             for (const line of lines) {
+                 const trimmedLine = line.trim();
+
+                 if (introMarker.test(trimmedLine)) {
+                     currentSectionKey = 'intro';
+                     console.log("Detected Intro section");
+                 } else if (pointsMarker.test(trimmedLine)) {
+                     currentSectionKey = 'points';
+                      console.log("Detected Points section");
+                 } else if (conclusionMarker.test(trimmedLine)) {
+                     currentSectionKey = 'conclusion';
+                      console.log("Detected Conclusion section");
+                 } else {
+                      // Only add non-empty lines to the current section's text
+                     if (trimmedLine) {
+                          sections[currentSectionKey] += line + '\n'; // Preserve original spacing within section
+                     } else if (sections[currentSectionKey].trim()) {
+                         // Add blank lines only if the section already has content
+                         sections[currentSectionKey] += '\n';
+                     }
+                 }
+             }
+              console.log("Raw Sections:", sections);
+
+             // --- 4. Process Each Section ---
+             let introduction = [];
+             let keyPoints = [];
+             let conclusion = [];
+
+             // Process Introduction
+             if (sections.intro) {
+                 const introLines = sections.intro.trim().split('\n');
+                 let currentParagraph = '';
+                 for (const line of introLines) {
+                     const trimmedLine = line.trim();
+                      if (trimmedLine === '') { // New paragraph
+                         if (currentParagraph) {
+                              const isThesis = thesisMarker.test(currentParagraph);
+                              const text = currentParagraph.replace(thesisMarker, '').trim();
+                              if (text) introduction.push({ text: text, isThesis: isThesis });
+                         }
+                         currentParagraph = '';
+                     } else {
+                         currentParagraph += (currentParagraph ? ' ' : '') + trimmedLine; // Join lines into paragraph
+                     }
+                 }
+                 // Add the last paragraph
+                 if (currentParagraph) {
+                      const isThesis = thesisMarker.test(currentParagraph);
+                      const text = currentParagraph.replace(thesisMarker, '').trim();
+                      if (text) introduction.push({ text: text, isThesis: isThesis });
+                 }
+             }
+
+             // Process Key Points
+             if (sections.points) {
+                 const pointsLines = sections.points.trim().split('\n');
+                 for (const line of pointsLines) {
+                     const trimmedLine = line.trim();
+                     // Check if it looks like a list item (adjust regex as needed)
+                     if (trimmedLine.match(/^(\s*(\-|\*|\d+\.?)\s+)/)) {
+                         // Remove marker and add
+                         keyPoints.push(trimmedLine.replace(/^(\s*(\-|\*|\d+\.?)\s+)/, '').trim());
+                     } else if (trimmedLine && keyPoints.length > 0) {
+                         // Append to the last point if it doesn't look like a new item
+                         keyPoints[keyPoints.length - 1] += '\n' + trimmedLine;
+                     } else if (trimmedLine) {
+                          // If it's the first line and not a list item, add it anyway
+                         keyPoints.push(trimmedLine);
+                     }
+                 }
+             }
+
+              // Process Conclusion
+             if (sections.conclusion) {
+                 const conclusionLines = sections.conclusion.trim().split('\n');
+                 let currentParagraph = '';
+                 for (const line of conclusionLines) {
+                      const trimmedLine = line.trim();
+                     if (trimmedLine === '') { // New paragraph
+                         if (currentParagraph) {
+                             conclusion.push(currentParagraph);
+                         }
+                         currentParagraph = '';
+                     } else {
+                         currentParagraph += (currentParagraph ? ' ' : '') + trimmedLine;
+                     }
+                 }
+                 // Add the last paragraph
+                 if (currentParagraph) {
+                     conclusion.push(currentParagraph);
+                 }
+             }
+
+
+            // Handle potential 'unknown' text - maybe append it to the last known section or log it
+             if (sections.unknown.trim()) {
+                 console.warn("Found unclassified text:", sections.unknown);
+                 // Decide where to put it, e.g., append to conclusion if it exists
+                 // if (conclusion.length > 0) conclusion[conclusion.length - 1] += '\n\n' + sections.unknown.trim();
+             }
+
+             // Filter empty results just in case
+             introduction = introduction.filter(p => p.text);
+             keyPoints = keyPoints.filter(p => p);
+             conclusion = conclusion.filter(p => p);
+
+            console.log("Finished parseOutline.");
+            return { introduction, keyPoints, conclusion };
+        }
+
+
+        function showError(message) {
+            errorMessageText.textContent = message;
+            errorMessageContainer.classList.add('visible');
+             if (!errorMessageContainer.querySelector('i[data-feather="alert-triangle"]')) { // Check if icon exists
+                 const icon = document.createElement('i');
+                 icon.setAttribute('data-feather', 'alert-triangle');
+                 errorMessageContainer.insertBefore(icon, errorMessageText);
+                 feather.replace();
+             }
+        }
+
+        function hideError() {
+            errorMessageContainer.classList.remove('visible');
+            // No need to clear text, will be overwritten or remain hidden
+        }
+
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return '';
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+    </script>
+</body>
+</html>
