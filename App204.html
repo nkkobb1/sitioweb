@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bibliotecas JS Útiles - Guía Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes limpias y modernas, opcional monoespaciada -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Source+Code+Pro:wght@400&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Bibliotecas JS --- */
+        :root {
+            --color-primary: #f7df1e; /* Amarillo JS */
+            --color-secondary: #2a7ae2; /* Azul (Links, énfasis) */
+            --color-tertiary: #4caf50; /* Verde (Éxito, código) */
+            --color-background: #1e1e2e; /* Fondo oscuro tipo editor */
+            --color-text: #d4d4d4; /* Texto gris claro */
+            --color-text-muted: #888888; /* Texto gris medio */
+            --color-modal-bg: #252530; /* Fondo modal ligeramente más claro */
+            --color-border: #4a4a5a; /* Borde gris oscuro */
+            --color-error-bg: #3f1212;
+            --color-error-text: #fecaca;
+            --color-error-border: #dc2626;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 0 20px -5px rgba(247, 223, 30, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+            --border-radius: 4px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 0.5px; }
+        .logo { color: var(--color-primary); /* No necesita sombra fuerte */ }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 600; }
+        #modal-title { color: var(--color-primary); font-weight: 600; }
+        .navbar { background-color: rgba(30, 30, 46, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: rgba(37, 37, 48, 0.9); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Inter'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(247, 223, 30, 0.2); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.1rem 0.9rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Inter'; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #30303e; border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: var(--color-background); padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #e6cf1a; box-shadow: var(--shadow-md); transform: scale(1.01); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        #story-modal { /* Misma lógica */ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30, 30, 46, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper { /* Misma lógica */ background-color: var(--color-modal-bg); border: 1px solid var(--color-border); border-radius: var(--border-radius); padding: 1.5rem 2rem; max-width: 950px; width: 95%; max-height: 90vh; min-height: 400px; overflow: hidden; position: relative; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; }
+        .modal-close-btn { /* Misma lógica */ position: absolute; top: 10px; right: 10px; background: var(--color-border); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        #modal-content-area { /* Misma lógica */ flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(74, 74, 90, 0.5);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(74, 74, 90, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; font-size: 0.98rem; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: var(--color-tertiary); font-style: italic; }
+        /* Estilo para posible código */
+        #modal-content code { font-family: 'Source Code Pro', monospace; background-color: rgba(0, 0, 0, 0.2); color: var(--color-tertiary); padding: 0.2em 0.4em; border-radius: 3px; font-size: 0.9em; }
+        #modal-content pre code { display: block; padding: 1em; overflow-x: auto; background-color: rgba(10, 10, 15, 0.5); border: 1px solid var(--color-border); border-radius: var(--border-radius); }
+        #modal-content a { color: var(--color-secondary); text-decoration: underline; }
+        #modal-content a:hover { color: #5a9ae5; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Inter', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 600; }
+        #modal-content h1 { font-size: 1.4em; } #modal-content h2 { font-size: 1.25em; } #modal-content h3 { font-size: 1.1em; color: var(--color-secondary); } #modal-content h4 { font-size: 1.0em; color: var(--color-text-muted); border-bottom: none;}
+        /* Imagen y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; background-color: #333; /* Fondo si la imagen tarda */ }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(247, 223, 30, 0.2); }
+        #modal-content .image-placeholder { /* Misma lógica */ display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(74, 74, 90, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; color: var(--color-border); }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(30, 30, 46, 0.8); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(74, 74, 90, 0.5); }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(74, 74, 90, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-secondary); color: #f0f0f0; margin-left: auto; text-align: right; font-weight: 400; }
+        .ai-message { background-color: #3a3a4a; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #30303e; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Inter'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #e6cf1a; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        #modal-loading { /* Misma lógica */ text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(30, 30, 46, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 55px; height: 55px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 600; color: var(--color-text); font-size: 1.2rem; font-family: 'Inter'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Inter'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { /* Misma lógica */ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30, 30, 46, 0.97); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { /* Misma lógica */ position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fab fa-js-square mr-3"></i> <!-- Icono JS -->
+                     JS Libraries Hub
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">{ Guía Interactiva }</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explora el Ecosistema JavaScript</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">Descubre bibliotecas y frameworks populares para tus proyectos. Selecciona una para ver detalles o busca por nombre.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar biblioteca (React, Lodash, D3...)">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-cubes text-yellow-400 mr-2"></i> <!-- Icono Bloques/Libs -->
+                 Índice de Bibliotecas
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Cargando bibliotecas disponibles...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">// No se encontraron bibliotecas con ese nombre</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Cargar Más Bibliotecas (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Obteniendo información de la biblioteca...</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Esperando respuesta...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre esta biblioteca...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Descripciones generadas por IA con fines informativos sobre bibliotecas JavaScript.</p>
+              <p class="mt-1">Consulta siempre la documentación oficial para detalles precisos y actualizados.</p>
+              <p class="mt-2">© ${new Date().getFullYear()} JS Libraries Hub</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // --- Frameworks UI Principales ---
+            "React: Biblioteca para construir interfaces de usuario declarativas",
+            "Vue.js: El Framework Progresivo para UI",
+            "Angular: Plataforma completa para aplicaciones web robustas",
+            "Svelte: Compilador de UI que escribe código imperativo eficiente",
+            "SolidJS: UI declarativa y reactiva con rendimiento cercano a nativo",
+
+            // --- Frameworks UI Ligeros / Alternativos ---
+            "Preact: Alternativa rápida y ligera (3kB) a React con la misma API moderna",
+            "Alpine.js: Framework minimalista para añadir comportamiento JS a tu HTML existente",
+            "Lit: Biblioteca simple para construir Web Components rápidos y ligeros",
+            "Mithril.js: Framework JS moderno y performante para Single Page Applications (SPAs)",
+            "Hyperapp: Framework micro-frontend minimalista para construir interfaces web",
+            "Marko: Framework UI declarativo, reactivo y de alto rendimiento (por eBay)",
+            "petite-vue: Variante progresiva de Vue optimizada para mejoras progresivas",
+            "Riot.js: Biblioteca UI simple y elegante basada en componentes",
+
+            // --- Meta-Frameworks (SSR, SSG, Fullstack) ---
+            "Next.js: El Framework React para Producción (SSR, SSG, API Routes)",
+            "Nuxt.js: El Framework Vue Intuitivo (SSR, SSG, Serverless)",
+            "SvelteKit: El framework oficial para construir aplicaciones Svelte robustas",
+            "Astro: Construye sitios web más rápidos con arquitectura de islas (menos JS)",
+            "Remix: Framework web full stack enfocado en fundamentos web y UX",
+            "Gatsby: Framework rápido para construir sitios web y apps con React (enfocado en SSG)",
+            "Eleventy (11ty): Generador de sitios estáticos simple, flexible y configurable",
+            "RedwoodJS: Framework full-stack opinionado para startups (React, GraphQL, Prisma)",
+            "Blitz.js: Framework full-stack 'Zero-API' construido sobre Next.js",
+            "Qwik: Framework reanudable enfocado en performance y carga instantánea",
+            "AnalogJS: El meta-framework fullstack para Angular",
+
+            // --- Componentes UI & Styling ---
+            "Material UI (MUI): Componentes React completos basados en Material Design",
+            "Chakra UI: Biblioteca de componentes simples, modulares y accesibles para React",
+            "Tailwind CSS: Framework CSS Utility-First (Usado con PostCSS/JS)",
+            "Bootstrap (JS Components): Componentes JS para el popular framework front-end",
+            "Ant Design (AntD): Lenguaje de diseño UI y componentes React para empresas",
+            "Semantic UI React: Integración oficial de Semantic UI para React",
+            "Headless UI: Componentes de UI completamente no estilizados y accesibles (React/Vue)",
+            "Radix UI: Primitivas de UI de bajo nivel, accesibles y no estilizadas",
+            "shadcn/ui: Componentes UI reutilizables construidos con Radix UI y Tailwind (Concepto/Colección)",
+            "Flowbite: Componentes UI construidos sobre Tailwind CSS",
+            "DaisyUI: Plugin de Tailwind CSS para componentes UI rápidos (clases semánticas)",
+            "PrimeReact: Completa suite de componentes UI para React",
+            "PrimeVue: Completa suite de componentes UI para Vue",
+            "Vuetify: Framework de componentes Material Design para Vue",
+            "Quasar Framework: Framework Vue de alto rendimiento (SPA, PWA, SSR, Mobile, Desktop)",
+            "NextUI: Biblioteca de componentes UI bonita y rápida para React",
+            "Mantine: Librería de componentes y hooks React con foco en usabilidad",
+            "Blueprint JS: Sistema de diseño UI para construir interfaces de datos complejas (React)",
+            "Fluent UI (React): Implementación de Microsoft Fluent Design System para React",
+
+            // --- CSS-in-JS & Styling Utilities ---
+            "Styled Components: CSS-in-JS visual para componentes React y React Native",
+            "Emotion: Librería CSS-in-JS performante y flexible",
+            "Stitches: CSS-in-JS con variantes, temas y SSR casi nulo",
+            "Vanilla Extract: Estilos CSS con scope local generados en build time (Zero-runtime)",
+            "Linaria: CSS-in-JS con Zero-runtime",
+            "PostCSS: Herramienta para transformar CSS con plugins JS",
+            "Sass: Extensión CSS madura y estable (preprocesador)",
+
+            // --- State Management ---
+            "Redux: Contenedor de estado predecible para aplicaciones JS",
+            "Redux Toolkit: La forma oficial y opinionada de escribir lógica Redux",
+            "Zustand: State management pequeño, rápido y escalable usando hooks (React)",
+            "MobX: Gestión de estado simple y escalable mediante programación reactiva funcional transparente (TFRP)",
+            "Pinia: El store intuitivo, tipado y modular para Vue.js",
+            "Valtio: State management basado en proxies simple para React",
+            "Jotai: Gestión de estado atómico primitivo y flexible para React",
+            "Recoil: Gestión de estado experimental para React (por Meta)",
+            "XState: Máquinas de estado finitas y statecharts para gestionar lógica compleja",
+            "NgRx: Gestión de estado reactiva para Angular (inspirado en Redux)",
+            "Effector: Gestor de estado reactivo y performante (framework-agnostic)",
+            "Akita: Solución de gestión de estado basada en patrones de datos orientados a objetos",
+
+            // --- Data Fetching & Caching ---
+            "TanStack Query (React Query): Hooks para fetching, caching y actualización de datos en React/JS",
+            "SWR: Hooks React para fetching de datos (stale-while-revalidate)",
+            "Apollo Client: Cliente GraphQL completo para React, Angular, Vue y más",
+            "urql: Cliente GraphQL altamente personalizable y extensible",
+            "Relay: Framework GraphQL para React enfocado en rendimiento (por Meta)",
+            "Axios: Cliente HTTP basado en Promesas para navegador y Node.js",
+            "node-fetch: Módulo `fetch` compatible con la API de navegador para Node.js",
+            "ky: Cliente HTTP pequeño y elegante basado en `fetch`",
+            "Superagent: Cliente HTTP progresivo para Node.js y navegador",
+
+            // --- Data Visualization ---
+            "D3.js: Biblioteca JS para manipular documentos basados en datos (visualización potente)",
+            "Chart.js: Gráficos simples pero flexibles para diseñadores y desarrolladores",
+            "Plotly.js: Librería de gráficos científicos de alto nivel",
+            "Three.js: Biblioteca para crear y mostrar gráficos 3D animados (WebGL)",
+            "Babylon.js: Motor 3D completo para juegos y visualizaciones en web",
+            "Leaflet: Biblioteca JS interactiva y ligera para mapas móviles",
+            "Mapbox GL JS: Mapas vectoriales rápidos y personalizables para web",
+            "Visx (Airbnb): Colección de primitivas de visualización expresivas de bajo nivel para React",
+            "Nivo: Componentes de visualización de datos construidos sobre D3 y React",
+            "Recharts: Biblioteca de gráficos componible construida sobre React y D3",
+            "ECharts: Potente biblioteca de gráficos y visualización interactiva",
+            "Victory: Colección de componentes de gráficos componibles para React y React Native",
+            "Vega / Vega-Lite: Gramática de visualización de alto nivel",
+            "Deck.gl: Framework de visualización de datos geoespaciales a gran escala (WebGL)",
+
+            // --- Animation ---
+            "GSAP (GreenSock): Plataforma de animación JS profesional de alto rendimiento",
+            "Anime.js: Biblioteca de animación JS ligera con API simple y potente",
+            "Framer Motion: Biblioteca de animación lista para producción para React",
+            "Popmotion: Motor de animación funcional y de bajo nivel",
+            "Lottie (Web): Renderiza animaciones de After Effects (Bodymovin) nativamente",
+            "Theatre.js: Editor de animación y motion graphics para web con API JS",
+            "AutoAnimate: Utilidad zero-config para añadir animaciones de transición fluidas",
+            "React Spring: Biblioteca de animación basada en física para React",
+            "AOS (Animate On Scroll): Anima elementos al hacer scroll",
+            "Typed.js: Efecto de escritura animada",
+
+            // --- Utilities (General, Dates, Validation, FP, etc.) ---
+            "Lodash: Biblioteca moderna de utilidades JS que facilita el trabajo con arrays, números, objetos, strings, etc.",
+            "Underscore.js: Biblioteca de utilidades JS funcional (precursora de Lodash)",
+            "Day.js: Alternativa inmutable y ligera a Moment.js (2kB) para fechas/horas",
+            "date-fns: Utilidades modernas para manipulación de fechas JS (modular)",
+            "Luxon: Biblioteca para trabajar con fechas y horas (por equipo de Moment.js)",
+            "Moment.js: Parsear, validar, manipular y mostrar fechas/horas (Legado, evitar en nuevos proyectos)",
+            "Ramda: Biblioteca funcional práctica para programadores JavaScript",
+            "fp-ts: Programación funcional tipada en TypeScript",
+            "Immer: Crea el siguiente estado inmutable modificando el estado actual (draft)",
+            "Yup: Constructor de esquemas y validador de objetos inspirado en Joi",
+            "Zod: Validación de esquemas con inferencia estática de tipos TypeScript (primero TS)",
+            "Joi: Potente validador de esquemas de datos para JS",
+            "validator.js: Biblioteca de validadores y sanitizadores de strings",
+            "Classnames: Utilidad simple para unir classNames condicionalmente",
+            "clsx: Pequeña utilidad para construir strings de className condicionalmente",
+            "Nano ID: Generador de IDs únicos, pequeños, seguros y URL-friendly",
+            "UUID: Genera UUIDs RFC4122 (v1, v3, v4, v5)",
+            "Async.js: Utilidades para trabajar con JavaScript asíncrono",
+            "RxJS: Programación reactiva con Observables para JS",
+            "Math.js: Extensa librería matemática para JavaScript y Node.js",
+            "Numeral.js: Formateo y manipulación de números",
+            "Big.js / BigNumber.js: Bibliotecas para aritmética de precisión arbitraria",
+
+            // --- Testing ---
+            "Jest: Framework de Testing JS Delightful con foco en la simplicidad",
+            "Mocha: Framework de testing JS rico en features para Node.js y navegador",
+            "Vitest: Framework de testing unitario nativo de Vite, extremadamente rápido",
+            "Cypress: Testing E2E rápido, fácil y fiable para todo lo que corre en navegador",
+            "Playwright: Framework para automatización y testing cross-browser fiable (por Microsoft)",
+            "Testing Library (React/DOM/...): Utilidades simples y completas para testear UI centrado en el usuario",
+            "Puppeteer: API de alto nivel para controlar Chrome/Chromium (Testing, Scraping)",
+            "Chai: Biblioteca de aserciones BDD/TDD para Node y navegador (expect, should, assert)",
+            "Sinon.JS: Stubs, spies y mocks independientes para JavaScript",
+            "msw (Mock Service Worker): API de mocking de servicios mediante interceptación de tráfico",
+            "Storybook: Herramienta para desarrollar componentes UI en aislamiento (Testing visual/interacción)",
+            "Ava: Ejecutor de tests JS rápido y concurrente",
+            "Jasmine: Framework BDD para testear código JavaScript",
+            "Karma: Ejecutor de tests para ejecutar JS en navegadores reales",
+            "Cucumber.js: Herramienta BDD que permite escribir tests en lenguaje natural",
+
+            // --- Build Tools, Bundlers & Environment ---
+            "Node.js: Entorno de ejecución JS del lado del servidor construido sobre V8",
+            "Webpack: Bundler estático de módulos altamente configurable para JS moderno",
+            "Vite: Herramienta de frontend de nueva generación (Build rápido, HMR instantáneo)",
+            "Parcel: Bundler de aplicaciones web rápido y sin configuración",
+            "Rollup: Bundler de módulos JS de próxima generación (ideal para librerías)",
+            "esbuild: Bundler y minificador JS/CSS extremadamente rápido escrito en Go",
+            "Turbopack: Sucesor de Webpack (alpha), bundler rápido escrito en Rust (por Vercel)",
+            "TypeScript: Superset tipado de JavaScript que compila a JS plano",
+            "Babel: Compilador JS (Transpiler para usar features modernas)",
+            "SWC: Compilador súper rápido basado en Rust para JS/TS",
+            "Gulp: Toolkit de automatización de streaming para frontend",
+            "Grunt: Ejecutor de tareas JavaScript",
+            "Nx: Herramientas de desarrollo extensibles e inteligentes para monorepos",
+            "Lerna: Herramienta para gestionar monorepos con Git y NPM",
+            "Turborepo: Sistema de build de alto rendimiento para monorepos JS/TS",
+
+            // --- Linters & Formatters ---
+            "ESLint: Herramienta de linting conectable y configurable para identificar y reportar patrones en JS",
+            "Prettier: Formateador de código opinionado",
+            "Stylelint: Linter CSS potente y moderno",
+            "Rome: Toolchain unificada (lint, format, bundle, test...) para JS/TS (en desarrollo)",
+            "Biome: Fork de Rome, toolchain rápida para web",
+
+            // --- Node.js Frameworks & Libraries ---
+            "Express.js: Framework web rápido, minimalista y flexible para Node.js",
+            "NestJS: Framework progresivo de Node.js para construir apps server-side eficientes y escalables",
+            "Koa: Framework web de nueva generación para Node.js (por equipo Express, usa async/await)",
+            "Fastify: Framework web rápido y de bajo overhead para Node.js",
+            "Hapi: Framework rico para construir aplicaciones y servicios",
+            "AdonisJS: Framework full-stack Node.js con foco en ergonomía del desarrollador",
+            "Sails.js: Framework MVC Node.js tipo Rails para crear APIs y apps web",
+            "Socket.IO: Comunicación bidireccional y en tiempo real basada en eventos",
+            "ws: Cliente y servidor WebSocket rápido y simple para Node.js",
+            "PM2: Gestor de procesos de producción avanzado para Node.js",
+            "Nodemon: Utilidad que monitoriza cambios y reinicia automáticamente app Node",
+            "dotenv: Carga variables de entorno desde un archivo `.env`",
+            "Commander.js: Solución completa para interfaces de línea de comandos Node.js",
+            "yargs: Ayuda a construir CLIs interactivas parseando argumentos",
+            "Inquirer.js: Colección de interfaces de usuario interactivas para CLI",
+            "Chalk: Colorea la salida de la terminal fácilmente",
+            "Helmet: Ayuda a securizar apps Express estableciendo cabeceras HTTP",
+            "Passport.js: Middleware de autenticación simple y discreto para Node.js",
+            "JSON Web Token (jsonwebtoken): Implementación de JWT para Node.js",
+            "bcrypt: Librería para hashear contraseñas",
+            "Winston: Logger multi-transporte y universal para Node.js",
+            "Pino: Logger JSON de muy bajo overhead",
+            "BullMQ / Bull: Sistema de colas de trabajos robusto para Node.js basado en Redis",
+            "Agenda: Librería de planificación de trabajos para Node.js",
+            "node-cron: Planificador de tareas basado en cron para Node.js",
+            "node-cache: Módulo de caché en memoria simple para Node.js",
+            "ioredis: Cliente Redis robusto y performante para Node.js",
+            "nodemailer: Módulo para enviar emails desde Node.js",
+            "Puppeteer (Node): API Node para controlar Chrome/Chromium (Scraping, Automatización)",
+            "Cheerio: Implementación rápida y flexible de core jQuery para servidor (Web Scraping)",
+
+            // --- Databases & ORMs (Node.js) ---
+            "Mongoose: Herramienta ODM (Object Data Modeling) elegante para MongoDB y Node.js",
+            "Prisma: ORM de próxima generación para Node.js y TypeScript (Type-safe)",
+            "TypeORM: ORM que puede correr en NodeJS, Navegador, Cordova, etc. (Soporta TS)",
+            "Sequelize: ORM Node.js basado en promesas para Postgres, MySQL, MariaDB, SQLite, MSSQL",
+            "Knex.js: Constructor de consultas SQL 'batteries included' para Node.js",
+            "Drizzle ORM: ORM TypeScript ligero y performante",
+            "MikroORM: ORM TypeScript para Node.js basado en Data Mapper, Unit of Work e Identity Map",
+            "Objection.js: ORM construido sobre Knex.js",
+            "node-postgres (pg): Cliente PostgreSQL no bloqueante para Node.js",
+            "mysql2: Cliente MySQL rápido para Node.js (compatible con API mysqljs)",
+            "sqlite3: Driver SQLite3 asíncrono y no bloqueante para Node.js",
+
+            // --- Forms (React/Vue/...) ---
+            "Formik: Construye formularios en React sin complicaciones",
+            "React Hook Form: Hooks performantes, flexibles y fáciles para formularios React",
+            "Final Form: Framework agnóstico para gestión de estado de formularios",
+            "VeeValidate: Validación de formularios para Vue.js",
+
+            // --- Internationalization (i18n) ---
+            "i18next: Framework de internacionalización completo escrito en y para JavaScript",
+            "FormatJS: Colección de librerías de internacionalización para web (incluye React Intl)",
+            "LinguiJS: Solución i18n simple pero potente para JS (React, Node, etc.)",
+            "Polyglot.js: Librería i18n pequeña que ofrece interpolación y pluralización simple",
+
+            // --- Drag & Drop ---
+            "React DnD: Utilidades para construir interfaces complejas de Drag and Drop en React",
+            "dnd kit: Librería ligera y extensible para drag and drop en React",
+            "Dragula: Drag and drop terriblemente simple",
+            "SortableJS: Reordenar listas drag-and-drop (soporta frameworks)",
+
+            // --- Image & Graphics Manipulation ---
+            "Cropper.js: Control avanzado de recorte de imágenes JS",
+            "Fabric.js: Framework de Canvas JS potente y simple (SVG-to-canvas parser)",
+            "Konva: Framework de Canvas 2d para apps interactivas complejas",
+            "P5.js: Biblioteca JS para codificación creativa (basada en Processing)",
+            "Paper.js: Framework de scripting gráfico vectorial para Canvas",
+            "Sharp (Node.js): Módulo de procesamiento de imágenes de alto rendimiento para Node.js",
+            "Jimp (Node.js): Editor de imágenes en JS puro para Node.js",
+            "SVG.js: Librería ligera para manipular y animar SVG",
+            "Snap.svg: Librería JS para trabajar con SVG",
+
+            // --- Mobile & Desktop Development (JS Based) ---
+            "React Native: Construye apps móviles nativas usando React",
+            "NativeScript: Framework open source para construir apps iOS y Android nativas con JS/TS (Angular, Vue, Svelte...)",
+            "Electron: Construye apps de escritorio cross-platform con JS, HTML y CSS",
+            "Ionic Framework: SDK de UI para construir apps móviles y PWA de alta calidad con tecnologías web",
+            "Expo: Plataforma open-source para hacer apps nativas universales con React",
+            "Tauri: Construye apps de escritorio más pequeñas, rápidas y seguras con backend Rust",
+
+            // --- Machine Learning & AI ---
+            "TensorFlow.js: Biblioteca JS para entrenar y desplegar modelos ML en navegador y Node.js",
+            "Brain.js: Redes neuronales GPU aceleradas en JavaScript",
+            "ONNX Runtime Web: Ejecuta modelos ONNX (Open Neural Network Exchange) en el navegador (Wasm)",
+            "Synaptic: Arquitectura agnóstica de redes neuronales para Node.js y navegador",
+            "ml5.js: ML amigable para web (sobre TensorFlow.js)",
+
+            // --- Game Development ---
+            "Phaser: Framework de juegos 2D divertido, gratuito y rápido para Canvas y WebGL",
+            "PixiJS: Motor de renderizado 2D súper rápido para web (WebGL)",
+            "PlayCanvas: Motor de juegos 3D WebGL de código abierto",
+            "Matter.js: Motor de física 2D para web",
+            "Howler.js: Librería de audio para web moderna",
+            "Tone.js: Framework para crear música interactiva en el navegador (Web Audio)",
+
+            // --- WebAssembly (Wasm) Interaction & Tooling ---
+            "wasm-bindgen: Facilita interacciones de alto nivel entre Wasm (Rust/C/C++) y JS",
+            "Emscripten: Compilador de LLVM a JavaScript (compila C/C++ a Wasm/JS)",
+            "AssemblyScript: Variante de TypeScript que compila a WebAssembly",
+
+            // --- Web Components ---
+            "Stencil: Compilador que genera Web Components estándar optimizados",
+            "FAST: Colección de tecnologías para construir componentes web (por Microsoft)",
+
+            // --- Serverless & Edge Computing ---
+            "Cloudflare Workers: Plataforma para ejecutar JS/Wasm en la red Edge de Cloudflare",
+            "Vercel Edge Functions: Ejecuta código en el Edge (cercano al usuario)",
+            "Netlify Edge Functions: Ejecuta código serverless en el Edge",
+            "Serverless Framework: Framework para construir y desplegar apps serverless en múltiples proveedores cloud",
+
+            // --- Realtime Databases/Backend Services (JS SDKs) ---
+            "Firebase (JS SDK): Plataforma de desarrollo de apps de Google (Firestore, Auth, Functions...)",
+            "Supabase (JS Client): Alternativa open source a Firebase con base de datos Postgres",
+            "Appwrite (JS SDK): Plataforma Backend-as-a-Service open source auto-hospedable",
+            "PocketBase: Backend open source en un solo archivo Go (con SDK JS)",
+            "AWS Amplify (JS Lib): Framework para construir apps fullstack seguras y escalables en AWS",
+
+            // --- WebRTC ---
+            "PeerJS: Abstracción simple sobre la API WebRTC para datos y media peer-to-peer",
+            "SimplePeer: Abstracción simple de WebRTC para navegador y Node.js",
+
+            // --- PDF Generation/Manipulation ---
+            "pdf-lib: Crea y modifica documentos PDF en cualquier entorno JavaScript",
+            "jsPDF: Genera PDFs del lado del cliente usando JavaScript puro",
+            "PDFKit (Node.js): Librería de generación de PDF para Node.js y navegador",
+
+            // --- Code Editors in Browser ---
+            "CodeMirror: Editor de texto versátil implementado en JS para el navegador",
+            "Monaco Editor: El editor de código que potencia VS Code, disponible para web",
+            "Ace Editor: Editor de código standalone de alto rendimiento",
+
+            // --- Authentication & Authorization ---
+            "Auth0 (SPA SDK / Node SDK): Solución de identidad como servicio",
+            "Clerk (JS SDK): Autenticación y gestión de usuarios completa para React, Next.js...",
+            "NextAuth.js / Auth.js: Solución de autenticación para Next.js y otros frameworks",
+            "Lucia Auth: Librería de autenticación agnóstica de framework, centrada en sesión",
+
+            // --- Payments ---
+            "Stripe.js / React Stripe.js: SDK oficial de Stripe para integración de pagos en frontend",
+
+            // --- Documentation Generation ---
+            "JSDoc: Generador de documentación API a partir de comentarios en código JS",
+            "TypeDoc: Generador de documentación para proyectos TypeScript",
+            "Docusaurus: Generador de sitios de documentación fácil de mantener (por Meta, usa React)",
+            "VitePress: Generador de sitios estáticos potenciado por Vite y Vue",
+            "Storybook Docs: Addon para generar documentación junto a los componentes Storybook",
+        ];
+        const jsLibraryCategories = [
+            "Frameworks UI (React, Vue, Angular, Svelte)", "Componentes UI (Material UI, Chakra)", "Gestión de Estado (Redux, Zustand, MobX)",
+            "Visualización de Datos (D3.js, Chart.js, Three.js)", "Animación (GSAP, Framer Motion)", "Utilidades Generales (Lodash, Day.js)",
+            "Testing (Jest, Cypress, Testing Library)", "Build Tools y Entorno (Webpack, Vite, Node.js)",
+            "Frameworks Backend Node.js (Express, NestJS)", "Bases de Datos y ORMs (Mongoose, Prisma, Sequelize)",
+            "Formularios (Formik, React Hook Form)", "Internacionalización (i18next)", "Drag and Drop",
+            "Manejo de Imágenes y Gráficos (Fabric.js, Konva)", "Desarrollo Móvil con JS (React Native)",
+            "Static Site Generators (Next.js, Gatsby, Astro)", "Machine Learning (TensorFlow.js)", "Desarrollo de Juegos (Phaser)",
+            "WebAssembly (Wasm)", "Web Components", "Realtime/Backend Services (Firebase, Supabase)", "WebRTC", "Manipulación de PDF", "Editores de Código en Navegador"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un desarrollador JavaScript senior y escritor técnico. Tu tarea es proporcionar una visión general concisa pero informativa de la biblioteca JavaScript especificada. Cubre: Su propósito/categoría principal (ej., framework UI, visualización de datos, utilidad), características y beneficios clave, casos de uso comunes, un ejemplo básico de instalación/uso (si es factible en texto breve), contexto de popularidad/ecosistema, y enlaza a su sitio web oficial o repositorio si lo conoces. Enfócate en información práctica para desarrolladores. Intenta ofrecer una descripción detallada de aproximadamente 1200-1300 palabras, profundizando donde sea posible. Basa tu descripción únicamente en la siguiente biblioteca:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny", // Más rápido para chat
+             systemPrompt: "Actúa como un asistente técnico IA especializado únicamente en la biblioteca JavaScript que se está mostrando. Responde preguntas de seguimiento sobre sus características, uso, o detalles mencionados en la descripción principal. Sé conciso y relevante al tema actual.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            // *** MODIFIED: Request 40 titles ***
+            systemPrompt: "Eres un asistente IA sugiriendo bibliotecas JavaScript útiles. Genera exactamente 40 nombres de bibliotecas o frameworks JavaScript gratuitos y relevantes para diversas tareas de desarrollo web (UI, datos, backend, utilidades, etc.). Devuelve *solo* la lista de nombres de bibliotecas, una por línea. Intenta evitar duplicados muy obvios de listas comunes y sugiere algunas menos comunes pero aún útiles. No incluyas números, introducciones ni explicaciones.",
+            timeoutSeconds: 60 // Un poco más de tiempo para generar 40
+        };
+
+        // ========== DOM ELEMENTS ========== (Sin cambios estructurales)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentLibraryTitle = null; // Renombrado para claridad
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             // Usa prompt dinámico para chat
+             const systemPromptToUse = isChat && currentLibraryTitle
+                 ? `Eres un asistente técnico IA especializado únicamente en la biblioteca JavaScript llamada '${currentLibraryTitle}'. Responde preguntas de seguimiento sobre sus características, uso, o detalles mencionados en la descripción principal. Sé conciso y relevante al tema actual.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`(Error ${response.status}) Nuestros servidores pueden estar ocupados. Por favor, intenta de nuevo en unos segundos.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("La respuesta de la IA llegó vacía. Intenta de nuevo o reformula.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentLibraryTitle) throw new Error("Error interno: Contexto de biblioteca no establecido para el chat."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(jsLibraryCategories) || "bibliotecas JavaScript generales";
+            const specificPrompt = `Genera 40 nombres de bibliotecas JavaScript útiles relacionadas con ${randomTheme}`;
+            // Usa la función genérica fetchTextFromApi con la config de generación de títulos
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n')
+                        .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                        .filter(line => line.length > 2 && line.length < 150 && !line.toLowerCase().includes("generate") && !line.toLowerCase().includes("list")); // Filtros básicos
+                     // *** ADJUSTED: Expecting 40, check if we got a decent amount ***
+                     if (titles.length < 20) { // Ajusta el umbral si es necesario
+                         console.warn("La IA generó menos títulos de los esperados:", titles.length);
+                         if(titles.length === 0) throw new Error("La IA no generó nuevas ideas de bibliotecas.");
+                         // Decide si aún así devolverlos o lanzar error
+                     }
+                     return titles.slice(0, 40); // Asegura que no sean más de 40
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText.split(':')[0].trim() : "JavaScript library concept"; // Usa solo el nombre antes de ':' si existe
+             // Prompt adaptado para JS Libs
+             const enhancedPrompt = `Abstract conceptual art representing the JavaScript library '${safePromptText}'. Use themes of code structure, data flow, interconnected nodes, UI components abstraction. Modern tech color palette (blues, purples, yellows, greens). Strictly avoid any text, logos, code snippets, diagrams. Clean, digital aesthetic.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, logo, label, letter, title, caption, diagram, chart, graph, UI, menu, button, code snippet, code, watermark, signature, multiple images, collage, realistic photograph, person, figure, hand";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ==========
+        function formatExplanationText(rawText) {
+            // Misma lógica que antes, pero añadimos manejo de ``` para bloques de código
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+
+            // ** PRE-PROCESS CODE BLOCKS (IMPORTANT!) **
+            // Replace ```lang\n code \n``` with <pre><code class="language-lang"> escaped_code </code></pre>
+            // Need a simple escape function for HTML within code blocks
+            const escapeHtml = (unsafe) => {
+                if (!unsafe) return '';
+                return unsafe
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+            }
+
+            formatted = formatted.replace(/```(\w+)?\s*([\s\S]*?)```/g, (match, lang, code) => {
+                const languageClass = lang ? `language-${lang.trim()}` : 'language-javascript'; // Default to JS if no lang specified
+                const escapedCode = escapeHtml(code.trim());
+                return `<pre><code class="${languageClass}">${escapedCode}</code></pre>`;
+            });
+
+            // Handle inline `code`
+            formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Resto de formato (H1-H4, bold, italic, links implícitos)
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+             // Convertir http(s):// links a etiquetas <a>
+            formatted = formatted.replace(/(?<!href="|src=")(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+
+
+            // Párrafos (manejar bloques que ya son <pre>)
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                // Si ya es un encabezado, fórmula o bloque de código preformateado, dejarlo como está
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">') || block.startsWith('<pre><code')) return block;
+                // Reemplaza saltos internos con espacio para párrafos normales
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+
+            return formatted;
+         }
+
+
+        // ========== MODAL FUNCTIONS ========== (Sin cambios lógicos)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { storyModal.classList.remove('active'); if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; } modalTextArea.scrollTop = 0; resetModalState(); }
+        function resetModalState() { modalLoadingIndicator.style.display = 'flex'; modalStoryContentArea.classList.add('content-hidden'); modalError.classList.add('content-hidden'); modalTitle.textContent = ''; modalContent.innerHTML = ''; modalErrorMessage.textContent = ''; chatHistory.innerHTML = ''; chatInput.value = ''; chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; currentLibraryTitle = null; hideFullscreenImage(); }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Sin cambios lógicos)
+        function showFullscreenImage(imgSrc) { if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (Sin cambios lógicos)
+        function addChatMessage(message, sender) { const msgDiv = document.createElement('div'); msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message'); message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); message = message.replace(/\*(.*?)\*/g, '<em>$1</em>'); message = message.replace(/`([^`]+)`/g, '<code>$1</code>'); msgDiv.innerHTML = message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        function addChatError(message) { const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        async function handleSendMessage() { const userQuery = chatInput.value.trim(); if (!userQuery || chatSendBtn.disabled) return; addChatMessage(userQuery, 'user'); chatInput.value = ''; chatSendBtn.disabled = true; chatLoadingIndicator.style.display = 'block'; try { const aiResponse = await fetchChatResponse(userQuery); addChatMessage(aiResponse, 'ai'); } catch (error) { console.error("Chat Error:", error); addChatError(`Error IA: ${error.message}`); } finally { chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; chatInput.focus(); } }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             // Ordenar alfabéticamente puede ser útil aquí
+             const sortedTitles = titles.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">// No hay bibliotecas para mostrar</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { // Misma lógica, añade sin duplicados
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++;} });
+             console.log(`Added ${addedCount} new unique titles.`);
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick - Adaptado a Librerías ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentLibraryTitle = title; // *** SET CHAT CONTEXT ***
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText); // Usar formateador
+
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation; // Poner texto
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0; // Reset scroll
+                console.log("Scroll set to 0 after content visible");
+
+                // Placeholder imagen
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-code placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Generando visualización conceptual...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Añadir placeholder al final del texto
+
+                // Imagen
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image for:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-image-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Visualización fallida.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Añadir imagen después del placeholder
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar datos de la biblioteca.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles to request 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             // *** Update button text ***
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando más bibliotecas...';
+             try {
+                 // FetchGeneratedTitles ya está configurado para pedir 40
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     appendTitles(newTitles);
+                     console.log(`Attempted to add ${newTitles.length} new titles.`);
+                 } else {
+                     alert("No se pudieron encontrar más bibliotecas en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar bibliotecas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // *** Update button text back ***
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Cargar Más Bibliotecas (40)';
+             }
+         }
+
+         // *** Search Filter Function (con normalización) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ========== (Sin cambios lógicos)
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn) { console.error("Initialization failed: Missing essential elements."); document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error crítico: Faltan elementos de UI esenciales.</p>'; return; }
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>
