@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senderos del Tao - Sabiduría Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts reflecting tranquility -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Senderos del Tao --- */
+        :root {
+            --color-primary: #5a8f7b; /* Muted Jade Green */
+            --color-secondary: #a3a3a3; /* Stone Gray */
+            --color-tertiary: #dcdcdc; /* Off-White/Light Gray */
+            --color-background: #f5f5f5; /* Very Light Beige/Gray */
+            --color-text: #333333; /* Dark Charcoal Gray */
+            --color-text-muted: #737373; /* Medium Gray */
+            --color-modal-bg: #ffffff; /* White */
+            --color-border: #d4d4d4; /* Light Gray Border */
+            --color-error-bg: #fef2f2; /* Light red background */
+            --color-error-text: #991b1b; /* Dark red text */
+            --color-error-border: #fecaca; /* Light red border */
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+            --border-radius: 4px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Source Sans Pro', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Noto Serif SC', serif; font-weight: 400; letter-spacing: 0.5px; }
+        .logo { color: var(--color-primary); font-weight: 700; }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 1px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Search Input */
+        #search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-modal-bg); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Source Sans Pro'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(90, 143, 123, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; }
+
+        /* Title List Items */
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Source Sans Pro'; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #f0f7f4; border-left-color: var(--color-primary); }
+
+        /* Generate More Button */
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Source Sans Pro', sans-serif; font-weight: 600; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #4a7c6b; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: var(--color-secondary); color: #e5e5e5; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        /* Modal Styles */
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(51, 51, 51, 0.8); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Taller for potential game area */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #e5e5e5; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: white; transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Main Content Area (Text + Image + Chat) */
+        #modal-story-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; } /* No scroll here */
+
+        /* Scrollable Text/Image Area */
+        #modal-content-area { flex-grow: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+
+        /* Text Content Styling */
+        #modal-content { padding: 0 5px; font-size: 1.05rem; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: #6b7280; font-style: italic; } /* Subtle emphasis */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Noto Serif SC', serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 400; }
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.15em; color: #4a7c6b; } /* Darker green for H3 */
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+
+        /* Image & Placeholder Styles */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(163, 163, 163, 0.3); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 220px; /* Slightly less height */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #fafafa; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-tertiary); }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-tertiary); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; }
+        .user-message { background-color: #e0e7ff; /* Light blue user msg */ color: #374151; margin-left: auto; text-align: right; }
+        .ai-message { background-color: #f3f4f6; /* Light gray AI msg */ color: var(--color-text); margin-right: auto; text-align: left; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: white; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Source Sans Pro'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #4a7c6b; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* Loading Overlay with Game */
+        #modal-loading {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.98); /* Almost opaque white */
+            display: none; /* Initially hidden */
+            flex-direction: column; align-items: center; justify-content: center;
+            z-index: 55; border-radius: var(--border-radius);
+            padding: 1rem;
+        }
+        #modal-loading.active { display: flex; } /* Show when loading */
+        #loading-game-canvas {
+            border: 1px solid var(--color-border);
+            background-color: #e0f2fe; /* Light sky blue background for contrast */
+            max-width: 100%;
+             /* Height will be set by JS, ensure it fits */
+             margin-bottom: 1rem; /* Space below game */
+        }
+        #loading-message {
+            font-weight: 400; color: var(--color-text); font-size: 1.1rem;
+            font-family: 'Source Sans Pro'; text-align: center;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Error Message Style */
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Source Sans Pro'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body class="antialiased">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                  <i class="fas fa-yin-yang text-2xl mr-3 text-gray-600"></i> <!-- Yin Yang Icon -->
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     Senderos del Tao
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans">Sabiduría Interactiva</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Explora la Profundidad del Tao</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto font-light">Descubre historias, parábolas y conceptos centrales del Taoísmo. Selecciona un tema o busca para iniciar tu viaje.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-xl mx-auto relative">
+             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+             <input type="text" id="search-input" placeholder="Buscar historia, concepto, figura...">
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-green-700 mr-2"></i>
+                 Biblioteca de Sabiduría
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Recopilando pergaminos...</p>
+                  <!-- .title-item added here -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">El camino buscado no se encuentra en esta biblioteca.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Buscar Más Sabiduría (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Overlay with Game -->
+             <div id="modal-loading">
+                 <canvas id="loading-game-canvas" width="400" height="250"></canvas> <!-- Adjust size as needed -->
+                 <p id="loading-message">El Camino se despliega... Guía la hoja.</p>
+             </div>
+
+             <!-- Main Content Area (Text, Image, Chat) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text/Image -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) -->
+                         <!-- Image and placeholder -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Reflexionando...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Profundiza sobre este tema...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-circle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Interpretaciones e historias inspiradas en principios Taoístas, generadas por IA con fines educativos y contemplativos.</p>
+              <p class="mt-1">Consulta fuentes académicas para estudios profundos.</p>
+              <p class="mt-2">© <span id="footer-year"></span> Senderos del Tao</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Tao Te Ching - Capítulos Clave y Conceptos
+            "Tao Te Ching: Capítulo 1 - El Tao Innominable", "Tao Te Ching: Capítulo 2 - Yin y Yang en Acción", "Tao Te Ching: Capítulo 3 - No Exaltar al Sabio", "Tao Te Ching: Capítulo 4 - El Tao Vacío", "Tao Te Ching: Capítulo 8 - La Bondad Suprema es como el Agua", "Tao Te Ching: Capítulo 9 - Mejor Detenerse a Tiempo", "Tao Te Ching: Capítulo 11 - La Utilidad de la Nada (Vacío)", "Tao Te Ching: Capítulo 16 - Volver a la Raíz (Quietud)", "Tao Te Ching: Capítulo 22 - Lo Incompleto se Completa", "Tao Te Ching: Capítulo 25 - Algo Misteriosamente Formado (El Tao)", "Tao Te Ching: Capítulo 28 - Conoce lo Masculino, Mantén lo Femenino", "Tao Te Ching: Capítulo 33 - Conocerse a Sí Mismo", "Tao Te Ching: Capítulo 38 - La Virtud Superior (Te)", "Tao Te Ching: Capítulo 42 - El Tao Engendró al Uno", "Tao Te Ching: Capítulo 43 - Lo Más Suave Vence a lo Más Duro", "Tao Te Ching: Capítulo 48 - Aprender y Practicar el Tao (Disminución)", "Tao Te Ching: Capítulo 56 - El que Sabe No Habla", "Tao Te Ching: Capítulo 63 - Actuar Sin Actuar (Wu Wei)", "Tao Te Ching: Capítulo 64 - Manejar las Cosas Antes de que Existan", "Tao Te Ching: Capítulo 67 - Los Tres Tesoros (Compasión, Frugalidad, Humildad)", "Tao Te Ching: Capítulo 71 - Saber que No se Sabe", "Tao Te Ching: Capítulo 76 - Lo Flexible Sobrevive", "Tao Te Ching: Capítulo 78 - Nada Más Débil que el Agua", "Concepto del Tao: El Camino Innominable", "Concepto de Te: Virtud y Poder Interior", "Concepto de Wu Wei: La No Acción Eficaz", "Concepto de Ziran: Lo Natural y Espontáneo", "Concepto de Yin y Yang: Dualidad Complementaria", "Concepto de Qi (Chi): Energía Vital", "Concepto de Pu: La Simplicidad Original (Madera No Tallada)", "Concepto de Wu: Vacío o Vacuidad Fecunda", "Los Tres Tesoros: Compasión, Frugalidad, Humildad",
+
+            // Zhuangzi - Historias y Conceptos
+            "Zhuangzi: El Sueño de la Mariposa", "Zhuangzi: El Cocinero Ding y el Arte del Despiece", "Zhuangzi: La Utilidad de lo Inútil (El Árbol Torcido)", "Zhuangzi: El Debate en el Puente Hao (La Alegría de los Peces)", "Zhuangzi: El Barco Vacío", "Zhuangzi: El Hombre que Olvidó su Mandíbula (Adaptabilidad)", "Zhuangzi: La Muerte de la Esposa de Zhuangzi", "Zhuangzi: El Ladrón Roba-Cerdos y la Sabiduría", "Zhuangzi: El Maestro Lie Yukou Cabalgando el Viento", "Zhuangzi: La Transformación de las Cosas", "Zhuangzi: Olvidar el Mundo, Olvidarse a Sí Mismo (Zuowang)", "Zhuangzi: La Perfección del Arquero", "Zhuangzi: El Gallo de Madera (Calma Interior)", "Zhuangzi: El Valor de la Locura Aparente", "Zhuangzi: El Debate con Hui Shi sobre la Lógica", "Concepto de Transformación (Hua) en Zhuangzi", "Concepto de Perspectivismo en Zhuangzi", "Concepto de Olvido (Wang) en Zhuangzi", "El Humor y la Paradoja en Zhuangzi",
+
+            // Liezi - Historias y Conceptos
+            "Liezi: El Hombre que Movió Montañas (Yu Gong Yi Shan)", "Liezi: El Rey Mu y el Mago", "Liezi: El Arquero y la Mosca", "Liezi: El Hombre que Perdió su Hacha", "Liezi: Viaje al País de los Hombres Perfectos", "Liezi: El Sueño y la Vigilia", "Concepto del Destino y la Elección en Liezi", "Concepto del Vacío (Xu) en Liezi",
+
+            // Figuras y Personajes
+            "Lao Tzu (Laozi): Figura Histórica y Legendaria", "Zhuang Zhou (Zhuangzi): El Filósofo de la Libertad", "Lie Yukou (Liezi): El Maestro del Vacío", "El Emperador Amarillo (Huangdi): Figura Mítica Asociada al Taoísmo", "Los Ocho Inmortales: Leyendas y Simbolismo", "Lü Dongbin: El Inmortal Más Conocido", "He Xiangu: La Inmortal Femenina", "Zhang Daoling: Fundador del Camino de los Maestros Celestiales", "Ge Hong: Alquimista y Erudito", "Wang Chongyang: Fundador de la Escuela Quanzhen",
+
+            // Prácticas Taoístas
+            "Meditación Taoísta: Zuowang (Sentarse y Olvidar)", "Qigong (Chi Kung): Cultivo de la Energía Vital", "Tai Chi Chuan (Taijiquan): Principios Taoístas en Movimiento", "Neidan: Alquimia Interna Taoísta", "Waidan: Alquimia Externa Taoísta (Histórico)", "Feng Shui: Armonía con el Entorno (Raíces Taoístas)", "Dietética Taoísta: Nutrición y Equilibrio", "Respiración Taoísta: Técnicas y Beneficios", "Daoyin: Estiramientos y Ejercicios Taoístas", "Rituales Taoístas: Propósito y Variedad",
+
+            // Historia y Escuelas
+            "Orígenes del Taoísmo: Chamanismo y Filosofía Antigua", "Diferencias entre Taoísmo Filosófico (Daojia) y Religioso (Daojiao)", "El Camino de los Maestros Celestiales (Tianshi Dao)", "La Escuela Shangqing (Claridad Suprema)", "La Escuela Lingbao (Joya Numinosa)", "La Escuela Quanzhen (Realidad Completa)", "El Canon Taoísta (Daozang): Composición e Historia", "Influencia del Taoísmo en el Budismo Chan (Zen)", "Persecuciones y Supervivencia del Taoísmo", "Taoísmo durante la Dinastía Tang", "Taoísmo durante la Dinastía Song", "Taoísmo en la China Moderna y Contemporánea", "Expansión del Taoísmo a Occidente",
+
+            // Conceptos Adicionales y Simbolismo
+            "El Agua como Símbolo Taoísta: Flexibilidad y Humildad", "La Montaña como Símbolo Taoísta: Quietud y Permanencia", "El Bambú como Símbolo Taoísta: Flexibilidad y Vacío", "El Valle como Símbolo Taoísta: Receptividad y Vacío", "Simbolismo del Yin Yang en la Práctica", "El Concepto de 'Regreso' (Fan) al Origen", "La Relación entre Cuerpo, Mente y Espíritu en el Taoísmo", "Taoísmo y Ecología: Armonía con la Naturaleza", "Ética Taoísta: Vivir en Armonía", "El Arte y la Caligrafía Taoísta", "Música Taoísta: Rituales y Meditación", "Templos Taoístas: Arquitectura y Función", "La Inmortalidad (Xian) en el Taoísmo", "Adivinación Taoísta: I Ching y otras prácticas", "Taoísmo y Medicina Tradicional China", "El Concepto de Jing, Qi, Shen (Esencia, Energía, Espíritu)", "Mandala Cósmico en el Taoísmo (Diagramas)", "Sexualidad y Taoísmo (Prácticas Históricas)",
+
+            // Comparaciones y Relaciones
+            "Taoísmo y Confucianismo: Diferencias y Complementariedad", "Taoísmo y Budismo: Influencias Mutuas", "Taoísmo y Legalismo Chino", "Interpretaciones Modernas del Wu Wei", "Taoísmo y Psicología Occidental (Jung, Gestalt)", "Críticas al Taoísmo",
+            // ... (Continuar expandiendo con más capítulos, parábolas, figuras menores, conceptos específicos de escuelas, etc.)
+            // Ejemplo de expansión adicional:
+            "Tao Te Ching: Capítulo 5 - El Cielo y la Tierra no son benevolentes", "Tao Te Ching: Capítulo 10 - ¿Puedes abrazar al Uno?", "Tao Te Ching: Capítulo 19 - Abandona la sabiduría, desecha el saber", "Tao Te Ching: Capítulo 29 - El mundo es un vaso sagrado", "Tao Te Ching: Capítulo 36 - Lo que se va a contraer, primero debe expandirse", "Tao Te Ching: Capítulo 41 - El sabio oye hablar del Tao", "Tao Te Ching: Capítulo 52 - El principio del universo", "Tao Te Ching: Capítulo 61 - Un gran reino debe ser como un río abajo", "Zhuangzi: El Carro de Huesos Secos", "Zhuangzi: El Árbol Sagrado de Sung", "Zhuangzi: El Músico Ciego", "Zhuangzi: El Ganso Salvaje y el Ganso Doméstico", "Zhuangzi: La Historia del Mono y las Castañas", "Liezi: El Sueño de un Leñador", "La Dama de la Luna (Chang'e) y sus Conexiones Taoístas", "El Dios de la Cocina (Zao Jun)", "El Inmortal Han Xiangzi", "El Inmortal Cao Guojiu", "Práctica de Visualización en Neidan", "El Concepto de 'Corazón-Mente' (Xin)", "El Microcosmos y Macrocosmos en el Taoísmo", "El Papel de los Amuletos y Talismanes", "Taoísmo Popular y Sincretismo", "Festivales Taoístas Importantes", "Interpretación Taoísta del I Ching (Hexagramas)", "El Taoísmo en Vietnam", "El Taoísmo en Corea", "El Taoísmo en Japón",
+            // ... y así sucesivamente, buscando detalles en textos y tradiciones.
+        ];
+        const taoistThemes = [
+            "historias del Zhuangzi", "capítulos del Tao Te Ching", "conceptos taoístas clave", "figuras importantes del taoísmo", "parábolas taoístas", "prácticas de meditación taoísta", "Qigong y energía vital", "principios del Wu Wei", "simbolismo Yin Yang", "historia de las escuelas taoístas", "los Ocho Inmortales", "taoísmo y naturaleza", "alquimia interna (Neidan)", "relación Taoísmo y Budismo Zen", "Lao Tzu", "Zhuangzi", "Liezi", "el Tao (El Camino)", "Te (Virtud)", "Ziran (Naturalidad)"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un erudito y practicante experimentado del Taoísmo, con un profundo conocimiento de sus textos clásicos (Tao Te Ching, Zhuangzi, Liezi), historia, filosofía y prácticas. Tu tarea es exponer el tema, historia, concepto o figura taoísta indicada de manera clara, profunda y respetuosa. Explica su significado, contexto, relevancia y, si es una historia, narra sus puntos clave y moraleja. Incorpora citas relevantes (si aplica y las conoces) y conecta el tema con principios taoístas fundamentales como el Tao, Te, Wu Wei, Ziran, Yin/Yang. Usa un lenguaje sereno y reflexivo. El objetivo es una exposición completa y enriquecedora de aproximadamente 1200-1300 palabras. Basa tu exposición únicamente en el siguiente tema taoísta:",
+            timeoutSeconds: 240 // Aumentado ligeramente por si la temática requiere más tiempo de la IA
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny", // Modelo rápido para chat
+            systemPrompt: "Actúa como un guía tranquilo y sabio, especializado únicamente en el tema taoísta que se está discutiendo (indicado previamente). Responde preguntas de seguimiento sobre sus detalles, interpretaciones o conexiones con otros aspectos del Taoísmo. Sé conciso, claro y mantén un tono reflexivo y respetuoso.",
+            timeoutSeconds: 50 // Chat timeout
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            // *** Pidiendo 40 títulos ***
+            systemPrompt: "Eres un generador de ideas conciso para una biblioteca de sabiduría Taoísta. Genera exactamente 40 nombres evocadores de historias, parábolas, conceptos filosóficos, figuras históricas/legendarias, o prácticas relacionadas con el Taoísmo. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Más tiempo para generar 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Igual que la versión anterior, pero añadiendo canvas y su mensaje)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading'); // Ahora es el contenedor del juego
+        const gameCanvas = document.getElementById('loading-game-canvas');
+        const gameMessage = document.getElementById('loading-message');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        const footerYear = document.getElementById('footer-year');
+
+        // ========== State Variables ==========
+        let currentTaoistTopic = null; // Contexto para el chat
+        let gameInstance = null; // Para controlar el juego
+
+        // ========== API FUNCTIONS ==========
+        // (fetchTextFromApi, fetchExplanationText, fetchChatResponse adaptados ligeramente)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentTaoistTopic
+                ? `Eres un guía tranquilo y sabio, especializado únicamente en el tema taoísta llamado '${currentTaoistTopic}'. Responde preguntas de seguimiento sobre sus detalles, interpretaciones o conexiones con otros aspectos del Taoísmo. Sé conciso, claro y mantén un tono reflexivo y respetuoso.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`(Código ${response.status}) Nuestros servidores parecen estar ocupados o el camino está temporalmente obstruido. Por favor, inténtalo de nuevo en unos momentos.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la IA llegó como el vacío, pero no del tipo útil. Intenta reformular.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La conexión con la fuente de sabiduría tardó demasiado (>${config.timeoutSeconds}s). Comprueba tu conexión o vuelve a intentarlo más tarde.`);
+                throw new Error(error.message || "Una nube inesperada ha oscurecido la conexión con la IA.");
+            }
+        }
+        async function fetchExplanationText(topicTitle) { return fetchTextFromApi(topicTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) {
+            if (!currentTaoistTopic) throw new Error("Error interno: El contexto del tema no está claro para continuar la conversación.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        // *** fetchGeneratedTitles pide 40 ***
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(taoistThemes) || "sabiduría taoísta general";
+            // El system prompt ya pide 40
+            const specificPrompt = `Genera 40 ítems (historias, conceptos, figuras, prácticas) sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                .then(text => {
+                    const titles = text.split('\n')
+                                       .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                                       .filter(line => line.length > 5 && line.length < 150);
+                    // Esperamos más títulos ahora
+                    if (titles.length < 20) throw new Error("La IA no generó suficientes temas nuevos.");
+                    return titles.slice(0, 40); // Devolver hasta 40
+                });
+        }
+        // (createPollinationsImageUrl adaptado para el tema)
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Concepto Taoísta";
+            const enhancedPrompt = `Ink wash painting, minimalist style, depicting the essence of the Taoist concept or story '${safePromptText}'. Focus on atmosphere, nature elements (mountains, water, bamboo, mist), balance, flow, simplicity. Subtle colors, perhaps just black ink on textured paper background. Avoid text, labels, explicit figures unless essential to the story (like Zhuangzi dreaming). Serene, meditative.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "photorealistic, vibrant colors, text, labels, words, signature, watermark, complex scene, cluttered, diagram, map, cartoon, 3D render";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return ''; let formatted=rawText.trim(); formatted=formatted.replace(/\\text\{(.*?)\}/g,'$1'); formatted=formatted.replace(/(\w)_\{?(\d+)\}?/g,'$1<sub>$2</sub>'); formatted=formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g,(match,base,exponent)=>{const cleanExponent=exponent.replace('−','-');return `${base}<sup>${cleanExponent}</sup>`;}); formatted=formatted.replace(/\\rightarrow/g,'&rarr;'); formatted=formatted.replace(/\\\[\s*(.*?)\s*\\\]/g,'<p class="formula">$1</p>'); formatted=formatted.replace(/^####\s+(.*)$/gm,'<h4>$1</h4>'); formatted=formatted.replace(/^###\s+(.*)$/gm,'<h3>$1</h3>'); formatted=formatted.replace(/^##\s+(.*)$/gm,'<h2>$1</h2>'); formatted=formatted.replace(/^#\s+(.*)$/gm,'<h1>$1</h1>'); formatted=formatted.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'); formatted=formatted.replace(/\*(.*?)\*/g,'<em>$1</em>'); const blocks=formatted.split(/\n\s*\n/).filter(p=>p.trim().length>0); formatted=blocks.map(block=>{if(block.startsWith('<h')||block.startsWith('<p class="formula">'))return block; let content=block.replace(/\n/g,' '); return `<p>${content}</p>`;}).join(''); return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0; // Reset scroll
+            stopLoadingGame(); // Asegurarse de que el juego se detiene
+            resetModalState();
+        }
+        function resetModalState() {
+             // Hide content, show loading (game container) initially off
+             modalLoadingIndicator.classList.remove('active');
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTaoistTopic = null;
+             hideFullscreenImage();
+             stopLoadingGame(); // Ensure game is stopped
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios funcionales)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv=document.createElement('div'); msgDiv.classList.add('chat-message',sender==='user'?'user-message':'ai-message'); message=message.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'); message=message.replace(/\*(.*?)\*/g,'<em>$1</em>'); msgDiv.innerHTML=message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop=chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errorDiv=document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent=message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop=chatHistory.scrollHeight; }
+        async function handleSendMessage() { /* ... */ const userQuery=chatInput.value.trim(); if(!userQuery||chatSendBtn.disabled)return; addChatMessage(userQuery,'user'); chatInput.value=''; chatSendBtn.disabled=true; chatLoadingIndicator.style.display='block'; try{const aiResponse=await fetchChatResponse(userQuery); addChatMessage(aiResponse,'ai');}catch(error){console.error("Chat Error:",error); addChatError(`Error IA: ${error.message}`);}finally{chatLoadingIndicator.style.display='none'; chatSendBtn.disabled=false; chatInput.focus();} }
+
+        // ========== LOADING MINIGAME ("Guiding the Leaf") ==========
+        const loadingGame = {
+            canvas: null,
+            ctx: null,
+            width: 400,
+            height: 250,
+            leaf: { x: 0, y: 0, width: 15, height: 25, targetX: 0, speed: 0.08, image: null },
+            obstacles: [],
+            qi: [],
+            score: 0,
+            level: 1,
+            obstacleSpeed: 1,
+            qiSpeed: 1.5,
+            obstacleFrequency: 0.015, // Probability per frame
+            qiFrequency: 0.01,
+            lastObstacleTime: 0,
+            lastQiTime: 0,
+            minSpawnInterval: 500, // ms between spawns of same type
+            animationFrameId: null,
+            gameStartTime: 0,
+            mousePos: { x: 0, y: 0 }, // Track mouse position relative to canvas
+
+            init(canvasElement, messageElement) {
+                this.canvas = canvasElement;
+                this.messageElement = messageElement;
+                if (!this.canvas) { console.error("Canvas element not found for game."); return false; }
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                this.leaf.x = this.width / 2;
+                this.leaf.y = this.height - 50;
+                this.leaf.targetX = this.leaf.x;
+                this.obstacles = [];
+                this.qi = [];
+                this.score = 0;
+                this.level = 1;
+                this.obstacleSpeed = 1;
+                this.qiSpeed = 1.5;
+                this.gameStartTime = Date.now();
+
+                // Preload leaf image (simple green leaf shape)
+                this.leaf.image = new Image();
+                // Use a simple data URI for the leaf to avoid external loads during loading
+                this.leaf.image.src = 'data:image/svg+xml;base64,' + btoa(`
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150">
+                    <path d="M50 0 C 10 50, 10 100, 50 150 C 90 100, 90 50, 50 0 Z" fill="#6ab04c"/>
+                    <line x1="50" y1="15" x2="50" y2="145" stroke="#4a7c6b" stroke-width="5"/>
+                    <path d="M50 50 Q 70 60 80 80" stroke="#4a7c6b" stroke-width="3" fill="none"/>
+                    <path d="M50 80 Q 30 90 20 110" stroke="#4a7c6b" stroke-width="3" fill="none"/>
+                    </svg>
+                `);
+
+                // Add mouse move listener to canvas parent or modal for positioning
+                 this.canvas.parentNode.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                 // this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+
+
+                console.log("Minigame Initialized");
+                return true;
+            },
+
+            handleMouseMove(event) {
+                if (!this.canvas) return;
+                const rect = this.canvas.getBoundingClientRect();
+                this.mousePos.x = event.clientX - rect.left;
+                // Keep target within canvas bounds
+                this.leaf.targetX = Math.max(this.leaf.width / 2, Math.min(this.width - this.leaf.width / 2, this.mousePos.x));
+                 // console.log("Mouse moved, targetX:", this.leaf.targetX); // Debug
+            },
+
+            update() {
+                const now = Date.now();
+                // Update level based on time survived (simple progression)
+                const timeElapsed = (now - this.gameStartTime) / 1000; // seconds
+                this.level = Math.floor(1 + timeElapsed / 15); // Increase level every 15 seconds
+                this.obstacleSpeed = 1 + (this.level * 0.2);
+                this.qiSpeed = 1.5 + (this.level * 0.2);
+                this.obstacleFrequency = 0.015 + (this.level * 0.001);
+
+                // Move leaf towards targetX smoothly (Wu Wei!)
+                const dx = this.leaf.targetX - this.leaf.x;
+                this.leaf.x += dx * this.leaf.speed;
+                // Clamp leaf position
+                this.leaf.x = Math.max(0, Math.min(this.width - this.leaf.width, this.leaf.x));
+
+
+                // Spawn obstacles (rocks)
+                if (Math.random() < this.obstacleFrequency && (now - this.lastObstacleTime > this.minSpawnInterval)) {
+                    this.obstacles.push({
+                        x: Math.random() * (this.width - 30), // 30 is approx rock width
+                        y: -30, // Start above canvas
+                        width: 20 + Math.random() * 15,
+                        height: 20 + Math.random() * 10,
+                        color: `rgb(${100 + Math.random()*30}, ${100 + Math.random()*30}, ${100 + Math.random()*30})` // Shades of gray/brown
+                    });
+                    this.lastObstacleTime = now;
+                }
+
+                // Spawn Qi motes (glowing orbs)
+                if (Math.random() < this.qiFrequency && (now - this.lastQiTime > this.minSpawnInterval)) {
+                     this.qi.push({
+                        x: Math.random() * (this.width - 10),
+                        y: -10,
+                        radius: 4 + Math.random() * 2,
+                        color: `rgba(255, 255, 180, ${0.6 + Math.random() * 0.3})` // Yellowish glow
+                    });
+                    this.lastQiTime = now;
+                }
+
+                // Update and remove off-screen obstacles
+                this.obstacles.forEach((rock, index) => {
+                    rock.y += this.obstacleSpeed;
+                    if (rock.y > this.height) {
+                        this.obstacles.splice(index, 1);
+                    }
+                });
+
+                 // Update and remove off-screen Qi
+                this.qi.forEach((q, index) => {
+                    q.y += this.qiSpeed;
+                    if (q.y > this.height) {
+                        this.qi.splice(index, 1);
+                    }
+                });
+
+                // Collision detection
+                this.checkCollisions();
+            },
+
+            checkCollisions() {
+                const leafRect = { x: this.leaf.x, y: this.leaf.y, width: this.leaf.width, height: this.leaf.height };
+
+                // Obstacle collision (game over simplified - just score reset for now)
+                this.obstacles.forEach((rock) => {
+                    const rockRect = { x: rock.x, y: rock.y, width: rock.width, height: rock.height };
+                    if (this.rectIntersect(leafRect, rockRect)) {
+                         console.log("Collision with rock!");
+                         this.score = Math.max(0, this.score - 50); // Penalty
+                         // Maybe add a visual effect later (flash?)
+                         // For simplicity, we don't end the game, just penalize
+                         // To make it harder, could remove the rock that hit
+                         const index = this.obstacles.indexOf(rock);
+                         if (index > -1) this.obstacles.splice(index, 1);
+                    }
+                });
+
+                // Qi collection
+                 this.qi.forEach((q, index) => {
+                    // Simple circle collision (distance check)
+                    const dx = (this.leaf.x + this.leaf.width / 2) - q.x;
+                    const dy = (this.leaf.y + this.leaf.height / 2) - q.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < (this.leaf.width / 2) + q.radius) { // Approximate collision
+                        this.score += 10;
+                        this.qi.splice(index, 1); // Remove collected Qi
+                    }
+                });
+            },
+
+            // Basic AABB collision detection
+            rectIntersect(rect1, rect2) {
+                return rect1.x < rect2.x + rect2.width &&
+                       rect1.x + rect1.width > rect2.x &&
+                       rect1.y < rect2.y + rect2.height &&
+                       rect1.y + rect1.height > rect2.y;
+            },
+
+            draw() {
+                if (!this.ctx) return;
+                // Clear canvas (subtle gradient background)
+                const gradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
+                gradient.addColorStop(0, "#d1e8ff"); // Lighter blue top
+                gradient.addColorStop(1, "#a8d8ff"); // Slightly darker bottom
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+
+                // Draw Qi motes
+                this.qi.forEach(q => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(q.x, q.y, q.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = q.color;
+                    this.ctx.fill();
+                     // Simple glow effect
+                     this.ctx.shadowColor = 'yellow';
+                     this.ctx.shadowBlur = 5;
+                     this.ctx.fill();
+                     this.ctx.shadowBlur = 0; // Reset shadow
+                });
+
+                // Draw obstacles (rocks)
+                this.obstacles.forEach(rock => {
+                    this.ctx.fillStyle = rock.color; // Use pre-calculated color
+                    this.ctx.fillRect(rock.x, rock.y, rock.width, rock.height);
+                     // Add a subtle border
+                     this.ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                     this.ctx.strokeRect(rock.x, rock.y, rock.width, rock.height);
+                });
+
+                 // Draw leaf (player)
+                if (this.leaf.image.complete && this.leaf.image.naturalHeight !== 0) {
+                    // Rotate slightly based on horizontal movement direction? (Optional complexity)
+                    // const angle = (this.leaf.targetX - this.leaf.x) * 0.01; // Small angle based on diff
+                    // this.ctx.save();
+                    // this.ctx.translate(this.leaf.x + this.leaf.width / 2, this.leaf.y + this.leaf.height / 2);
+                    // this.ctx.rotate(angle);
+                    // this.ctx.drawImage(this.leaf.image, -this.leaf.width / 2, -this.leaf.height / 2, this.leaf.width, this.leaf.height);
+                    // this.ctx.restore();
+                     this.ctx.drawImage(this.leaf.image, this.leaf.x, this.leaf.y, this.leaf.width, this.leaf.height);
+                } else {
+                    // Fallback square if image fails
+                    this.ctx.fillStyle = '#6ab04c';
+                    this.ctx.fillRect(this.leaf.x, this.leaf.y, this.leaf.width, this.leaf.height);
+                }
+
+
+                // Draw Score and Level
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                this.ctx.font = '14px "Source Sans Pro"';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(`Puntuación: ${this.score}`, 10, 20);
+                this.ctx.textAlign = 'right';
+                this.ctx.fillText(`Nivel: ${this.level}`, this.width - 10, 20);
+            },
+
+            loop() {
+                this.update();
+                this.draw();
+                this.animationFrameId = requestAnimationFrame(this.loop.bind(this));
+            },
+
+            start() {
+                if (!this.init(gameCanvas, gameMessage)) return; // Initialize if not already
+                if (this.animationFrameId) {
+                    cancelAnimationFrame(this.animationFrameId); // Clear any previous loop
+                }
+                this.loop();
+                console.log("Minigame Started");
+            },
+
+            stop() {
+                if (this.animationFrameId) {
+                    cancelAnimationFrame(this.animationFrameId);
+                    this.animationFrameId = null;
+                    console.log("Minigame Stopped");
+                }
+                 // Remove mouse listener to save resources
+                if (this.canvas && this.canvas.parentNode) {
+                    this.canvas.parentNode.removeEventListener('mousemove', this.handleMouseMove);
+                }
+            }
+        };
+
+        function startLoadingGame() {
+            if (modalLoadingIndicator && gameCanvas) {
+                modalLoadingIndicator.classList.add('active'); // Show the loading container
+                loadingGame.start();
+            }
+        }
+
+        function stopLoadingGame() {
+            loadingGame.stop();
+             if (modalLoadingIndicator) {
+                modalLoadingIndicator.classList.remove('active'); // Hide the loading container
+            }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">La biblioteca está vacía por ahora.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick uses game ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            currentTaoistTopic = title; // Set context for chat
+
+            // *** START LOADING GAME ***
+            startLoadingGame();
+            modalTitle.textContent = title; // Set title early so user sees it
+            modalStoryContentArea.classList.add('content-hidden'); // Hide content area initially
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // *** STOP LOADING GAME *** (Do this *before* showing content)
+                stopLoadingGame();
+
+                modalContent.innerHTML = formattedExplanation; // Add text
+                modalStoryContentArea.classList.remove('content-hidden'); // Show content area
+                modalTextArea.scrollTop = 0; // Reset scroll AFTER content is visible
+                console.log("Scroll set to 0 after content visible");
+
+                // Add image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p style="font-size: 0.8em; margin-top: 0.5rem;">Visualizando la esencia...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                // Add image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización de ${title}`;
+                imgElement.style.display = 'none';
+                imgElement.onload = () => { placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); };
+                imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">La visualización se desvaneció.</p>`; };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) { imgElement.src = imageUrl; modalContent.appendChild(imgElement); }
+                else { placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al crear URL.</p>`; }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                // *** STOP LOADING GAME in case of error ***
+                stopLoadingGame();
+                modalErrorMessage.textContent = error.message || "Un obstáculo inesperado impidió cargar la sabiduría.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles requests 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando pergaminos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // API call asks for 40 now
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudo encontrar más sabiduría en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar sabiduría: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // Update button text back
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Buscar Más Sabiduría (40)';
+             }
+         }
+
+         // Search Filter Function (with normalization)
+         function filterTitles(searchTerm) {
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            const titleItems = titleListContainer.querySelectorAll('.title-item');
+            let visibleCount = 0;
+            titleItems.forEach(item => {
+                const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const isVisible = titleText.includes(term);
+                item.classList.toggle('hidden', !isVisible);
+                if (isVisible) visibleCount++;
+            });
+            noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Check all essential elements, including game canvas
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !gameCanvas || !modalLoadingIndicator) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error: Faltan componentes esenciales para seguir el Sendero.</p>';
+                return;
+             }
+
+            // Event listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Set footer year
+            if (footerYear) footerYear.textContent = new Date().getFullYear();
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

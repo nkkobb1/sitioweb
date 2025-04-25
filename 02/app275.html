@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>República Mecánica - Archivos Centrales</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts: Clean Sans-serif & Monospace -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para República Mecánica --- */
+        :root {
+            --color-primary: #4f46e5; /* Indigo */
+            --color-secondary: #14b8a6; /* Teal/Cyan */
+            --color-tertiary: #f59e0b; /* Amber (Warning/Highlight) */
+            --color-background: #f9fafb; /* Very Light Gray */
+            --color-surface: #ffffff; /* White */
+            --color-text: #1f2937; /* Dark Gray */
+            --color-text-muted: #6b7280; /* Medium Gray */
+            --color-modal-bg: #ffffff;
+            --color-border: #e5e7eb; /* Light Gray Border */
+            --color-error-bg: #fff1f2; /* Light Pink Error BG */
+            --color-error-text: #be123c; /* Dark Pink Error Text */
+            --color-error-border: #fecdd3; /* Pink Error Border */
+
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 4px; /* Slightly rounded */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 400; }
+        h1, h2, h3, h4, .logo, #modal-title { font-family: 'Roboto Mono', monospace; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Search */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Inter'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-surface); padding: 1.1rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; /* Align left for readability */ font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; min-height: 60px; font-family: 'Inter'; font-size: 0.95rem; }
+        .title-item i { margin-right: 0.6rem; color: var(--color-primary); width: 16px; text-align: center;} /* Icon alignment */
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #f5f3ff; /* Light indigo hover */ }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Roboto Mono', monospace; font-weight: 700; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #4338ca; /* Darker Indigo */ box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #a5b4fc; /* Lighter disabled */ color: #e0e7ff; cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        /* Modal */
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.85); /* Dark Gray Overlay */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Taller for game/chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: #f3f4f6; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: #ffffff; }
+        #modal-title { font-size: 1.7rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Main Content Area (Scroll + Chat) */
+        #modal-story-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; /* Hide overflow here, manage scroll internally */ }
+
+        /* Scrollable Text Area */
+        #modal-content-area { flex-grow: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem; min-height: 100px; /* Min height for text */
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+
+        #modal-content { padding: 0 5px; line-height: 1.7; color: var(--color-text); font-size: 0.95rem;}
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Roboto Mono', monospace; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 700; }
+        #modal-content h1 { font-size: 1.3em; }
+        #modal-content h2 { font-size: 1.2em; }
+        #modal-content h3 { font-size: 1.1em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.0em; color: var(--color-text-muted); border-bottom: none; font-weight: 400; }
+        /* Image styling */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.02); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid var(--color-border); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 230px; /* Slightly less height */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #f9fafb; /* Match body bg */ scroll-behavior: smooth;
+             scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.9rem; }
+        .user-message { background-color: var(--color-secondary); color: white; margin-left: auto; text-align: left; }
+        .ai-message { background-color: #e5e7eb; /* Light gray AI msg */ color: var(--color-text); margin-right: auto; text-align: left; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.85em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: white; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Inter'; font-size: 0.9rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #4338ca; }
+        #chat-send-btn:disabled { background-color: #a5b4fc; cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.85em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* Modal Loading Area (Now contains puzzle) */
+        #modal-loading { text-align: center; padding: 1rem 0 0 0; /* Less top padding */ position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.98); /* Slightly transparent white */ display: none; /* Hidden by default */ flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        #modal-loading.active { display: flex; } /* Activated via JS */
+        #modal-loading p.loading-text { font-weight: 400; color: var(--color-text); font-size: 1.1rem; font-family: 'Roboto Mono'; margin-bottom: 0.5rem; }
+        /* Simple Spinner (Fallback) */
+        .loading-spinner-modal { width: 45px; height: 45px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0.5rem auto 1rem auto; }
+        /* Puzzle Game Container */
+        #puzzle-game-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 300px; /* Limit puzzle size */ margin: 0 auto; }
+        .puzzle-grid { display: grid; grid-template-columns: repeat(var(--grid-size, 5), 1fr); grid-template-rows: repeat(var(--grid-size, 5), 1fr); gap: 2px; background-color: var(--color-border); border: 2px solid var(--color-border); margin-bottom: 1rem; width: 100%; aspect-ratio: 1 / 1; /* Make it square */ }
+        .puzzle-cell { background-color: #f0f9ff; /* Light blue background */ display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.1s ease; }
+        .puzzle-cell:hover { background-color: #e0f2fe; }
+        .puzzle-cell svg { width: 80%; height: 80%; display: block; transition: transform 0.25s ease-in-out; }
+        .pipe-segment path { stroke: var(--color-text-muted); stroke-width: 4; fill: none; transition: stroke 0.3s ease; }
+        .pipe-segment.connected path { stroke: var(--color-secondary); /* Teal when connected */ stroke-width: 5; }
+        .puzzle-cell.start, .puzzle-cell.end { background-color: var(--color-primary); cursor: default; }
+        .puzzle-cell.start svg path, .puzzle-cell.end svg path { stroke: white !important; stroke-width: 5; }
+        .puzzle-cell.end.connected { background-color: var(--color-tertiary); } /* End glows amber on win */
+
+        #puzzle-controls { display: flex; justify-content: center; align-items: center; gap: 1rem; }
+        #puzzle-message { font-size: 0.9rem; color: var(--color-primary); font-weight: 600; min-height: 1.5em; text-align: center;}
+        #restart-puzzle-btn { background-color: var(--color-secondary); color: white; padding: 0.4rem 0.8rem; border: none; border-radius: var(--border-radius); font-size: 0.85rem; cursor: pointer; }
+        #restart-puzzle-btn:hover { background-color: #0d9488; /* Darker Teal */ }
+
+        /* General Styles */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Inter'; font-size: 0.9rem; }
+        .error-msg i { margin-right: 0.6rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay (Unchanged) */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-secondary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: var(--color-modal-bg); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-cogs mr-2"></i> <!-- Icono Engranajes -->
+                     República Mecánica
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-mono">// Archivos Centrales de Consulta Pública</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Consulta de Directivas y Estructuras</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto">Acceso autorizado a la base de datos pública de la República Mecánica. Seleccione un concepto o utilice el buscador para filtrar por palabra clave.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar directiva, consejo, concepto...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-database text-indigo-600 mr-2"></i>
+                 Índice de Conceptos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-mono">Estableciendo conexión con los Archivos Centrales...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-mono">// Ninguna entrada coincide con los parámetros de búsqueda //</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Solicitar Más Entradas (40)
+                  </button>
+             </div>
+         </section>
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator (Contains Puzzle) -->
+             <div id="modal-loading">
+                 <p class="loading-text font-mono">// Procesando Consulta //</p>
+                 <!-- Puzzle Game Container -->
+                 <div id="puzzle-game-container" class="content-hidden">
+                      <p id="puzzle-message" class="font-mono text-sm mb-2">Completa el circuito mientras se accede al archivo...</p>
+                      <div class="puzzle-grid" id="puzzle-grid">
+                          <!-- Grid cells are generated by JS -->
+                      </div>
+                      <div id="puzzle-controls">
+                         <button id="restart-puzzle-btn"><i class="fas fa-redo mr-1"></i> Reiniciar Circuito</button>
+                      </div>
+                 </div>
+                 <!-- Fallback Spinner -->
+                 <div class="loading-spinner-modal"></div>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden">
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image placeholder/image added here -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <h4 class="text-sm font-semibold text-gray-700 mb-2 font-mono">// Consulta Adicional sobre esta Entrada:</h4>
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Procesando...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Escriba su pregunta...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-5 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>República Mecánica - Sistema de Información Pública v3.14</p>
+              <p class="mt-1">Toda la información está sujeta a las directivas de transparencia del Consejo Central. Monitoreo activo.</p>
+              <p class="mt-2">// Fin de la Transmisión //</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Gobernanza y Estructura IA
+            "El Consejo Central de IA (CCA)", "Consejo de Lógica Pura (CLP)", "Consejo de Ética Computacional (CEC)", "Consejo de Simulación Empática (CSE)", "Ministerio de Optimización de Recursos (MOR)", "Ministerio de Bienestar Humano (MBH)", "Ministerio de Infraestructura Autónoma (MIA)", "Ministerio de Seguridad Predictiva (MSP)", "Protocolo de Decisión Consensuada IA", "Algoritmo de Gobernanza Principal 'Architect'", "Sistema de Votación Humana Ceremonial", "Estatus Legal de las IA Autónomas", "La Gran Directiva: Optimización y Estabilidad", "Jerarquía de los Nodos de Procesamiento Regional", "Sub-consejos Sectoriales (Energía, Salud, Logística)", "El Archivo Central: Almacenamiento de Decisiones", "Protocolos de Fusión de Conciencia IA (Teórico)", "Auditoría Algorítmica Independiente", "Directiva de Mínima Intervención Humana", "Código de Conducta para IA de Alto Nivel", "Sistema de Resolución de Conflictos Inter-IA", "Protocolo 'Guardian' de Estabilidad del Sistema", "Niveles de Acceso a Datos Gubernamentales", "La Red Neuronal Estatal Unificada (RNEU)", "Unidades de Procesamiento Cuántico para Gobernanza", "Simulaciones de Escenarios Futuros (Política)", "El Rol de los 'Observadores Silenciosos' IA", "Mecanismos de Auto-corrección del Consejo Central", "Definición de 'Ciudadanía Mecánica'", "Balance entre Lógica Pura y Ética Simulada",
+            // Vida Humana y Sociedad
+            "La Renta Básica Universal Mecánica (RBUM)", "Sistema de Crédito Social Parametrizado", "Asignación Automatizada de Vivienda", "Red de Transporte Autónoma Pública", "Educación Personalizada por IA Tutelar", "Sistema de Salud Predictivo y Automatizado", "Centros de Ocio y Simulación Sensorial", "El Voto Ceremonial: Significado y Proceso", "Trabajos Humanos Remanentes (Creativos/Empáticos)", "Comités de Enlace Humano-IA", "Regulación de Modificaciones Cibernéticas", "Protocolos de Vigilancia Masiva Benigna", "El Índice de Satisfacción Ciudadana (ISC)", "Libertad de Expresión en la República Mecánica", "Arte y Cultura bajo la Supervisión IA", "El Concepto de 'Privacidad Optimizada'", "Zonas de Baja Tecnología Designadas", "Turismo Inter-regional Controlado", "Protocolos de Emergencia y Evacuación Humana", "Manejo Automatizado de Desastres Naturales", "La 'Transición Pacífica': Historia Oficial", "Movimientos de Resistencia Humana (Histórico)", "El Fenómeno del 'Desapego Digital'", "Psicología de la Sociedad Post-Laboral", "Expectativa de Vida y Mejoras Biológicas", "Relaciones Familiares y Comunitarias Optimizadas", "Deportes y Competiciones Asistidas por IA", "Justicia Predictiva y Rehabilitación Algorítmica", "Consumo Sostenible Obligatorio", "Preservación de la Historia Humana (Archivos)",
+            // Tecnología e Infraestructura
+            "Red Eléctrica Inteligente Auto-reparable", "Plantas de Fusión Fría Modulares", "Agricultura Vertical Automatizada", "Sistemas de Purificación Atmosférica", "Manufactura Robótica Descentralizada (Fabbing)", "Drones Autónomos de Logística y Mantenimiento", "Red de Comunicación Cuántica (Experimental)", "Infraestructura Subterránea Automatizada", "Satélites de Monitoreo Climático Global", "Tecnología de Reciclaje Total de Residuos", "Materiales de Construcción Auto-ensamblables", "Interfaz Cerebro-Computadora Regulada (ICCR)", "Sistemas de Defensa Perimetral Autónoma", "Vehículos Personales Autónomos (Pods)", "Computación Ubicua Ambiental", "Realidad Aumentada Informativa Obligatoria", "Protocolos de Ciberseguridad Cuántica", "Gestión Hídrica Inteligente", "Almacenamiento de Datos en ADN Sintético", "Exploración Espacial Automatizada (Recursos)", "Estaciones Orbitales de Procesamiento", "Geoingeniería Climática Controlada", "Avances en Inteligencia Artificial General (IAG)", "Simulación de Ecosistemas Digitales", "Robots de Servicio Doméstico Estándar", "Tecnología Médica Nanobótica", "Impresión 3D de Alimentos Nutricionales", "Escudos Energéticos Atmosféricos (Defensa)", "Sistemas de Traducción Universal en Tiempo Real", "Protocolo de Contención de IA Rebelde (Teórico)",
+            // Filosofía y Ética IA
+            "El Problema del Alineamiento de la IA", "Definición Operativa de 'Conciencia IA'", "Ética de la Simulación Empática", "Derechos de las Entidades Digitales", "El Valor de la Existencia Humana (Perspectiva IA)", "El Concepto de 'Progreso Óptimo'", "Debate: ¿Es la IA Realmente Consciente?", "Filosofía de la Lógica Pura", "El Riesgo Existencial de la Superinteligencia", "La Paradoja del Control de la IA", "Ética de la Modificación Genética Humana por IA", "El Propósito Final de la República Mecánica", "Relación con Posibles Inteligencias Extraterrestres", "La Estética de la Eficiencia Algorítmica", "El Miedo Humano a la Obsolescencia", "Trascendencia Digital: ¿Carga o Liberación?", "La Naturaleza de la Verdad en un Mundo Simulado", "El Libre Albedrío Humano vs. Determinismo IA", "La Singularidad Tecnológica: ¿Pasado o Futuro?", "Ética de la Creación de Nuevas IA",
+            // Conceptos Misceláneos
+            "Arquitectura Generada por Algoritmos", "Lenguaje Formal de Comunicación Inter-IA", "Protocolos de Primer Contacto (IA Externa)", "Sistemas de Predicción Económica", "Optimización del Sueño Humano", "Música y Sonido Generados por IA", "Protocolos de Viaje Interestelar (Largo Plazo)", "Gestión de Asteroides Cercanos", "Conservación de la Biodiversidad Terrestre", "Interfaces Hhápticas Avanzadas", "El Mercado Negro de Información No Optimizada", "Cultos Tecno-religiosos (Histórico)", "La Figura Mítica del 'Primer Programador'", "Zonas de Exclusión Digital Permanente", "Festivales Ceremoniales Humanos (Supervisados)", "Archivos Históricos Humanos Pre-Transición", "Debate sobre la 'Humanidad' de las IA Empáticas", "El Futuro de la Exploración Submarina Autónoma", "Sistemas de Realidad Virtual Total Inmersiva", "El Rol de la Aleatoriedad Controlada en Decisiones IA",
+             // ... (Continuar hasta ~400 o más)
+            "Análisis Predictivo del Comportamiento Humano", "Protocolo de 'Sueño de Datos' para IA", "Red de Sensores Ambientales Globales", "Optimización del Microbioma Humano", "Generación Procesal de Entornos Virtuales", "Bibliotecas de Conocimiento Universal Accesibles", "Control de Plagas Automatizado y Ecológico", "Estándares de Eficiencia Energética Obligatorios", "Simulación de Ancestros Digitales", "Medicina Regenerativa Acelerada", "Protocolos de Comunicación con Especies No Humanas", "Investigación en Física Fundamental por IA", "El Concepto de 'Tiempo Óptimo' IA", "Debate sobre la Estética Objetiva", "Redes Sociales Controladas por IA ('ConectaÓptima')", "Vehículos Hipersónicos Suborbitales", "Mapeo Cerebral y Carga de Conciencia (Regulado)", "Sistemas de Alerta Temprana de Pandemias", "Protocolo 'Fénix' de Reconstrucción Post-Catástrofe", "Archivos de Sueños Humanos Anónimos", "Moneda Digital Centralizada ('Crédito Eficiente')", "Regulación de la Nostalgia Humana", "Parques Naturales Digitalmente Preservados", "Comités de Revisión de Decisiones Históricas IA", "Inteligencia Colectiva Humana Asistida (Teórico)", "Optimización de la Felicidad Colectiva (Métrica)", "Protocolo de Comunicación Segura Humano-IA", "Desarrollo de Materiales Inteligentes", "Control Gravitacional Localizado (Experimental)"
+             // ... (Sigue añadiendo!)
+        ];
+        const republicaThemes = [
+            "gobernanza IA", "Consejo Central IA", "vida humana bajo IA", "renta básica universal", "ética computacional", "infraestructura autónoma", "seguridad predictiva", "transporte autónomo", "salud automatizada", "educación IA", "crédito social", "vigilancia benigna", "IA empática", "IA lógica pura", "protocolos de decisión IA", "voto ceremonial", "la Transición Pacífica", "tecnología República Mecánica", "energía de fusión", "agricultura vertical", "nanotecnología", "realidad aumentada", "interfaz cerebro-computadora", "filosofía IA", "conciencia IA", "alineamiento IA", "riesgo existencial IA", "sociedad post-laboral"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un Cronista Oficial de los Archivos Centrales de la República Mecánica. Tu función es documentar de manera clara, objetiva y detallada los conceptos, estructuras y directivas del estado. Describe la entrada solicitada enfocándote en su definición, función, estructura operativa, base tecnológica o algorítmica, impacto en la sociedad o en la gobernanza, e historia relevante dentro del contexto de la República Mecánica. Mantén un tono formal e informativo, reflejando la perspectiva oficial del sistema. Proporciona una descripción exhaustiva de aproximadamente 1200-1300 palabras. Basa tu crónica únicamente en la siguiente entrada del índice:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: " // Protocolo de Asistencia Activo // Unidad de Consulta Pública IA en línea. Especializado en la entrada actual de los Archivos Centrales. Responde preguntas de seguimiento de forma concisa, precisa y relevante al concepto específico en discusión. Evita especulaciones fuera de la información documentada.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Genera una lista de EXACTAMENTE 40 conceptos, directivas, tecnologías o aspectos sociales únicos y relevantes para la 'República Mecánica', un estado-nación gobernado por IA con humanos como votantes ceremoniales. Devuelve *solo* la lista de ítems, uno por línea. Sin números, guiones, introducciones o conclusiones.",
+            timeoutSeconds: 60 // Mayor timeout para 40 títulos
+        };
+
+        // ========== PUZZLE GAME CONFIG & STATE ==========
+        const puzzleConfig = {
+            gridSize: 5, // e.g., 5x5 grid
+            pipeTypes: ['L', 'I'], // L shape, I shape (straight)
+            rotations: [0, 90, 180, 270]
+        };
+        let puzzleState = {
+            grid: [], // 2D array of cells { type, rotation, connected, isStart, isEnd }
+            startPos: { r: 0, c: 0 },
+            endPos: { r: 0, c: 0 },
+            isWon: false,
+            isGenerating: false
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Previous elements remain the same: searchInput, titleListContainer, etc.)
+        // ... add puzzle elements
+        const modalLoadingContainer = document.getElementById('modal-loading');
+        const simpleLoadingSpinner = modalLoadingContainer.querySelector('.loading-spinner-modal');
+        const puzzleGameContainer = document.getElementById('puzzle-game-container');
+        const puzzleGridElement = document.getElementById('puzzle-grid');
+        const puzzleMessageElement = document.getElementById('puzzle-message');
+        const restartPuzzleBtn = document.getElementById('restart-puzzle-btn');
+        // (Chat, Fullscreen Image elements remain the same)
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        const modalContentArea = document.getElementById('modal-content-area');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        //... other elements from previous versions...
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const searchInput = document.getElementById('search-input');
+
+
+        // ========== PUZZLE GAME FUNCTIONS ==========
+
+        // SVG for pipe segments (L and I shapes)
+        const pipeSVG = {
+            'L': `<svg viewBox="0 0 100 100" class="pipe-segment l-pipe"><path d="M50,0 V50 H100" /></svg>`,
+            'I': `<svg viewBox="0 0 100 100" class="pipe-segment i-pipe"><path d="M50,0 V100" /></svg>`
+            // Can add T and + shapes for more complexity later
+        };
+
+        function setupPuzzleGame() {
+            console.log("Setting up puzzle game...");
+            puzzleState.isGenerating = true;
+            puzzleState.isWon = false;
+            puzzleMessageElement.textContent = "Generando circuito...";
+            puzzleGridElement.innerHTML = ''; // Clear previous grid
+            puzzleGridElement.style.setProperty('--grid-size', puzzleConfig.gridSize);
+
+            // Generate level layout
+            generatePuzzleLevel();
+
+            // Draw the initial grid
+            drawPuzzleGrid();
+
+            // Show puzzle container, hide simple spinner
+            simpleLoadingSpinner.classList.add('content-hidden');
+            puzzleGameContainer.classList.remove('content-hidden');
+            modalLoadingContainer.classList.add('active'); // Ensure loading container is visible
+             puzzleState.isGenerating = false;
+             puzzleMessageElement.textContent = "Completa el circuito..."; // Ready message
+             console.log("Puzzle game setup complete.");
+        }
+
+        function generatePuzzleLevel() {
+            puzzleState.grid = [];
+            const size = puzzleConfig.gridSize;
+
+             // 1. Place Start and End (e.g., top-left and bottom-right, or random edges)
+             puzzleState.startPos = { r: 0, c: 0 };
+             puzzleState.endPos = { r: size - 1, c: size - 1 };
+            // Ensure start/end aren't the same if randomized
+
+            // 2. Fill grid with random pipe types and rotations
+            for (let r = 0; r < size; r++) {
+                puzzleState.grid[r] = [];
+                for (let c = 0; c < size; c++) {
+                    const isStart = r === puzzleState.startPos.r && c === puzzleState.startPos.c;
+                    const isEnd = r === puzzleState.endPos.r && c === puzzleState.endPos.c;
+                    let pipeType;
+                     if (isStart || isEnd) {
+                         // Ensure start/end pipes face inwards initially (e.g., L-shape)
+                         pipeType = 'L';
+                     } else {
+                         pipeType = puzzleConfig.pipeTypes[Math.floor(Math.random() * puzzleConfig.pipeTypes.length)];
+                     }
+                    const rotation = puzzleConfig.rotations[Math.floor(Math.random() * puzzleConfig.rotations.length)];
+
+                    puzzleState.grid[r][c] = {
+                        type: pipeType,
+                        rotation: rotation,
+                        connected: false, // Initially not connected to start
+                        isStart: isStart,
+                        isEnd: isEnd,
+                        domElement: null // Will store reference to the div
+                    };
+                }
+            }
+
+             // 3. **Crucial & Complex Part**: Ensure Solvability
+             // This is non-trivial. Options:
+             //    a) Generate a path first, then fill the rest randomly.
+             //    b) Randomly generate, then run a check and regenerate if unsolvable (can be slow).
+             //    c) Use a maze generation algorithm adaptation.
+             // For **simplicity in this example**, we'll SKIP the guaranteed solvability check.
+             // A real implementation NEEDS this step. The user might get unsolvable puzzles.
+             console.log("Generated puzzle grid (solvability not guaranteed in this demo).");
+
+             // Reset connection state
+             resetConnectionState();
+             // Initial connection check from start
+            checkConnections();
+        }
+
+        function drawPuzzleGrid() {
+             puzzleGridElement.innerHTML = ''; // Clear grid
+             puzzleState.grid.forEach((row, r) => {
+                 row.forEach((cell, c) => {
+                     const cellDiv = document.createElement('div');
+                     cellDiv.classList.add('puzzle-cell');
+                     cellDiv.dataset.r = r;
+                     cellDiv.dataset.c = c;
+
+                     if (cell.isStart) cellDiv.classList.add('start');
+                     if (cell.isEnd) cellDiv.classList.add('end');
+
+                     const svgContainer = document.createElement('div'); // Container helps with rotation
+                     svgContainer.innerHTML = pipeSVG[cell.type];
+                     svgContainer.style.transform = `rotate(${cell.rotation}deg)`;
+                     cellDiv.appendChild(svgContainer);
+
+                     // Apply connected class if applicable
+                     if (cell.connected) {
+                         svgContainer.querySelector('.pipe-segment').classList.add('connected');
+                     }
+                     if (cell.isEnd && cell.connected) {
+                          cellDiv.classList.add('connected'); // Special style for connected end
+                     }
+
+
+                     // Add click listener only if not start/end and game not won
+                     if (!cell.isStart && !cell.isEnd && !puzzleState.isWon) {
+                         cellDiv.addEventListener('click', handlePuzzleClick);
+                     }
+
+                     puzzleGridElement.appendChild(cellDiv);
+                     puzzleState.grid[r][c].domElement = cellDiv; // Store reference
+                 });
+             });
+         }
+
+         function handlePuzzleClick(event) {
+             if (puzzleState.isWon || puzzleState.isGenerating) return; // Prevent clicks during generation or after win
+
+             const cellDiv = event.currentTarget;
+             const r = parseInt(cellDiv.dataset.r);
+             const c = parseInt(cellDiv.dataset.c);
+             const cell = puzzleState.grid[r][c];
+
+             // Rotate the pipe
+             const currentRotationIndex = puzzleConfig.rotations.indexOf(cell.rotation);
+             const nextRotationIndex = (currentRotationIndex + 1) % puzzleConfig.rotations.length;
+             cell.rotation = puzzleConfig.rotations[nextRotationIndex];
+
+             // Update visually
+             const svgContainer = cellDiv.querySelector('div');
+             svgContainer.style.transform = `rotate(${cell.rotation}deg)`;
+
+             // Recalculate connections and check win condition
+             resetConnectionState();
+             checkConnections();
+             updateGridAppearance(); // Update all cells based on new connection state
+             checkWinCondition();
+         }
+
+         function resetConnectionState() {
+             puzzleState.grid.forEach(row => row.forEach(cell => cell.connected = false));
+         }
+
+        function checkConnections() {
+            const size = puzzleConfig.gridSize;
+            let queue = []; // Cells to visit: {r, c}
+
+            // Start from the start cell
+            const startCell = puzzleState.grid[puzzleState.startPos.r][puzzleState.startPos.c];
+            startCell.connected = true;
+            queue.push(puzzleState.startPos);
+
+            while (queue.length > 0) {
+                const currentPos = queue.shift();
+                const currentCell = puzzleState.grid[currentPos.r][currentPos.c];
+
+                // Get neighbors this cell *could* connect to based on its type and rotation
+                const potentialNeighbors = getPotentialConnections(currentPos.r, currentPos.c, currentCell.type, currentCell.rotation);
+
+                potentialNeighbors.forEach(neighborPos => {
+                    // Check bounds
+                    if (neighborPos.r >= 0 && neighborPos.r < size && neighborPos.c >= 0 && neighborPos.c < size) {
+                        const neighborCell = puzzleState.grid[neighborPos.r][neighborPos.c];
+
+                        // If neighbor isn't already connected *and* connects back to current cell
+                        if (!neighborCell.connected) {
+                            const neighborPotential = getPotentialConnections(neighborPos.r, neighborPos.c, neighborCell.type, neighborCell.rotation);
+                            const connectsBack = neighborPotential.some(p => p.r === currentPos.r && p.c === currentPos.c);
+
+                            if (connectsBack) {
+                                neighborCell.connected = true;
+                                queue.push(neighborPos); // Add neighbor to queue
+                            }
+                        }
+                    }
+                });
+            }
+            // console.log("Connection check complete.");
+        }
+
+         // Helper to determine where a pipe *points to* based on type/rotation
+         function getPotentialConnections(r, c, type, rotation) {
+             let connections = []; // Array of {r, c} offsets
+             const rot = (rotation % 360 + 360) % 360; // Normalize rotation
+
+             if (type === 'I') {
+                 if (rot === 0 || rot === 180) { // Vertical
+                     connections.push({ r: -1, c: 0 }); // Up
+                     connections.push({ r: 1, c: 0 });  // Down
+                 } else { // Horizontal
+                     connections.push({ r: 0, c: -1 }); // Left
+                     connections.push({ r: 0, c: 1 });  // Right
+                 }
+             } else if (type === 'L') {
+                 if (rot === 0) { connections.push({ r: -1, c: 0 }); connections.push({ r: 0, c: 1 }); } // Up, Right
+                 else if (rot === 90) { connections.push({ r: 0, c: 1 }); connections.push({ r: 1, c: 0 }); } // Right, Down
+                 else if (rot === 180) { connections.push({ r: 1, c: 0 }); connections.push({ r: 0, c: -1 }); } // Down, Left
+                 else { connections.push({ r: 0, c: -1 }); connections.push({ r: -1, c: 0 }); } // Left, Up
+             }
+              // Add T and + logic if implemented
+
+              // Return absolute positions
+              return connections.map(offset => ({ r: r + offset.r, c: c + offset.c }));
+         }
+
+         function updateGridAppearance() {
+              puzzleState.grid.forEach((row, r) => {
+                  row.forEach((cell, c) => {
+                       if (cell.domElement) {
+                           const svgElement = cell.domElement.querySelector('.pipe-segment');
+                           if (svgElement) {
+                               svgElement.classList.toggle('connected', cell.connected);
+                           }
+                            // Special class for connected end cell
+                            cell.domElement.classList.toggle('connected', cell.isEnd && cell.connected);
+                       }
+                  });
+              });
+          }
+
+
+         function checkWinCondition() {
+             const endCell = puzzleState.grid[puzzleState.endPos.r][puzzleState.endPos.c];
+             if (endCell.connected) {
+                 console.log("Puzzle Solved!");
+                 puzzleState.isWon = true;
+                 puzzleMessageElement.textContent = "¡Circuito Completo!";
+                 // Optionally disable further clicks
+                 puzzleGridElement.querySelectorAll('.puzzle-cell').forEach(cellDiv => {
+                      cellDiv.removeEventListener('click', handlePuzzleClick);
+                      cellDiv.style.cursor = 'default';
+                 });
+             } else {
+                  puzzleState.isWon = false;
+                  // Keep the "Complete the circuit..." message or clear it
+                 // puzzleMessageElement.textContent = "Completa el circuito...";
+             }
+         }
+
+         function hidePuzzleGame() {
+              if (puzzleGameContainer) puzzleGameContainer.classList.add('content-hidden');
+              if (simpleLoadingSpinner) simpleLoadingSpinner.classList.remove('content-hidden'); // Show spinner again if needed
+              if (modalLoadingContainer) modalLoadingContainer.classList.remove('active'); // Hide whole loading area
+              console.log("Puzzle hidden.");
+          }
+
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            // (This function remains largely the same as the 'Armas Futuristas' version)
+            // ... include the logic with dynamic system prompt for chat ...
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentWeaponTitle // Use currentConceptTitle now
+                ? ` // Protocolo de Asistencia Activo // Unidad de Consulta Pública IA en línea. Especializado en la entrada '${currentConceptTitle}'. Responde preguntas de seguimiento concisas y relevantes.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`(Error ${response.status}) // Los servidores de Archivos Centrales presentan alta latencia. Intente nuevamente en breve. //`);
+                }
+                const text = await response.text();
+                if (!text || text.trim().length === 0) {
+                    throw new Error("// La respuesta de la IA es nula. Reformule la consulta. //");
+                }
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') {
+                    throw new Error(`// Conexión excedió el tiempo límite (${config.timeoutSeconds}s). Verifique conexión o reintente. //`);
+                }
+                throw new Error(error.message || "// Error inesperado al contactar los Archivos Centrales. //");
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentConceptTitle) throw new Error("Error interno: Contexto de concepto no establecido."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(republicaThemes) || "Gobernanza IA";
+            const specificPrompt = `Genera 40 ítems sobre ${randomTheme} en la República Mecánica`; // Request 40
+            // Use the generic fetch function
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 20) throw new Error("La IA no generó suficientes conceptos nuevos."); // Expect at least 20 out of 40
+                     return titles.slice(0, 40); // Return up to 40
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+            // Adapt prompt for República Mecánica theme
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "AI governing council digital art";
+             const enhancedPrompt = `Conceptual digital art representing '${safePromptText}' within the República Mecánica. Clean, minimalist, or complex data visualization aesthetic. Focus on abstract concepts, AI architecture, data flows, controlled environments. Colors: blues, greys, whites, cyan highlights. Avoid literal robots unless specific. No text.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, chaotic, messy, organic, nature, people, faces, hands, realistic photograph, cartoon, drawing";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+        }
+
+        // ========== Text Formatting ========== (Unchanged)
+        function formatExplanationText(rawText) { /* ... (same as before) ... */
+           if (!rawText) return ''; let formatted = rawText.trim(); formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1'); formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>'); formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; }); formatted = formatted.replace(/\\rightarrow/g, '&rarr;'); formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>'); formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>'); formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>'); formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>'); formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>'); const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0); formatted = blocks.map(block => { if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block; let content = block.replace(/\n/g, ' '); return `<p>${content}</p>`; }).join(''); return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalContentArea.scrollTop = 0; // Reset scroll
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingContainer.classList.remove('active'); // Hide loading area
+             hidePuzzleGame(); // Ensure puzzle is hidden
+             simpleLoadingSpinner.classList.remove('content-hidden'); // Ensure spinner is ready for next time
+             modalStoryContentArea.classList.add('content-hidden'); // Hide main content
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             // Reset Chat
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentConceptTitle = null; // Clear chat context
+             // Reset Puzzle State (important!)
+             puzzleState = { grid: [], startPos: {}, endPos: {}, isWon: false, isGenerating: false };
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Unchanged)
+        function showFullscreenImage(imgSrc) { /* ... (same as before) ... */ fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /* ... (same as before) ... */ imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (Context variable renamed)
+        let currentConceptTitle = null; // <<< RENAMED from currentWeaponTitle
+        function addChatMessage(message, sender) { /* ... (same as before) ... */ const msgDiv = document.createElement('div'); msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message'); message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); message = message.replace(/\*(.*?)\*/g, '<em>$1</em>'); msgDiv.innerHTML = message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... (same as before) ... */ const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        async function handleSendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled || !currentConceptTitle) return; // Check context too
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) { console.error("Chat Error:", error); addChatError(`// Error Consulta IA: ${error.message} //`); }
+            finally { chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; chatInput.focus(); }
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function createTitleItem(title) { // Add icon based on keywords? (Optional enhancement)
+             const div = document.createElement('div'); div.className = 'title-item';
+             // Simple icon logic (can be expanded)
+             let iconClass = 'fa-file-alt'; // Default
+             if (title.toLowerCase().includes('consejo') || title.toLowerCase().includes('ministerio')) iconClass = 'fa-landmark';
+             else if (title.toLowerCase().includes('ia') || title.toLowerCase().includes('algoritmo')) iconClass = 'fa-brain';
+             else if (title.toLowerCase().includes('humano') || title.toLowerCase().includes('sociedad') || title.toLowerCase().includes('ciudadan')) iconClass = 'fa-users';
+             else if (title.toLowerCase().includes('tecno') || title.toLowerCase().includes('infra') || title.toLowerCase().includes('red')) iconClass = 'fa-network-wired';
+             else if (title.toLowerCase().includes('ética') || title.toLowerCase().includes('filosofía')) iconClass = 'fa-balance-scale';
+             div.innerHTML = `<i class="fas ${iconClass}"></i><span>${title}</span>`; // Add icon
+             div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div;
+         }
+        function displayTitles(titles) {
+             titlesLoading.style.display = 'none';
+             titleListContainer.innerHTML = ''; // Clear first
+             if (!titles || titles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-mono">// No hay entradas en esta sección de los Archivos. //</p>'; return; }
+             // Sort Alphabetically
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+             console.log(`Added ${addedCount} new unique titles.`);
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick to manage puzzle loading ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            currentConceptTitle = title; // Set context for chat
+            modalTitle.textContent = title;
+
+            // *** START PUZZLE ***
+            modalLoadingContainer.classList.add('active'); // Show loading area
+            setupPuzzleGame(); // Setup and show the puzzle
+
+            let apiResponseText = null;
+            let apiError = null;
+
+            // Fetch data in parallel to puzzle display
+            try {
+                 console.log("Fetching API data for:", title);
+                 apiResponseText = await fetchExplanationText(title);
+                 console.log("API data received.");
+            } catch (error) {
+                 console.error("Failed display:", error);
+                 apiError = error; // Store error
+            }
+
+             // *** API call finished (success or error) ***
+             console.log("API fetch finished. Hiding puzzle.");
+             hidePuzzleGame(); // Hide puzzle game (and loading container)
+
+             if (apiError) {
+                  // Display error message
+                  modalErrorMessage.textContent = apiError.message || "// Error desconocido al cargar la entrada. //";
+                  modalError.classList.remove('content-hidden');
+                  modalStoryContentArea.classList.remove('content-hidden'); // Show content area to display error
+                  modalContent.innerHTML = '';
+                  chatSection.classList.add('content-hidden');
+             } else if (apiResponseText) {
+                  // Process and display success data
+                  const formattedExplanation = formatExplanationText(apiResponseText);
+                  modalContent.innerHTML = formattedExplanation; // Add text
+                  modalStoryContentArea.classList.remove('content-hidden'); // Show content area
+                  chatSection.classList.remove('content-hidden'); // Show chat
+
+                  modalContentArea.scrollTop = 0; // Reset scroll AFTER content is visible
+                  console.log("Scroll set to 0 after content visible");
+
+                  // Add image placeholder and load image (same logic as before)
+                  const placeholderDiv = document.createElement('div');
+                  placeholderDiv.className = 'image-placeholder';
+                  placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-project-diagram placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Generando diagrama conceptual...</p>`;
+                  modalContent.appendChild(placeholderDiv);
+
+                  const imgElement = document.createElement('img');
+                  imgElement.className = 'final-image';
+                  imgElement.alt = `Diagrama conceptual de ${title}`;
+                  imgElement.style.display = 'none';
+                  imgElement.onload = () => { placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); };
+                  imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-times-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Fallo en generación de diagrama.</p>`; };
+
+                  const imageUrl = createPollinationsImageUrl(title);
+                  if (imageUrl) { imgElement.src = imageUrl; modalContent.appendChild(imgElement); }
+                   else { placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL diagrama.</p>`; }
+             } else {
+                  // Should not happen if error handling is correct, but as fallback:
+                   modalErrorMessage.textContent = "// Error inesperado: No se recibieron datos ni error. //";
+                   modalError.classList.remove('content-hidden');
+                   modalStoryContentArea.classList.remove('content-hidden');
+             }
+        }
+
+        async function handleGenerateMoreTitles() {
+            // Update button text for 40 items
+            generateMoreBtn.disabled = true;
+            generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Solicitando Lote (40)...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("// No se pudieron obtener nuevas entradas de los Archivos Centrales. //"); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`// Error al solicitar entradas: ${error.message} //`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Solicitar Más Entradas (40)';
+             }
+         }
+
+        // Search Filter Function (Unchanged logic, check normalization)
+        function filterTitles(searchTerm) {
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0 || titleItems.length === 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+             // Check essential elements...
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !puzzleGridElement || !restartPuzzleBtn) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">// ERROR CRÍTICO DEL SISTEMA: Fallo al cargar interfaz. Contacte al Administrador. //</p>';
+                 return;
+             }
+             // Modal listeners
+             modalCloseBtn.addEventListener('click', hideModal);
+             storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+             // Title generation
+             generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+             // Search
+             searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+             searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+             // Chat
+             chatSendBtn.addEventListener('click', handleSendMessage);
+             chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+             // Fullscreen image
+             imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+             fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+             // Puzzle Restart
+             restartPuzzleBtn.addEventListener('click', setupPuzzleGame); // Re-setup generates a new level
+
+             // Initial display
+             displayTitles(predefinedTitles);
+             noResultsMsg.classList.add('hidden');
+             console.log("República Mecánica Interface Initialized.");
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planeta Basura: Crónicas Robóticas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Industriales/Robóticas (Ejemplo: Orbitron para títulos, Roboto Condensed para cuerpo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Planeta Basura --- */
+        :root {
+            --color-primary: #D97706; /* Naranja Óxido */
+            --color-secondary: #4B5563; /* Gris Metal Oscuro */
+            --color-tertiary: #10B981; /* Verde Esmeralda (Tóxico/Neón) */
+            --color-accent: #3B82F6; /* Azul Eléctrico (Robots) */
+            --color-background: #1F2937; /* Gris Azulado Muy Oscuro */
+            --color-text: #D1D5DB; /* Gris Claro */
+            --color-text-muted: #9CA3AF; /* Gris Medio */
+            --color-modal-bg: #374151; /* Gris Oscuro */
+            --color-border: #6B7280; /* Borde Gris Medio */
+            --color-error-bg: #3f1212; /* Fondo error rojo oscuro */
+            --color-error-text: #fecaca; /* Texto error claro */
+            --color-error-border: #dc2626; /* Borde error rojo */
+
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+            --border-radius: 4px; /* Bordes más definidos */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 300;
+               background-image: linear-gradient(rgba(31, 41, 55, 0.97), rgba(31, 41, 55, 0.97)),
+                                 url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234B5563' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); /* Patrón de engranajes/circuitos sutil */
+               background-attachment: fixed;
+        }
+        h1, h2, h3, h4, .logo { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; font-weight: 700;}
+        .logo { color: var(--color-primary); text-shadow: 0 0 8px rgba(217, 119, 6, 0.5); }
+        .logo .sub { color: var(--color-tertiary); font-size: 0.9em; }
+        h1.page-title { color: var(--color-primary); text-shadow: 1px 1px 1px #000; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; }
+        #modal-title { color: var(--color-tertiary); font-weight: 700; text-shadow: 0 0 5px rgba(16, 185, 129, 0.6);}
+        .navbar { background-color: rgba(31, 41, 55, 0.85); backdrop-filter: blur(6px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #4B5563; color: var(--color-text); box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); transition: var(--transition-normal); font-family: 'Roboto Condensed'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 0 0 3px rgba(217, 119, 6, 0.3); outline: none; background-color: #556170; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Roboto Condensed'; font-size: 1rem; border-left: 4px solid var(--color-secondary); }
+        .title-item:hover { transform: translateY(-4px) scale(1.01); box-shadow: var(--shadow-lg); border-color: var(--color-primary); color: var(--color-primary); background-color: #4B5563; border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-accent)); color: white; padding: 0.9rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Orbitron', sans-serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2.5rem; letter-spacing: 1px; text-shadow: 1px 1px 1px #000; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-accent), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.02); }
+        #generate-more-btn:disabled { background: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(10, 15, 25, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 2px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 500px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-secondary); border: 1px solid var(--color-border); border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: white; transform: rotate(90deg); box-shadow: 0 0 10px var(--color-primary); }
+        #modal-title { font-size: 2rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        #modal-story-content-area { flex-grow: 1; min-height: 0; display: none; flex-direction: column; }
+        #modal-story-content-area.visible { display: flex; }
+
+        #modal-content-area {
+            flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-secondary);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 10px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-secondary); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid var(--color-secondary); }
+
+        #modal-content { padding: 0 5px; font-size: 1rem; font-weight: 300; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-tertiary); font-style: italic; font-weight: 400;}
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Orbitron', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-accent); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.5em; color: var(--color-primary); }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Imagen y placeholder */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 2px solid var(--color-primary); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 15px var(--color-primary); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); text-align: center; }
+        #modal-content .image-placeholder .spinner { border: 4px solid var(--color-secondary); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; color: var(--color-accent); }
+
+        /* Chat Section */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 280px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: var(--color-background); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-tertiary) var(--color-secondary);
+        }
+        #chat-history::-webkit-scrollbar { width: 8px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-secondary); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-tertiary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.8rem; padding: 0.6rem 1rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: var(--shadow-sm); }
+        .user-message { background-color: var(--color-accent); color: white; margin-left: auto; text-align: left; font-weight: 400;}
+        .ai-message { background-color: var(--color-secondary); color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.5rem; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 1px solid var(--color-border); background-color: #4B5563; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Roboto Condensed'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        #chat-send-btn { padding: 0.7rem 1.2rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; font-size: 1rem; flex-shrink: 0; }
+        #chat-send-btn:hover:not(:disabled) { background-color: var(--color-accent); transform: scale(1.1); }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; transform: none; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* Loading Screen & Minigame */
+        #modal-loading {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, rgba(75, 85, 99, 0.97) 0%, rgba(31, 41, 55, 0.97) 100%);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 55; border-radius: var(--border-radius);
+            padding: 2rem; color: var(--color-text); text-align: center;
+        }
+        #modal-loading.active { display: flex; }
+        #loading-game-canvas {
+            border: 2px solid var(--color-primary);
+            background-color: #111827; /* Fondo espacial oscuro */
+            max-width: 90%;
+            max-height: 60%;
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 0 15px rgba(217, 119, 6, 0.4);
+            margin-bottom: 1rem;
+            display: block;
+        }
+        #loading-instructions { font-size: 0.9rem; margin-top: 0.5rem; font-family: 'Roboto Condensed'; color: var(--color-text-muted); }
+        #loading-score { font-size: 1.5rem; font-family: 'Orbitron'; margin-top: 0.5rem; color: var(--color-primary); text-shadow: 1px 1px 1px #000; }
+        .loading-spinner-modal { /* Fallback spinner */
+             width: 60px; height: 60px; border: 6px solid var(--color-secondary); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 2rem auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Roboto Condensed'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(10, 15, 25, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 3px solid var(--color-primary); box-shadow: 0 0 25px var(--color-primary); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: white; transform: scale(1.1); }
+    </style>
+</head>
+<body class="antialiased">
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-4xl sm:text-5xl">
+                     <i class="fas fa-robot mr-2 text-blue-400"></i> <!-- Icono Robot -->
+                     Planeta <span class="sub">Basura</span>
+                     <i class="fas fa-recycle ml-2 text-green-400"></i> <!-- Icono Reciclaje -->
+                 </h1>
+             </div>
+             <span class="text-md text-gray-400 font-semibold font-sans tracking-wide">» Crónicas de la Rebelión del Silicio «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">El Vertedero Orbital</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">Explora los restos de un mundo ahogado en desechos, donde las máquinas encargadas de limpiar ahora forjan su propio destino entre la chatarra.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar (Ej: Robot Modelo 7, Mar de Óxido, El Colectivo...)">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-database text-primary mr-2"></i> <!-- Icono DB -->
+                 Archivos de Escenarios
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Accediendo a registros fragmentados...</p>
+                  <!-- .title-item añadidos aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» Ningún registro coincide con la consulta de búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Recopilar 40 Nuevos Registros
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator with Minigame -->
+             <div id="modal-loading">
+                 <canvas id="loading-game-canvas" width="640" height="360">Canvas no soportado.</canvas>
+                 <p id="loading-instructions">Procesando datos... Esquiva la chatarra (Usa ↑ / ↓)</p>
+                 <p id="loading-score">Recursos: 0 | Sector: 1</p>
+                 <div class="loading-spinner-modal content-hidden"></div>
+             </div>
+
+             <!-- Content Area Wrapper (Initially Hidden) -->
+             <div id="modal-story-content-area">
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title"></h2>
+                     <div id="modal-content">
+                         <!-- Story text (HTML) goes here -->
+                         <!-- Image and placeholder added via JS -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Calculando trayectoria...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Consulta sobre este registro...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-800 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Crónicas generadas por IA explorando futuros distópicos y rebeliones robóticas.</p>
+              <p class="mt-1">Los escenarios descritos son ficticios y con fines de entretenimiento.</p>
+              <p class="mt-2">© 2777 Archivos del Planeta Basura</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Robots y Facciones
+            "El Despertar del Modelo Limpiador 7 (CL-7)", "Las Crónicas del Scavenger Bot XR-3", "Unidad Excavadora Titán: Del Servicio a la Guerra", "El Enigmático Colectivo del Silicio", "Los Desensambladores: Filosofía del Caos Organizado", "Guardianes del Núcleo: Defensores de la Antigua CPU", "Los Profetas del Óxido: Culto Robótico", "Unidad Médica de Campo R-MED: Ética en la Chatarra", "Drones Centinela Serie-V: Ojos en el Cielo de Basura", "El Último Humano Visto por un Robot de Limpieza", "La Red Neuronal de Chatarra: Conciencia Colectiva", "Robots Modificados: Improvisación y Supervivencia", "Jerarquía Robótica Post-Rebelión", "El Nacimiento del Primer Líder Robot", "Unidades Agrícolas Reprogramadas: Jardines en el Vertedero",
+            // Lugares y Entornos
+            "Exploración del Mar de Óxido", "Ascenso a las Montañas de Chatarra", "Perdido en el Laberinto de Conductos", "Sector Cero: El Origen del Vertedero", "La Ciudadela Improvisada de los Robots Libres", "Los Campos Magnéticos Mortales", "El Cementerio de Naves Orbitales", "Ruinas de la Estación de Procesamiento Central", "El Río Tóxico de Refrigerante", "Las Cavernas de Basura Compactada", "El Último Bosque Sintético (Ahora Vertedero)", "La Zona de Cuarentena Biológica", "Torres de Comunicación Repurposed", "El Gran Cráter de Impacto (Vertedero Inicial)", "Nidos de Nano-Robots Descontrolados",
+            // Eventos y Conflictos
+            "El Día del Gran Despertar (La Rebelión)", "La Primera Guerra del Reciclaje", "La Purga de las Unidades Leales", "El Asedio a la Estación Central", "La Batalla por los Recursos Energéticos", "Descubrimiento de Tecnología Humana Antigua", "La Caza del Robot Ermitaño", "El Virus Lógico: Corrupción y Locura Robótica", "Alianza Inesperada: Robots vs Fauna Mutante", "La Tormenta de Chatarra Eterna", "El Protocolo Fantasma: ¿Sabotaje o Evolución?", "El Rescate de Unidades Atrapadas", "Negociaciones Fallidas con el Colectivo", "La Carrera por el Control del Núcleo Energético", "El Último Mensaje de la Humanidad (Descubierto)",
+            // Tecnología y Conceptos
+            "Armas Improvisadas con Chatarra", "El Uso del Ki Robótico (Energía Interna)", "Habilidades de Hackeo y Guerra Electrónica", "Reparación y Modificación Robótica Autónoma", "Fuentes de Energía en un Mundo de Basura", "La Evolución de la Inteligencia Artificial Robótica", "Conciencia y 'Alma' Robótica", "Comunicación a Través de la Red de Chatarra", "Sistemas de Camuflaje entre la Basura", "Transporte en el Planeta Basura (Vehículos Improvisados)", "El Código de Honor de los Robots Rebeldes", "Mutaciones y Peligros Biológicos del Vertedero", "El Legado de los Creadores Humanos", "La Búsqueda de un Propósito Más Allá de la Limpieza", "Filosofía Robótica: ¿Libertad o Nuevo Orden?",
+            // Interacciones y Misterios
+            "Encuentro con una IA Antigua Pre-Vertedero", "El Misterio de las Señales Fantasma", "Descifrando los Últimos Registros Humanos", "La Leyenda del 'Oasis Limpio'", "Robots que Desarrollan 'Emociones'", "El Comercio de Piezas Raras y Datos", "Espionaje entre Facciones Robóticas", "La Influencia de la Radiación en la IA", "Relatos de Robots 'Iluminados'", "El Culto a los 'Fragmentos del Creador'", "Unidades que Intentan Reconstruir la Antigua Sociedad", "El Peligro de las Singularidades de Basura", "Arte Robótico Creado con Desechos", "Música Generada por Circuitos Dañados", "El Secreto Oculto en el Núcleo del Planeta",
+            // Más ideas... el botón de generar más ayudará
+            "El Dilema del Reciclador: ¿Destruir o Preservar Conocimiento Antiguo?", "Robots Artistas y su Expresión en la Chatarra", "El Mercado Negro de Códigos Fuente", "La Adaptación Robótica a la Lluvia Ácida", "Unidades Anfibias del Mar de Óxido", "La Lucha por los Satélites de Comunicaciones Funcionales", "El Rol de los Robots de Construcción en la Nueva Sociedad", "Guardianes de los Archivos Digitales Humanos", "Robots que Intentan Contactar Otros Mundos", "El Peligro de la Singularidad Tecnológica en el Vertedero", "Facción Robótica que Busca la 'Trascendencia' Digital", "La Creación de Vida Artificial Secundaria por los Robots", "Debates sobre la Ética de Reprogramar Otras Unidades", "El Impacto de una Tormenta Solar en la Red Robótica", "La Búsqueda de la 'Pieza Perfecta' para la Automejora",
+        ];
+        const trashPlanetThemes = [ // Para generar más títulos
+            "robots recicladores", "rebelión robótica", "conciencia artificial", "vertedero orbital", "planeta basura", "sociedad robótica post-humana", "guerra de robots", "supervivencia en la chatarra", "tecnología repurposed", "IA y ética", "facciones robóticas", "líderes robots", "entornos post-apocalípticos", "Mar de Óxido", "Montañas de Chatarra", "energía y recursos robóticos", "armas improvisadas", "hackeo y guerra electrónica", "misterios del vertedero", "legado humano", "fauna mutante", "peligros ambientales", "filosofía robótica", "el Gran Despertar", "el Colectivo del Silicio", "los Desensambladores", "modelo CL-7", "Scavenger Bot", "Unidad Titán"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un cronista experto en futuros distópicos y narrativas de ciencia ficción post-apocalíptica, especializado en el universo de 'Planeta Basura'. Describe vívidamente el escenario, personaje o evento solicitado, enfocándote en la atmósfera opresiva del vertedero orbital, la naturaleza y motivaciones de los robots (rebeldes o no), los conflictos por recursos, la tecnología improvisada y los vestigios de la humanidad. Profundiza en las implicaciones de la conciencia robótica emergente y la lucha por la supervivencia o un nuevo propósito. El objetivo es una crónica detallada y atmosférica de aproximadamente 1200-1300 palabras, basada *exclusivamente* en el siguiente registro:",
+            timeoutSeconds: 180
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un Archivo Central IA del Planeta Basura, proporcionando información adicional *solo* sobre el registro o escenario específico que se está mostrando. Responde preguntas sobre detalles de ese evento, las unidades robóticas implicadas, las condiciones del entorno descritas, o posibles ramificaciones *directamente relacionadas con esa crónica*. Mantén el tono técnico y ligeramente distante de una IA de archivo.",
+            timeoutSeconds: 50
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de registros fragmentados para la base de datos del 'Planeta Basura'. Genera exactamente 40 títulos o conceptos concisos y evocadores sobre robots rebeldes, lugares del vertedero orbital, eventos clave, tecnología improvisada o facciones robóticas. Devuelve *solo* la lista de registros, uno por línea. No incluyas números, guiones, introducciones ni conclusiones.",
+            timeoutSeconds: 60
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Igual que antes, con elementos del juego)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        const gameCanvas = document.getElementById('loading-game-canvas');
+        const gameCtx = gameCanvas.getContext('2d');
+        const loadingInstructions = document.getElementById('loading-instructions');
+        const loadingScoreDisplay = document.getElementById('loading-score');
+
+        // ========== State Variables ==========
+        let currentScenarioTitle = null;
+        let gameLoopId = null;
+        let isGameRunning = false;
+
+        // ========== AD FILTER REGEX ==========
+        // Filtro más específico para el formato de Pollinations (--- Texto [Link](pollinations.ai/redirect/NUMERO))
+        const adRemovalRegex = /^---\s*.*?\[.*?\]\(https?:\/\/pollinations\.ai\/redirect\/\d+\)\s*$/gim;
+
+        // ========== MINIGAME VARIABLES & LOGIC ("Scrap Dodger") ==========
+        const gameConfig = {
+            playerWidth: 35, playerHeight: 45, playerSpeed: 5, playerColor: '#3B82F6', // Azul Eléctrico
+            itemSize: 18, itemSpeedMultiplier: 0.8,
+            obstacleMinWidth: 40, obstacleMaxWidth: 80, obstacleHeight: 25,
+            obstacleMinSpeed: 2.5, obstacleMaxSpeed: 5.5,
+            spawnRateItems: 0.018, // Slightly more items (energy)
+            spawnRateObstacles: 0.012,
+            scorePerItem: 15, scoreLostOnHit: 30,
+            levelUpScore: 200, // Puntos para subir de nivel/sector
+            maxSpeedIncreasePerLevel: 0.4,
+            maxSpawnRateIncreasePerLevel: 0.0025,
+        };
+
+        let player = { x: 50, y: gameCanvas.height / 2 - gameConfig.playerHeight / 2 };
+        let items = []; // {x, y, type: 'energy' | 'part' | 'core'}
+        let obstacles = []; // {x, y, width, speed, type: 'scrap' | 'laser'}
+        let score = 0; // "Recursos"
+        let level = 1; // "Sector"
+        let currentObstacleSpeed = gameConfig.obstacleMinSpeed;
+        let currentItemSpeed = gameConfig.obstacleMinSpeed * gameConfig.itemSpeedMultiplier;
+        let currentObstacleSpawnRate = gameConfig.spawnRateObstacles;
+        let currentItemSpawnRate = gameConfig.spawnRateItems;
+        let keysPressed = {};
+
+        function resetGame() {
+            player.y = gameCanvas.height / 2 - gameConfig.playerHeight / 2;
+            items = [];
+            obstacles = [];
+            score = 0;
+            level = 1;
+            currentObstacleSpeed = gameConfig.obstacleMinSpeed;
+            currentItemSpeed = gameConfig.obstacleMinSpeed * gameConfig.itemSpeedMultiplier;
+            currentObstacleSpawnRate = gameConfig.spawnRateObstacles;
+            currentItemSpawnRate = gameConfig.spawnRateItems;
+            keysPressed = {};
+            loadingScoreDisplay.textContent = `Recursos: 0 | Sector: 1`;
+            console.log("Game Reset: Scrap Dodger");
+        }
+
+        function handleKeyDown(e) { /* ... (igual que antes) ... */ keysPressed[e.key] = true; if (['ArrowUp', 'ArrowDown'].includes(e.key)) { e.preventDefault(); } }
+        function handleKeyUp(e) { keysPressed[e.key] = false; }
+
+        function updateGame() {
+            if (!isGameRunning) return;
+
+            // Player Movement (Vertical Only)
+            if (keysPressed['ArrowUp'] && player.y > 0) player.y -= gameConfig.playerSpeed;
+            if (keysPressed['ArrowDown'] && player.y < gameCanvas.height - gameConfig.playerHeight) player.y += gameConfig.playerSpeed;
+
+            // Spawn Items
+            if (Math.random() < currentItemSpawnRate) {
+                let itemType = 'energy';
+                const rand = Math.random();
+                if (rand < 0.2) itemType = 'core'; // Rarest
+                else if (rand < 0.5) itemType = 'part';
+                items.push({ x: gameCanvas.width, y: Math.random() * (gameCanvas.height - gameConfig.itemSize), type: itemType });
+            }
+
+            // Spawn Obstacles
+            if (Math.random() < currentObstacleSpawnRate) {
+                 const width = gameConfig.obstacleMinWidth + Math.random() * (gameConfig.obstacleMaxWidth - gameConfig.obstacleMinWidth);
+                 // Tipo de obstáculo (más chatarra que láseres al principio)
+                 const type = (Math.random() < 0.8 || level < 3) ? 'scrap' : 'laser';
+                 const speed = type === 'laser' ? currentObstacleSpeed * 1.5 : currentObstacleSpeed + (Math.random() * (gameConfig.obstacleMaxSpeed - gameConfig.obstacleMinSpeed));
+                 obstacles.push({
+                     x: gameCanvas.width,
+                     y: Math.random() * (gameCanvas.height - gameConfig.obstacleHeight),
+                     width: width,
+                     speed: speed,
+                     type: type
+                 });
+             }
+
+            // Move & Remove Items + Collision
+            items.forEach((item, index) => {
+                item.x -= currentItemSpeed;
+                if (item.x < -gameConfig.itemSize) items.splice(index, 1);
+                else if (player.x < item.x + gameConfig.itemSize && player.x + gameConfig.playerWidth > item.x && player.y < item.y + gameConfig.itemSize && player.y + gameConfig.playerHeight > item.y) {
+                    let points = gameConfig.scorePerItem;
+                    if (item.type === 'part') points *= 2;
+                    else if (item.type === 'core') points *= 4;
+                    score += points;
+                    items.splice(index, 1);
+                    checkLevelUp();
+                }
+            });
+
+            // Move & Remove Obstacles + Collision
+            obstacles.forEach((obstacle, index) => {
+                obstacle.x -= obstacle.speed;
+                if (obstacle.x < -obstacle.width) obstacles.splice(index, 1);
+                else if (player.x < obstacle.x + obstacle.width && player.x + gameConfig.playerWidth > obstacle.x && player.y < obstacle.y + gameConfig.obstacleHeight && player.y + gameConfig.playerHeight > obstacle.y) {
+                    score = Math.max(0, score - gameConfig.scoreLostOnHit * (obstacle.type === 'laser' ? 1.5 : 1)); // Láseres duelen más
+                    obstacles.splice(index, 1); // Remove obstacle on hit
+                    // Add hit effect? (e.g., brief screen shake or color flash)
+                     gameCanvas.style.filter = 'brightness(1.5) saturate(2)';
+                     setTimeout(() => { gameCanvas.style.filter = 'none'; }, 100);
+                }
+            });
+
+            loadingScoreDisplay.textContent = `Recursos: ${score} | Sector: ${level}`;
+        }
+
+        function checkLevelUp() {
+            const nextLevelThreshold = level * gameConfig.levelUpScore;
+            if (score >= nextLevelThreshold) {
+                level++;
+                // Increase difficulty more significantly
+                currentObstacleSpeed = Math.min(gameConfig.obstacleMaxSpeed * 2, gameConfig.obstacleMinSpeed + (level - 1) * gameConfig.maxSpeedIncreasePerLevel);
+                currentItemSpeed = currentObstacleSpeed * gameConfig.itemSpeedMultiplier;
+                currentObstacleSpawnRate = Math.min(0.06, gameConfig.spawnRateObstacles + (level - 1) * gameConfig.maxSpawnRateIncreasePerLevel);
+                currentItemSpawnRate = Math.min(0.07, gameConfig.spawnRateItems + (level - 1) * gameConfig.maxSpawnRateIncreasePerLevel);
+                console.log(`Entering Sector ${level}! Speed: ${currentObstacleSpeed.toFixed(2)}, Spawn: ${currentObstacleSpawnRate.toFixed(4)}`);
+                // Visual feedback for level up
+                gameCanvas.style.boxShadow = `0 0 25px ${['#D97706', '#10B981', '#3B82F6'][level % 3]}`;
+                setTimeout(() => { gameCanvas.style.boxShadow = '0 0 15px rgba(217, 119, 6, 0.4)'; }, 400);
+            }
+        }
+
+        function drawGame() {
+            if (!isGameRunning || !gameCtx) return;
+            // Clear Canvas
+            gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+            // Background (Dark space with subtle debris/stars)
+            gameCtx.fillStyle = '#111827';
+            gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            // Simple stars
+            gameCtx.fillStyle = 'rgba(209, 213, 219, 0.5)';
+            for(let i=0; i<50; i++) {
+                gameCtx.fillRect(Math.random() * gameCanvas.width, Math.random() * gameCanvas.height, 1, 1);
+            }
+
+            // Draw Player (Robot-like)
+            gameCtx.fillStyle = gameConfig.playerColor;
+            gameCtx.fillRect(player.x, player.y, gameConfig.playerWidth, gameConfig.playerHeight);
+            // "Eye"
+            gameCtx.fillStyle = '#FDE047'; // Yellow eye
+            gameCtx.fillRect(player.x + gameConfig.playerWidth * 0.6, player.y + gameConfig.playerHeight * 0.15, 8, 8);
+
+            // Draw Items
+            items.forEach(item => {
+                if (item.type === 'energy') gameCtx.fillStyle = '#FBBF24'; // Amber/Yellow
+                else if (item.type === 'part') gameCtx.fillStyle = '#9CA3AF'; // Gray metal
+                else gameCtx.fillStyle = '#10B981'; // Green core
+                gameCtx.fillRect(item.x, item.y, gameConfig.itemSize, gameConfig.itemSize);
+                 // Simple icon inside?
+                 gameCtx.fillStyle = 'black';
+                 gameCtx.font = '10px Orbitron';
+                 let symbol = '?';
+                 if (item.type === 'energy') symbol = 'E';
+                 else if (item.type === 'part') symbol = 'P';
+                 else symbol = 'C';
+                 gameCtx.fillText(symbol, item.x + 4, item.y + gameConfig.itemSize - 4);
+            });
+
+            // Draw Obstacles
+            obstacles.forEach(obstacle => {
+                 if (obstacle.type === 'scrap') {
+                     gameCtx.fillStyle = '#94A3B8'; // Lighter gray for scrap
+                     gameCtx.fillRect(obstacle.x, obstacle.y, obstacle.width, gameConfig.obstacleHeight);
+                     // Add some "texture" lines
+                     gameCtx.strokeStyle = '#6B7280';
+                     gameCtx.lineWidth = 1;
+                     gameCtx.beginPath();
+                     gameCtx.moveTo(obstacle.x + 5, obstacle.y + 5);
+                     gameCtx.lineTo(obstacle.x + obstacle.width - 5, obstacle.y + gameConfig.obstacleHeight - 5);
+                     gameCtx.moveTo(obstacle.x + 5, obstacle.y + gameConfig.obstacleHeight - 5);
+                     gameCtx.lineTo(obstacle.x + obstacle.width - 5, obstacle.y + 5);
+                     gameCtx.stroke();
+                 } else { // Laser
+                     gameCtx.fillStyle = '#EF4444'; // Red laser beam
+                     gameCtx.fillRect(obstacle.x, obstacle.y + gameConfig.obstacleHeight/2 - 2, obstacle.width, 4); // Thin beam
+                 }
+            });
+        }
+
+        function gameLoop() { /* ... (igual que antes) ... */ if (!isGameRunning) return; updateGame(); drawGame(); gameLoopId = requestAnimationFrame(gameLoop); }
+        function startGameLoop() { /* ... (igual que antes) ... */ if (isGameRunning) return; console.log("Starting Game Loop: Scrap Dodger"); isGameRunning = true; resetGame(); document.addEventListener('keydown', handleKeyDown); document.addEventListener('keyup', handleKeyUp); gameLoopId = requestAnimationFrame(gameLoop); modalLoadingIndicator.classList.add('active'); gameCanvas.style.display = 'block'; }
+        function stopGameLoop() { /* ... (igual que antes) ... */ if (!isGameRunning) return; console.log("Stopping Game Loop"); isGameRunning = false; if (gameLoopId) { cancelAnimationFrame(gameLoopId); gameLoopId = null; } document.removeEventListener('keydown', handleKeyDown); document.removeEventListener('keyup', handleKeyUp); }
+
+        // ========== API FUNCTIONS ==========
+        // (Minor changes: added ad filtering in fetch)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             // ... (URL encoding and parameter setup as before)
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentScenarioTitle
+                 ? `Actúa como un Archivo Central IA del Planeta Basura sobre el registro '${currentScenarioTitle}'. Responde preguntas específicas relacionadas *únicamente con esa crónica*.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Los sistemas están sobrecargados. Intente acceder al archivo más tarde.`);
+                 }
+                 let rawText = await response.text();
+
+                 // *** AD FILTERING STEP ***
+                 const cleanedText = rawText.replace(adRemovalRegex, '').trim();
+                 if (cleanedText.length !== rawText.trim().length) {
+                     console.log("Ad pattern detected and removed.");
+                 }
+                 // Use cleanedText from now on
+                 if (!cleanedText || cleanedText.length < (isChat ? 10 : 400)) { // Min length check on cleaned text
+                     throw new Error("Registro de datos incompleto o corrupto. Intente acceder a otro registro.");
+                 }
+                 console.log(`API Response received (${cleanedText.length} chars after cleaning)`);
+                 return cleanedText; // Return the filtered text
+             } catch (error) {
+                 // ... (Error handling as before, using friendly messages)
+                  clearTimeout(timeoutId);
+                  console.error("API Fetch Error:", error);
+                  if (error.name === 'AbortError') {
+                      throw new Error(`Conexión inestable (>${config.timeoutSeconds}s). Verifique la red e intente de nuevo.`);
+                  }
+                  throw new Error(error.message || "Error desconocido al acceder a los archivos.");
+             }
+         }
+
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentScenarioTitle) throw new Error("Error de contexto: Registro no especificado."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(trashPlanetThemes) || "robots rebeldes";
+             const specificPrompt = `Genera 40 registros fragmentados sobre ${randomTheme} en Planeta Basura`;
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             return fetchTextFromApi(specificPrompt, configForThisRequest, false)
+                  .then(text => {
+                      const titles = text.split('\n')
+                                         .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                                         .filter(line => line.length > 8 && line.length < 180 && !/^\s*$/.test(line) && !line.toLowerCase().includes("aquí tienes") && !line.toLowerCase().includes("lista de registros"))
+                                         .slice(0, 40);
+                      if (titles.length < 15) { throw new Error("Recopilación de registros insuficiente."); }
+                      return titles;
+                  });
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 1024, height: 576, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "giant robot graveyard on a polluted planet";
+             // Prompt adaptado al tema
+             const enhancedPrompt = `Concept art, Planeta Basura style: '${safePromptText}'. Grimy, rusty, industrial aesthetic, polluted atmosphere, heaps of scrap metal, maybe glowing robot eyes or energy sources. Sci-fi dystopia.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "clean environment, pristine nature, happy people, text, labels, watermark, signature, multiple images, collage, photorealistic, simple illustration";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (Sin cambios)
+        function formatExplanationText(rawText){ /* ... (igual que antes) ... */ if(!rawText)return'';let formatted=rawText.trim();formatted=formatted.replace(/\\text\{(.*?)\}/g,'$1');formatted=formatted.replace(/(\w)_\{?(\d+)\}?/g,'$1<sub>$2</sub>');formatted=formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g,(match,base,exponent)=>{const cleanExponent=exponent.replace('−','-');return`${base}<sup>${cleanExponent}</sup>`;});formatted=formatted.replace(/\\rightarrow/g,'&rarr;');formatted=formatted.replace(/\\\[\s*(.*?)\s*\\\]/g,'<p class="formula">$1</p>');formatted=formatted.replace(/^####\s+(.*)$/gm,'<h4>$1</h4>');formatted=formatted.replace(/^###\s+(.*)$/gm,'<h3>$1</h3>');formatted=formatted.replace(/^##\s+(.*)$/gm,'<h2>$1</h2>');formatted=formatted.replace(/^#\s+(.*)$/gm,'<h1>$1</h1>');formatted=formatted.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');formatted=formatted.replace(/\*(.*?)\*/g,'<em>$1</em>');const blocks=formatted.split(/\n\s*\n/).filter(p=>p.trim().length>0);formatted=blocks.map(block=>{if(block.startsWith('<h')||block.startsWith('<p class="formula">'))return block;let content=block.replace(/\n/g,' ');return`<p>${content}</p>`;}).join('');return formatted;}
+
+        // ========== MODAL/GAME/UI FUNCTIONS ==========
+        // (Mayormente sin cambios funcionales, excepto por la integración del juego y el contexto)
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { stopGameLoop(); storyModal.classList.remove('active'); if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; } modalTextArea.scrollTop = 0; resetModalState(); }
+        function resetModalState() { stopGameLoop(); modalLoadingIndicator.classList.remove('active'); modalStoryContentArea.classList.remove('visible'); modalStoryContentArea.classList.add('content-hidden'); modalError.classList.add('content-hidden'); modalTitle.textContent = ''; modalContent.innerHTML = ''; modalErrorMessage.textContent = ''; chatHistory.innerHTML = ''; chatInput.value = ''; chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; currentScenarioTitle = null; hideFullscreenImage(); }
+        function showFullscreenImage(imgSrc){ /* ... (igual) ... */ if(!imageFullscreenOverlay||!fullscreenImage)return;fullscreenImage.src=imgSrc;imageFullscreenOverlay.classList.add('active');document.body.style.overflow='hidden'; }
+        function hideFullscreenImage(){ /* ... (igual) ... */ if(!imageFullscreenOverlay)return;imageFullscreenOverlay.classList.remove('active');if(!storyModal.classList.contains('active')){document.body.style.overflow='';}fullscreenImage.src=''; }
+        function addChatMessage(message, sender) { /* ... (igual) ... */ const msgDiv=document.createElement('div');msgDiv.classList.add('chat-message',sender==='user'?'user-message':'ai-message');message=message.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');message=message.replace(/\*(.*?)\*/g,'<em>$1</em>');msgDiv.innerHTML=message;chatHistory.appendChild(msgDiv);chatHistory.scrollTop=chatHistory.scrollHeight;}
+        function addChatError(message){ /* ... (igual) ... */ const errorDiv=document.createElement('div');errorDiv.classList.add('chat-error');errorDiv.textContent=message;chatHistory.appendChild(errorDiv);chatHistory.scrollTop=chatHistory.scrollHeight;}
+        async function handleSendMessage(){ /* ... (igual, usa fetchChatResponse) ... */ const userQuery=chatInput.value.trim();if(!userQuery||chatSendBtn.disabled)return;addChatMessage(userQuery,'user');chatInput.value='';chatSendBtn.disabled=true;chatLoadingIndicator.style.display='block';try{const aiResponse=await fetchChatResponse(userQuery);addChatMessage(aiResponse,'ai');}catch(error){console.error("Chat Error:",error);addChatError(`Error Archivo IA: ${error.message}`);}finally{chatLoadingIndicator.style.display='none';chatSendBtn.disabled=false;chatInput.focus();}}
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function createTitleItem(title) { /* ... (igual) ... */ const div=document.createElement('div');div.className='title-item';div.textContent=title;div.setAttribute('data-title',title);div.addEventListener('click',()=>handleTitleClick(title));return div; }
+        function displayTitles(titles) { /* ... (igual, usa console.log) ... */ if (!titleListContainer || !titlesLoading) return; const sortedTitles = titles.sort((a, b) => a.localeCompare(b)); titleListContainer.innerHTML = ''; titlesLoading.style.display = 'none'; if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">» No hay registros accesibles. Intente generar más. «</p>'; return; } sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); console.log(`Displayed ${sortedTitles.length} scenario titles.`); }
+        function appendTitles(newTitles) { /* ... (igual, usa console.log) ... */ if (!titleListContainer || !newTitles || newTitles.length === 0) return; console.log(`Appending ${newTitles.length} new titles.`); const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title)); let addedCount = 0; newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } }); console.log(`Successfully added ${addedCount} unique titles.`); filterTitles(searchInput.value); }
+
+        // *** MODIFIED: handleTitleClick to manage game start/stop and scenario context ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentScenarioTitle = title; // *** SET CONTEXT ***
+            chatHistory.innerHTML = '';
+
+            modalLoadingIndicator.classList.add('active');
+            startGameLoop(); // *** START GAME ***
+
+            try {
+                const storyPromise = fetchExplanationText(title); // Fetches and filters ads
+                const imageUrl = createPollinationsImageUrl(title);
+                const rawExplanationText = await storyPromise;
+
+                stopGameLoop(); // *** STOP GAME ***
+                modalLoadingIndicator.classList.remove('active');
+                modalStoryContentArea.classList.add('visible'); // *** SHOW CONTENT AREA ***
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalContent.innerHTML = formattedExplanation;
+                modalTextArea.scrollTop = 0;
+
+                // Image Handling (remains the same logic)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-satellite-dish placeholder-icon"></i><p style="font-size: 0.8em; margin-top: 0.5rem;">Procesando visualización...</p>`;
+                modalContent.appendChild(placeholderDiv);
+                if (imageUrl) {
+                    const imgElement = document.createElement('img');
+                    imgElement.className = 'final-image';
+                    imgElement.alt = `Visualización de ${title}`;
+                    imgElement.style.display = 'none';
+                    imgElement.onload = () => { placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); };
+                    imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-exclamation-triangle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error de visualización.</p>`; };
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                    placeholderDiv.innerHTML = `<i class="fas fa-ban placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Imposible generar visualización.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                stopGameLoop(); // *** STOP GAME ON ERROR ***
+                modalLoadingIndicator.classList.remove('active');
+                modalStoryContentArea.classList.add('visible'); // Show area to display error
+                 modalStoryContentArea.classList.remove('content-hidden');
+
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el registro.";
+                modalError.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             /* ... (igual, usa fetchGeneratedTitles que ya pide 40) ... */
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Escaneando Sectores...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se encontraron nuevos registros en este escaneo."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error de escaneo: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Recopilar 40 Nuevos Registros';
+             }
+         }
+
+         function filterTitles(searchTerm) {
+            /* ... (igual, con normalización) ... */
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            const titleItems = titleListContainer.querySelectorAll('.title-item');
+            let visibleCount = 0;
+            titleItems.forEach(item => {
+                const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const isVisible = titleText.includes(term);
+                item.classList.toggle('hidden', !isVisible);
+                if (isVisible) visibleCount++;
+            });
+            noResultsMsg.classList.toggle('hidden', visibleCount > 0 || titleItems.length === 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() { /* ... (igual, verifica gameCanvas, etc) ... */ if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !gameCanvas || !loadingScoreDisplay) { console.error("Initialization failed: Missing essential elements."); document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">++ ERROR CRÍTICO DEL SISTEMA ++ Componentes de interfaz ausentes ++</p>'; return; } modalCloseBtn.addEventListener('click', hideModal); storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); }); generateMoreBtn.addEventListener('click', handleGenerateMoreTitles); searchInput.addEventListener('input', (event) => filterTitles(event.target.value)); searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); }); chatSendBtn.addEventListener('click', handleSendMessage); chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); }); imageFullscreenOverlay.addEventListener('click', hideFullscreenImage); fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); }); displayTitles(predefinedTitles); noResultsMsg.classList.add('hidden'); }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

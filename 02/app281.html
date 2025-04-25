@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars & Dragon Ball: Crossover Nexus</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts: Orbitron (Headers), Exo 2 (Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #ff8c00; /* Orange (DB Ki/Goku) */
+            --color-secondary: #00bfff; /* Deep Sky Blue (SW Lightsaber/Tech) */
+            --color-tertiary: #ffff00; /* Yellow (Super Saiyan/Energy) */
+            --color-background: #050a14; /* Very Dark Blue/Black (Space) */
+            --color-text: #e5e7eb; /* Light Gray/Off-White */
+            --color-text-muted: #9ca3af; /* Medium Gray */
+            --color-modal-bg: #111827; /* Dark Blue/Gray */
+            --color-border: #4b5563; /* Gray */
+            --color-error-bg: #450a0a; /* Dark Red */
+            --color-error-text: #fecaca;
+            --color-error-border: #ef4444;
+
+            --shadow-sm: 0 1px 2px 0 rgba(255, 140, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 191, 255, 0.15), 0 2px 4px -2px rgba(255, 140, 0, 0.1);
+            --shadow-lg: 0 0 25px -5px rgba(0, 191, 255, 0.2), 0 8px 10px -6px rgba(255, 140, 0, 0.15);
+            --border-radius: 4px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Exo 2', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); text-shadow: 0 0 10px var(--color-primary), 0 0 5px var(--color-secondary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; text-shadow: 0 0 6px rgba(255, 140, 0, 0.8); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-secondary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; text-shadow: 0 0 4px rgba(255, 140, 0, 0.6); }
+        .navbar { background-color: rgba(5, 10, 20, 0.85); backdrop-filter: blur(8px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Search */
+        #search-input { /* Styles similar to previous */ width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: rgba(17, 24, 39, 0.8); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Exo 2'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.3); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { /* Styles similar */ position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+        /* Titles */
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .title-item { /* Style with gradients or mixed borders? */ background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 75px; font-family: 'Exo 2'; font-size: 0.95rem; border-left: 3px solid var(--color-secondary); border-right: 3px solid var(--color-primary); }
+        .title-item:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #1f2937; border-left-color: var(--color-primary); border-right-color: var(--color-secondary); }
+        /* Generate More */
+        #generate-more-btn { /* Gradient background */ grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color: var(--color-background); padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Orbitron', sans-serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: none; font-size: 1.1rem; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-secondary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.03); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        /* Modal */
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 10, 20, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper { background-color: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: var(--border-radius); padding: 1.5rem 2rem; max-width: 950px; width: 95%; max-height: 90vh; min-height: 450px; overflow: hidden; position: relative; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: var(--color-border); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(180deg); box-shadow: 0 0 10px var(--color-primary); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Main Content Area (Text + Image) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem; scrollbar-width: thin; scrollbar-color: var(--color-primary) rgba(75, 85, 99, 0.5); }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(75, 85, 99, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 600; }
+        #modal-content em { color: var(--color-secondary); font-style: normal; font-weight: 400; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Orbitron', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-secondary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 400; letter-spacing: 0.5px; }
+        #modal-content h1 { font-size: 1.5em; color: var(--color-primary); } /* Main heading orange */
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-tertiary); } /* Sub-sub yellow */
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none; }
+        /* Image styles */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-primary); border-radius: var(--border-radius); box-shadow: 0 0 15px rgba(255, 140, 0, 0.3); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 20px rgba(0, 191, 255, 0.4); border-color: var(--color-secondary); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(75, 85, 99, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(5, 10, 20, 0.7); scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(75, 85, 99, 0.5); }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(75, 85, 99, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95em;}
+        .user-message { background: linear-gradient(to right, var(--color-primary), #e67e22); color: var(--color-background); margin-left: auto; text-align: right; font-weight: 600; } /* Orange gradient */
+        .ai-message { background: linear-gradient(to right, var(--color-secondary), #3498db); color: var(--color-background); margin-right: auto; text-align: left; font-weight: 400; } /* Blue gradient */
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #1f2937; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Exo 2'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #ffae42; } /* Lighter orange */
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; color: var(--color-secondary); }
+
+        /* Loading Screen & Mini-Game */
+        #modal-loading { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 10, 20, 0.98); display: none; /* Hidden initially */ flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); padding: 1rem; text-align: center;}
+        #modal-loading.active { display: flex; } /* Show when loading */
+        #game-container { margin-top: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+        #game-canvas { border: 2px solid var(--color-secondary); background-color: var(--color-background); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); }
+        #game-info { display: flex; justify-content: space-around; width: 200px; /* Match canvas width? */ color: var(--color-text); font-family: 'Orbitron'; font-size: 0.9em; }
+        #game-info span { background: rgba(17, 24, 39, 0.7); padding: 3px 8px; border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+        #loading-message { margin-top: 1.5rem; font-weight: 400; color: var(--color-text); font-size: 1.2rem; font-family: 'Orbitron'; text-shadow: 0 0 5px var(--color-primary); }
+        .game-controls-note { font-size: 0.8em; color: var(--color-text-muted); margin-top: 0.5rem; font-family: 'Exo 2';}
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { /* Style as before */ background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Exo 2'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 10, 20, 0.96); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-meteor mr-3 text-yellow-400"></i> <!-- Icono meteoro/poder -->
+                     SW <i class="fas fa-times text-red-500 text-xl mx-1"></i> DB Crossover Nexus
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">» Dimensiones fusionadas «</span>
+         </div>
+     </nav>
+
+     <main class="container mx-auto px-4 pb-16">
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Choque de Universos</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">Explora historias épicas donde los guerreros más poderosos y los maestros de la Fuerza colisionan. Elige un escenario o busca tu crossover ideal.</p>
+         </section>
+
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar personajes, planetas, eventos...">
+             <i class="fas fa-atom fa-search"></i> <!-- Icono átomo/búsqueda -->
+         </section>
+
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-journal-whills text-blue-400 mr-2"></i> <!-- Icono libro SW -->
+                 Archivos de Fusión
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Accediendo a registros interdimensionales...</p>
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">» Ninguna línea temporal coincide con la búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Explorar Nuevas Realidades (40)
+                  </button>
+             </div>
+         </section>
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator with GAME -->
+             <div id="modal-loading">
+                 <div id="game-container">
+                     <canvas id="game-canvas" width="200" height="400"></canvas>
+                     <div id="game-info">
+                         <span>Score: <span id="score">0</span></span>
+                         <span>Level: <span id="level">1</span></span>
+                     </div>
+                     <div class="game-controls-note">Use Arrow Keys & Space</div>
+                 </div>
+                 <p id="loading-message">Cargando línea temporal... ¡Juega mientras esperas!</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text -->
+                         <!-- Image placeholder/final image -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Consultando holocrón...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre esta historia...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Historias generadas por IA como ejercicios creativos de fusión entre Star Wars y Dragon Ball.</p>
+              <p class="mt-1">Personajes y conceptos pertenecen a © Lucasfilm Ltd. y © Bird Studio/Shueisha, Toei Animation.</p>
+              <p class="mt-2">© 2024 Crossover Nexus Archives</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Character Clashes
+            "Goku vs Darth Vader: El Poder Saiyan Contra el Lado Oscuro", "Vegeta vs Darth Maul: Duelo de Orgullo y Furia", "Piccolo vs Emperador Palpatine: Estrategia Namekiana vs Poder Sith", "Gohan Místico vs Kylo Ren: Ira Desatada", "Trunks del Futuro vs Boba Fett: Cazadores a Través del Tiempo", "Frieza vs Gran Almirante Thrawn: Tiranos Galácticos", "Cell Perfecto vs General Grievous: Combate de Bio-Androides", "Majin Buu vs Yoda: Caos Mágico vs Maestría en la Fuerza", "Krilin vs Stormtrooper Comandante: Ingenio vs Disciplina Imperial", "Androide 18 vs Capitana Phasma: Duelo de Guerreras Implacables", "Gotenks vs Jóvenes Jedi: Fusión y Travesuras en el Templo", "Bardock vs Orden 66: La Visión de un Saiyan", "Broly (DBS) vs Starkiller: Poder Legendario vs Ira del Lado Oscuro", "Jiren vs Mace Windu: Fuerza Absoluta vs Vaapad", "Hit vs Cad Bane: Asesinos a Sueldo Galácticos", "Kefla vs Ahsoka Tano: Fusión Potara vs Experiencia Jedi", "Zamasu Fusionado vs Darth Sidious Reencarnado: Deidades Corruptas", "Beerus vs Abeloth: Dios de la Destrucción vs Entidad del Caos", "Whis vs El Padre (Mortis): Ángeles y Entidades Cósmicas", "Yamcha vs Han Solo: ¿Quién Disparó Primero?", "Maestro Roshi vs Obi-Wan Kenobi (Viejo): Sabiduría y Experiencia", "Ten Shin Han vs Pre Vizsla: Artes Marciales vs Tecnología Mandaloriana", "Chaos vs Droides de Batalla B1: Habilidades Psíquicas vs Programación", "Pan (GT/Super) vs Joven Leia Organa: Futuras Líderes", "Uub vs Rey Skywalker: El Legado del Poder",
+            // Team Ups & Factions
+            "Los Guerreros Z Defienden la Base Rebelde en Hoth", "La Alianza Rebelde Busca las Esferas del Dragón", "Vegeta se Une al Imperio Sith", "Goku Entrena con Maestros Jedi Ocultos", "Piccolo Medita con los Guardianes de Whills", "La Patrulla Roja se Alía con el Imperio Galáctico", "Capsule Corp Desarrolla Tecnología para la Resistencia", "Frieza Force Intenta Conquistar el Espacio Hutt", "Los Saiyans Sobrevivientes vs El Remanente Imperial", "Androides 17 y 18 vs Escuadrones de la Muerte", "Guerreros Z y Jedi Contra un Lord Sith que Domina el Ki", "Cazarrecompensas Galácticos Persiguen a los Guerreros Z", "El Planeta Namek Oculto del Imperio", "La Sabiduría de Kami fusionada con la Fuerza Viva", "Viaje Interdimensional: La Nave de Bulma en el Borde Exterior",
+            // Scenarios & What Ifs
+            "¿Qué Pasaría Si Goku Aterrizara en Dagobah?", "¿Y Si Vegeta Fuera el Aprendiz Secreto de Palpatine?", "¿Podría un Kamehameha Destruir la Estrella de la Muerte?", "La Fuerza vs El Ki: Explorando las Diferencias Energéticas", "Jedi Intentando Sentir Niveles de Poder Saiyan", "Sith Corrompiendo un Planeta con Energía Negativa Similar al Ki Maligno", "El Torneo de Poder en la Arena de Geonosis", "Cell Absorbe el ADN de un Maestro Jedi", "Majin Buu Convierte a Jabba el Hutt en Chocolate", "Un Lord Sith Descubre Cómo Usar la Genkidama", "Los Secretos de la Fusión Metamoru y la Fusión Potara Revelados a los Jedi", "Viaje en el Tiempo: Trunks Alerta a la Antigua República", "El Imperio Descubre el Planeta Vegeta Antes de su Destrucción", "Entrenamiento Cruzado: Jedi Aprendiendo el Kaioken, Saiyans Usando la Fuerza", "Batalla Espacial: X-Wings y Tie Fighters vs Naves Saiyan y del Ejército de Frieza", "Construyendo un Sable de Luz con un Núcleo de Ki", "El Poder Oculto de los Namekianos y la Fuerza", "Droides de Combate Analizando Técnicas de Ki", "La Búsqueda de las Super Esferas del Dragón en la Galaxia Desconocida", "Un Mandaloriano con Armadura Potenciada por Ki", "¿Pueden los Midiclorianos ser Afectados por el Ki Divino?", "El Planeta de Kaio-sama Oculto en una Nebulosa", "Intercambio Cultural: Comida Saiyan en la Cantina de Mos Eisley", "Un Holocrón Sith Contiene Datos sobre los Dioses de la Destrucción", "La Cámara del Tiempo Hiperbólica en un Templo Jedi Perdido",
+            // Objects & Concepts
+            "Sable de Luz vs Espada de Ki: ¿Cuál Corta Qué?", "Scouter vs Sentidos de la Fuerza: Detección de Poder", "Armadura Mandaloriana vs Armadura de Combate Saiyan", "El Halcón Milenario Potenciado por Capsule Corp", "Nave de Frieza vs Destructor Estelar Imperial", "El Poder de las Esferas del Dragón para Restaurar un Planeta Destruido por la Estrella de la Muerte", "La Influencia del Lado Oscuro en la Transformación Super Saiyan", "Meditación Jedi para Controlar el Ozaru", "El Código Jedi vs El Camino del Guerrero Saiyan", "Profecías Galácticas: El Elegido vs El Super Saiyan Legendario", "La Tecnología de Clonación Kaminoana aplicada a Guerreros Z", "Los Secretos de la Inmortalidad: Shen Long vs Darth Plagueis", "Control Mental Sith vs Técnicas de Ilusión de los Guerreros Z", "Velocidad Luz vs Transmisión Instantánea", "Campos de Energía Deflectores vs Barreras de Ki", "Blasters vs Ráfagas de Ki: Proyectiles y Energía", "La Voluntad de la Fuerza vs El Espíritu de Lucha Saiyan",
+            // More Crossovers
+            "Ginyu Force Posing Contest vs Imperial Royal Guard Formation", "Pilaf Gang attempts to steal Jedi Holocrons", "Garlic Jr. trapped in the Dead Zone within the World Between Worlds", "Cooler's Armored Squadron vs Rogue Squadron", "Janemba Warps Reality in the Coruscant Underworld", "Super Android 13 vs IG-88 and Dengar", "Bojack Unbound attacks the New Republic Senate", "Tapion's Ocarina Calms a Rancor", "Dr. Gero's Secret Lab discovered on Mustafar", "Shadow Dragons Unleashed by Sith Alchemy", "Mercenary Tao Pai Pai hired by Black Sun", "Demon King Piccolo attempts to conquer Naboo", "Launch's Dual Personalities Confuse Force Users", "Monaka Delivers a Package to Luke Skywalker", "Arale Norimaki Runs Amok on the Death Star", "Jaco the Galactic Patrolman meets the Guardians of the Galaxy (Meta)", "The Great Saiyaman foils a Spice Heist on Kessel", "Bulma reverse-engineers a Holocron", "Chi-Chi insists Gohan study Jedi Texts", "Mr. Satan claims victory over a Krayt Dragon",
+            // Add ~200+ more variations of the above...
+            "Vegeta's Pride vs Vader's Duty", "Goku's Innocence vs Luke's Journey", "Piccolo's Redemption vs Anakin's Fall", "Frieza's Cruelty vs Palpatine's Manipulation", "Trunks' Desperation vs Rey's Hope", "Cell's Perfection vs Grievous's Collection", "Buu's Chaos vs Yoda's Order", "Android 17's Power vs Vader's Control", "Gohan's Potential vs Luke's Training", "Krillin's Bravery vs Finn's Courage", "Bulma's Genius vs Leia's Leadership", "Master Roshi's Wisdom vs Obi-Wan's Guidance", "Beerus's Whimsy vs The Force's Will", "Whis's Neutrality vs The Jedi Code", "Saiyan Instinct vs Jedi Precognition", "Ki Sensing vs Force Awareness", "Planet Trade Organization vs The Hutt Cartel", "Red Ribbon Army vs Separatist Droid Army", "Capsule Corp vs Sienar Fleet Systems", "Galactic Patrol vs New Republic Rangers", "Kami's Lookout vs The Jedi Temple", "Hyperbolic Time Chamber vs Mortis", "Fusion Dance vs Force Dyad", "Potara Earrings vs Sith Artifacts", "Senzu Bean vs Bacta Tank", "Flying Nimbus vs Speeder Bike", "Dragon Radar vs Jedi Holocron", "Power Pole vs Lightsaber Staff", "Ozaru Transformation vs Dark Side Rage", "Super Saiyan vs Jedi Battle Meditation", "Kaioken vs Force Speed", "Spirit Bomb vs Force Harmony", "Special Beam Cannon vs Lightsaber Throw", "Destructo Disc vs Thermal Detonator", "Instant Transmission vs Hyperspace Jump", "Ki Barrier vs Force Shield", "Telekinesis (Ki) vs Force Telekinesis", "Mind Reading (Ki) vs Force Mind Trick", "Energy Absorption (Androids) vs Force Drain", "Healing (Dende) vs Force Heal", "Life Creation (Namekians) vs Sith Alchemy", "Planet Busting Attack vs Death Star Superlaser", "Searching for Dragon Balls on Endor", "Training in the swamps of Dagobah with King Kai", "A Sith Lord learning the Makankosappo", "A Jedi Knight attempting the Fusion Dance", "Vegeta challenging the Grand Inquisitor", "Goku sparring with Chewbacca", "Piccolo advising Mon Mothma", "Frieza manipulating the Separatist Council", "Cell observing a podrace on Tatooine", "Buu trying to eat BB-8", "Krillin accidentally joining the Bad Batch", "Android 18 outsmarting bounty hunters on Ord Mantell", "Future Trunks warning Ahsoka about Order 66", "Bardock having visions of the Skywalker Saga", "Broly crash-landing on Kashyyyk", "Jiren meditating alongside Jedi Consulars", "Hit taking a contract from Darth Maul", "Kefla challenging Rey to a duel", "Zamasu debating philosophy with Kreia", "Beerus demanding snacks from Dexter Jettster", "Whis observing the construction of the Death Star", "Goku learning Force techniques from Qui-Gon Jinn's ghost", "Vegeta impressed by Mandalorian armor", "Piccolo finding common ground with Plo Koon", "Gohan discussing science with Rebel technicians", "Trunks using his sword against lightsaber pikes", "Frieza attempting to recruit Count Dooku", "Cell analyzing the biology of a Wookiee", "Majin Buu accidentally absorbing a Gungan", "Yoda trying to lift Mjolnir... wait, wrong crossover!", "Yoda sensing the power of the Dragon Balls", "Krilin using Solar Flare against Dark Troopers", "Android 18 vs Asajj Ventress", "Gotenks pulling pranks on C-3PO", "Bardock witnessing the Battle of Scarif", "Broly vs the Zillo Beast", "Jiren vs the combined might of the Jedi Council", "Hit tracking a target through the Coruscant underworld", "Kefla racing swoop bikes", "Zamasu finding fault with the Jedi Code", "Beerus annoyed by Jar Jar Binks", "Whis teaching meditation techniques at the Jedi Academy", "Yamcha getting defeated by a training remote", "Master Roshi offering questionable advice to Anakin", "Ten Shin Han vs General Kalani", "Chaos trying to stop droids with telekinesis", "Pan learning to fly alongside younglings", "Uub training with Luke Skywalker", "Goku vs Darth Nihilus: Hunger vs Hunger", "Vegeta vs Revan: Redemption Arcs", "Piccolo vs Mother Talzin: Magic Users", "Gohan vs Galen Marek: Hidden Power", "Trunks vs Kyle Katarn: Sword Masters", "Frieza vs Darth Malgus: Ruthless Conquerors", "Cell vs HK-47: Perfected Killers", "Buu vs Vitiate/Valkorion: Reality Warpers", "Krillin & Sabine Wren: Explosives Experts", "Android 18 & Cara Dune: Tough Fighters", "Gotenks & Ezra Bridger: Youthful Energy", "Bardock & Jango Fett: Warrior Fathers", "Broly & Savage Opress: Berserkers", "Jiren & Kar Vastor: Unstoppable Forces", "Hit & Durge: Unique Abilities", "Kefla & Aayla Secura: Agile Warriors", "Zamasu & Darth Traya: Twisted Philosophies", "Beerus & The Bendu: Cosmic Neutrals", "Whis & The Ones of Mortis: Beyond Mortal Understanding", "Super Saiyan God Goku vs Force Priestesses", "Ultra Instinct Goku vs Yoda at his peak", "Super Saiyan Blue Vegeta vs Mace Windu & Kit Fisto", "Golden Frieza vs Palpatine (Dark Empire)", "Fused Zamasu vs Luke Skywalker (Grand Master)", "Jiren the Gray vs The Chosen One (Full Potential Anakin)", "Hit's Time Skip vs Force Precognition", "Dragon Balls used to wish back the Jedi Order", "Sith Holocron teaches Vegeta forbidden Ki techniques", "A Jedi discovers Zenkai boosts", "The Empire tries to weaponize Saiyan DNA", "Rebel Alliance uses Capsule Corp tech for stealth ships", "Frieza Force clashes with the Chiss Ascendancy", "Battle for Namek involves both Jedi and Sith", "Tournament of Power held in the Unknown Regions", "Cell attempts to absorb the Force itself", "Buu absorbs a Star Destroyer", "What if a Saiyan could become a Force Ghost?", "What if a Jedi learned Instant Transmission?", "Can Ki be used to deflect blaster bolts effectively?", "Could the Force hide a user from a Scouter?", "The philosophical debate: Destiny (Force) vs Effort (Ki)", "Cross-training Jedi Padawans and young Saiyans"
+            //... and keep going! The "Generate More" helps fill gaps.
+        ];
+        const crossoverThemes = [
+            "Star Wars characters meet Dragon Ball characters", "Dragon Ball characters in the Star Wars galaxy", "Star Wars factions encountering Ki users", "Jedi learning about Ki and Saiyans", "Sith attempting to control Ki energy", "Comparing the Force and Ki energy", "What if scenarios mixing timelines", "Fusion techniques applied to Star Wars characters", "Saiyan transformations influenced by the Force", "Technological crossover (Capsule Corp/Star Wars tech)", "Major battles with combined forces", "Searching for Dragon Balls across the galaxy", "Training methods compared (Jedi vs Z-Fighters)", "Character duels (specific matchups)", "Philosophical differences (Jedi Code vs Saiyan Pride)", "Gods of Destruction interacting with Force entities", "Time travel crossovers (Trunks in Star Wars eras)", "Alternate history scenarios", "Bounty hunters targeting powerful Ki users", "Empire attempting to weaponize Saiyan abilities"
+        ];
+        const textApiConfig = { // For story generation
+            model: "mistral",
+            systemPrompt: "Eres un talentoso escritor de fanfiction especializado en crossovers épicos. Tu tarea es escribir una historia FICCIONAL y emocionante (aproximadamente 1200-1300 palabras) basada en el siguiente escenario que fusiona los universos de Star Wars y Dragon Ball. Captura el tono, los poderes y las personalidades de ambos mundos de manera coherente y dramática. Enfócate en la acción, el diálogo y el desarrollo del concepto presentado en el título:",
+            timeoutSeconds: 180 // Increased timeout slightly for longer generation
+        };
+        const chatApiConfig = { // For contextual chat
+            model: "mistral-tiny",
+            systemPrompt: "Actúas como un fan experto y co-narrador conocedor ÚNICAMENTE de la historia de crossover Star Wars/Dragon Ball que se está mostrando actualmente. El título es '[TITLE]'. Responde preguntas de seguimiento sobre los eventos, personajes o conceptos específicos DENTRO de esta narrativa particular. Sé conciso y mantente enfocado en la historia actual.",
+            timeoutSeconds: 50
+        };
+        const titleGenerationConfig = { // For generating MORE titles
+            model: "mistral",
+            systemPrompt: "Actúa como un generador de ideas para fanfiction. Genera exactamente 40 ideas únicas y atractivas para historias crossover entre los universos de Star Wars y Dragon Ball. Enfócate en interacciones de personajes, escenarios específicos o conceptos 'what if'. Devuelve *solo* la lista de ideas, una por línea. Sin números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Increased timeout for more titles
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // ... (Search, Title List, Modal, Error, Chat elements are the same as previous example) ...
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading'); // Now contains the game
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        // Game Elements
+        const gameCanvas = document.getElementById('game-canvas');
+        const gameCtx = gameCanvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const loadingMessageElement = document.getElementById('loading-message'); // To update text
+
+        // ========== State Variables ==========
+        let currentStoryTitle = null;
+        let gameLoopId = null; // To store the requestAnimationFrame ID
+        let isGameRunning = false;
+
+        // ========== TETRIS GAME LOGIC ==========
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 20;
+        const COLORS = [null, '#00ffff', '#ffff00', '#ff00ff', '#00ff00', '#ff8c00', '#0000ff', '#ff0000']; // Cyan, Yellow, Magenta, Green, Orange, Blue, Red (Tetromino colors)
+        const SHAPES = [
+            [], // 0 index is empty
+            [[1, 1, 1, 1]], // I
+            [[2, 2], [2, 2]], // O
+            [[0, 3, 0], [3, 3, 3]], // T
+            [[0, 4, 4], [4, 4, 0]], // S
+            [[5, 5, 0], [0, 5, 5]], // Z
+            [[6, 0, 0], [6, 6, 6]], // J
+            [[0, 0, 7], [7, 7, 7]]  // L
+        ];
+
+        let board = [];
+        let currentPiece;
+        let currentX, currentY;
+        let score = 0;
+        let level = 1;
+        let dropStart = Date.now();
+        let gameOver = false;
+
+        function createBoard() {
+            return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        }
+
+        function getRandomPiece() {
+            const rand = Math.floor(Math.random() * (SHAPES.length - 1)) + 1;
+            return { shape: SHAPES[rand], colorIndex: rand };
+        }
+
+        function spawnPiece() {
+            currentPiece = getRandomPiece();
+            currentX = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
+            currentY = 0;
+            if (checkCollision(currentX, currentY, currentPiece.shape)) {
+                gameOver = true;
+                isGameRunning = false;
+                console.log("Game Over!");
+                // Optionally display Game Over message on canvas
+                loadingMessageElement.textContent = "¡Fin del juego! Cargando datos...";
+            }
+        }
+
+        function drawBlock(x, y, colorIndex) {
+            gameCtx.fillStyle = COLORS[colorIndex];
+            gameCtx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            gameCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)'; // Grid lines
+            gameCtx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        }
+
+        function drawBoard() {
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (board[y][x]) {
+                        drawBlock(x, y, board[y][x]);
+                    } else {
+                        // Draw empty cell background slightly different?
+                        gameCtx.fillStyle = 'rgba(50, 50, 80, 0.3)'; // Darker blueish empty cell
+                        gameCtx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        gameCtx.strokeStyle = 'rgba(100, 100, 150, 0.2)'; // Faint grid
+                        gameCtx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                }
+            }
+        }
+
+        function drawPiece() {
+            currentPiece.shape.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value) {
+                        drawBlock(currentX + x, currentY + y, currentPiece.colorIndex);
+                    }
+                });
+            });
+        }
+
+        function checkCollision(x, y, shape) {
+            for (let row = 0; row < shape.length; row++) {
+                for (let col = 0; col < shape[row].length; col++) {
+                    if (shape[row][col]) {
+                        let newX = x + col;
+                        let newY = y + row;
+                        if (newX < 0 || newX >= COLS || newY >= ROWS || (newY >= 0 && board[newY] && board[newY][newX])) {
+                            return true; // Collision detected
+                        }
+                    }
+                }
+            }
+            return false; // No collision
+        }
+
+        function mergePiece() {
+            currentPiece.shape.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value && (currentY + y >= 0)) { // Ensure we only merge within bounds
+                        board[currentY + y][currentX + x] = currentPiece.colorIndex;
+                    }
+                });
+            });
+        }
+
+         function rotatePiece() {
+            if (gameOver || !currentPiece) return;
+            // Simple rotation logic (transpose + reverse rows)
+            const shape = currentPiece.shape;
+            const N = shape.length;
+            const M = shape[0].length;
+            const newShape = Array.from({ length: M }, () => Array(N).fill(0));
+
+            for (let y = 0; y < N; y++) {
+                for (let x = 0; x < M; x++) {
+                    if (shape[y][x]) {
+                         newShape[x][N - 1 - y] = shape[y][x];
+                    }
+                }
+            }
+             // Check collision before applying rotation
+             if (!checkCollision(currentX, currentY, newShape)) {
+                  currentPiece.shape = newShape;
+             } else {
+                  // Wall kick attempt (basic) - try moving left/right
+                  if (!checkCollision(currentX + 1, currentY, newShape)) {
+                       currentX++;
+                       currentPiece.shape = newShape;
+                  } else if (!checkCollision(currentX - 1, currentY, newShape)) {
+                       currentX--;
+                       currentPiece.shape = newShape;
+                  }
+             }
+        }
+
+
+        function movePiece(dx, dy) {
+            if (gameOver || !currentPiece) return;
+            if (!checkCollision(currentX + dx, currentY + dy, currentPiece.shape)) {
+                currentX += dx;
+                currentY += dy;
+                return true; // Move successful
+            }
+            return false; // Move failed
+        }
+
+         function dropPiece() {
+            if (gameOver || !currentPiece) return;
+            let now = Date.now();
+            let delta = now - dropStart;
+            let dropInterval = Math.max(200, 1000 - (level - 1) * 80); // Decrease interval per level, minimum 200ms
+
+            if (delta > dropInterval) {
+                if (!movePiece(0, 1)) {
+                     // Piece landed
+                     if (currentY < 0) { // Piece landed above the visible board (rare case, might indicate immediate game over on spawn)
+                          gameOver = true;
+                          isGameRunning = false;
+                          loadingMessageElement.textContent = "¡Fin del juego! Cargando datos...";
+                          return; // Stop further processing for this piece
+                     }
+                     mergePiece();
+                     clearLines();
+                     spawnPiece(); // Spawn next piece
+                }
+                dropStart = Date.now();
+            }
+         }
+
+        function hardDrop() {
+             if (gameOver || !currentPiece) return;
+             while(movePiece(0, 1)) {
+                  // Keep moving down until collision
+             }
+             // Force merge and next piece immediately after hard drop
+             mergePiece();
+             clearLines();
+             spawnPiece();
+             dropStart = Date.now(); // Reset drop timer
+        }
+
+        function clearLines() {
+             let linesCleared = 0;
+             for (let y = ROWS - 1; y >= 0; y--) {
+                  if (board[y].every(cell => cell !== 0)) {
+                       linesCleared++;
+                       // Remove the line and add a new empty line at the top
+                       board.splice(y, 1);
+                       board.unshift(Array(COLS).fill(0));
+                       y++; // Re-check the same row index as it's now a new line
+                  }
+             }
+             if (linesCleared > 0) {
+                  updateScore(linesCleared);
+             }
+        }
+
+        function updateScore(linesCleared) {
+            const points = [0, 100, 300, 500, 800]; // Points for 0, 1, 2, 3, 4 lines
+            score += points[linesCleared] * level;
+            scoreElement.textContent = score;
+
+            // Simple level up logic
+            if (score > level * 500) { // Example: Level up every 500 * level points
+                level++;
+                levelElement.textContent = level;
+                console.log("Level Up!", level);
+            }
+        }
+
+        function gameLoop() {
+            if (!isGameRunning || gameOver) {
+                 if(gameOver) {
+                     // Optional: Draw "Game Over" text
+                     gameCtx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                     gameCtx.fillRect(0, gameCanvas.height / 2 - 30, gameCanvas.width, 60);
+                     gameCtx.font = '24px Orbitron';
+                     gameCtx.fillStyle = 'red';
+                     gameCtx.textAlign = 'center';
+                     gameCtx.fillText('GAME OVER', gameCanvas.width / 2, gameCanvas.height / 2);
+                 }
+                 return; // Stop the loop if game stopped or over
+             }
+
+             // Clear canvas
+             gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+             // Draw existing board
+             drawBoard();
+
+             // Draw current piece
+             if (currentPiece) {
+                 drawPiece();
+             }
+
+             // Handle automatic drop
+             dropPiece();
+
+             // Request next frame
+             gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            if (isGameRunning) return; // Don't start if already running
+            console.log("Starting Galactic Blocks!");
+            board = createBoard();
+            score = 0;
+            level = 1;
+            gameOver = false;
+            scoreElement.textContent = score;
+            levelElement.textContent = level;
+            loadingMessageElement.textContent = "Cargando línea temporal... ¡Juega mientras esperas!"; // Reset message
+            spawnPiece();
+            dropStart = Date.now();
+            isGameRunning = true;
+            if (gameLoopId) cancelAnimationFrame(gameLoopId); // Clear previous loop if any
+            gameLoop();
+        }
+
+        function stopGame() {
+            if (!isGameRunning && !gameOver) return; // Don't stop if not running or already over
+            console.log("Stopping Galactic Blocks!");
+            isGameRunning = false; // Signal loop to stop
+             if (gameLoopId) {
+                 cancelAnimationFrame(gameLoopId);
+                 gameLoopId = null;
+             }
+            // Optionally clear canvas or show a paused message if needed
+             // gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+        }
+
+        // Game Controls Handler
+        function handleKeyDown(event) {
+             if (!isGameRunning || gameOver || !currentPiece) return;
+
+             switch (event.key) {
+                 case 'ArrowLeft':
+                 case 'a': // Add WASD option
+                      movePiece(-1, 0);
+                      event.preventDefault();
+                      break;
+                 case 'ArrowRight':
+                 case 'd':
+                      movePiece(1, 0);
+                      event.preventDefault();
+                      break;
+                 case 'ArrowDown':
+                 case 's':
+                      movePiece(0, 1);
+                      // Reset drop timer on manual down move to feel more responsive
+                      dropStart = Date.now();
+                      event.preventDefault();
+                      break;
+                 case 'ArrowUp':
+                 case 'w': // Rotate
+                      rotatePiece();
+                      event.preventDefault();
+                      break;
+                 case ' ': // Space for hard drop
+                      hardDrop();
+                      event.preventDefault();
+                      break;
+             }
+        }
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            // ... (Same fetch logic as before, using friendly errors) ...
+            const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentStoryTitle
+                 ? `Actúas como un fan experto y co-narrador conocedor ÚNICAMENTE de la historia de crossover Star Wars/Dragon Ball titulada '${currentStoryTitle}'. Responde preguntas de seguimiento sobre los eventos, personajes o conceptos específicos DENTRO de esta narrativa particular. Sé conciso y mantente enfocado en la historia actual.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             // Seed for story/title gen, not chat
+             if (config.seed && !isChat && config !== titleGenerationConfig) params.append('seed', config.seed || Math.floor(Math.random() * 10000));
+
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros servidores interdimensionales tienen mucho tráfico. Intenta en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía desde el hiperespacio. Intenta de nuevo.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s), parece perdida en el Vacío. Revisa tu conexión.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar el Nexo.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) {
+             if (!currentStoryTitle) throw new Error("Error interno: No se ha establecido el contexto de la historia.");
+             return fetchTextFromApi(userQuery, chatApiConfig, true);
+         }
+        async function fetchGeneratedTitles() {
+             // *** FETCH 40 TITLES ***
+             const randomTheme = getRandomElement(crossoverThemes) || "Star Wars y Dragon Ball";
+             const specificPrompt = `Genera 40 ideas únicas para crossovers entre Star Wars y Dragon Ball sobre ${randomTheme}`;
+             // Use the generic fetch function
+             return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                  .then(text => {
+                      const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 10 && line.length < 150);
+                      if (titles.length < 15) { // Expecting 40, but be lenient
+                           throw new Error("La IA no generó suficientes ideas de crossovers.");
+                      }
+                      return titles.slice(0, 40); // Return up to 40
+                  });
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             // ... (Image URL generation logic remains the same, maybe adjust prompt slightly) ...
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Star Wars Dragon Ball crossover art";
+             // Enhanced prompt blending styles
+             const enhancedPrompt = `Epic conceptual art blending Star Wars and Dragon Ball aesthetics, inspired by '${safePromptText}'. Cinematic lighting, dynamic energy (Ki blasts, lightsabers), space opera meets high-energy martial arts action. Detailed characters/environments reflecting both universes. Avoid text, labels, UI elements.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, realistic photograph, blurry, low quality, simple background, cartoonish, chibi";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (No changes needed)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            // Replace Markdown-like syntax
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');     // Italic
+            // Replace potential formula/code blocks if needed (less likely here)
+            formatted = formatted.replace(/\\\[(.*?)\\\]/gs, '<div class="formula">$1</div>');
+            formatted = formatted.replace(/`{3}([\s\S]*?)`{3}/g, '<pre><code>$1</code></pre>');
+            formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+
+            // Convert paragraphs separated by double line breaks
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                 // Keep headings, lists, preformatted tags as they are
+                 if (block.match(/^<(h[1-4]|ul|ol|li|pre|blockquote|div)/)) {
+                      return block;
+                 }
+                 // Wrap other blocks in <p>, replacing single newlines with spaces within the paragraph
+                 let content = block.replace(/\n/g, ' ');
+                 return `<p>${content}</p>`;
+            }).join('');
+
+            // Handle simple bullet points (* or -) - basic conversion
+            formatted = formatted.replace(/^\s*[\*\-]\s+(.*)$/gm, '<ul><li>$1</li></ul>');
+            // Collapse consecutive lists
+            formatted = formatted.replace(/<\/ul>\s*<ul>/gm, '');
+
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            stopGame(); // Stop the game when modal hides
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.classList.remove('active'); // Ensure loading/game is hidden
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentStoryTitle = null;
+             hideFullscreenImage();
+             stopGame(); // Ensure game is stopped on reset
+             // Clear canvas explicitly?
+             // gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (No changes needed)
+        function showFullscreenImage(imgSrc) { /* ... */ if(!imageFullscreenOverlay||!fullscreenImage)return;fullscreenImage.src=imgSrc;imageFullscreenOverlay.classList.add('active');document.body.style.overflow='hidden'; }
+        function hideFullscreenImage() { /* ... */ if(!imageFullscreenOverlay)return;imageFullscreenOverlay.classList.remove('active');if(!storyModal.classList.contains('active')){document.body.style.overflow='';}fullscreenImage.src=''; }
+
+        // ========== CHAT FUNCTIONS ========== (No changes needed)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv=document.createElement('div');msgDiv.classList.add('chat-message',sender==='user'?'user-message':'ai-message');message=message.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');message=message.replace(/\*(.*?)\*/g,'<em>$1</em>');msgDiv.innerHTML=message;chatHistory.appendChild(msgDiv);chatHistory.scrollTop=chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errDiv=document.createElement('div');errDiv.classList.add('chat-error');errDiv.textContent=message;chatHistory.appendChild(errDiv);chatHistory.scrollTop=chatHistory.scrollHeight; }
+        async function handleSendMessage() { /* ... */ const userQuery=chatInput.value.trim();if(!userQuery||chatSendBtn.disabled)return;addChatMessage(userQuery,'user');chatInput.value='';chatSendBtn.disabled=true;chatLoadingIndicator.style.display='block';try{const aiResponse=await fetchChatResponse(userQuery);addChatMessage(aiResponse,'ai');}catch(error){console.error("Chat Error:",error);addChatError(`IA Error: ${error.message}`);}finally{chatLoadingIndicator.style.display='none';chatSendBtn.disabled=false;chatInput.focus();} }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array){/* ... */ let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array;}
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+            if (!titleListContainer || !titlesLoading) return;
+            // Optionally sort or shuffle? Let's keep alphabetical for now.
+            const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+            titleListContainer.innerHTML = ''; // Clear previous/loading
+            titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">» Archivos interdimensionales vacíos. «</p>'; return; }
+            sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+             console.log(`Added ${addedCount} new unique titles.`);
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick to START THE GAME ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentStoryTitle = title; // Set chat context
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.classList.add('active'); // SHOW loading screen
+            startGame(); // START THE GAME!
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                stopGame(); // STOP THE GAME - content arrived
+                modalLoadingIndicator.classList.remove('active'); // HIDE loading screen
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden'); // Show content area
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll reset after content visible");
+
+                // Image placeholder and loading logic (within modalContent)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Generando visión...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Visión fallida.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL visión.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                stopGame(); // STOP GAME on error too
+                modalLoadingIndicator.classList.remove('active');
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar la línea temporal.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        async function handleGenerateMoreTitles() {
+             // *** FETCH 40 ***
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando Realidades...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron encontrar más líneas temporales ahora."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error explorando realidades: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Explorar Nuevas Realidades (40)';
+             }
+         }
+
+        // Search Filter Function (added accent normalization)
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0 || titleItems.length === 0); // Show if no results OR if list empty initially
+         }
+
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !gameCanvas || !scoreElement || !levelElement) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">++ ERROR CRÍTICO: Faltan componentes del Nexus ++</p>';
+                return;
+             }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            // Title generation listener
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // *** Game Controls Listener ***
+            document.addEventListener('keydown', handleKeyDown);
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            filterTitles(''); // Initial filter call to potentially show "no results" if list is empty
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

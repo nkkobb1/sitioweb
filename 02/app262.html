@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draconis Arcanum - Enciclopedia de Dragones</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Fantasía/Legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Merriweather+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Draconis Arcanum --- */
+        :root {
+            --color-primary: #e53e3e; /* Rojo Fuego Intenso */
+            --color-secondary: #d69e2e; /* Dorado/Bronce */
+            --color-tertiary: #2c5282; /* Azul Profundo */
+            --color-background: #fdfaf6; /* Blanco Pergamino */
+            --color-text: #2d3748; /* Gris Oscuro (Texto principal) */
+            --color-text-muted: #718096; /* Gris Medio */
+            --color-modal-bg: #fffefb; /* Blanco ligeramente más cálido para modal */
+            --color-border: #e2e8f0; /* Borde gris claro */
+            --color-error-bg: #fed7d7; /* Fondo error rojo claro */
+            --color-error-text: #742a2a; /* Texto error rojo oscuro */
+            --color-error-border: #f56565; /* Borde error rojo medio */
+
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --shadow-inner: inset 0 2px 4px 0 rgba(0,0,0,0.06);
+            --border-radius: 5px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Merriweather Sans', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-secondary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(255, 254, 251, 0.85); /* Fondo modal con transparencia */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #ffffff; color: var(--color-text); box-shadow: var(--shadow-inner); transition: var(--transition-normal); font-family: 'Merriweather Sans'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(214, 158, 46, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-secondary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Merriweather Sans'; font-size: 0.95rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-secondary); background-color: #fffdf9; border-left-color: var(--color-secondary); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color: white; padding: 0.9rem 1.8rem; border: none; border-radius: var(--border-radius); font-family: 'Cinzel', serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-secondary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.03); }
+        #generate-more-btn:disabled { background: #cbd5e0; color: #a0aec0; cursor: not-allowed; opacity: 0.8; transform: none; box-shadow: none; text-shadow: none;}
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(45, 55, 72, 0.9); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Allow space for game/content */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: #e2e8f0; border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: white; transform: rotate(90deg); }
+        #modal-title { font-size: 2rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Area de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) #e2e8f0;
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: #e2e8f0; border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 1px solid #cbd5e0; }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-tertiary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Cinzel', serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-secondary); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(214, 158, 46, 0.5); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(113, 128, 150, 0.3); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; background-color: #f7fafc; /* Fondo ligeramente distinto para chat */ border-radius: var(--border-radius); padding: 1rem; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #ffffff; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) #e2e8f0;
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: #e2e8f0; border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 0.9rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: var(--shadow-sm); }
+        .user-message { background-color: var(--color-tertiary); color: white; margin-left: auto; text-align: left; font-weight: 400;}
+        .ai-message { background-color: #edf2f7; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); background-color: #ffffff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Merriweather Sans'; font-size: 0.95rem; box-shadow: var(--shadow-inner); }
+        #chat-input:focus { outline: none; border-color: var(--color-secondary); box-shadow: 0 0 0 2px rgba(214, 158, 46, 0.2); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; box-shadow: var(--shadow-sm); }
+        #chat-send-btn:hover:not(:disabled) { background-color: #c53030; }
+        #chat-send-btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* --- Loading Minigame Styles --- */
+        #modal-loading { /* Container for the game */
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(160deg, #fdfaf6, #fffefb); /* Fondo pergamino suave */
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 55; border-radius: var(--border-radius);
+            transition: opacity 0.3s ease-out;
+            opacity: 1;
+        }
+        #modal-loading.hidden { /* To hide the loading screen smoothly */
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loading-game-container {
+             width: 80%; /* Adjust as needed */
+             max-width: 600px;
+             height: 200px; /* Adjust height */
+             border: 2px solid var(--color-secondary);
+             background-color: #e2e8f0; /* Fondo cielo/niebla */
+             position: relative;
+             overflow: hidden; /* Clip elements outside */
+             border-radius: var(--border-radius);
+             box-shadow: var(--shadow-md);
+         }
+        #loading-canvas {
+            display: block; /* Remove extra space below canvas */
+            width: 100%;
+            height: 100%;
+            cursor: pointer; /* Indicate interactivity */
+        }
+        #loading-instructions {
+            margin-top: 1.5rem;
+            font-family: 'Merriweather Sans', sans-serif;
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            text-align: center;
+        }
+        #loading-instructions i { /* Style the icon */
+            color: var(--color-secondary);
+            margin: 0 5px;
+        }
+         #game-over-message {
+             position: absolute;
+             top: 50%; left: 50%;
+             transform: translate(-50%, -50%);
+             color: var(--color-primary);
+             background-color: rgba(255, 254, 251, 0.8); /* Fondo pergamino translúcido */
+             padding: 15px 25px;
+             border-radius: var(--border-radius);
+             font-family: 'Cinzel', serif;
+             font-size: 1.5rem;
+             text-align: center;
+             border: 1px solid var(--color-primary);
+             box-shadow: var(--shadow-lg);
+             display: none; /* Hidden by default */
+             z-index: 10; /* Above canvas elements */
+         }
+        #game-over-message span { /* Score */
+             display: block;
+             font-size: 1rem;
+             margin-top: 5px;
+             color: var(--color-text);
+             font-family: 'Merriweather Sans';
+         }
+         /* Example: Simple player/obstacle style if not using images */
+         .game-player { background-color: var(--color-primary); /* Dragon Rojo */ }
+         .game-obstacle { background-color: var(--color-text); /* Roca Gris Oscuro */ }
+
+
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Merriweather Sans'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(45, 55, 72, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 3px solid var(--color-secondary); box-shadow: var(--shadow-lg); border-radius: 3px; }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: white; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                      <i class="fas fa-dragon mr-3 text-red-600"></i> <!-- Icono dragón -->
+                      Draconis Arcanum
+                  </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wider">» La Enciclopedia Mítica «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explora el Linaje de los Dragones</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-light">Adéntrate en los archivos prohibidos y descubre la diversidad, poder y misterio de las grandes bestias aladas. Selecciona un espécimen o busca en los anales.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar por nombre o tipo de dragón...">
+             <i class="fas fa-search fa-scroll"></i> <!-- Icono pergamino/búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                  <i class="fas fa-book-dead text-yellow-600 mr-2"></i> <!-- Icono libro antiguo -->
+                 Índice Dracónico
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Consultando los tomos antiguos...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» Ninguna bestia coincide con la descripción buscada «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Nuevos Linajes (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator (Now includes the game) -->
+             <div id="modal-loading">
+                 <div id="loading-game-container">
+                     <canvas id="loading-canvas"></canvas>
+                     <div id="game-over-message">¡Has Caído!<br><span>Puntaje: 0</span><br><small>(Espacio para reintentar)</small></div>
+                 </div>
+                 <p id="loading-instructions">
+                     <i class="fas fa-keyboard"></i> ¡Usa [Espacio] o Toca para Volar! <i class="fas fa-mouse-pointer"></i><br>
+                     Esquiva los obstáculos mientras se carga la información...
+                 </p>
+                 <!-- The old spinner/text is removed or hidden by JS -->
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image and placeholder appended here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <h4 class="text-center text-sm font-semibold text-gray-600 mb-2 font-sans">Consulta al Dragonólogo</h4>
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Consultando saberes...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este dragón...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Ilustración Ampliada del Dragón">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Toda la información dracónica es ficticia, generada por IA con fines creativos y de entretenimiento.</p>
+              <p class="mt-1">Ningún aventurero fue dañado (permanentemente) en la recopilación de estos datos.</p>
+              <p class="mt-2">© MMLXXVII Draconis Arcanum Archives</p> <!-- Año romano ;) -->
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // --- Elementales Clásicos ---
+            "Dragón Rojo Mayor (Pyralis Rex)", "Wyrm de Magma Fundido", "Draco de Ceniza Volcánica", "Salamandra Ígnea", "Elemental de Fuego Dracónico",
+            "Dragón Blanco Glacial (Cryophis Dominus)", "Serpe de Escarcha Profunda", "Leviatán de Ventisca", "Lindworm de Hielo Quebradizo", "Elemental de Frío Dracónico",
+            "Dragón Azul Eléctrico (Fulgur Serpens)", "Wyvern de Tormenta Atronadora", "Draco de Relámpago Encadenado", "Guiverno Cargaestática", "Elemental de Rayo Dracónico",
+            "Dragón Verde Esmeralda (Viridis Terrestris)", "Basilisco de Selva Ancestral", "Wyrm de Raíces Nudosas", "Draco de Esporas Tóxicas", "Elemental de Naturaleza Dracónica",
+            "Dragón Negro de Pantano Ácido (Noxius Palus)", "Hidra de Ciénaga Corrosiva", "Serpe de Alquitrán Sofocante", "Draco de Vapores Nocivos", "Elemental de Veneno Dracónico",
+            "Dragón Marrón de Montaña (Montanus Robustus)", "Górgon de Cañón Rocoso", "Wyrm de Desierto Arenisco", "Draco de Placas Tectónicas", "Elemental de Tierra Dracónico",
+            "Dragón Bronce del Tiempo (Chronos Metallum)", "Serpe de Ecos Temporales", "Wyvern de Paradoja", "Draco de Arenas del Reloj", "Elemental de Tiempo Dracónico",
+            // --- Metálicos y Preciosos ---
+            "Dragón Dorado Solar (Aurelius Solaris)", "Wyrm de Tesoro Custodio", "Draco de Luz Sagrada", "Lindworm de Pureza", "Elemental de Luz Dracónica",
+            "Dragón Plateado Lunar (Argenteus Lunaris)", "Serpe de Ilusión Astral", "Guiverno Tejedor de Sueños", "Draco de Mareas Psíquicas", "Elemental de Psique Dracónica",
+            "Dragón de Cobre Oxidado (Cuprum Senex)", "Wyrm de Conocimiento Antiguo", "Draco de Acertijos", "Salamandra de Patina", "Elemental de Saber Dracónico",
+            "Dragón de Acero Templado (Ferrus Bellator)", "Górgon de Ciudadela", "Wyvern de Forja", "Draco de Maquinaria de Guerra", "Elemental de Orden Dracónico",
+            "Dragón de Mithril Estelar", "Serpe de Vacío Centelleante", "Draco de Nebulosa", "Lindworm Tejido de Estrellas", "Elemental de Vacío Dracónico",
+            "Dragón de Adamantina Indestructible", "Wyrm de Núcleo Terrestre", "Guiverno Baluarte", "Draco Inamovible", "Elemental de Resistencia Dracónica",
+            "Dragón de Cristal Psiónico", "Serpe de Mente Colmena", "Draco Resonante", "Wyvern de Geoda Consciente", "Elemental de Cristal Dracónico",
+            // --- Oscuros y Abisales ---
+            "Dragón Sombrío Acechante (Umbra Tenebris)", "Wyrm de Pesadilla Viviente", "Serpe de Vacío Devorador", "Draco de Ecos Silenciosos", "Elemental de Sombra Dracónica",
+            "Dragón Abisal de Fosa Marina (Profundus Leviathan)", "Kraken Dracónico", "Guiverno de Presión Aplastante", "Draco de Tinta Bioluminiscente", "Elemental de Profundidad Dracónica",
+            "Dragón Nigromántico (Mortis Draconis)", "Liche Dracónico Osamenta", "Wyrm de Almas Atrapadas", "Serpe de Peste No Muerta", "Elemental de Muerte Dracónica",
+            "Dragón Vampírico Sangriento", "Draco Chupasangre Nocturno", "Guiverno Carmesí", "Serpe Hematófaga", "Elemental de Sangre Dracónica",
+            // --- Celestiales y Etéreos ---
+            "Dragón Celestial Empíreo (Aetherius Divinus)", "Serafín Dracónico", "Wyrm de Constelación", "Draco de Amanecer Eterno", "Elemental de Éter Dracónico",
+            "Dragón Espectral Fantasmal", "Serpe de Plano Etéreo", "Guiverno Susurrante", "Draco de Niebla Anímica", "Elemental de Espíritu Dracónico",
+            "Dragón Feérico Irisado (Faerie Chroma)", "Wyvern de Bosque Encantado", "Draco Cambiante", "Lindworm de Polen Mágico", "Elemental de Magia Dracónica",
+            // --- Constructos y Tecnológicos (Fantasía) ---
+            "Dragón Mecánico de Relojería (Machina Tempus)", "Autómata Dracónico", "Górgon de Engranajes", "Wyvern de Vapor", "Elemental de Mecanismo Dracónico",
+            "Dragón Golem de Obsidiana", "Elemental de Roca Encantada", "Guardián Dracónico Rúnico", "Draco de Fortaleza Viviente", "Elemental de Runa Dracónica",
+            // --- Híbridos y Mutaciones ---
+            "Quimera Dracónica (Multi-cabeza)", "Grifo Dracónico", "Manticora Dracónica", "Draco-Liche Marino", "Experimento Dracónico Fallido",
+            // --- Únicos y Legendarios (Ejemplos) ---
+            "Tiamat, la Reina Cromática", "Bahamut, el Rey Platino", "Nidhogg, el Roedor de Raíces", "Fafnir, el Maldito por el Oro", "Quetzalcóatl, la Serpiente Emplumada", "Ouroboros, el Ciclo Eterno", "El Gran Dragón Durmiente bajo la Montaña", "El Último Dragón Verdadero",
+            // --- Conceptuales / Roles ---
+            "Dragón Oráculo del Destino", "Dragón Guardián de Umbral", "Dragón Forjador de Mundos (Mítico)", "Dragón Tejedor de Magia Primordial", "Dragón Come-Recuerdos", "Eco Dracónico Persistente",
+            // ... (Se espera que "Generar Más" añada mucha más variedad)
+        ];
+        const dragonThemes = [ // Temas para generar más títulos
+            "dragones elementales (fuego, hielo, agua, tierra, aire, tormenta)", "dragones metálicos (oro, plata, bronce, cobre, acero)", "dragones preciosos (gema, cristal, obsidiana)",
+            "dragones oscuros (sombra, noche, vacío, pesadilla)", "dragones abisales (marinos, profundidades)", "dragones no muertos (hueso, fantasma, liche, plaga)",
+            "dragones celestiales (luz, estrellas, ángel)", "dragones feéricos (magia, ilusión, naturaleza)", "dragones etéreos (espíritu, fantasma)",
+            "dragones constructos (mecánico, golem, rúnico)", "dragones planares (astral, elemental puro, caos)", "dragones psiónicos (mente, sueños)",
+            "dragones híbridos (quimera, grifo)", "dragones basados en mitología (nórdica, griega, asiática)", "dragones de hábitats específicos (desierto, jungla, ártico, volcán)",
+            "dragones con habilidades únicas (tiempo, gravedad, sonido, veneno)", "dragones ancianos y primordiales", "dragones custodios o guardianes", "dragones caóticos o destructores"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres el Archivero Mayor del Draconis Arcanum, un erudito especializado en la historia, biología y comportamiento de todas las formas de vida dracónica, tanto comunes como legendarias. Tu tarea es redactar una entrada enciclopédica detallada y evocadora sobre el tipo de dragón especificado. Describe su apariencia física (tamaño, escamas, alas, rasgos distintivos), hábitat preferido, dieta, habilidades especiales (aliento, magia, capacidades físicas), temperamento típico (agresivo, solitario, sabio, territorial), ciclo de vida, rol en el ecosistema o mitología, y cualquier leyenda o interacción conocida con otras razas. Utiliza un lenguaje rico y descriptivo, propio de un tomo antiguo. El objetivo es una entrada completa de aproximadamente 1200-1300 palabras. Basa tu descripción únicamente en el siguiente espécimen dracónico:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Actúas como un sabio Dragonólogo respondiendo preguntas específicas sobre el dragón actualmente descrito. Basa tus respuestas estrictamente en la información conocida sobre esta criatura. Sé preciso, erudito y mantén el tono de un experto en dragones.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un bardo inspirado creando nombres para nuevos tipos de dragones descubiertos. Genera exactamente 40 nombres únicos, evocadores y diversos de especies o subtipos de dragones ficticios, adecuados para una enciclopedia de fantasía. Cubre diferentes elementos, hábitats, apariencias y conceptos. Devuelve *solo* la lista de nombres/tipos, uno por línea. Sin números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Aumentar un poco por pedir 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Igual que antes, pero añadiendo los del juego)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading'); // Container principal de carga
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        // --- Game Elements ---
+        const gameContainer = document.getElementById('loading-game-container');
+        const canvas = document.getElementById('loading-canvas');
+        const ctx = canvas.getContext('2d');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const scoreSpan = gameOverMessage.querySelector('span');
+        const loadingInstructions = document.getElementById('loading-instructions');
+
+        // ========== State Variables ==========
+        let currentDragonType = null;
+        let gameLoopTimeout = null; // Para controlar el game loop
+        let gameRunning = false;
+
+        // ========== API FUNCTIONS ========== (Sin cambios significativos, solo contexto y errores)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentDragonType
+                 ? `Eres un Dragonólogo experto, especializado únicamente en el dragón tipo '${currentDragonType}'. Responde preguntas de seguimiento sobre sus características, lore, o comportamiento. Sé conciso y erudito.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) throw new Error(`(Error ${response.status}) Los escribas están ocupados descifrando otros tomos. Inténtalo de nuevo en breve.`);
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) throw new Error("El tomo parece estar en blanco o ilegible. Intenta otra consulta.");
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') throw new Error(`La conexión con los archivos se perdió (>${config.timeoutSeconds}s). Revisa tu conexión arcana.`);
+                 throw new Error(error.message || "Un encantamiento desconocido impide el acceso a los archivos.");
+             }
+         }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentDragonType) throw new Error("Error interno: Contexto dracónico perdido."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() { // Pide 40
+            const randomTheme = getRandomElement(dragonThemes) || "dragones variados";
+            const specificPrompt = `Genera 40 nombres/tipos de dragones sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 10) throw new Error("Los bardos no encontraron suficiente inspiración para nuevos linajes."); // Umbral bajo por si acaso
+                     return titles.slice(0, 40); // Asegura 40 si la API devuelve más
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) { /* ... (Prompt adaptado a dragones) */
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "epic fantasy dragon";
+             const enhancedPrompt = `Epic fantasy illustration, cinematic concept art of a '${safePromptText}'. Focus on unique features, scales, wings, elemental effects (fire, ice, shadow, light, nature etc. if applicable). Dynamic pose, detailed environment (mountains, cavern, storm clouds, ancient ruins etc.). No text, labels.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, multiple dragons, cartoon, simple, minimalist, photorealistic human, watermark, signature, blurry, low quality";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (Sin cambios)
+        function formatExplanationText(rawText) { /* ... (mismo código) */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ========== (Adaptadas para manejar visibilidad del juego)
+        function showModal() {
+            storyModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            // Asegurarse que el contenido principal esté oculto al inicio y el loading visible
+            modalStoryContentArea.classList.add('content-hidden');
+            modalLoadingIndicator.classList.remove('hidden'); // Mostrar pantalla de carga (con juego)
+        }
+        function hideModal() {
+            stopGame(); // Asegurarse que el juego se detenga al cerrar
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            resetModalState();
+        }
+        function resetModalState() {
+             // No ocultar modalLoadingIndicator aquí, se controla en show/hide
+             modalStoryContentArea.classList.add('content-hidden'); // Ocultar contenido principal
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentDragonType = null;
+             hideFullscreenImage();
+             // Reset game state visual elements if needed (e.g., game over message)
+             gameOverMessage.style.display = 'none';
+             canvas.style.filter = 'none'; // Remove blur if applied on game over
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (Sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... */ if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /* ... */ if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (Sin cambios funcionales)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv = document.createElement('div'); msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message'); message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); message = message.replace(/\*(.*?)\*/g, '<em>$1</em>'); msgDiv.innerHTML = message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight;}
+        async function handleSendMessage() { /* ... */ const userQuery = chatInput.value.trim(); if (!userQuery || chatSendBtn.disabled) return; addChatMessage(userQuery, 'user'); chatInput.value = ''; chatSendBtn.disabled = true; chatLoadingIndicator.style.display = 'block'; try { const aiResponse = await fetchChatResponse(userQuery); addChatMessage(aiResponse, 'ai'); } catch (error) { console.error("Chat Error:", error); addChatError(`Error Sabio: ${error.message}`); } finally { chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; chatInput.focus(); } }
+
+        // ========== LOADING MINIGAME LOGIC ==========
+        let player, gravity, obstacles = [], score, gameSpeed;
+        let playerWidth = 35, playerHeight = 25; // Tamaño del dragón
+        let obstacleWidth = 20, obstacleMinHeight = 30, obstacleMaxHeight = 70, obstacleGap = 120; // Obstáculos (rocas/estalactitas)
+
+        function startGame() {
+            console.log("Starting Loading Game...");
+            // Reset game state
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+            player = { x: 50, y: canvas.height / 2, vy: 0 }; // Posición inicial
+            gravity = 0.4;
+            obstacles = [];
+            score = 0;
+            gameSpeed = 3; // Velocidad inicial
+            gameRunning = true;
+            gameOverMessage.style.display = 'none';
+            canvas.style.filter = 'none'; // Quitar blur/efecto de game over
+            loadingInstructions.style.display = 'block'; // Mostrar instrucciones
+
+            // Add initial obstacle relatively far
+             addObstacle(canvas.width * 1.5);
+
+            if (gameLoopTimeout) clearTimeout(gameLoopTimeout); // Clear previous loop if any
+            gameLoop(); // Start the loop
+        }
+
+        function stopGame() {
+            console.log("Stopping Loading Game...");
+            gameRunning = false;
+            if (gameLoopTimeout) clearTimeout(gameLoopTimeout);
+            loadingInstructions.style.display = 'none'; // Ocultar instrucciones al parar
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            updateGame();
+            drawGame();
+
+            gameLoopTimeout = requestAnimationFrame(gameLoop);
+        }
+
+        function handleInput(e) {
+            if (!gameRunning) { // If game over, restart on Space
+                 if (e.code === 'Space' || e.type === 'touchstart' || e.type === 'mousedown') {
+                     startGame();
+                 }
+                 return;
+             }
+            // Jump only if game is running
+            if (e.code === 'Space' || e.type === 'touchstart' || e.type === 'mousedown') {
+                player.vy = -7; // Jump strength
+                 e.preventDefault(); // Prevent space scrolling page
+            }
+        }
+
+        function updateGame() {
+            // Player physics
+            player.vy += gravity;
+            player.y += player.vy;
+
+            // Keep player within bounds (optional, or game over if out)
+            if (player.y + playerHeight > canvas.height) {
+                player.y = canvas.height - playerHeight;
+                player.vy = 0;
+                // gameOver(); // Option: Game over if hits ground hard?
+            }
+            if (player.y < 0) {
+                player.y = 0;
+                player.vy = 0;
+                // gameOver(); // Option: Game over if hits ceiling?
+            }
+
+            // Move obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].x -= gameSpeed;
+
+                // Check for collision
+                if (
+                    player.x < obstacles[i].x + obstacleWidth &&
+                    player.x + playerWidth > obstacles[i].x &&
+                    (player.y < obstacles[i].topHeight || player.y + playerHeight > canvas.height - obstacles[i].bottomHeight)
+                ) {
+                    gameOver();
+                    return; // Stop update on game over
+                }
+
+                // Remove off-screen obstacles
+                if (obstacles[i].x + obstacleWidth < 0) {
+                    obstacles.splice(i, 1);
+                    score++; // Increment score when obstacle pair is passed
+                }
+            }
+
+            // Add new obstacles
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 200 - Math.random() * 100) { // Add randomness
+                addObstacle(canvas.width);
+            }
+
+            // Increase speed gradually
+             gameSpeed += 0.001;
+
+        }
+
+         function addObstacle(xPos) {
+             const minGap = 80; // Minimum gap for player
+             const maxGap = 120; // Maximum gap
+             const gap = Math.random() * (maxGap - minGap) + minGap;
+
+             const maxHeightRatio = 0.6; // Max height an obstacle part can take (60%)
+             const minHeight = 20; // Min px height for top/bottom obstacle
+
+             const maxTopHeight = canvas.height - gap - minHeight;
+             const topHeight = Math.max(minHeight, Math.random() * Math.min(maxTopHeight, canvas.height * maxHeightRatio));
+             const bottomHeight = canvas.height - topHeight - gap;
+
+             obstacles.push({
+                 x: xPos,
+                 topHeight: topHeight,
+                 bottomHeight: bottomHeight,
+                 gap: gap
+             });
+         }
+
+        function drawGame() {
+            // Clear canvas (or draw background)
+            ctx.fillStyle = '#e2e8f0'; // Cielo/Niebla
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw player (Simple Red Rectangle - Dragon)
+            ctx.fillStyle = 'var(--color-primary)'; // Dragon color
+            ctx.fillRect(player.x, player.y, playerWidth, playerHeight);
+             // Simple eye
+             ctx.fillStyle = 'white';
+             ctx.fillRect(player.x + playerWidth * 0.6, player.y + playerHeight * 0.2, 5, 5);
+             ctx.fillStyle = 'black';
+             ctx.fillRect(player.x + playerWidth * 0.7, player.y + playerHeight * 0.3, 2, 2);
+
+
+            // Draw obstacles (Simple Grey Rectangles - Rocks/Columns)
+            ctx.fillStyle = '#4a5568'; // Roca oscura
+            obstacles.forEach(obs => {
+                // Top obstacle
+                ctx.fillRect(obs.x, 0, obstacleWidth, obs.topHeight);
+                // Bottom obstacle
+                ctx.fillRect(obs.x, canvas.height - obs.bottomHeight, obstacleWidth, obs.bottomHeight);
+            });
+
+            // Draw score (Subtle)
+            ctx.fillStyle = 'rgba(45, 55, 72, 0.7)';
+            ctx.font = "16px 'Merriweather Sans'";
+            ctx.textAlign = 'left';
+            ctx.fillText(`Puntaje: ${score}`, 10, 20);
+        }
+
+        function gameOver() {
+            console.log("Game Over! Score:", score);
+            gameRunning = false;
+            if (gameLoopTimeout) clearTimeout(gameLoopTimeout);
+            scoreSpan.textContent = `Puntaje: ${score}`;
+            gameOverMessage.style.display = 'block';
+            canvas.style.filter = 'blur(2px) grayscale(50%)'; // Visual cue
+            loadingInstructions.style.display = 'none'; // Hide instructions on game over
+            // No need to hide modalLoadingIndicator here, game over screen is inside it
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» Los archivos dracónicos están vacíos por ahora «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick to integrate game start/stop ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Reset general state
+            showModal(); // Shows modal container, including the loading screen/game area
+            modalTitle.textContent = title; // Set title early
+            currentDragonType = title; // Set chat context
+
+            startGame(); // <<-- START THE MINIGAME
+
+            // Clear previous content placeholders if any (important!)
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+
+            try {
+                // Fetch data while game is running
+                const rawExplanationText = await fetchExplanationText(title);
+
+                stopGame(); // <<-- STOP THE GAME (Successful fetch)
+
+                // Now that game is stopped, hide loading screen and show content area
+                modalLoadingIndicator.classList.add('hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                // Process and display content
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalContent.innerHTML = formattedExplanation; // Add text
+
+                modalTextArea.scrollTop = 0; // Reset scroll AFTER content is added
+                console.log("Scroll set to 0 after content visible");
+
+                // --- Image Loading ---
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p style="font-size: 0.8em; margin-top: 0.5rem;">Invocando ilustración...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración de ${title}`;
+                imgElement.style.display = 'none';
+                imgElement.onload = () => {
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Ilustración perdida en la niebla.</p>`;
+                };
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                    placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al crear portal de imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                stopGame(); // <<-- STOP THE GAME (Error occurred)
+
+                 // Hide loading screen, show content area to display the error
+                 modalLoadingIndicator.classList.add('hidden');
+                 modalStoryContentArea.classList.remove('content-hidden');
+
+                 modalErrorMessage.textContent = error.message || "Un error arcano impidió la carga.";
+                 modalError.classList.remove('content-hidden');
+                 modalContent.innerHTML = ''; // Clear any partial content
+                 chatSection.classList.add('content-hidden'); // Hide chat on main error
+            }
+        }
+
+        async function handleGenerateMoreTitles() { // Pide 40
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando en ruinas lejanas...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se encontraron nuevos linajes en esta expedición."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar linajes: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // Actualizar texto para reflejar que pide 40
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Nuevos Linajes (40)';
+             }
+         }
+
+         // *** Search Filter Function (sin cambios) ***
+         function filterTitles(searchTerm) { /* ... (mismo código, usa normalize) */
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (!canvas || !ctx || !gameOverMessage || !scoreSpan /*... y otros elementos esenciales ...*/) {
+                console.error("Initialization failed: Missing essential elements (incl. game).");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">++ ERROR CRÍTICO ++ Faltan componentes del Archivo Dracónico ++</p>';
+                return;
+             }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            // Title generation listener
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+             // *** Game Input Listeners (Attach to window for broader capture) ***
+             window.addEventListener('keydown', handleInput);
+             // Use mousedown for canvas to prevent text selection issues vs click
+             canvas.addEventListener('mousedown', handleInput);
+             canvas.addEventListener('touchstart', handleInput, { passive: false }); // Use passive:false if preventDefault is needed
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+            // Ensure loading screen starts hidden until modal opens
+            modalLoadingIndicator.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

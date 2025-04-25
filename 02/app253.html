@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Ball: Ecos Históricos - Crónicas Ficticias</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Estilo DBZ / Anime -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados: Dragon Ball History Mix --- */
+        :root {
+            --color-primary: #f97316; /* Naranja DB */
+            --color-secondary: #3b82f6; /* Azul Cielo DB */
+            --color-tertiary: #eab308; /* Amarillo Super Saiyan / Energía */
+            --color-background: #f8fafc; /* Blanco Hueso / Gris muy claro */
+            --color-text: #1e293b; /* Azul Oscuro / Casi Negro Texto */
+            --color-text-muted: #64748b; /* Gris Azulado Muted */
+            --color-modal-bg: #ffffff; /* Blanco Modal */
+            --color-modal-overlay: rgba(30, 41, 59, 0.85); /* Overlay Azul Oscuro */
+            --color-border: #e2e8f0; /* Borde gris claro */
+            --color-error-bg: #fef2f2; /* Fondo Rojo Muy Claro Error */
+            --color-error-text: #b91c1c; /* Texto Rojo Oscuro Error */
+            --color-error-border: #fecaca; /* Borde Rojo Claro Error */
+
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-energy: 0 0 15px 3px rgba(234, 179, 8, 0.6); /* Sombra amarilla energía */
+            --border-radius: 6px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; }
+        h1, h2, h3, h4, .logo, #generate-more-btn, .title-item { font-family: 'Bangers', cursive; letter-spacing: 1.5px; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 400; /* Bangers es bold por defecto */ text-shadow: 2px 2px 0px var(--color-secondary); }
+        h2.section-title { color: var(--color-secondary); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.5rem; display: inline-block; font-weight: 400; }
+        #modal-title { color: var(--color-primary); font-weight: 400; text-shadow: 1px 1px 0px var(--color-secondary); }
+        .navbar { background-color: white; box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 2px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #ffffff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; /* Input usa fuente normal */ }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1.1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 75px; font-size: 1.2rem; border-left: 4px solid var(--color-secondary); position: relative; overflow: hidden; }
+        .title-item::before { /* Efecto hover sutil */ content: ''; position: absolute; bottom: 0; left: -100%; width: 100%; height: 3px; background-color: var(--color-primary); transition: left 0.3s ease; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-primary); border-left-color: var(--color-primary); }
+        .title-item:hover::before { left: 0; }
+
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-tertiary)); color: white; padding: 0.9rem 1.8rem; border: none; border-radius: var(--border-radius); font-size: 1.3rem; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); box-shadow: var(--shadow-md); }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-tertiary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.03); }
+        #generate-more-btn:disabled { background: var(--color-text-muted); color: #e2e8f0; cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; text-shadow: none;}
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--color-modal-overlay); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg); border-radius: var(--border-radius); padding: 1.5rem 2rem; max-width: 950px; width: 95%; max-height: 90vh; min-height: 450px; overflow: hidden; position: relative; box-shadow: var(--shadow-xl); display: flex; flex-direction: column; border: 2px solid var(--color-primary);
+        }
+        .modal-close-btn { position: absolute; top: 8px; right: 8px; background: white; border: 2px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; font-family: 'Lato'; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: white; transform: rotate(90deg); box-shadow: var(--shadow-energy); }
+        #modal-title { font-size: 2.2rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.2; }
+
+        /* Area Contenido Principal (Texto + Imagen) + Chat */
+        #modal-story-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; /* Oculta overflow para que los hijos manejen scroll */}
+
+        /* Area Scrollable (Texto + Imagen) */
+        #modal-content-area { flex-grow: 1; min-height: 0; overflow-y: auto; padding-right: 12px; margin-bottom: 1rem; scroll-behavior: smooth;
+             scrollbar-width: thin; scrollbar-color: var(--color-primary) #e2e8f0;
+        }
+        #modal-content-area::-webkit-scrollbar { width: 10px; }
+        #modal-content-area::-webkit-scrollbar-track { background: #e2e8f0; border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 2px solid #e2e8f0; }
+        #modal-content { padding: 0 5px; font-family: 'Lato'; font-size: 1.05rem; color: #334155;}
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; font-weight: 600;}
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Bangers', cursive; margin-top: 2em; margin-bottom: 0.8em; color: var(--color-secondary); border-bottom: 2px dashed var(--color-primary); padding-bottom: 0.4em; font-weight: 400; letter-spacing: 1px; }
+        #modal-content h1 { font-size: 1.8em; }
+        #modal-content h2 { font-size: 1.6em; }
+        #modal-content h3 { font-size: 1.4em; color: #f97316; } /* Naranja para H3 */
+        #modal-content h4 { font-size: 1.2em; color: var(--color-text-muted); border-bottom: none;}
+
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 2px solid var(--color-secondary); border-radius: var(--border-radius); box-shadow: var(--shadow-lg); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.04); box-shadow: var(--shadow-xl), 0 0 20px 5px rgba(59, 130, 246, 0.5); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); font-family: 'Lato'; }
+        #modal-content .image-placeholder .spinner { border: 5px solid rgba(226, 232, 240, 0.8); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; color: var(--color-secondary); margin-bottom: 0.5rem;}
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 2px solid var(--color-primary); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 220px; background-color: #f1f5f9; border-radius: 0 0 var(--border-radius) var(--border-radius); padding: 1rem; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: white; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) #e2e8f0;
+        }
+        #chat-history::-webkit-scrollbar { width: 8px; }
+        #chat-history::-webkit-scrollbar-track { background: #e2e8f0; border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.7rem; padding: 0.6rem 1rem; border-radius: 15px; /* Bordes redondeados */ max-width: 85%; word-wrap: break-word; line-height: 1.5; font-family: 'Lato'; font-size: 0.95rem; box-shadow: var(--shadow-sm);}
+        .user-message { background: linear-gradient(to right, #fdba74, var(--color-primary)); color: white; margin-left: auto; text-align: left; border-bottom-right-radius: 5px; }
+        .ai-message { background-color: #e0e7ff; color: #3730a3; /* Azul índigo */ margin-right: auto; text-align: left; border-bottom-left-radius: 5px;}
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.5rem; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 1px solid var(--color-border); background-color: white; color: var(--color-text); border-radius: 20px; /* Input redondeado */ font-family: 'Lato'; font-size: 0.95rem; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        #chat-input:focus { outline: none; border-color: var(--color-secondary); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        #chat-send-btn { padding: 0.7rem 1.2rem; background-color: var(--color-secondary); color: white; border: none; border-radius: 20px; /* Botón redondeado */ cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #2563eb; }
+        #chat-send-btn:active:not(:disabled) { transform: scale(0.95); }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; font-family: 'Lato'; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; color: var(--color-secondary); }
+
+        /* Loading Indicator & Minigame */
+        #modal-loading { text-align: center; padding: 2rem 1rem; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.97); display: none; /* Oculto por defecto */ flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        #modal-loading.active { display: flex; } /* Se activa con JS */
+
+        /* --- Minigame Elements --- */
+        #minigame-container { display: flex; flex-direction: column; align-items: center; margin-top: 1.5rem; width: 100%; max-width: 300px; }
+        #game-character { width: 80px; height: 120px; /* Ajustar tamaño */ background-color: #cbd5e1; /* Placeholder silhouette */ border-radius: 5px; margin-bottom: 1rem; cursor: pointer; position: relative; overflow: hidden; transition: transform 0.1s ease; border: 2px solid var(--color-secondary); }
+        #game-character:active { transform: scale(0.95); }
+        #ki-aura { position: absolute; top: -10%; left: -10%; width: 120%; height: 120%; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(255,255,0,0) 0%, rgba(255,255,0,0.1) 40%, rgba(255,255,0,0.4) 60%, rgba(251, 191, 36, 0.7) 80%, rgba(234, 179, 8, 0) 100%); opacity: 0; transform: scale(0.5); transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 0 5px 0px var(--color-tertiary); /* Initial small glow */ }
+        #ki-aura.level1 { opacity: 0.6; transform: scale(1); box-shadow: 0 0 15px 5px var(--color-tertiary); }
+        #ki-aura.level2 { opacity: 0.8; transform: scale(1.2); box-shadow: 0 0 25px 10px var(--color-tertiary); background: radial-gradient(ellipse at center, rgba(255,255,100,0.1) 0%, rgba(255,255,0,0.2) 40%, rgba(251, 191, 36, 0.6) 60%, rgba(234, 179, 8, 0.8) 80%, rgba(249, 115, 22, 0) 100%); }
+        #ki-aura.level3 { opacity: 1; transform: scale(1.4); box-shadow: 0 0 40px 15px var(--color-primary); background: radial-gradient(ellipse at center, rgba(255,255,255,0.2) 0%, rgba(251, 191, 36, 0.4) 40%, rgba(249, 115, 22, 0.8) 60%, rgba(249, 115, 22, 1) 80%, rgba(249, 115, 22, 0) 100%); }
+        #power-level-display { font-family: 'Bangers', cursive; font-size: 2.5rem; color: var(--color-primary); margin-bottom: 0.5rem; text-shadow: 1px 1px 0 var(--color-secondary); }
+        #game-instructions { font-family: 'Lato', sans-serif; color: var(--color-text-muted); font-size: 0.9rem; min-height: 20px; }
+        #game-progress-bar-container { width: 80%; height: 15px; background-color: #e2e8f0; border-radius: 10px; margin-top: 0.5rem; overflow: hidden; border: 1px solid var(--color-border); display: none; /* Se muestra en fase 2 */}
+        #game-progress-bar { width: 0%; height: 100%; background: linear-gradient(to right, var(--color-tertiary), var(--color-primary)); border-radius: 10px; transition: width 0.1s linear; }
+        #game-focus-bar-container { width: 80%; height: 25px; background-color: #e2e8f0; border-radius: 5px; margin-top: 1rem; position: relative; display: none; /* Se muestra en fase 2 */ cursor: pointer; border: 1px solid var(--color-border); }
+        #focus-marker { position: absolute; top: 0; left: 0; width: 5px; height: 100%; background-color: var(--color-secondary); transition: left 0.05s linear; }
+        #focus-sweet-spot { position: absolute; top: 0; left: 40%; /* Posición inicial */ width: 20%; /* Ancho inicial */ height: 100%; background-color: rgba(234, 179, 8, 0.5); /* Amarillo semi-transparente */ border-left: 2px solid var(--color-tertiary); border-right: 2px solid var(--color-tertiary); }
+        /* --- Fin Minigame --- */
+
+        .loading-text { font-family: 'Bangers'; font-size: 1.5rem; color: var(--color-secondary); margin-top: 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 600; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 3px solid var(--color-primary); box-shadow: var(--shadow-energy); }
+        #fullscreen-close-btn { position: absolute; top: 15px; right: 20px; background: white; border: 2px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: white; transform: scale(1.1); }
+
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-4xl sm:text-5xl">
+                     <i class="fas fa-dragon mr-2 text-orange-500"></i> <!-- Icono Dragon Ball -->
+                     DB: Ecos Históricos
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wide">» Crónicas Ficticias del Multiverso «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-4">¡Fusiones Temporales Inesperadas!</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-sans">Explora escenarios hipotéticos donde figuras legendarias de la Tierra interactúan con el universo Dragon Ball. ¡Elige una crónica o busca por nombre!</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar personaje histórico o concepto DBZ...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-scroll text-blue-500 mr-2"></i> <!-- Icono pergamino -->
+                 Índice de Crónicas
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Buscando señales en el Radar del Dragón...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se detectan crónicas con esa firma de Ki «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     ¡Invocar Más Historias! (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator with Minigame -->
+             <div id="modal-loading">
+                 <p class="loading-text">¡Recibiendo Transmisión!</p>
+                 <div id="minigame-container">
+                     <div id="power-level-display">0</div>
+                     <div id="game-character">
+                         <div id="ki-aura"></div>
+                     </div>
+                     <p id="game-instructions">¡Haz clic para cargar Ki!</p>
+                     <div id="game-progress-bar-container">
+                         <div id="game-progress-bar"></div>
+                     </div>
+                     <div id="game-focus-bar-container">
+                         <div id="focus-sweet-spot"></div>
+                         <div id="focus-marker"></div>
+                     </div>
+                 </div>
+                 <!-- Optional Spinner as fallback or during game init -->
+                 <!-- <div class="loading-spinner-modal"></div> -->
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden">
+                 <!-- Scrollable Text + Image Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title"></h2>
+                     <div id="modal-content">
+                         <!-- Story text (HTML) goes here -->
+                         <!-- Image and placeholder go here -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <h4 class="font-bold text-center mb-2 text-sm text-gray-700 font-sans">Pregúntale al Kaiosama del Tiempo sobre esta crónica:</h4>
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Consultando los archivos temporales...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Ej: ¿Qué Power Level tendría...?">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+         </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-blue-100 text-blue-800 py-6 mt-12 border-t border-blue-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Historias generadas por IA. Fusión ficticia de Historia y Dragon Ball con fines de entretenimiento.</p>
+              <p class="mt-1">¡Ningún personaje histórico fue dañado (permanentemente) en la creación de estas crónicas!</p>
+              <p class="mt-2">© Capsule Corp Historical Archives (División What-If)</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Figuras Históricas + Entrenamiento/Ki
+            "Albert Einstein Aprende a Sentir el Ki", "Isaac Newton Calcula la Trayectoria del Kamehameha", "Marie Curie Investiga la Energía de las Semillas del Ermitaño", "Nikola Tesla Intenta Replicar la Teletransportación Instantánea", "Leonardo da Vinci Dibuja Diagramas de Flujo de Ki", "Cleopatra Medita para Aumentar su Poder Oculto", "Juana de Arco Despierta su Espíritu de Lucha Saiyajin", "Sun Tzu Escribe 'El Arte de la Guerra... con Ki'", "Beethoven Compone una Sinfonía con Ondas de Energía", "Galileo Galilei Observa Planetas con un Scouter", "Ada Lovelace Programa un Simulador de Combate", "Mozart Dirige un Coro de Guerreros Z", "Confucio Enseña Filosofía Zen a Goku", "Hipatia de Alejandría Debate sobre Universos Paralelos con Whis", "Arquímedes Diseña una Palanca para Mover a un Ozaru", "Carl Sagan Explica la Cosmología de los 12 Universos", "Frida Kahlo Pinta Autorretratos con Aura de Ki", "Stephen Hawking Teoriza sobre Agujeros Negros y la Habitación del Tiempo", "Marco Polo Explora Namek", "Amelia Earhart Vuela con la Nube Voladora",
+            // Figuras Históricas + Combate/Torneos
+            "Genghis Khan Desafía a Vegeta por el Título de 'Príncipe'", "Napoleón Bonaparte Lidera un Asalto a la Base de Freezer", "Julio César Estratega en el Torneo de las Artes Marciales", "Alejandro Magno Intenta Conquistar el Planeta Vegeta (Pasado)", "Reina Boudica Lucha contra Nappa", "Rey Leonidas y los 300 Espartanos vs. los Saibaman", "William Wallace Grita '¡Libertad!' antes de lanzar un Makankosappo", "Miyamoto Musashi Cruza Espadas con Trunks del Futuro", "Vlad el Empalador se Enfrenta a la Patrulla Roja", "Barbanegra el Pirata Intenta Robar las Esferas del Dragón", "Samson usa su Fuerza sobrehumana contra Raditz", "Aquiles con Talón de Ki Invulnerable (Casi)", "Hernán Cortés Busca El Dorado... y las Esferas del Dragón", "Atila el Huno contra los Androides 17 y 18", "Ricardo Corazón de León en un Duelo de Justas contra un Namekiano", "Lu Bu se Declara el Guerrero Más Fuerte (y aparece Broly)", "Aníbal Barca Cruza los Alpes... en la Espalda de Icarus", "Espartaco Lidera una Rebelión de Esclavos en el Planeta de Freezer", "Cuchulainn Entra en Furia de Batalla Saiyajin", "Robin Hood Roba Scouters para Dárselos a los Débiles",
+            // Figuras Históricas + Personajes DB
+            "Shakespeare Escribe una Obra sobre la Rivalidad Goku-Vegeta", "Vincent van Gogh Pinta una Noche Estrellada sobre Namek", "Sigmund Freud Analiza los Sueños de Goku", "Karl Marx Discute sobre la Sociedad Saiyajin con Vegeta", "Charles Darwin Estudia la Evolución de los Namekianos", "Platón Funda una Academia Filosófica con Piccolo", "Sócrates Interroga a Shen Long sobre la Verdad Absoluta", "Emily Dickinson Escribe Poemas sobre la Soledad de la Habitación del Tiempo", "Homero Narra la Saga de Cell en Verso Épico", "Mark Twain Relata las Aventuras Cómicas de Mr. Satán", "Jane Austen Escribe una Novela Romántica entre Bulma y Yamcha (Inicio)", "Edgar Allan Poe Describe el Horror del Planeta de Freezer", "Mary Shelley Crea un 'Frankenstein' Androide con Dr. Gero", "H.P. Lovecraft Imagina los Horrores Cósmicos de Zeno-sama", "George Orwell Escribe '1984' basado en la Sociedad Controlada por Scouters", "Virginia Woolf Explora la Conciencia de Gohan Místico", "James Joyce y el Fluir de Conciencia durante un Combate a Alta Velocidad", "Gabriel García Márquez Escribe 'Cien Años de Soledad' en Kame House", "Pablo Picasso Pinta el 'Guernica' tras la Destrucción de una Ciudad por un Villano DB", "Dante Alighieri Desciende a los Infiernos HFIL con Goku",
+            // Figuras Históricas + Tecnología/Objetos DB
+            "Los Hermanos Wright Vuelan con Cápsulas Hoi-Poi", "Henry Ford Inicia la Producción en Masa de Robots de la Patrulla Roja", "Thomas Edison Inventa una Bombilla Alimentada por Ki", "Alexander Graham Bell Llama a Goku con un Transmisor Especial", "Guglielmo Marconi Capta Señales de Radio del Espacio (Saiyajins)", "Alan Turing Descifra Códigos del Ejército de Freezer", "Steve Jobs Presenta el Nuevo Modelo de Scouter 'iEye'", "Bill Gates Intenta Crear un Software para Controlar a los Androides", "Tim Berners-Lee Crea la Red Interplanetaria", "Elon Musk Funda 'SpaceZ' para Viajar a Namek", "Benjamin Franklin Experimenta con Ki Eléctrico y Rayos", "Louis Pasteur Desarrolla una Vacuna contra el Virus del Corazón", "Alfred Nobel Otorga un Premio por el Uso Pacífico del Ki", "Rachel Carson Advierte sobre el Impacto Ambiental de las Batallas Masivas", "Jacques Cousteau Explora los Océanos de Namek", "Howard Hughes Diseña Aeronaves Inspiradas en las Naves de Freezer", "Hedy Lamarr Inventa un Sistema de Salto de Frecuencia para Scouters", "Grace Hopper Encuentra un 'Bug' en el Programa de Cell", "Katherine Johnson Calcula Trayectorias para Ataques Orbitales", "Rosalind Franklin Analiza la Estructura del ADN Saiyajin",
+            // Situaciones Cómicas / What If
+            "Gandhi Intenta Resolver el Conflicto con Cell mediante la No Violencia", "La Reina Victoria Toma el Té con Beerus (y sobrevive)", "Abraham Lincoln Libera a los Esclavos del Planeta Vegeta (What If)", "Cristóbal Colón Descubre América... y la Torre de Karin", "Mahoma Medita en el Templo Sagrado con Kami", "Buda Alcanza la Iluminación... y el Ultra Instinto", "Jesucristo Multiplica los Panes y los Peces... y las Semillas del Ermitaño", "Moises Separa el Mar Rojo con una Onda de Ki", "Fidel Castro Inicia una Revolución... en Namek", "Winston Churchill Inspira a los Guerreros Z con un Discurso", "Martin Luther King Jr. Tiene un Sueño... sobre la Paz entre Saiyajins y Humanos", "Nelson Mandela Lucha contra el Apartheid Galáctico de Freezer", "Bob Marley Canta Reggae para Calmar a Broly", "Elvis Presley le Enseña a Bailar a las Fuerzas Especiales Ginyu", "Charlie Chaplin Hace una Película Muda sobre Mr. Popo", "Los Beatles Dan un Concierto en el Torneo Mundial", "Michael Jackson Enseña el Moonwalk a Goku", "Muhammad Ali Boxea contra Hit", "Pelé Juega al Fútbol con Goten y Trunks", "Usain Bolt Intenta Ganarle una Carrera a Burter",
+             // ... (Continuar añadiendo hasta ~400)
+        ];
+        const dbHistoryThemes = [ // Para generar más títulos
+            "figuras históricas entrenando Ki", "líderes militares en batallas DBZ", "científicos estudiando tecnología DBZ", "artistas inspirados por Dragon Ball", "filósofos debatiendo con personajes DBZ", "figuras religiosas encontrando seres divinos DBZ", "exploradores en planetas DBZ", "gobernantes interactuando con villanos DBZ", "inventores usando tecnología Capsule Corp", "atletas compitiendo contra guerreros Z", "escritores narrando sagas DBZ", "personajes históricos en el Torneo de Poder", "figuras históricas buscando las Esferas del Dragón", "enfrentamientos cómicos historia vs DBZ", "alianzas inesperadas historia y DBZ", "figuras históricas aprendiendo técnicas DBZ", "viajes en el tiempo con figuras históricas y Trunks"
+        ];
+        const textApiConfig = {
+            model: "mistral", // O el modelo grande disponible
+            systemPrompt: "Eres un maestro narrador, un bardo cósmico que fusiona magistralmente la historia de la Tierra con el vibrante y exagerado universo de Dragon Ball. Tu tarea es escribir una crónica ficticia, una historia corta (aprox. 1200-1300 palabras) basada en el escenario proporcionado. Captura la esencia y personalidad conocida de la figura histórica, pero intégrala de forma creativa y entretenida en el mundo de Dragon Ball. Usa el tono épico, humorístico o dramático de DB según corresponda, incluyendo conceptos como Ki, niveles de poder (sin necesidad de números exactos, más bien descriptivos), transformaciones (si aplica creativamente), técnicas de lucha icónicas, diálogos característicos y la atmósfera general de Dragon Ball. Enfócate en la narrativa, la interacción de personajes y la acción o el humor del escenario. Escenario base:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny", // Modelo rápido para chat
+            systemPrompt: "Actúa como el Kaiosama del Tiempo, un experto enciclopédico SÓLO sobre la crónica específica que se está mostrando (la fusión de historia y Dragon Ball). Responde preguntas concisas sobre los detalles de *esa* historia: interacciones de personajes, posibles niveles de poder *dentro de esa narrativa*, uso de técnicas, o consecuencias hipotéticas *basadas únicamente en la crónica leída*. No inventes información fuera de la historia proporcionada. Sé breve y al punto.",
+            timeoutSeconds: 50
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un generador de ideas para crónicas 'What If' que fusionan la historia de la Tierra y Dragon Ball. Genera exactamente 40 títulos únicos y atractivos para historias cortas que mezclen figuras históricas reconocibles (de diversas eras, culturas y campos: líderes, científicos, artistas, filósofos, etc.) con personajes, eventos, lugares, tecnología o conceptos del universo Dragon Ball (Ki, Saiyajins, Namek, Esferas del Dragón, Torneos, Freezer, Cell, Buu, Beerus, Whis, Capsule Corp, etc.). Busca combinaciones originales y sugerentes (épicas, cómicas, intelectuales). Devuelve *solo* la lista de 40 títulos, uno por línea. Sin números, guiones, introducciones ni comentarios.",
+            timeoutSeconds: 60 // Un poco más de tiempo para generar 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        // Minigame Elements
+        const minigameContainer = document.getElementById('minigame-container');
+        const gameCharacter = document.getElementById('game-character');
+        const kiAura = document.getElementById('ki-aura');
+        const powerLevelDisplay = document.getElementById('power-level-display');
+        const gameInstructions = document.getElementById('game-instructions');
+        const gameProgressBarContainer = document.getElementById('game-progress-bar-container');
+        const gameProgressBar = document.getElementById('game-progress-bar');
+        const gameFocusBarContainer = document.getElementById('game-focus-bar-container');
+        const focusSweetSpot = document.getElementById('focus-sweet-spot');
+        const focusMarker = document.getElementById('focus-marker');
+
+        // ========== State Variables ==========
+        let currentStoryTitle = null; // Contexto para el chat
+        let minigameActive = false;
+        let powerLevel = 0;
+        let gameLevel = 1;
+        let clicksThisLevel = 0;
+        let gamePhase = 1; // 1: Click rápido, 2: Barra de foco
+        let focusInterval = null;
+        let markerPosition = 0;
+        let markerDirection = 1;
+        const clicksPerLevel = [0, 15, 30, 50]; // Clicks necesarios Fase 1 (Índice 0 no usado)
+        const powerPerClick = 100;
+        const powerPerFocusHit = [0, 500, 1000]; // Poder extra por acierto en Foco (Level 2, 3+)
+        const levelPowerThresholds = [0, 1500, 5000, 15000]; // Poder necesario para pasar de nivel
+
+        // ========== API FUNCTIONS ========== (Adapting error messages)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentStoryTitle
+                 ? `Eres el Kaiosama del Tiempo, experto SÓLO sobre la crónica de '${currentStoryTitle}'. Responde preguntas concisas sobre esa historia específica (interacciones, poder relativo *en la historia*, técnicas *mencionadas*). No salgas de ese contexto.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text API (${config.model}, Chat: ${isChat}): ${url.substring(0, 150)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     throw new Error(`Nuestros servidores están experimentando mucho tráfico (Código ${response.status}). Por favor, intenta de nuevo en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La transmisión llegó vacía desde la IA. Intenta con otra crónica.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión con los archivos temporales tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 throw new Error(error.message || "Error inesperado contactando al Kaiosama del Tiempo.");
+             }
+         }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentStoryTitle) throw new Error("Error interno: Contexto de crónica perdido."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(dbHistoryThemes) || "fusiones aleatorias historia y Dragon Ball";
+             const specificPrompt = `Genera 40 títulos únicos para crónicas de ${randomTheme}`;
+             console.log("Generating 40 titles with theme:", randomTheme);
+             return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 10 && line.length < 150);
+                     if (titles.length < 20) throw new Error("La IA no generó suficientes ideas de crónicas esta vez."); // Ajustar umbral si es necesario
+                     return titles.slice(0, 40); // Asegurarse de devolver hasta 40
+                 });
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Personaje histórico en el universo Dragon Ball";
+            const enhancedPrompt = `Epic anime scene, dynamic action pose, Dragon Ball Z art style by Akira Toriyama, depicting '${safePromptText}'. Focus on character interaction or energy display. Setting could be World Tournament Arena, Namek, rocky wasteland, Capsule Corp. Vibrant colors, dramatic lighting. No text, labels, or watermarks.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, realistic photograph, 3D render, blurry, low quality, multiple panels, collage, simple background";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... (Same as previous version) ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            stopMinigame(); // Asegurarse de parar el juego al cerrar
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.classList.remove('active'); // Ocultar loading/game
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentStoryTitle = null;
+             hideFullscreenImage();
+             // Reset game state variables explicitly
+             powerLevel = 0; gameLevel = 1; clicksThisLevel = 0; gamePhase = 1;
+             updatePowerLevelDisplay();
+             updateAura();
+             updateGameInstructions();
+             gameFocusBarContainer.style.display = 'none';
+             gameProgressBarContainer.style.display = 'none';
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message, sender) { /* ... (Same as previous version) ... */
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addChatError(message) { /* ... (Same as previous version) ... */
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() { /* ... (Same as previous version) ... */
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error Kaiosama: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== MINIGAME FUNCTIONS ==========
+        function startGame() {
+            console.log("Starting minigame...");
+            resetModalState(); // Asegura limpieza antes de empezar
+            modalLoadingIndicator.classList.add('active'); // Mostrar área de carga/juego
+            minigameActive = true;
+            powerLevel = 0;
+            gameLevel = 1;
+            clicksThisLevel = 0;
+            gamePhase = 1; // Empezar siempre con clicks
+            updatePowerLevelDisplay();
+            updateAura();
+            updateGameInstructions();
+            // Ocultar elementos de fases posteriores
+            gameFocusBarContainer.style.display = 'none';
+            gameProgressBarContainer.style.display = 'none'; // Ocultar barra de progreso inicialmente
+            if (focusInterval) clearInterval(focusInterval); // Limpiar intervalo anterior si existe
+        }
+
+        function stopMinigame() {
+            console.log("Stopping minigame.");
+            minigameActive = false;
+            modalLoadingIndicator.classList.remove('active'); // Ocultar área de carga/juego
+            if (focusInterval) clearInterval(focusInterval);
+            focusInterval = null;
+        }
+
+        function updatePowerLevelDisplay() {
+            powerLevelDisplay.textContent = powerLevel.toLocaleString(); // Formato con comas
+        }
+
+        function updateAura() {
+            kiAura.className = 'ki-aura'; // Reset class
+            if (powerLevel >= levelPowerThresholds[3] * 0.8) { // Casi nivel 3
+                kiAura.classList.add('level3');
+            } else if (powerLevel >= levelPowerThresholds[2] * 0.8) { // Casi nivel 2
+                 kiAura.classList.add('level2');
+            } else if (powerLevel >= levelPowerThresholds[1] * 0.8) { // Casi nivel 1
+                 kiAura.classList.add('level1');
+            }
+        }
+
+        function updateGameInstructions() {
+            if (gamePhase === 1) {
+                gameInstructions.textContent = `¡Click Rápido! Nivel ${gameLevel} (${clicksThisLevel}/${clicksPerLevel[gameLevel]})`;
+            } else if (gamePhase === 2) {
+                 gameInstructions.textContent = `¡Enfoca tu Ki! Click en la zona amarilla. Nivel ${gameLevel}`;
+            }
+        }
+
+        function updateProgressBar() {
+             if (gamePhase === 1 && gameLevel > 0 && gameLevel < clicksPerLevel.length) {
+                const progress = Math.min(100, (clicksThisLevel / clicksPerLevel[gameLevel]) * 100);
+                gameProgressBar.style.width = `${progress}%`;
+            } else {
+                 gameProgressBarContainer.style.display = 'none'; // Ocultar si no aplica
+            }
+        }
+
+        function levelUp() {
+            if (gameLevel >= 3) { // Máximo nivel por ahora
+                console.log("Max game level reached for this load.");
+                // Podría resetear o mantener el nivel alto
+                // gamePhase = (gamePhase % 2) + 1; // Alternar fases
+                gameLevel = 3; // Mantener en 3
+                clicksThisLevel = 0; // Resetear contador para nueva fase
+                changeGamePhase();
+                return;
+            }
+            gameLevel++;
+            console.log("Level Up! New level:", gameLevel);
+            clicksThisLevel = 0;
+            changeGamePhase(); // Cambia de fase al subir de nivel
+            updateAura(); // Actualizar aura al nivel
+        }
+
+        function changeGamePhase() {
+             gamePhase = (gamePhase % 2) + 1; // Alterna entre 1 y 2
+             console.log("Changing game phase to:", gamePhase);
+             if (gamePhase === 1) {
+                 gameFocusBarContainer.style.display = 'none';
+                 gameProgressBarContainer.style.display = 'block'; // Mostrar progreso de clicks
+                 if (focusInterval) clearInterval(focusInterval);
+                 focusInterval = null;
+                 updateProgressBar(); // Actualizar barra de progreso
+             } else if (gamePhase === 2) {
+                 gameProgressBarContainer.style.display = 'none'; // Ocultar barra de clicks
+                 gameFocusBarContainer.style.display = 'block';
+                 startFocusBar();
+             }
+             updateGameInstructions();
+        }
+
+        function handleGameClick() {
+            if (!minigameActive) return;
+
+            if (gamePhase === 1) {
+                powerLevel += powerPerClick;
+                clicksThisLevel++;
+                 updatePowerLevelDisplay();
+                updateAura();
+                updateGameInstructions();
+                updateProgressBar(); // Actualizar barra de progreso de clicks
+
+                // Check for level up based on clicks
+                if (gameLevel < clicksPerLevel.length && clicksThisLevel >= clicksPerLevel[gameLevel]) {
+                     // También chequear si alcanzó el umbral de poder para el nivel
+                     if (powerLevel >= levelPowerThresholds[gameLevel]) {
+                         levelUp();
+                     } else {
+                         // Aún no tiene suficiente poder, sigue clickeando
+                         gameInstructions.textContent = `¡Necesitas más Poder para Nivel ${gameLevel + 1}! Sigue cargando...`;
+                     }
+                }
+            }
+            // Fase 2 se maneja en handleFocusClick
+        }
+
+        function startFocusBar() {
+            if (focusInterval) clearInterval(focusInterval);
+            markerPosition = 0;
+            markerDirection = 1;
+            const barWidth = gameFocusBarContainer.offsetWidth;
+            const markerWidth = focusMarker.offsetWidth;
+            // Ajustar velocidad y tamaño de sweet spot según nivel
+            const speedMultiplier = 1 + (gameLevel - 1) * 0.5; // Más rápido en niveles altos
+            const sweetSpotWidthPercent = Math.max(10, 25 - (gameLevel * 5)); // Más pequeño en niveles altos
+            const sweetSpotLeftPercent = Math.random() * (100 - sweetSpotWidthPercent); // Posición aleatoria
+
+            focusSweetSpot.style.left = `${sweetSpotLeftPercent}%`;
+            focusSweetSpot.style.width = `${sweetSpotWidthPercent}%`;
+
+            focusInterval = setInterval(() => {
+                 if (!minigameActive) { clearInterval(focusInterval); return; }
+
+                 markerPosition += markerDirection * (3 * speedMultiplier); // Movimiento del marcador
+                if (markerPosition >= (100 - (markerWidth / barWidth * 100))) {
+                     markerPosition = (100 - (markerWidth / barWidth * 100));
+                     markerDirection = -1;
+                 } else if (markerPosition <= 0) {
+                     markerPosition = 0;
+                     markerDirection = 1;
+                 }
+                 focusMarker.style.left = `${markerPosition}%`;
+            }, 20); // Intervalo de actualización
+        }
+
+        function handleFocusClick() {
+            if (!minigameActive || gamePhase !== 2) return;
+
+            const markerLeft = markerPosition;
+            const sweetSpotLeft = parseFloat(focusSweetSpot.style.left);
+            const sweetSpotWidth = parseFloat(focusSweetSpot.style.width);
+            const markerCenter = markerLeft + (parseFloat(focusMarker.offsetWidth) / gameFocusBarContainer.offsetWidth * 100) / 2;
+
+            if (markerCenter >= sweetSpotLeft && markerCenter <= (sweetSpotLeft + sweetSpotWidth)) {
+                // Hit!
+                const bonusPower = powerPerFocusHit[Math.min(gameLevel, powerPerFocusHit.length - 1)];
+                powerLevel += bonusPower;
+                console.log("Focus Hit! Bonus:", bonusPower);
+                // Efecto visual de acierto (opcional)
+                 focusSweetSpot.style.backgroundColor = 'rgba(52, 211, 153, 0.7)'; // Verde éxito
+                 setTimeout(() => { focusSweetSpot.style.backgroundColor = 'rgba(234, 179, 8, 0.5)'; }, 150);
+                 // Check for level up based on power
+                 if (gameLevel < levelPowerThresholds.length -1 && powerLevel >= levelPowerThresholds[gameLevel]) {
+                     levelUp();
+                 } else {
+                     // Cambiar posición del sweet spot para el siguiente intento
+                     const newSweetSpotWidth = Math.max(10, 25 - (gameLevel * 5));
+                     const newSweetSpotLeft = Math.random() * (100 - newSweetSpotWidth);
+                     focusSweetSpot.style.left = `${newSweetSpotLeft}%`;
+                     focusSweetSpot.style.width = `${newSweetSpotWidth}%`;
+                 }
+             } else {
+                 // Miss! (Opcional: pequeña penalización o nada)
+                 console.log("Focus Miss!");
+                 // Efecto visual de fallo (opcional)
+                 gameFocusBarContainer.style.borderColor = 'red';
+                 setTimeout(() => { gameFocusBarContainer.style.borderColor = 'var(--color-border)'; }, 150);
+             }
+             updatePowerLevelDisplay();
+             updateAura();
+             updateGameInstructions(); // Actualizar por si cambió el nivel
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... (Same as previous version) ... */ let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { /* ... (Same as previous version) ... */ const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { /* ... (Same as previous version, adjust texts) ... */
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» La línea temporal parece vacía... ¡Genera más crónicas! «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) { /* ... (Same as previous version) ... */
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick to start game and stop it on completion ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Limpia todo, incluyendo juego anterior
+            showModal();
+            modalTitle.textContent = title;
+            currentStoryTitle = title; // Set chat context
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+
+            // *** START MINIGAME ***
+            startGame();
+
+            try {
+                // Fetch story in parallel (don't wait here if game is running)
+                const storyPromise = fetchExplanationText(title);
+
+                // Fetch image URL (can also be parallel)
+                const imageUrl = createPollinationsImageUrl(title);
+
+                // Wait for the story text
+                const rawExplanationText = await storyPromise;
+
+                // *** STOP MINIGAME *** (Only when text is ready)
+                stopMinigame();
+
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // Show content area now that game is stopped
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = formattedExplanation; // Add text
+                modalTextArea.scrollTop = 0; // Reset scroll AFTER content is added
+
+                // Image Handling (after text is placed)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p>Cargando Holo-Imagen...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => { placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); };
+                imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p>Error al cargar Holo-Imagen.</p>`; };
+
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                    placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p>Error URL de Holo-Imagen.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                // *** STOP MINIGAME ON ERROR TOO ***
+                stopMinigame();
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar la crónica.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = '';
+                chatSection.style.display = 'none'; // Ocultar chat si hay error principal
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles to request 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando en el Multiverso...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches 40 now
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("El Radar del Dragón no encontró nuevas historias ahora mismo."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al invocar historias: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // Update button text to reflect it fetches 40
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> ¡Invocar Más Historias! (40)';
+             }
+         }
+
+         // Search Filter Function (con normalización)
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            if (![titleListContainer, storyModal, modalCloseBtn, generateMoreBtn, titlesLoading, searchInput, noResultsMsg, chatInput, chatSendBtn, imageFullscreenOverlay, fullscreenCloseBtn, gameCharacter, gameFocusBarContainer].every(el => el)) {
+                console.error("Initialization failed: Missing essential UI elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">¡Alerta! ¡Fallo Crítico del Scouter! Faltan componentes UI.</p>';
+                return;
+            }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            // Title generation listener
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+            // Minigame Listeners
+            gameCharacter.addEventListener('click', handleGameClick); // Click en personaje para Fase 1
+            gameFocusBarContainer.addEventListener('click', handleFocusClick); // Click en la barra para Fase 2
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+            modalLoadingIndicator.classList.remove('active'); // Asegurarse que el loading/juego esté oculto al inicio
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

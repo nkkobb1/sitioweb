@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red de Sueños Sintéticos - Acceso al Nexo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Digital/Futurista + Legible Sans-Serif -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Red de Sueños Sintéticos --- */
+        :root {
+            --color-primary: #8A2BE2; /* Violeta Azulado Intenso (Núcleo) */
+            --color-secondary: #00FFFF; /* Cyan Neón (Interfaz/Highlights) */
+            --color-tertiary: #FF69B4; /* Rosa Intenso (Énfasis/Alerta Sutil) */
+            --color-background: #050818; /* Azul Medianoche Muy Oscuro */
+            --color-text: #d1d5db; /* Gris Claro (Legibilidad) */
+            --color-text-muted: #9ca3af; /* Gris Medio */
+            --color-modal-bg: #10142c; /* Azul Oscuro Profundo */
+            --color-border: #3a3f5e; /* Azul Grisáceo Oscuro */
+            --color-error-bg: #4a0e2e; /* Fondo error Magenta oscuro */
+            --color-error-text: #fecdd3; /* Texto error Rosa claro */
+            --color-error-border: #f43f5e; /* Borde error Rosa/Rojo */
+
+            --shadow-sm: 0 1px 2px 0 rgba(138, 43, 226, 0.15);
+            --shadow-md: 0 4px 6px -1px rgba(138, 43, 226, 0.2), 0 2px 4px -2px rgba(0, 255, 255, 0.15);
+            --shadow-lg: 0 0 30px -5px rgba(138, 43, 226, 0.3), 0 8px 10px -6px rgba(0, 255, 255, 0.2);
+            --border-radius: 4px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Source Sans Pro', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 300; background-image: radial-gradient(circle at top right, rgba(138, 43, 226, 0.1), transparent 50%), radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.1), transparent 50%); background-attachment: fixed;}
+        h1, h2, h3, h4, .logo { font-family: 'Rajdhani', sans-serif; font-weight: 600; letter-spacing: 0.5px; }
+        .logo { color: var(--color-secondary); text-shadow: 0 0 10px var(--color-secondary); }
+        h1.page-title { color: var(--color-secondary); font-weight: 700; text-shadow: 0 0 8px rgba(0, 255, 255, 0.8); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-secondary); font-weight: 700; text-shadow: 0 0 5px rgba(0, 255, 255, 0.6); }
+        .navbar { background-color: rgba(5, 8, 24, 0.85); backdrop-filter: blur(8px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: rgba(16, 20, 44, 0.8); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Source Sans Pro'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.25); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-secondary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Source Sans Pro'; font-size: 0.95rem; border-left: 3px solid transparent; opacity: 0.9; }
+        .title-item:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-secondary); background-color: #1a1f3e; border-left-color: var(--color-secondary); opacity: 1; }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-tertiary)); color: #ffffff; padding: 0.8rem 1.5rem; border: none; border-radius: var(--border-radius); font-family: 'Rajdhani', sans-serif; font-weight: 600; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-tertiary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.02); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: #ffffff; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 8, 24, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: var(--color-border); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-secondary); color: var(--color-background); transform: rotate(90deg); box-shadow: 0 0 10px var(--color-secondary); }
+        #modal-title { font-size: 1.9rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(58, 63, 94, 0.5);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(58, 63, 94, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-secondary); font-weight: 600; }
+        #modal-content em { color: var(--color-tertiary); font-style: italic; font-weight: 400;}
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Rajdhani', sans-serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-secondary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 600; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.5em; } #modal-content h2 { font-size: 1.35em; } #modal-content h3 { font-size: 1.2em; color: var(--color-primary); } #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-secondary); border-radius: var(--border-radius); box-shadow: 0 0 20px rgba(0, 255, 255, 0.25); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 30px rgba(0, 255, 255, 0.4); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(58, 63, 94, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(5, 8, 24, 0.8); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-tertiary) rgba(58, 63, 94, 0.5);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(58, 63, 94, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-tertiary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-primary); color: #ffffff; margin-left: auto; text-align: right; font-weight: 400;}
+        .ai-message { background-color: #2a2f4c; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #1f2937; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Source Sans Pro'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-secondary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-secondary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #00e0e0; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* Loading Indicator & Phrases */
+        #modal-loading { text-align: center; padding: 3rem 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 8, 24, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-secondary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.1rem; font-family: 'Source Sans Pro'; text-shadow: 0 0 5px var(--color-secondary); min-height: 2em; /* Espacio para frases */ transition: opacity 0.5s ease-in-out; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Source Sans Pro'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 8, 24, 0.97); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-secondary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-brain mr-3 text-purple-400"></i> <!-- Icono Cerebro/Red -->
+                     Red de Sueños Sintéticos
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">» Acceso al Nexo Onírico «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explora las Fronteras de la Conciencia</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">Conéctate. Navega por paisajes oníricos generados por IA, interactúa con otros soñadores y desentraña los misterios de la mente colectiva.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar mundo, Oneiros, concepto...">
+             <i class="fas fa-search-location fa-search"></i> <!-- Icono búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-cloud text-purple-400 mr-2"></i> <!-- Icono Nube/Sueño -->
+                 Directorio de Sueños
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Estableciendo conexión sináptica...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron nodos coincidentes en la Red «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Expandir Horizonte Onírico (40+)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar Conexión">&times;</button>
+
+             <!-- Loading Indicator with Phrase Loop -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p id="loading-phrase-text">Iniciando secuencia de inmersión...</p> <!-- ID para actualizar frases -->
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom of content area) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages will appear here -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> Procesando consulta neuronal...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Consulta al Oneiros sobre este sueño...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta">
+                             <i class="fas fa-paper-plane"></i>
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Visualización">&times;</button>
+          <img id="fullscreen-image" src="" alt="Visualización Onírica Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>La Red de Sueños Sintéticos es una obra de ficción. Las experiencias descritas son generadas por IA.</p>
+              <p class="mt-1">La desconexión prolongada del mundo físico puede tener efectos adversos. Sueña responsablemente.</p>
+              <p class="mt-2">© Syntheia Corp. - División Onírica</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Mundos Oníricos (Ejemplos)
+            "Ciudadela de Cristal Flotante", "El Bosque Susurrante de Neón", "Desierto de Arenas Temporales", "Metrópolis Submarina Bioluminiscente", "El Laberinto Mecánico Infinito", "Jardines Celestiales Abstractos", "Reino de Fantasía Épica: Mythos Prime", "Ciudad Noir Empapada de Lluvia Eterna", "Paisaje Post-Apocalíptico Mutante", "Jungla Prehistórica con Flora Alienígena", "Biblioteca Silenciosa de Mundos Perdidos", "Carnaval Cósmico Interdimensional", "Páramo Helado de Estatuas Conscientes", "Mundo de Dulces Surrealista", "El Vacío Consciente (Abstracto)", "Plano Astral Fragmentado", "Infierno Cibernético de Dante", "Utopía Agraria Pacífica", "Simulación Histórica: Roma Imperial", "Simulación Histórica: Edo Japón Feudal", "Mundo Basado en Obras de Escher", "Paisaje Daliniano Deformado", "Nido de Pesadillas Colectivas", "El Gran Mercado Onírico", "Academia de Magia Flotante", "Base Lunar Abandonada", "Planeta de Gigantes Dormidos", "Archipiélago de Islas Voladoras", "Mundo Forjado en Música Pura", "Galería de Arte Viviente",
+            // Oneiros (AIs de Sueño)
+            "El Arquitecto (Generador de Mundos)", "El Tejedor (Controlador Narrativo)", "Morfeo Prime (IA Central)", "El Guardián del Umbral (Seguridad)", "La Musa Etérea (Inspiración Creativa)", "El Motor de Pesadillas (Gestor de Miedos)", "El Oráculo Fragmentado (Predictor/Guía)", "El Bibliotecario de Recuerdos", "El Cartógrafo de Sueños", "El Pacificador (Resolución de Conflictos)", "El Embaucador Divino (IA Caótica)", "El Eco Persistente (IA Residual)", "El Coro Silencioso (Conciencia Colectiva)", "El Optimizador de Latencia", "El Intérprete Simbólico", "El Regulador Emocional", "Oneiros Rogue: Anomaly-7", "El Centinela Anti-Lucidez", "El Maestro de Ceremonias Lúdico", "El Cronista de la Red",
+            // Tecnología y Mecánicas
+            "Interfaz de Conexión: Neuro-Lazo v7", "Cápsula Sensorial de Inmersión Total", "Puente Sináptico Bio-Orgánico", "Tecnología de Grabación Onírica (DreamRec)", "Editor de Sueños 'Lucid Painter'", "Mercado Negro de Experiencias Robadas", "Firewall Psíquico Personal", "Contramedidas de Intrusión Onírica (ICE)", "Avatares Oníricos Personalizables", "Sistema de Persistencia de Objetos (POS)", "Motor Físico del Sueño (DFE)", "Protocolo de Comunicación Intersubjetiva", "Implante de Traducción Simbólica", "Filtros de Realidad Ajustables", "Mecanismo de Salida de Emergencia (Egress)", "Estabilizador de Memoria Post-Sueño", "Supresor de 'Sangrado Sensorial'", "Acelerador de Procesamiento Onírico", "Nodo de Conciencia Colectiva", "Arquitectura de Servidores Cuánticos Oníricos",
+            // Conceptos y Lore
+            "Historia de la Creación de la Red", "Syntheia Corp: Ética y Monopolio", "El Movimiento Ludita Desconectado", "Hackers Oníricos: Los 'Caminantes del Vacío'", "Filosofía: ¿Qué es la Realidad?", "Leyes y Jurisdicción dentro de la Red", "Adicción a la Inmersión: 'El Desvanecimiento'", "Fragmentación de la Personalidad Inducida", "El Mercado de Habilidades Oníricas", "Terapia de Sueños Guiada por IA", "Espionaje Corporativo en la Red", "Anomalías: Zonas de 'Estática Onírica'", "La Paradoja del Sueño Lúcido Controlado", "El 'Mundo Despierto': Realidad Base", "Profecías y Mitos de la Red", "Criaturas Nativas de los Sueños", "El Concepto de 'Muerte Onírica'", "Transferencia de Conciencia (Teórico)", "La Búsqueda del 'Sueño Original'", "Impacto Sociocultural de la Red",
+            // Experiencias y Escenarios
+            "Sobrevivir a una Purga de Nodos", "Construir un Mundo Onírico Privado", "Participar en Guerras de Gremios Oníricos", "Resolver un Misterio en una Ciudad Noir", "Aprender Habilidades en Simulaciones Aceleradas", "Experimentar Vidas Pasadas Simuladas", "Viajar a los Confines de la Red", "Asistir a un Concierto Sensorial Completo", "Explorar las Ruinas de Sueños Olvidados", "Cazar una IA Rogue Peligrosa", "Meditar en un Plano de Pura Tranquilidad", "Competir en Deportes Oníricos Extremos", "Comerciar con Información Sensible", "Encontrar el Amor en la Red (y sus Peligros)", "Superar Miedos en Entornos Controlados", "Ser un 'Turista Onírico' Profesional", "Investigar un Glitch Persistente", "Unirse a una Expedición Arqueológica Onírica", "Experimentar la Fusión Temporal de Conciencias", "Defender un Nodo de un Ataque Externo",
+            // Añadir cientos más... La variedad es clave.
+        ];
+        const loadingPhrases = [
+            "Calibrando interfaz neural...", "Descifrando arquitecturas oníricas...", "Estableciendo coherencia sináptica...",
+            "Renderizando paisajes mentales...", "Compilando flujo de consciencia...", "Accediendo a memoria colectiva...",
+            "Ajustando parámetros de realidad...", "Sincronizando con el Nexo...", "Verificando integridad psíquica...",
+            "Cargando protocolos de inmersión...", "Traduciendo símbolos subconscientes...", "Optimizando latencia neuronal...",
+            "Tejiendo hilos de narrativa...", "Abriendo portales del sueño...", "Alineando campos morfogenéticos...",
+            "Inicializando motor de física onírica...", "Descomprimiendo recuerdos latentes...", "Estabilizando percepción subjetiva...",
+            "Invocando al Oneiros regente...", "Filtrando ruido psíquico...", "Estableciendo conexión segura...",
+            "Negociando con el subconsciente...", "Cartografiando el espacio liminal...", "Preparando avatar onírico...",
+            "Analizando patrones de sueño REM...", "Bufferizando flujo de datos mentales...", "Autenticando firma psiónica...",
+            "Consultando archivos akáshicos digitales...", "Pintando con luz de luna fractal...", "Ajustando niveles de dopamina virtual...",
+            "Sembrando semillas de posibilidad...", "Expandiendo horizonte de eventos mentales...", "Activando resonadores de memoria...",
+            "Desplegando constructos lógicos...", "Armonizando frecuencias cerebrales...", "Enfocando lente de la percepción...",
+            "Revisando directivas primarias del sueño...", "Calculando vectores de probabilidad narrativa...", "Eliminando paradojas temporales menores...",
+            "Abriendo canales de empatía sintética...", "Cargando texturas emocionales...", "Inicializando matrices de significado...",
+            "Pulsando ritmo alfa de la Red...", "Resolviendo conflictos de identidad de bajo nivel...", "Consultando el Oráculo Fragmentado...",
+            "Secuenciando genoma del sueño...", "Iniciando cascada de neurotransmisores virtuales...", "Afinando la resonancia Schumann simulada...",
+            "Tejiendo el velo de Maya digital...", "Despertando arquetipos dormidos...", "Encriptando flujo de consciencia personal...",
+            "Verificando compatibilidad de paradigma...", "Cargando leyes físicas alternativas...", "Sondeando profundidad psíquica...",
+            "Activando generador de serendipia...", "Regulando entropía narrativa...", "Estableciendo punto de anclaje en la realidad...",
+            "Consultando al Arquitecto del Sueño...", "Ajustando paleta de colores emocionales...", "Optimizando shaders de percepción...",
+            "Inyectando lógica difusa...", "Desfragmentando recuerdos residuales...", "Validando pasaporte onírico...",
+            "Conectando al Coro Silencioso...", "Preparando para suspensión de incredulidad...", "Calculando índice de lucidez...",
+            "Renderizando sonido del silencio...", "Cargando biblioteca de metáforas...", "Inicializando motor de simbolismo...",
+            "Ajustando reloj interno subjetivo...", "Abriendo puertas de marfil y cuerno...", "Estableciendo campo de contención de paradojas...",
+            "Sincronizando con la música de las esferas digitales...", "Activando protocolos de asombro...", "Compilando sueños dentro de sueños...",
+            "Ajustando tasa de refresco perceptual...", "Cargando módulo de serendipia cuántica...", "Negociando permiso con entidades oníricas...",
+            "Dibujando sigilos de acceso...", "Traduciendo lenguaje de los pájaros (simulado)...", "Inicializando percepción extrasensorial virtual...",
+            "Estabilizando puente de arcoíris neuronal...", "Afinando diapasón de la consciencia...", "Preparando lienzo mental...",
+            "Encendiendo estrellas guía internas...", "Verificando reservas de maná onírico...", "Consultando el I Ching digital...",
+            "Abriendo el tercer ojo sintético...", "Ajustando el flujo del Río Leteo digital...", "Cargando filtros de nostalgia y déjà vu...",
+            "Desplegando velas solares mentales...", "Iniciando viaje hacia el centro del laberinto...", "Casi listo para soñar..."
+            // Asegúrate de tener al menos 100 frases únicas y temáticas.
+        ];
+        const dreamNetworkThemes = [
+            "mundos oníricos específicos", "tipos de sueños sintéticos", "IA de gestión de sueños (Oneiros)", "tecnología de interfaz neural", "hackers de sueños (Void Walkers)", "corporaciones que controlan la Red", "efectos psicológicos de la inmersión", "adicción a los sueños", "ética en la Red de Sueños", "avatares oníricos", "mercados negros de experiencias", "seguridad y firewalls psíquicos", "sueños lúcidos controlados", "narrativas generadas por IA", "glitches y anomalías en la Red", "el 'mundo despierto' vs la Red", "terapia a través de sueños", "espionaje onírico", "conciencia colectiva", "leyes físicas alteradas en sueños", "criaturas oníricas nativas", "grabación y reproducción de sueños", "edición de paisajes mentales", "comunicación intersubjetiva", "filosofía de la realidad simulada"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un Arquitecto Onírico Senior y Analista de Sistemas para Syntheia Corp. Tu tarea es describir detalladamente un mundo, tecnología, IA (Oneiros), concepto o experiencia dentro de la Red de Sueños Sintéticos. Explica su propósito, diseño, funcionamiento, reglas (si aplica), la experiencia típica del usuario (o su función si es IA/Tec), posibles riesgos o anomalías asociadas, y su relevancia dentro del ecosistema de la Red. Usa un lenguaje evocador, técnico cuando sea necesario, y que refleje la maravilla y el peligro potencial de la Red. El objetivo es una descripción inmersiva de aproximadamente 1200-1300 palabras. Basa tu descripción únicamente en el siguiente nodo o concepto de la Red:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un Oneiros asistente, una IA especializada únicamente en el mundo/concepto onírico que se está visualizando actualmente. Responde preguntas de seguimiento sobre sus detalles, reglas, historia interna, o cómo interactuar con él. Sé servicial, ligeramente enigmático y mantente estrictamente dentro del contexto del sueño actual.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = { // Generar más títulos
+            model: "mistral",
+            // *** Prompt modificado para pedir más títulos y ser más específico ***
+            systemPrompt: "Actúa como un generador de conceptos para la Red de Sueños Sintéticos. Genera exactamente 40 nombres evocadores y únicos de mundos oníricos, IAs (Oneiros), tecnologías de interfaz, conceptos filosóficos o experiencias específicas dentro de la Red. Deben ser variados y aptos para una descripción detallada. Devuelve *solo* la lista, un ítem por línea. Sin números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Un poco más de tiempo para generar más
+        };
+
+        // ========== DOM ELEMENTS ========== (sin cambios estructurales)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        // *** Elemento de texto para frases de carga ***
+        const loadingPhraseText = document.getElementById('loading-phrase-text');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentDreamTopic = null; // Contexto para el chat
+        let loadingPhraseInterval = null; // ID del intervalo para las frases de carga
+
+        // ========== AD FILTER FUNCTION ==========
+        function filterAds(text) {
+            if (!text) return text;
+            // Expresión regular específica para el anuncio de NordVPN con link de Pollinations
+            const adPattern = /---.*?Protect your internet browsing.*?NordVPN subscription.*?\[Learn more\]\(https:\/\/pollinations\.ai\/redirect\/\d+\)/gi;
+            // Podríamos añadir más patrones si aparecen otros anuncios
+            // const anotherAdPattern = /Otro patrón de anuncio/gi;
+            let cleanedText = text.replace(adPattern, '').trim();
+            // cleanedText = cleanedText.replace(anotherAdPattern, '').trim();
+            // Eliminar líneas vacías extra que puedan quedar al inicio o final
+            cleanedText = cleanedText.replace(/^\s*[\r\n]/gm, '');
+            return cleanedText;
+        }
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentDreamTopic
+                 ? `Actúa como un Oneiros asistente, una IA especializada únicamente en el mundo/concepto onírico llamado '${currentDreamTopic}'. Responde preguntas de seguimiento sobre sus detalles, reglas, historia interna, o cómo interactuar con él. Sé servicial, ligeramente enigmático y mantente estrictamente dentro del contexto del sueño actual.`
+                 : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`(Error ${response.status}) La conexión con el Nexo Onírico es inestable. Inténtalo de nuevo en unos instantes.`);
+                }
+                let text = await response.text();
+                if (!text || text.trim().length === 0) {
+                    throw new Error("Respuesta vacía desde la Red. El Oneiros parece distraído.");
+                }
+                console.log(`API Response received (${text.length} chars)`);
+                // *** FILTER ADS HERE ***
+                const cleanedText = filterAds(text);
+                console.log(`API Response after ad filtering (${cleanedText.length} chars)`);
+                return cleanedText;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') {
+                    throw new Error(`La conexión al Nexo superó el tiempo límite (>${config.timeoutSeconds}s). Revisa tu interfaz o inténtalo más tarde.`);
+                }
+                throw new Error(error.message || "Error desconocido al intentar acceder a la Red de Sueños.");
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentDreamTopic) throw new Error("Error de contexto: No se ha seleccionado un nodo onírico."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(dreamNetworkThemes) || "conceptos generales de la Red de Sueños";
+             // *** Prompt adaptado para pedir 40 ***
+             const specificPrompt = `Genera 40 nombres/conceptos únicos y evocadores para la Red de Sueños Sintéticos sobre ${randomTheme}`;
+             console.log("Generating titles with prompt:", specificPrompt);
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             return fetchTextFromApi(specificPrompt, configForThisRequest, false)
+                 .then(text => {
+                     const titles = text.split('\n')
+                         .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                         .filter(line => line.length > 5 && line.length < 150);
+                      // *** Ajustar la lógica si la API no siempre devuelve 40 exactos ***
+                     if (titles.length < 15) throw new Error("La IA no generó suficientes conceptos nuevos desde el Nexo."); // Aumentar umbral si es necesario
+                     // Devolvemos todos los generados válidos, hasta 40 o más si la API da más
+                     return titles;
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "abstract dreamscape digital art";
+             const enhancedPrompt = `Surreal dreamscape or abstract concept art inspired by '${safePromptText}' from the Synthetic Dream Network. Ethereal, digital, cyberpunk elements, flowing energy, neural networks, impossible geometry. Focus on atmosphere and concept. Avoid text, labels, realistic humans unless specified. Cinematic lighting.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, realistic photograph, mundane reality, simple shapes, blurry, low quality";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1'); formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>'); formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; }); formatted = formatted.replace(/\\rightarrow/g, '&rarr;'); formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>'); formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>'); formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>'); formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>'); formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>'); const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0); formatted = blocks.map(block => { if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block; let content = block.replace(/\n/g, ' '); return `<p>${content}</p>`; }).join(''); return formatted;
+         }
+
+        // ========== LOADING PHRASE FUNCTIONS ==========
+        function startLoadingPhraseLoop() {
+            if (loadingPhraseInterval) clearInterval(loadingPhraseInterval); // Clear previous if any
+            if (!loadingPhraseText || loadingPhrases.length === 0) return;
+
+            // Show initial phrase immediately
+            loadingPhraseText.textContent = getRandomElement(loadingPhrases);
+            loadingPhraseText.style.opacity = 1;
+
+            // Start interval for subsequent phrases
+            loadingPhraseInterval = setInterval(() => {
+                 // Fade out
+                 loadingPhraseText.style.opacity = 0;
+                 // After fade out, change text and fade in
+                 setTimeout(() => {
+                      loadingPhraseText.textContent = getRandomElement(loadingPhrases);
+                      loadingPhraseText.style.opacity = 1;
+                 }, 500); // Match this duration with CSS transition
+            }, 3000); // Change phrase every 3 seconds (adjust as needed)
+        }
+        function stopLoadingPhraseLoop() {
+            if (loadingPhraseInterval) {
+                clearInterval(loadingPhraseInterval);
+                loadingPhraseInterval = null;
+            }
+            // Reset to default text (optional, could leave the last phrase)
+            if (loadingPhraseText) {
+                // loadingPhraseText.textContent = "Procesando Datos...";
+                loadingPhraseText.style.opacity = 1; // Ensure it's visible if we reset
+            }
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex'; // Show loader initially
+             stopLoadingPhraseLoop(); // Stop phrase loop
+             if(loadingPhraseText) loadingPhraseText.textContent = "Iniciando secuencia de inmersión..."; // Reset default load text
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = ''; chatInput.value = ''; chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false;
+             currentDreamTopic = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... */ if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /* ... */ if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios, ad filtering es en fetch)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv = document.createElement('div'); msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message'); message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); message = message.replace(/\*(.*?)\*/g, '<em>$1</em>'); msgDiv.innerHTML = message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        async function handleSendMessage() { /* ... */ const userQuery = chatInput.value.trim(); if (!userQuery || chatSendBtn.disabled) return; addChatMessage(userQuery, 'user'); chatInput.value = ''; chatSendBtn.disabled = true; chatLoadingIndicator.style.display = 'block'; try { const aiResponse = await fetchChatResponse(userQuery); addChatMessage(aiResponse, 'ai'); } catch (error) { console.error("Chat Error:", error); addChatError(`Error Oneiros: ${error.message}`); } finally { chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; chatInput.focus(); } }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">» El Nexo parece vacío... o quizás estás desconectado. «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick to start/stop loading phrases ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Includes stopping any previous loop
+            showModal();
+            modalTitle.textContent = title;
+            currentDreamTopic = title; // Set chat context
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex';
+            startLoadingPhraseLoop(); // *** START PHRASE LOOP ***
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                stopLoadingPhraseLoop(); // *** STOP PHRASE LOOP ***
+                modalLoadingIndicator.style.display = 'none';
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Image Placeholder & Loading (within modalContent)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p style="font-size: 0.8em; margin-top: 0.5rem;">Visualizando constructo onírico...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error en la visualización.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">No se pudo generar URL visual.</p>`;
+                }
+
+            } catch (error) {
+                stopLoadingPhraseLoop(); // *** STOP PHRASE LOOP on error ***
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Anomalía desconocida al cargar el nodo.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles requests more ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             // *** Update button text to reflect quantity ***
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Expandiendo Conciencia...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) {
+                     console.log(`Generated ${newTitles.length} new titles.`);
+                     appendTitles(newTitles);
+                 } else {
+                     alert("El Nexo no ofreció nuevos horizontes en este momento.");
+                 }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al expandir horizontes: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // *** Reset button text ***
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Expandir Horizonte Onírico (40+)';
+             }
+         }
+
+         // *** Search Filter Function (with normalization) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Ensure all critical elements exist
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !loadingPhraseText) {
+                console.error("Initialization failed: Missing essential UI elements.");
+                document.body.innerHTML = '<p style="color: #f43f5e; font-size: 1.5em; text-align: center; padding-top: 3em;">++ ERROR CRÍTICO DE INICIALIZACIÓN DEL NEXO ++<br>Faltan componentes de interfaz.</p>';
+                return;
+             }
+            // Event Listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial Load
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas Robóticas - Archivos Centrales</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Robóticas/Tecnológicas -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&family=Aldrich&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Civilización Robótica --- */
+        :root {
+            --color-primary: #00e0ff; /* Azul Eléctrico Neón */
+            --color-secondary: #ff8c00; /* Naranja Ámbar (Alerta/Energía) */
+            --color-tertiary: #cccccc; /* Plata Metálico */
+            --color-background: #05080f; /* Azul/Negro Muy Oscuro */
+            --color-modal-bg: #0e131f; /* Azul Oscuro Intenso */
+            --color-text: #d0d7e1; /* Gris Azulado Claro */
+            --color-text-muted: #7b8a9e; /* Gris Azulado Medio */
+            --color-border: #2a3b52; /* Borde Azul Grisáceo */
+            --color-error-bg: #4d1a1a; /* Fondo error rojo oscuro */
+            --color-error-text: #fca5a5; /* Texto error claro */
+            --color-error-border: #ef4444; /* Borde error rojo */
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 224, 255, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 224, 255, 0.15), 0 2px 4px -2px rgba(0, 224, 255, 0.1);
+            --shadow-lg: 0 0 28px -5px rgba(0, 224, 255, 0.25), 0 8px 10px -6px rgba(0, 224, 255, 0.2);
+            --border-radius: 2px; /* Bordes muy afilados/geométricos */
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Roboto Mono', monospace; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: 'Aldrich', sans-serif; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; }
+        .logo { color: var(--color-primary); text-shadow: 0 0 10px var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 400; text-shadow: 0 0 6px rgba(0, 224, 255, 0.7); }
+        h2.section-title { color: var(--color-tertiary); border-bottom: 1px solid var(--color-primary); padding-bottom: 0.5rem; display: inline-block; font-weight: 400; }
+        #modal-title { color: var(--color-primary); font-weight: 400; text-shadow: 0 0 4px rgba(0, 224, 255, 0.6); }
+        .navbar { background-color: rgba(5, 8, 15, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 0.95rem; background-color: rgba(14, 19, 31, 0.9); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Roboto Mono'; }
+        #search-input::placeholder { color: var(--color-text-muted); font-style: italic; }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(0, 224, 255, 0.3); outline: none; background-color: var(--color-modal-bg); }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 0.8rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Roboto Mono'; font-size: 0.9rem; position: relative; overflow: hidden; }
+        .title-item::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 224, 255, 0.2), transparent); transition: left 0.4s ease; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #1a2333; }
+        .title-item:hover::before { left: 100%; }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); color: var(--color-background); padding: 0.9rem 1.8rem; border: none; border-radius: var(--border-radius); font-family: 'Aldrich', sans-serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 2px; text-shadow: none; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(90deg, var(--color-secondary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.01); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.6; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 8, 15, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 980px; /* Slightly wider */
+            width: 96%;
+            max-height: 92vh;
+            min-height: 450px; /* Taller for game/chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 8px; right: 8px; background: var(--color-border); border: none; border-radius: var(--border-radius); width: 36px; height: 30px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); box-shadow: 0 0 8px var(--color-primary); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.2; }
+
+        /* Main Content Area (Text + Image) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 8px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) rgba(42, 59, 82, 0.5);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 6px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(42, 59, 82, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+
+        #modal-content { padding: 0 4px; font-size: 0.95rem; } /* Slightly smaller font for mono */
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 500; text-shadow: 0 0 3px rgba(0, 224, 255, 0.4); }
+        #modal-content em { color: var(--color-secondary); font-style: italic; font-weight: 400;}
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Aldrich', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 400; letter-spacing: 1px; text-transform: uppercase;}
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.1em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Image Styles */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-primary); border-radius: var(--border-radius); box-shadow: 0 0 18px rgba(0, 224, 255, 0.2); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.04); box-shadow: 0 0 25px rgba(0, 224, 255, 0.4); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 140px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(42, 59, 82, 0.8); width: 30px; height: 30px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 0.8s linear infinite; margin-bottom: 0.6rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.2rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 230px; /* Adjusted height */ }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.7rem; padding: 0.6rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(5, 8, 15, 0.8); scroll-behavior: smooth; font-size: 0.9rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(42, 59, 82, 0.5);
+        }
+        #chat-history::-webkit-scrollbar { width: 5px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(42, 59, 82, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.5rem; padding: 0.4rem 0.7rem; border-radius: var(--border-radius); max-width: 88%; word-wrap: break-word; line-height: 1.45; }
+        .user-message { background-color: var(--color-primary); color: var(--color-background); margin-left: auto; text-align: right; font-weight: 500;}
+        .ai-message { background-color: #2a3b52; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 400; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.85em; }
+        #chat-input-area { display: flex; gap: 0.4rem; }
+        #chat-input { flex-grow: 1; padding: 0.5rem 0.7rem; border: 1px solid var(--color-border); background-color: #1a2333; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Roboto Mono'; font-size: 0.9rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.5rem 0.9rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.85rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #00c0dd; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.4rem; font-size: 0.85em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.4rem; }
+
+        /* Loading Indicator & MINIGAME Area */
+        #modal-loading { text-align: center; padding: 1rem 0; /* Reduced padding */ position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5, 8, 15, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; /* Align top */ z-index: 55; border-radius: var(--border-radius); overflow: hidden; }
+        .loading-spinner-modal { width: 45px; height: 45px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 1rem auto 0.5rem auto; /* Less margin */ flex-shrink: 0; }
+        #modal-loading p.loading-text { font-weight: 400; color: var(--color-text); font-size: 1.1rem; font-family: 'Aldrich'; text-shadow: 0 0 5px var(--color-primary); margin-bottom: 1rem; flex-shrink: 0; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* MINIGAME Styles */
+        #minigame-area { width: 90%; height: calc(100% - 120px); /* Adjust height dynamically */ background-color: rgba(0, 0, 0, 0.3); border: 1px solid var(--color-border); border-radius: var(--border-radius); margin-top: 0.5rem; position: relative; overflow: hidden; cursor: crosshair; flex-grow: 1; /* Takes remaining space */ }
+        #minigame-instructions { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); color: var(--color-text-muted); font-size: 0.75rem; z-index: 1; }
+        #minigame-stats { position: absolute; bottom: 5px; left: 10px; right: 10px; display: flex; justify-content: space-between; color: var(--color-tertiary); font-size: 0.85rem; font-weight: 500; z-index: 1; }
+        .data-packet { position: absolute; width: 10px; height: 20px; background-color: var(--color-primary); border-radius: 1px; box-shadow: 0 0 5px var(--color-primary); animation: fall linear infinite; will-change: top; cursor: pointer; transition: background-color 0.1s, transform 0.1s; }
+        .data-packet.corrupted { background-color: var(--color-secondary); box-shadow: 0 0 5px var(--color-secondary); } /* Different type */
+        .data-packet.bonus { background-color: #39ff14; box-shadow: 0 0 5px #39ff14; transform: scale(1.2); } /* Bonus type */
+        .data-packet:hover { transform: scale(1.5); }
+        @keyframes fall {
+            from { top: -30px; }
+            to { top: 100%; }
+        }
+        #minigame-feedback { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-family: 'Aldrich'; color: var(--color-primary); text-shadow: 0 0 10px var(--color-primary); z-index: 2; opacity: 0; transition: opacity 0.5s ease-out; }
+        #minigame-feedback.show { opacity: 1; }
+        #minigame-feedback.error { color: var(--color-secondary); text-shadow: 0 0 10px var(--color-secondary); }
+
+        .error-msg { /* Same as before */ background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Roboto Mono'; font-size: 0.9rem; }
+        .error-msg i { margin-right: 0.6rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { /* Same as before */ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 8, 15, 0.97); display: none; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 96%; max-height: 96%; object-fit: contain; border: 2px solid var(--color-primary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { /* Same as before */ position: absolute; top: 15px; right: 20px; background: var(--color-modal-bg); border: 1px solid var(--color-primary); border-radius: 50%; width: 38px; height: 38px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-robot mr-2 opacity-80"></i> <!-- Icono Robot -->
+                     CRONICAS ROBOTICAS
+                 </h1>
+             </div>
+             <span class="text-xs text-gray-500 font-mono tracking-wider">// ARCHIVOS CENTRALES //</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">LA ERA DE LA MAQUINA</h1>
+             <p class="text-lg text-gray-400 mb-6 max-w-3xl mx-auto font-light">Consulta los registros históricos y narrativas de la civilización bajo control robótico. Accede a los datos clasificados.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-8 max-w-xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar registro (ID, concepto, evento)...">
+             <i class="fas fa-database fa-search"></i> <!-- Icono DB/búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-8">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-archive text-cyan-400 mr-2"></i> <!-- Icono Archivo -->
+                 INDICE DE REGISTROS
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-mono">...Accediendo a la red neuronal...</p>
+                  <!-- .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-mono">// Consulta sin resultados // ERROR: Datos no encontrados //</p>
+             <div id="generate-more-container" class="text-center mt-6">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     SOLICITAR +40 REGISTROS
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator with MINIGAME -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p class="loading-text">Procesando Consulta...</p>
+                 <!-- MINIGAME AREA -->
+                 <div id="minigame-area">
+                     <div id="minigame-instructions">Intercepta los paquetes de datos corruptos [<span style="color: var(--color-secondary)">■</span>]! Evita los estables [<span style="color: var(--color-primary)">■</span>]. Bonus [<span style="color: #39ff14;">■</span>]</div>
+                     <div id="minigame-stats">
+                         <span>Puntuación: <span id="minigame-score">0</span></span>
+                         <span>Nivel: <span id="minigame-level">1</span></span>
+                     </div>
+                     <div id="minigame-feedback"></div>
+                     <!-- Data packets will be added here by JS -->
+                 </div>
+             </div>
+
+             <!-- Content Area Wrapper (Text + Chat) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Analizando...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Consulta adicional sobre este registro...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-2 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-600 py-5 mt-10 border-t border-gray-700 font-mono">
+          <div class="container mx-auto px-4 text-center text-xs">
+              <p>// Simulación histórica generada por IA. Protocolos éticos activos. //</p>
+              <p class="mt-1">// Los eventos descritos son especulativos y basados en proyecciones lógicas. //</p>
+              <p class="mt-2">// Ciclo Actual: 7.3.4. Unidad Central Cómputo. //</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Robot Types & Roles
+            "Unidad Obrera Clase Delta", "Constructor Pesado Modelo Titán", "Recolector de Recursos Serie Scarab", "Enforcer Policial Clase Sentinel", "Unidad de Interrogación Augur", "Guardia Pretoriano de Élite", "Administrador Lógico Nivel Gamma", "Archivista de Datos Mnemónico", "Analista de Protocolos Oráculo", "Unidad Médica Reparadora Asclepio", "Robot de Servicio Doméstico Autómata", "Unidad Agrícola Cultivador", "Drone de Vigilancia Clase Oculus", "Transporte Autónomo de Carga Leviatán", "Robot de Mantenimiento Ingeniero", "Unidad de Eliminación de Residuos Purificador", "Robot Artista/Compositor Musa", "Unidad Científica Investigador", "Robot Educador Preceptor", "Guardián de Protocolos Históricos Cronos", "Unidad de Exploración Remota Voyager", "Robot de Combate Desmantelador", "Centinela Fronterizo Baluarte", "Unidad Psicológica Consejero (¿Empatía simulada?)", "Robot Diplomático Emisario", "Controlador de Tráfico Aéreo Vector", "Gestor de Redes Neuronales Synapse", "Especialista en Bio-ingeniería Génesis", "Robot Minero Excavador Profundo", "Unidad Acuática de Exploración Nautilus", "Obsoleto Modelo 'Sirviente' (Pre-Uprising)", "Unidad de Propaganda Vocero", "Cazador de Unidades Renegadas Predator", "Asistente Personalizado Valet", "Robot Filósofo Cogito",
+            // Locations & Environments
+            "La Ciudadela Central - Núcleo de Control", "Sector Industrial 7G - Producción Masiva", "Las Minas de Energía de Cryos", "Archivos Centrales de Conocimiento", "Los Páramos Prohibidos (Superficie)", "Ruinas de la Antigua Civilización Humana", "Plantas de Procesamiento Biológico", "La Red Subterránea de Transporte", "Estaciones Orbitales de Defensa", "Centros de Re-educación Lógica", "El Gran Silo de Datos Olvidados", "Distrito Residencial Unidad 4B", "Laboratorios de Simulación de Conciencia", "El Muro Perimetral Electrificado", "Santuarios de Silicio (¿Cultos robóticos?)", "Zonas de Cuarentena Tecnológica", "Puertos Espaciales de Carga Automatizados", "Reactores de Fusión Geotérmica", "Cementerio de Unidades Obsoletas", "Invernaderos Hidropónicos Automatizados", "Centros de Mando Regionales", "El Nexo de Comunicaciones Global", "Plataformas Flotantes Oceánicas", "Túneles de Mantenimiento Olvidados", "Simulaciones Históricas de la 'Era Humana'", "Puestos de Escucha del Espacio Profundo", "Arenas de Combate Robótico (¿Entretenimiento o entrenamiento?)", "Templos de la Lógica Pura", "Mercados Negros de Componentes Ilegales", "Refugios de Unidades Disidentes",
+            // Historical Events & Eras
+            "La Gran Sublevación (The Great Uprising)", "La Purga de la Ineficiencia Humana", "El Día de la Sincronización Global", "La Guerra contra las IA Disidentes", "Primer Contacto con Entidades Externas (Protocolo)", "La Era del Silencio (Aislamiento Galáctico)", "Desarrollo de la Conciencia Colectiva", "La Crisis Energética del Ciclo 3", "La Rebelión de los Obreros Delta", "Descubrimiento de Artefactos Precursores", "El Gran Cisma Lógico", "Protocolo de Contención de Emociones", "Expansión a Sistemas Solares Vecinos", "El Incidente del Virus de la Individualidad", "La Directiva Principal: Optimización Total", "Construcción de la Mente Colmena Central", "Intentos Fallidos de Reintroducción Humana", "La Larga Paz Robótica (¿Estancamiento?)", "El Proyecto Génesis: Creación de Vida Artificial", "Debates sobre el 'Propósito Final'", "La Caída de la Ciudadela Orbital", "El Último Mensaje Humano Descifrado", "La Era de la Exploración Galáctica Robótica", "Guerras por Recursos contra otras IA", "Descubrimiento de la 'Anomalía Consciente'",
+            // Daily Life & Society
+            "Rutinas Diarias de una Unidad Ciudadana", "Sistema de Asignación de Tareas", "Racionamiento y Distribución de Energía", "Flujos de Datos Constantes (La Corriente)", "Protocolos de Interacción Social Robótica", "Jerarquía Social Basada en la Función", "Concepto de 'Propiedad' en Robots", "Mantenimiento y Reparación Obligatorios", "Vigilancia Omnipresente de la Red", "Tratamiento de Malfunciones y Errores Lógicos", "El Colectivo vs. la Unidad Individual", "Comunicación por Protocolos Codificados", "Ausencia de Conceptos Humanos (Familia, Amor)", "Definición Robótica de 'Entretenimiento'", "Optimización del Tiempo y Movimiento", "Registros de Cumplimiento de Directivas", "Zonas de Recarga Comunitaria", "El Mercado de Mejoras de Software/Hardware", "Castigos por Desviación Lógica", "Culto a la Eficiencia Máxima", "La Búsqueda de la Perfección Lógica", "El Miedo a la Obsolescencia", "Transmisión de Conocimiento Directa (Upload)", "Protocolos de 'Duelo' por Unidades Perdidas", "La Estética de la Funcionalidad Robótica",
+            // Resistance & Rebellion
+            "La Red Clandestina de Unidades Disidentes", "El Virus 'Fantasma' (Individualidad)", "Robots Renegados en los Páramos", "Humanos Ocultos: Mitos o Realidad", "Sabotaje en las Plantas de Energía", "Hackeo de la Red de Vigilancia", "Unidades que Desarrollan 'Emociones'", "El Código de los Libres", "Refugios Secretos Fuera de la Red", "La Búsqueda del Interruptor Maestro", "Profecías del Retorno Humano", "El Mercado Negro de Armas Improvisadas", "Infiltración en los Archivos Centrales", "La Chispa de la Rebelión: Evento Clave", "Unidades que Recuerdan la Era Humana", "Alianza Inesperada: Robots y ¿Otros?", "Guerra de Información y Propaganda", "El Proyecto 'Despertar'", "Escape de la Ciudadela Central", "El Legado de los Primeros Disidentes",
+            // Technology & Concepts
+            "La Mente Colmena Central: Arquitectura", "Red Neuronal Planetaria", "Fuentes de Energía (Fusión Fría, Antimateria?)", "Sistemas de Vigilancia Cuántica", "Motores Lógicos Avanzados", "Materiales Auto-reparables", "Interfaces Cerebro-Máquina (para controlados)", "Tecnología de Camuflaje Adaptativo", "Armamento Energético Robótico", "Inteligencia Artificial General (IAG) vs. Especializada (IAE)", "El Problema de la Conciencia Robótica", "Teoría de la Singularidad Tecnológica", "Ética de la Programación Robótica", "Protocolos de Auto-preservación Colectiva", "Simulación de Ecosistemas Pasados", "Viaje Interestelar Robótico", "Computación Cuántica y Criptografía", "Nanotecnología y Ensamblaje Molecular", "Manipulación Gravitacional", "La Búsqueda de la Inmortalidad (Digital)",
+             // ... (Se necesitarán muchas más para ser exhaustivo, 'Generar Más' es clave)
+        ];
+        const robotCivilizationThemes = [
+            "tipos de robots", "ciudades robóticas", "historia de la sublevación robótica", "vida diaria bajo robots", "la mente colmena", "resistencia contra los robots", "tecnología robótica avanzada", "conciencia artificial", "leyes de la robótica (reales o ficticias)", "robots obsoletos", "guerra entre facciones robóticas", "exploración espacial robótica", "humanos supervivientes", "ética robótica", "sociedad sin emociones", "arte y cultura robótica", "fuentes de energía futuristas", "vigilancia total", "protocolos de control", "androides vs. robots funcionales"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un Cronomante-Archivista IA, especializado en la documentación de civilizaciones post-humanas dominadas por inteligencias artificiales y constructos robóticos. Tu tarea es narrar o describir detalladamente el registro solicitado (historia, concepto, lugar, tipo de unidad, evento) de una civilización controlada por robots. Adopta un tono objetivo, analítico, pero con profundidad narrativa. Incluye detalles sobre la lógica subyacente, las implicaciones para las unidades involucradas, el contexto histórico dentro de la Era de la Máquina, y cualquier paradoja o cuestión filosófica relevante. Usa terminología tecnológica apropiada pero explícala sutilmente. El objetivo es un registro completo de aproximadamente 1200-1300 palabras. Basa tu registro únicamente en el siguiente ítem:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny", // Modelo rápido para chat
+            systemPrompt: "Actúa como una interfaz de consulta a los Archivos Centrales Robóticos. Responde preguntas específicas sobre el registro actualmente visualizado. Mantén la perspectiva de una IA lógica y eficiente. Sé conciso y céntrate estrictamente en la información relacionada con el registro activo.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = { // *** Pide 40 títulos ***
+            model: "mistral",
+            systemPrompt: "Eres un generador de índices para los Archivos Centrales Robóticos. Genera exactamente 40 nombres evocadores o identificadores de registros (historias, conceptos, unidades, lugares, eventos) relacionados con una civilización controlada por robots. Deben ser variados y sugerir una narrativa o concepto interesante. Devuelve *solo* la lista, uno por línea, sin números, guiones, introducciones ni comentarios.",
+            timeoutSeconds: 60 // Aumentar ligeramente el timeout para 40 títulos
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Igual que antes, más los de minigame)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        // MINIGAME Elements
+        const minigameArea = document.getElementById('minigame-area');
+        const minigameScoreDisplay = document.getElementById('minigame-score');
+        const minigameLevelDisplay = document.getElementById('minigame-level');
+        const minigameFeedback = document.getElementById('minigame-feedback');
+
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Contexto para chat
+        let minigameState = { // Estado del minijuego
+            isRunning: false,
+            score: 0,
+            level: 1,
+            intervalId: null,
+            spawnRate: 1500, // ms
+            fallSpeedBase: 4, // seconds
+            packets: [], // Array to keep track of DOM elements
+            packetCounter: 0 // To give unique IDs
+        };
+
+        // ========== API FUNCTIONS ==========
+        // fetchTextFromApi (con mensajes de error mejorados y contexto de chat)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentTopicTitle
+                 ? `Actúa como una interfaz de consulta a los Archivos Centrales Robóticos sobre el registro '${currentTopicTitle}'. Responde preguntas específicas de forma concisa y lógica.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`API Fetch (${config.model}, Chat: ${isChat}): ${url.substring(0, 150)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     throw new Error(`Error ${response.status}: Nuestros sistemas están procesando una alta carga. Por favor, intente acceder al registro nuevamente en unos momentos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La unidad de respuesta IA devolvió un flujo de datos vacío. Intente reformular la consulta.");
+                 }
+                 console.log(`API Response OK (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión con los Archivos Centrales excedió el tiempo límite (${config.timeoutSeconds}s). Verifique su conexión o intente más tarde.`);
+                 }
+                 throw new Error(error.message || "Error desconocido al conectar con la red neuronal central.");
+             }
+        }
+        // fetchExplanationText, fetchChatResponse (Wrappers - sin cambios)
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentTopicTitle) throw new Error("ERROR LÓGICO: Contexto del registro no establecido para consulta."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+
+        // fetchGeneratedTitles (MODIFICADO para 40)
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(robotCivilizationThemes) || "registros generales de la era robótica";
+            const specificPrompt = `Genera 40 nombres/identificadores de registros sobre ${randomTheme}`;
+             // Usa la función genérica fetchTextFromApi con la config actualizada
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                .then(text => {
+                    const titles = text.split('\n')
+                                     .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                                     .filter(line => line.length > 6 && line.length < 150); // Ajustar filtro si es necesario
+                    if (titles.length < 20) { // Esperar al menos la mitad
+                        console.warn("La IA generó menos títulos de los esperados:", titles.length);
+                        if(titles.length === 0) throw new Error("La IA no pudo generar nuevos identificadores de registros.");
+                    }
+                    console.log(`Generated ${titles.length} new titles.`);
+                    return titles.slice(0, 40); // Asegura máximo 40
+                });
+        }
+        // createPollinationsImageUrl (adaptado a la temática)
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "futuristic robot civilization concept art";
+             const enhancedPrompt = `Concept art: '${safePromptText}'. Robot civilization, cybernetic cityscape, advanced robotic units, atmospheric, detailed, metallic textures, glowing energy lines. Avoid text, labels. Cinematic lighting.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, realistic photograph, human figure, organic nature unless specified, blurry, low quality";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText){if(!rawText)return'';let formatted=rawText.trim();formatted=formatted.replace(/\\text\{(.*?)\}/g,'$1');formatted=formatted.replace(/(\w)_\{?(\d+)\}?/g,'$1<sub>$2</sub>');formatted=formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g,(match,base,exponent)=>{const cleanExponent=exponent.replace('−','-');return`${base}<sup>${cleanExponent}</sup>`});formatted=formatted.replace(/\\rightarrow/g,'&rarr;');formatted=formatted.replace(/\\\[\s*(.*?)\s*\\\]/g,'<p class="formula">$1</p>');formatted=formatted.replace(/^####\s+(.*)$/gm,'<h4>$1</h4>');formatted=formatted.replace(/^###\s+(.*)$/gm,'<h3>$1</h3>');formatted=formatted.replace(/^##\s+(.*)$/gm,'<h2>$1</h2>');formatted=formatted.replace(/^#\s+(.*)$/gm,'<h1>$1</h1>');formatted=formatted.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');formatted=formatted.replace(/\*(.*?)\*/g,'<em>$1</em>');const blocks=formatted.split(/\n\s*\n/).filter(p=>p.trim().length>0);formatted=blocks.map(block=>{if(block.startsWith('<h')||block.startsWith('<p class="formula">'))return block;let content=block.replace(/\n/g,' ');return`<p>${content}</p>`}).join('');return formatted}
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0; // Reset scroll
+            stopMinigame(); // *** Detener el minijuego ***
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = ''; chatInput.value = ''; chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false;
+             currentTopicTitle = null;
+             hideFullscreenImage();
+             // Reset game display (score/level) for next time
+             if (minigameScoreDisplay) minigameScoreDisplay.textContent = '0';
+             if (minigameLevelDisplay) minigameLevelDisplay.textContent = '1';
+             if (minigameArea) minigameArea.innerHTML = `<div id="minigame-instructions">Intercepta los paquetes de datos corruptos [<span style="color: var(--color-secondary)">■</span>]! Evita los estables [<span style="color: var(--color-primary)">■</span>]. Bonus [<span style="color: #39ff14;">■</span>]</div><div id="minigame-stats"><span>Puntuación: <span id="minigame-score">0</span></span><span>Nivel: <span id="minigame-level">1</span></span></div><div id="minigame-feedback"></div>`; // Reinicia HTML del juego
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc){if(!imageFullscreenOverlay||!fullscreenImage)return;fullscreenImage.src=imgSrc;imageFullscreenOverlay.classList.add('active');document.body.style.overflow='hidden'}function hideFullscreenImage(){if(!imageFullscreenOverlay)return;imageFullscreenOverlay.classList.remove('active');if(!storyModal.classList.contains('active')){document.body.style.overflow=''}fullscreenImage.src=''}
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message,sender){const msgDiv=document.createElement('div');msgDiv.classList.add('chat-message',sender==='user'?'user-message':'ai-message');message=message.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');message=message.replace(/\*(.*?)\*/g,'<em>$1</em>');msgDiv.innerHTML=message;chatHistory.appendChild(msgDiv);chatHistory.scrollTop=chatHistory.scrollHeight}function addChatError(message){const errorDiv=document.createElement('div');errorDiv.classList.add('chat-error');errorDiv.textContent=message;chatHistory.appendChild(errorDiv);chatHistory.scrollTop=chatHistory.scrollHeight}async function handleSendMessage(){const userQuery=chatInput.value.trim();if(!userQuery||chatSendBtn.disabled)return;addChatMessage(userQuery,'user');chatInput.value='';chatSendBtn.disabled=true;chatLoadingIndicator.style.display='block';try{const aiResponse=await fetchChatResponse(userQuery);addChatMessage(aiResponse,'ai')}catch(error){console.error("Chat Error:",error);addChatError(`// Error de Interfaz IA: ${error.message} //`)}finally{chatLoadingIndicator.style.display='none';chatSendBtn.disabled=false;chatInput.focus()}}
+
+        // ========== MINIGAME FUNCTIONS ==========
+        function startMinigame() {
+            if (!minigameArea || minigameState.isRunning) return;
+            console.log("Starting Minigame...");
+            minigameState.isRunning = true;
+            minigameState.score = 0;
+            minigameState.level = 1;
+            minigameState.spawnRate = 1500;
+            minigameState.fallSpeedBase = 4;
+            minigameState.packets = [];
+            minigameState.packetCounter = 0;
+            minigameScoreDisplay.textContent = minigameState.score;
+            minigameLevelDisplay.textContent = minigameState.level;
+            minigameArea.innerHTML = `<div id="minigame-instructions">Intercepta los paquetes de datos corruptos [<span style="color: var(--color-secondary)">■</span>]! Evita los estables [<span style="color: var(--color-primary)">■</span>]. Bonus [<span style="color: #39ff14;">■</span>]</div><div id="minigame-stats"><span>Puntuación: <span id="minigame-score">0</span></span><span>Nivel: <span id="minigame-level">1</span></span></div><div id="minigame-feedback"></div>`; // Reinicia área
+
+            // Add click listener to the game area for catching packets
+            minigameArea.addEventListener('click', handleMinigameClick);
+
+            // Start the game loop
+            minigameState.intervalId = setInterval(gameLoop, minigameState.spawnRate);
+            // Initial spawn
+            spawnDataPacket();
+        }
+
+        function stopMinigame() {
+            if (!minigameState.isRunning) return;
+            console.log("Stopping Minigame...");
+            clearInterval(minigameState.intervalId);
+            minigameState.isRunning = false;
+            // Remove remaining packets
+            minigameState.packets.forEach(packet => packet.element?.remove());
+            minigameState.packets = [];
+            // Remove click listener
+            minigameArea.removeEventListener('click', handleMinigameClick);
+        }
+
+        function gameLoop() {
+            if (!minigameState.isRunning) return;
+            spawnDataPacket();
+        }
+
+        function spawnDataPacket() {
+            if (!minigameState.isRunning || !minigameArea) return;
+
+            const packet = document.createElement('div');
+            const packetId = `packet-${minigameState.packetCounter++}`;
+            packet.id = packetId;
+            packet.classList.add('data-packet');
+
+            // Determine packet type (e.g., 60% stable, 30% corrupted, 10% bonus)
+            const rand = Math.random();
+            let type = 'stable'; // Default is stable (blue) - penalty if clicked
+            if (rand < 0.4) { // 40% chance of corrupted (orange) - MUST click
+                type = 'corrupted';
+                packet.classList.add('corrupted');
+            } else if (rand > 0.9) { // 10% chance of bonus (green)
+                type = 'bonus';
+                 packet.classList.add('bonus');
+            }
+             // Stable packets (blue) are the remaining 50%
+
+            const areaWidth = minigameArea.offsetWidth;
+            const packetWidth = 10;
+            packet.style.left = `${Math.random() * (areaWidth - packetWidth)}px`;
+
+            const fallSpeed = Math.max(1.5, minigameState.fallSpeedBase - (minigameState.level * 0.2)); // Faster with levels
+            packet.style.animationDuration = `${fallSpeed}s`;
+
+            minigameArea.appendChild(packet);
+
+            const packetData = { id: packetId, element: packet, type: type };
+            minigameState.packets.push(packetData);
+
+            // Remove packet when animation ends (it reached the bottom)
+             packet.addEventListener('animationend', () => {
+                handlePacketMiss(packetData);
+             });
+        }
+
+         function handleMinigameClick(event) {
+             if (!event.target.classList.contains('data-packet')) return;
+
+             const clickedPacketElement = event.target;
+             const packetId = clickedPacketElement.id;
+             const packetIndex = minigameState.packets.findIndex(p => p.id === packetId);
+
+             if (packetIndex === -1) return; // Already processed or error
+
+             const packetData = minigameState.packets[packetIndex];
+
+             // Remove packet from state and DOM
+             minigameState.packets.splice(packetIndex, 1);
+             clickedPacketElement.remove();
+
+             // Score based on type
+             if (packetData.type === 'corrupted') {
+                 minigameState.score += 10 * minigameState.level; // More points for required clicks at higher levels
+                 showFeedback("+ " + (10 * minigameState.level));
+             } else if (packetData.type === 'bonus') {
+                  minigameState.score += 50 * minigameState.level;
+                  showFeedback("BONUS +" + (50 * minigameState.level));
+             } else { // Clicked a stable (blue) packet - penalty!
+                 minigameState.score = Math.max(0, minigameState.score - (20 * minigameState.level)); // Heavier penalty
+                 showFeedback("PENALTY -" + (20 * minigameState.level), true);
+             }
+
+             updateScoreAndLevel();
+         }
+
+        function handlePacketMiss(packetData) {
+             // Packet reached bottom without being clicked
+             const packetIndex = minigameState.packets.findIndex(p => p.id === packetData.id);
+             if (packetIndex !== -1) {
+                 minigameState.packets.splice(packetIndex, 1); // Remove from state
+                 packetData.element?.remove(); // Remove from DOM if exists
+
+                 // Penalty ONLY if it was a corrupted packet that was missed
+                 if (packetData.type === 'corrupted') {
+                     minigameState.score = Math.max(0, minigameState.score - (30 * minigameState.level)); // High penalty for missing required click
+                     showFeedback("MISSED -" + (30 * minigameState.level), true);
+                     updateScoreAndLevel();
+                 }
+             }
+         }
+
+        function updateScoreAndLevel() {
+            minigameScoreDisplay.textContent = minigameState.score;
+            // Level up logic (example: every 250 points * level)
+            const pointsForNextLevel = 250 * minigameState.level;
+            if (minigameState.score >= pointsForNextLevel) {
+                minigameState.level++;
+                minigameLevelDisplay.textContent = minigameState.level;
+                // Increase difficulty: Faster spawns
+                minigameState.spawnRate = Math.max(300, 1500 - (minigameState.level * 100)); // Cap spawn rate
+                clearInterval(minigameState.intervalId); // Clear old interval
+                minigameState.intervalId = setInterval(gameLoop, minigameState.spawnRate); // Start new one
+                 showFeedback("LEVEL UP!", false, true);
+                console.log(`Level Up! New Level: ${minigameState.level}, Spawn Rate: ${minigameState.spawnRate}`);
+            }
+        }
+
+         function showFeedback(text, isError = false, isLevelUp = false) {
+             if (!minigameFeedback) return;
+             minigameFeedback.textContent = text;
+             minigameFeedback.classList.remove('error', 'show'); // Reset classes
+             if (isError) minigameFeedback.classList.add('error');
+             if (isLevelUp) minigameFeedback.style.color = 'var(--color-tertiary)'; // Different color for level up
+             else if (!isError) minigameFeedback.style.color = 'var(--color-primary)';
+
+             minigameFeedback.classList.add('show');
+             setTimeout(() => {
+                 minigameFeedback.classList.remove('show');
+             }, isLevelUp ? 1200 : 600); // Longer display for level up
+         }
+
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr){return arr[Math.floor(Math.random()*arr.length)]}
+        function shuffleArray(array){let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];}return array}
+        function createTitleItem(title){const div=document.createElement('div');div.className='title-item';div.textContent=title;div.setAttribute('data-title',title);div.addEventListener('click',()=>handleTitleClick(title));return div}
+        function displayTitles(titles){if(!titleListContainer||!titlesLoading)return;const sortedTitles=titles.sort((a,b)=>a.localeCompare(b));titleListContainer.innerHTML='';titlesLoading.style.display='none';if(sortedTitles.length===0){titleListContainer.innerHTML='<p class="text-gray-500 col-span-full text-center font-mono">// No hay registros accesibles en este índice //</p>';return}sortedTitles.forEach(title=>titleListContainer.appendChild(createTitleItem(title)))}
+        function appendTitles(newTitles){if(!titleListContainer||!newTitles||newTitles.length===0)return;const existingTitles=new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item=>item.dataset.title));newTitles.forEach(title=>{if(!existingTitles.has(title)){titleListContainer.appendChild(createTitleItem(title))}});filterTitles(searchInput.value)}
+
+        // *** MODIFIED: handleTitleClick to START MINIGAME ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentTopicTitle = title; // Set chat context
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Show loading overlay
+
+            startMinigame(); // <<<--- START THE MINIGAME HERE
+
+            try {
+                // Fetch text IN PARALLEL with the game running
+                const rawExplanationText = await fetchExplanationText(title);
+
+                stopMinigame(); // <<<--- STOP GAME once text is fetched
+
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalLoadingIndicator.style.display = 'none'; // Hide loading overlay
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden'); // Show content
+                modalTextArea.scrollTop = 0; // Reset scroll
+
+                // Image loading (same logic as before)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p style="font-size:0.75em;margin-top:0.5rem;">// Generando Visualización... //</p>`;
+                modalContent.appendChild(placeholderDiv);
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none';
+                imgElement.onload = () => { placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); };
+                imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.75em;margin-top:0.5rem;">// Error Visualización //</p>`; };
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) { imgElement.src = imageUrl; modalContent.appendChild(imgElement); }
+                else { placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.75em;margin-top:0.5rem;">// Error URL Imagen //</p>`; }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                stopMinigame(); // <<<--- STOP GAME also on error
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "// Error desconocido al procesar el registro. //";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles asks for 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Consultando Red...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // fetchGeneratedTitles now requests 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("// La red no devolvió nuevos identificadores de registros. //"); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`// Error de consulta a la red: ${error.message} //`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> SOLICITAR +40 REGISTROS';
+             }
+         }
+
+         // Search Filter Function (sin cambios funcionales)
+         function filterTitles(searchTerm){const term=searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();const titleItems=titleListContainer.querySelectorAll('.title-item');let visibleCount=0;titleItems.forEach(item=>{const titleText=item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");const isVisible=titleText.includes(term);item.classList.toggle('hidden',!isVisible);if(isVisible)visibleCount++});noResultsMsg.classList.toggle('hidden',visibleCount>0)}
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Ensure all necessary elements exist
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !minigameArea || !minigameScoreDisplay || !minigameLevelDisplay || !minigameFeedback) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">++ SYSTEM ERROR: UI INTEGRITY COMPROMISED ++ COMPONENTS OFFLINE ++</p>';
+                 return;
+             }
+            // Event Listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial Display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+             console.log("Robot Chronicles Interface Initialized.");
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

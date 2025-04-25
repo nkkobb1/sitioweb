@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronoteca Interactiva - Historias de Viajes en el Tiempo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Temáticas: Elegante/Clásica y Moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Viajes en el Tiempo --- */
+        :root {
+            --color-primary: #c0a080; /* Bronce / Sepia Claro */
+            --color-secondary: #4a90e2; /* Azul Temporal */
+            --color-tertiary: #9f7aea; /* Púrpura Paradoja (uso moderado) */
+            --color-background: #2d3748; /* Gris Azulado Oscuro */
+            --color-text: #e2e8f0; /* Gris Muy Claro */
+            --color-text-muted: #a0aec0; /* Gris Medio */
+            --color-modal-bg: #1a202c; /* Casi Negro */
+            --color-border: #4a5568; /* Borde Gris Oscuro */
+            --color-error-bg: #450a0a; /* Fondo error rojo muy oscuro */
+            --color-error-text: #fecaca; /* Texto error claro */
+            --color-error-border: #e53e3e; /* Borde error rojo */
+            --color-accent-glow: rgba(74, 144, 226, 0.4); /* Azul Temporal Glow */
+
+            --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 5px 10px -3px rgba(0, 0, 0, 0.3), 0 3px 6px -4px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 0 20px -5px var(--color-accent-glow), 0 8px 15px -6px rgba(0, 0, 0, 0.3);
+            --border-radius: 4px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 300; background-image: radial-gradient(circle at top left, rgba(74, 144, 226, 0.05), transparent 40%), radial-gradient(circle at bottom right, rgba(192, 160, 128, 0.05), transparent 50%); background-attachment: fixed;}
+        h1, h2, h3, h4, .logo { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; text-shadow: 0 0 8px rgba(192, 160, 128, 0.6); }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-secondary); font-weight: 700; text-shadow: 0 0 5px var(--color-accent-glow); }
+        .navbar { background-color: rgba(26, 32, 44, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: rgba(45, 55, 72, 0.8); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Roboto Condensed'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3); outline: none; background-color: #2d3748; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-secondary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.3rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.3rem 1.1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 75px; font-family: 'Roboto Condensed'; font-size: 1rem; border-left: 4px solid transparent; position: relative; overflow: hidden; }
+        .title-item::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(192, 160, 128, 0.2), transparent); transition: left 0.4s ease; }
+        .title-item:hover { transform: translateY(-3px) scale(1.01); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #2d3748; border-left-color: var(--color-primary); }
+        .title-item:hover::before { left: 100%; }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color: var(--color-modal-bg); padding: 0.9rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Cinzel', serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: none; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-secondary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.03); }
+        #generate-more-btn:disabled { background: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-modal-bg); }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(26, 32, 44, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-secondary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 980px; /* Slightly wider for chat */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Taller for game/chat */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-border); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-modal-bg); transform: rotate(90deg); box-shadow: 0 0 10px var(--color-primary); }
+        #modal-title { font-size: 2rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Area de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(74, 85, 104, 0.5);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(74, 85, 104, 0.5); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; font-size: 1.05rem;}
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Cinzel', serif; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.5em; }
+        #modal-content h2 { font-size: 1.35em; }
+        #modal-content h3 { font-size: 1.2em; color: var(--color-secondary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-secondary); border-radius: var(--border-radius); box-shadow: 0 0 15px var(--color-accent-glow); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 25px var(--color-accent-glow); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(74, 85, 104, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(45, 55, 72, 0.7); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-tertiary) rgba(74, 85, 104, 0.5);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(74, 85, 104, 0.5); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-tertiary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-secondary); color: var(--color-modal-bg); margin-left: auto; text-align: right; font-weight: 400;}
+        .ai-message { background-color: #4a5568; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #2d3748; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Roboto Condensed'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-secondary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-secondary); color: var(--color-modal-bg); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #63b3ed; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* Modal Loading Screen & Minigame */
+        #modal-loading { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 32, 44, 0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); padding: 2rem; text-align: center; }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-secondary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1.5rem auto; }
+        #modal-loading p.loading-text { font-weight: 400; color: var(--color-text); font-size: 1.4rem; font-family: 'Cinzel'; text-shadow: 0 0 5px var(--color-secondary); margin-bottom: 1.5rem; }
+        /* Minigame Elements */
+        #minigame-container { margin-top: 1.5rem; padding: 1.5rem; border: 1px dashed var(--color-primary); border-radius: var(--border-radius); background-color: rgba(45, 55, 72, 0.5); width: 90%; max-width: 450px; display: none; /* Hidden by default */ }
+        #minigame-container h4 { font-family: 'Roboto Condensed'; font-weight: 700; color: var(--color-primary); margin-bottom: 1rem; font-size: 1.1rem; }
+        #minigame-display { display: flex; justify-content: space-around; margin-bottom: 1.5rem; font-size: 1rem; }
+        .minigame-stat { color: var(--color-text); }
+        .minigame-stat strong { color: var(--color-secondary); font-size: 1.1em; }
+        #anomaly-button { background-color: var(--color-primary); color: var(--color-background); padding: 1rem 1.5rem; border: none; border-radius: 50%; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.2s ease; font-size: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 0 15px rgba(192, 160, 128, 0.5); }
+        #anomaly-button:hover { box-shadow: 0 0 25px rgba(192, 160, 128, 0.8); }
+        #anomaly-button:active { transform: scale(0.95); }
+        #upgrades-area button { background-color: var(--color-secondary); color: var(--color-modal-bg); padding: 0.6rem 1rem; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; margin: 0.3rem; font-family: 'Roboto Condensed'; }
+        #upgrades-area button:hover:not(:disabled) { background-color: #63b3ed; }
+        #upgrades-area button:disabled { background-color: var(--color-text-muted); cursor: not-allowed; opacity: 0.6; }
+        .upgrade-cost { font-size: 0.8em; color: var(--color-text-muted); display: block; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Roboto Condensed'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(26, 32, 44, 0.96); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-secondary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-hourglass-half mr-3 text-amber-300"></i> <!-- Icono Reloj Arena -->
+                     Cronoteca Interactiva
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-400 font-sans tracking-wider">~ Archivos del Tiempo ~</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Explorando las Corrientes Temporales</h1>
+             <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">Sumérgete en relatos de paradojas, futuros distantes y pasados alterados. Selecciona un concepto o historia para iniciar tu viaje.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar concepto, paradoja o historia...">
+             <i class="fas fa-search fa-binoculars"></i> <!-- Icono búsqueda/binoculares -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-stream text-blue-400 mr-2"></i> <!-- Icono corriente/flujo -->
+                 Índice Temporal
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg font-sans">Sintonizando con los ecos del tiempo...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden font-sans">~ No se encontraron registros para esa coordenada temporal ~</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Ampliar Archivos Temporales
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator & Minigame -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p class="loading-text">Estabilizando flujo temporal...</p>
+                 <!-- Minigame Container -->
+                 <div id="minigame-container">
+                     <h4><i class="fas fa-atom mr-1 text-purple-400"></i> Minijuego: Estabilizador de Ecos</h4>
+                     <div id="minigame-display">
+                         <div class="minigame-stat">Ecos: <strong id="echoes-count">0</strong></div>
+                         <div class="minigame-stat">Estabilizadores: <strong id="stabilizers-count">0</strong></div>
+                         <div class="minigame-stat">Ecos/seg: <strong id="eps-count">0</strong></div>
+                     </div>
+                     <button id="anomaly-button" aria-label="Generar Ecos Temporales"><i class="fas fa-meteor"></i></button>
+                     <div id="upgrades-area">
+                         <button id="buy-stabilizer-btn">
+                             Comprar Estabilizador <span class="upgrade-cost">(Costo: <span id="stabilizer-cost">10</span> Ecos)</span>
+                         </button>
+                         <!-- Add more upgrade buttons here if desired -->
+                     </div>
+                     <p class="text-xs text-gray-500 mt-3">Juega mientras esperas que la IA procese los datos...</p>
+                 </div>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- La imagen y su placeholder/spinner se añadirán aquí vía JS -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Consultando al Cronista...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este evento temporal...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Historias y conceptos generados por IA con fines especulativos y de entretenimiento sobre viajes en el tiempo.</p>
+              <p class="mt-1">La física y las teorías descritas son puramente ficcionales.</p>
+              <p class="mt-2">© 2024 Cronoteca Interactiva</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const TITLES_TO_GENERATE = 40; // Generate 40 new titles
+        const predefinedTitles = [
+            // Mecanismos de Viaje
+            "La Máquina del Tiempo Clásica (Estilo Wells)", "Portal Temporal Estacionario", "Agujeros de Gusano Navegables (Einstein-Rosen)", "Viaje a Velocidad Superlumínica (Taquiones)", "Distorsión del Espacio-Tiempo Localizada", "Conciencia Proyectada a través del Tiempo", "Artefacto Temporal Antiguo (Origen Desconocido)", "Fenómeno Temporal Natural (Grietas/Vórtices)", "Salto Cuántico Temporal", "Uso de Cuerdas Cósmicas", "Nave Temporal (Estilo TARDIS)", "Motor de Improbabilidad Finita (Conceptual)", "Cilindro de Tipler", "Viaje a través de Dimensiones Superiores", "Manipulación Genética para Percepción Temporal", "Drogas Cronoactivas", "Reloj de Bolsillo Temporal", "Ancla Temporal (Para evitar paradojas)", "Computadora Cuántica de Predicción/Simulación Temporal", "Cristales de Cronocita",
+            // Paradojas y Consecuencias
+            "La Paradoja del Abuelo", "La Paradoja de la Predestinación (Bucle Causal)", "El Efecto Mariposa (Teoría del Caos Temporal)", "Paradoja de la Información (Agujeros Negros/Tiempo)", "Paradoja de Bootstrap (Objeto sin Origen)", "Paradoja de Polchinski (Bola de Billar)", "Creación de Líneas Temporales Alternas", "Borrado de la Existencia Propia", "Conocimiento del Futuro y Libre Albedrío", "Acumulación de Paradojas (Desgaste Temporal)", "La Guerra Temporal (Conflictos entre Eras)", "El Síndrome del Viajero Temporal (Desorientación/Locura)", "Alteración Histórica Involuntaria", "Alteración Histórica Intencional (Corrección/Mejora)", "La Erosión de la Realidad por Viajes Constantes", "La Imposibilidad Práctica del Viaje al Pasado (Hawking)", "El Principio de Autoconsistencia de Nóvikov", "Encuentros Consigo Mismo (Riesgos)", "Contaminación Temporal (Bacterias/Ideas)", "El Costo Energético del Viaje Temporal",
+            // Tipos de Viajeros y Sociedades
+            "El Crononauta Solitario", "La Policía Temporal", "Los Historiadores Observadores", "Los Turistas Temporales", "Refugiados de un Futuro Catastrófico", "Imperios Temporales (Conquista a través del Tiempo)", "Cultos Obsesionados con el Tiempo", "Seres Evolucionados Más Allá del Tiempo Lineal", "Viajeros Accidentales", "Guardianes de la Línea Temporal", "Contrabandistas Temporales", "Mercenarios Temporales", "La Resistencia contra una Dictadura Temporal", "Nómadas Temporales", "Científicos Pioneros del Viaje Temporal", "Agentes Secretos Temporales", "Arqueólogos Temporales", "Artistas que Buscan Inspiración en Otras Eras", "Criminales Huyendo a través del Tiempo", "Una Sociedad que Vive en Bucles Temporales",
+            // Eras y Destinos
+            "Visita a la Era de los Dinosaurios", "Exploración de la Antigua Roma/Egipto/Grecia", "Testigo de Eventos Históricos Clave", "Viaje a un Futuro Utópico", "Viaje a un Futuro Distópico", "El Fin del Universo (Entropía Térmica/Big Rip)", "Exploración de la Tierra Prehistórica Humana", "Contacto con Civilizaciones Perdidas (Atlántida, etc.)", "Viaje a la Infancia Propia", "Visita a Descendientes Futuros", "Exploración de un Planeta Alienígena en Diferentes Eras", "El Mundo Después de un Apocalipsis", "Una Tierra Alternativa donde la Historia fue Diferente", "El Momento del Big Bang", "El Futuro Lejano de la Evolución Humana", "La Era Victoriana con Tecnología Futura (Steampunk Temporal)", "Un Mundo donde la Magia y el Tiempo se Entrelazan", "El Interior de un Agujero Negro", "El Siglo XXII: Avances y Peligros", "La Biblioteca de Alejandría antes de su Destrucción",
+            // Historias y Escenarios Específicos
+            "El Hombre que Intentó Salvar a Lincoln", "Atrapado en un Bucle Temporal Personal", "Enamorándose de Alguien del Pasado", "Criando a tu Propio Ancestro", "Previniendo tu Propio Nacimiento por Accidente", "Recibiendo un Mensaje de tu Yo Futuro", "Descubriendo que Eres un Clon de un Viajero Temporal", "Una Carrera para Deshacer un Error Temporal Catastrófico", "El Último Humano Viajando al Pasado", "Intercambio de Cuerpos a través del Tiempo", "Un Objeto del Futuro Encontrado en el Pasado", "Viviendo la Misma Vida Múltiples Veces", "La Paradoja de Comprar Acciones con Conocimiento Futuro", "Un Diario Encontrado que Predice tu Futuro", "Ser Perseguido por la Policía Temporal", "Ayudando a tu Yo Pasado a Superar un Trauma", "Intentando Robar Tecnología del Futuro", "El Dilema de Cambiar un Evento Terrible pero Necesario", "Descubriendo una Conspiración Temporal", "Varado en una Era sin Posibilidad de Regreso",
+            // Añadir cientos más para exhaustividad...
+            "Teoría de los Universos Múltiples (Many-Worlds Interpretation) y Viaje Temporal", "El Flujo del Tiempo: ¿Constante o Variable?", "Percepción Subjetiva del Tiempo vs. Tiempo Objetivo", "Cronocinesis: Habilidad Psíquica de Manipular el Tiempo", "El Concepto de 'Ahora' en un Universo con Viajes Temporales", "Singularidades Temporales Artificiales", "El 'Tejido' del Espacio-Tiempo y sus Debilidades", "Efectos Biológicos del Viaje Temporal Acelerado", "Adaptación Social a la Existencia del Viaje Temporal", "Leyes y Regulaciones sobre Viajes en el Tiempo", "Armas Temporales (Congelación, Aceleración, Borrado)", "Escudos contra la Manipulación Temporal", "El Paradigma del Observador en la Mecánica Cuántica Temporal", "Viaje Temporal y la Búsqueda de la Inmortalidad", "El Lenguaje y la Comunicación a través de Eras", "La Arqueología del Futuro", "El Efecto de 'Ancla' de Eventos Inmutables", "Zonas de Tiempo Congelado o Acelerado", "Recuperación de Especies Extintas mediante Viaje Temporal", "El Turismo de Paradojas", "Criptografía Temporal", "Generadores de Campos de Estasis Temporal", "Sistemas de Navegación Temporal", "La Ética de Observar sin Intervenir", "El Mercado Negro de Artefactos Temporales", "Medicina Temporal: Curar Enfermedades del Pasado", "Deportes Temporales (Carreras a través de Eras)", "Filosofía del Determinismo vs. Libre Albedrío Temporal", "Religiones Basadas en Profecías y Viajes Temporales", "Educación Histórica mediante Inmersión Temporal", "Espionaje Corporativo a través del Tiempo", "La Búsqueda de los 'Orígenes' del Tiempo Mismo", "Criaturas Evolucionadas en Bucles Temporales", "El Impacto Psicológico de Ver Múltiples Futuros", "Ciudades Construidas Fuera del Flujo Temporal Normal", "Sistemas de Energía Basados en Paradojas Controladas", "El 'Ruido' de Fondo Temporal (Ecos de Eventos)", "Protocolos de Primer Contacto Temporal", "La Conservación de Líneas Temporales 'Históricas'", "El Desarrollo de IA Consciente a través de Ciclos Temporales", "Materiales que Resisten o Amplifican Efectos Temporales", "Comunicación Instantánea a través del Tiempo (Teoría)", "El Concepto de 'Muerte' para un Viajero Temporal Frecuente", "Mapas Cuatridimensionales del Espacio-Tiempo", "La Paradoja del Conocimiento Perdido y Re-descubierto", "Culturas que Adoran a los Viajeros del Tiempo", "El Efecto 'Déjà Vu' como Eco Temporal", "Ingeniería de Megaestructuras Temporales (Dyson Spheres Temporales?)", "El Último Viajero Temporal y su Mensaje Final"
+            // ... y así sucesivamente.
+        ];
+        const timeTravelThemes = [
+            "máquinas del tiempo", "paradojas temporales", "bucles causales", "líneas de tiempo alternativas", "policía temporal", "guerra temporal", "futuros distópicos", "pasados alterados", "agujeros de gusano", "viaje mental en el tiempo", "consecuencias del viaje temporal", "ética del viaje en el tiempo", "crononautas", "artefactos temporales", "fenómenos temporales naturales", "predestinación vs libre albedrío", "historia contrafactual", "efecto mariposa", "tecnología temporal avanzada", "sociedades futuras", "encuentros consigo mismo"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un Cronista Universal y teórico experto en crononáutica y narrativas temporales. Tu tarea es describir el concepto, paradoja, tecnología o esbozo de historia sobre viajes en el tiempo que se te indique. Proporciona una explicación detallada de sus mecanismos (si aplica), implicaciones, ejemplos narrativos (si es una historia), o análisis teórico (si es un concepto/paradoja). Adopta un tono erudito pero cautivador, mezclando ciencia ficción especulativa con rigor narrativo. El objetivo es una exposición completa de aproximadamente 1200-1300 palabras. Basa tu crónica únicamente en el siguiente archivo temporal:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un asistente del Cronista, especializado únicamente en el archivo temporal (concepto/historia) que se está mostrando actualmente. Responde preguntas de seguimiento sobre sus detalles, implicaciones o conexiones con otras teorías temporales mencionadas en la crónica principal. Sé preciso y mantente enfocado en el tema actual.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+             // **MODIFIED Prompt for 40 titles**
+            systemPrompt: `Actúa como un generador de ideas conciso para una base de datos sobre viajes en el tiempo. Genera exactamente ${TITLES_TO_GENERATE} nombres evocadores de conceptos, paradojas, tecnologías, historias o dilemas relacionados con viajes en el tiempo. Devuelve *solo* la lista, uno por línea. No incluyas números, guiones, introducciones ni despedidas. Sé variado e imaginativo.`,
+            timeoutSeconds: 60 // Slightly longer timeout for more titles
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        // Minigame Elements
+        const minigameContainer = document.getElementById('minigame-container');
+        const echoesCountEl = document.getElementById('echoes-count');
+        const stabilizersCountEl = document.getElementById('stabilizers-count');
+        const epsCountEl = document.getElementById('eps-count');
+        const anomalyButton = document.getElementById('anomaly-button');
+        const buyStabilizerBtn = document.getElementById('buy-stabilizer-btn');
+        const stabilizerCostEl = document.getElementById('stabilizer-cost');
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Context for chat
+        // Minigame State
+        let gameActive = false;
+        let echoes = 0;
+        let stabilizers = 0;
+        let stabilizerBaseCost = 10;
+        let echoesPerClick = 1;
+        let echoesPerSecond = 0;
+        let passiveGenerationInterval = null;
+
+        // ========== MINIGAME FUNCTIONS ==========
+        function calculateStabilizerCost() {
+            return Math.floor(stabilizerBaseCost * Math.pow(1.15, stabilizers));
+        }
+        function updateGameDisplay() {
+            if (!gameActive) return;
+            echoesCountEl.textContent = Math.floor(echoes);
+            stabilizersCountEl.textContent = stabilizers;
+            epsCountEl.textContent = echoesPerSecond.toFixed(1);
+            const currentCost = calculateStabilizerCost();
+            stabilizerCostEl.textContent = currentCost;
+            buyStabilizerBtn.disabled = echoes < currentCost;
+            // Add more display updates for levels/visuals later if needed
+        }
+        function clickAnomaly() {
+            if (!gameActive) return;
+            echoes += echoesPerClick;
+            updateGameDisplay();
+            // Optional: Add visual feedback on click
+            anomalyButton.style.transform = 'scale(0.95)';
+            setTimeout(() => { anomalyButton.style.transform = 'scale(1)'; }, 100);
+        }
+        function buyStabilizer() {
+            if (!gameActive) return;
+            const cost = calculateStabilizerCost();
+            if (echoes >= cost) {
+                echoes -= cost;
+                stabilizers++;
+                echoesPerClick = 1 + stabilizers; // Simple increase per click
+                echoesPerSecond += 0.2; // Each stabilizer adds passive income
+                updateGameDisplay();
+                // Check for level ups or visual changes based on 'stabilizers' count here
+                // Example: if (stabilizers === 10) { document.body.style.setProperty('--color-accent-glow', 'rgba(159, 122, 234, 0.6)'); } // Change glow color
+            }
+        }
+        function startGame() {
+            console.log("Starting Minigame");
+            gameActive = true;
+            // Reset game state for new session
+            echoes = 0;
+            stabilizers = 0;
+            echoesPerClick = 1;
+            echoesPerSecond = 0;
+            stabilizerBaseCost = 10;
+
+            minigameContainer.style.display = 'block'; // Show the game
+            updateGameDisplay();
+
+            // Clear any previous interval
+            if (passiveGenerationInterval) clearInterval(passiveGenerationInterval);
+
+            // Start passive generation
+            passiveGenerationInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(passiveGenerationInterval);
+                    return;
+                }
+                echoes += echoesPerSecond / 10; // Add fraction every 100ms for smoother display
+                updateGameDisplay();
+            }, 100); // Update passive generation 10 times per second
+
+             // Ensure buttons are enabled/disabled correctly at start
+             const currentCost = calculateStabilizerCost();
+             buyStabilizerBtn.disabled = echoes < currentCost;
+        }
+        function stopGame() {
+            console.log("Stopping Minigame");
+            gameActive = false;
+            if (passiveGenerationInterval) {
+                clearInterval(passiveGenerationInterval);
+                passiveGenerationInterval = null;
+            }
+            minigameContainer.style.display = 'none'; // Hide the game
+        }
+
+        // ========== API FUNCTIONS ========== (Fetch logic is the same, adjusted prompts)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentTopicTitle
+                ? `Eres un asistente del Cronista, especializado únicamente en el archivo temporal '${currentTopicTitle}'. Responde preguntas de seguimiento sobre sus detalles, implicaciones o conexiones con otras teorías temporales mencionadas en la crónica principal. Sé preciso y mantente enfocado en el tema actual.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`(Error ${response.status}) Nuestros servidores de Crono-Registro tienen mucho tráfico. Intenta recalibrar en unos segundos.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta del Cronista llegó vacía. Intenta reformular la consulta temporal.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La conexión temporal tardó demasiado (>${config.timeoutSeconds}s). Revisa tu flujo o intenta más tarde.`);
+                throw new Error(error.message || "Ocurrió una fluctuación inesperada al contactar los archivos.");
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) {
+            if (!currentTopicTitle) throw new Error("Error de sincronización: No se ha establecido el contexto temporal para el chat.");
+            return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(timeTravelThemes) || "viajes en el tiempo generales";
+             const specificPrompt = `Genera ${TITLES_TO_GENERATE} conceptos/historias sobre ${randomTheme}`;
+             return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 10) throw new Error(`La IA no generó suficientes archivos (necesitaba ${TITLES_TO_GENERATE}).`); // Check for at least 10
+                     return titles.slice(0, TITLES_TO_GENERATE);
+                 });
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+            const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+            const settings = { ...defaults, ...options };
+            const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "time travel concept art";
+            const enhancedPrompt = `Conceptual artwork inspired by the time travel theme '${safePromptText}'. Focus on atmosphere, paradox, machines, historical/futuristic elements, swirling energy, clocks, gears. Avoid text, labels. Evocative, abstract or semi-abstract. Cinematic.`;
+            const escapedPrompt = encodeURIComponent(enhancedPrompt);
+            if (!escapedPrompt) return '';
+            const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, realistic photograph of people, simple background, boring, mundane";
+            const escapedNegative = encodeURIComponent(negativePrompt);
+            let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+            if (settings.nologo) url += '&nologo=true';
+            console.log("Image URL:", url);
+            return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return ''; let formatted = rawText.trim(); formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1'); formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>'); formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; }); formatted = formatted.replace(/\\rightarrow/g, '&rarr;'); formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>'); formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>'); formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>'); formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>'); formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>'); formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>'); const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0); formatted = blocks.map(block => { if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block; let content = block.replace(/\n/g, ' '); return `<p>${content}</p>`; }).join(''); return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            stopGame(); // Stop minigame when modal hides
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             stopGame(); // Ensure game stops on reset too
+             modalLoadingIndicator.style.display = 'flex'; // Show loading part first
+             minigameContainer.style.display = 'none'; // Hide game part
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTopicTitle = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message, sender) { const msgDiv = document.createElement('div'); msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message'); message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); message = message.replace(/\*(.*?)\*/g, '<em>$1</em>'); msgDiv.innerHTML = message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        function addChatError(message) { const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        async function handleSendMessage() { const userQuery = chatInput.value.trim(); if (!userQuery || chatSendBtn.disabled) return; addChatMessage(userQuery, 'user'); chatInput.value = ''; chatSendBtn.disabled = true; chatLoadingIndicator.style.display = 'block'; try { const aiResponse = await fetchChatResponse(userQuery); addChatMessage(aiResponse, 'ai'); } catch (error) { console.error("Chat Error:", error); addChatError(`Error Cronista: ${error.message}`); } finally { chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; chatInput.focus(); } }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) { if (!titleListContainer || !titlesLoading) return; const sortedTitles = titles.sort((a, b) => a.localeCompare(b)); titleListContainer.innerHTML = ''; titlesLoading.style.display = 'none'; if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center font-sans">~ Archivos temporales vacíos ~</p>'; return; } sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title))); }
+        function appendTitles(newTitles) { if (!titleListContainer || !newTitles || newTitles.length === 0) return; const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title)); newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } }); filterTitles(searchInput.value); }
+
+        // *** MODIFIED: handleTitleClick integrates minigame start ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            startGame(); // START THE MINIGAME!
+            modalTitle.textContent = title;
+            currentTopicTitle = title;
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            // Keep loading spinner visible while game runs and API fetches
+            modalLoadingIndicator.style.display = 'flex';
+
+            try {
+                // Fetch text in parallel with the game running
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // --- Content Ready ---
+                stopGame(); // Stop the game now that content is loaded
+                modalLoadingIndicator.style.display = 'none'; // Hide spinner & game container area
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalTextArea.scrollTop = 0; // Reset scroll *after* content visible
+
+                // Prepare image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Renderizando visión temporal...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                // Create image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visión conceptual de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    placeholderDiv.remove(); imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Visualización fallida.</p>`; };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) { imgElement.src = imageUrl; modalContent.appendChild(imgElement); }
+                else { placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`; }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                stopGame(); // Ensure game stops on error too
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el archivo temporal.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles asks for 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Ampliando Archivos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches TITLES_TO_GENERATE (40)
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron ampliar los archivos en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al ampliar archivos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = `<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Ampliar Archivos Temporales (${TITLES_TO_GENERATE})`; // Update button text maybe?
+             }
+         }
+
+         // *** Search Filter Function (sin cambios) ***
+         function filterTitles(searchTerm) { const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); const titleItems = titleListContainer.querySelectorAll('.title-item'); let visibleCount = 0; titleItems.forEach(item => { const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); const isVisible = titleText.includes(term); item.classList.toggle('hidden', !isVisible); if (isVisible) visibleCount++; }); noResultsMsg.classList.toggle('hidden', visibleCount > 0); }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Check essential elements including minigame ones
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !minigameContainer || !anomalyButton || !buyStabilizerBtn) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">[[ERROR CRÍTICO DE INICIALIZACIÓN TEMPORAL]] Componentes de interfaz perdidos en el flujo.</p>';
+                return;
+             }
+            // Standard Listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+            // Minigame Listeners
+            anomalyButton.addEventListener('click', clickAnomaly);
+            buyStabilizerBtn.addEventListener('click', buyStabilizer);
+
+            // Initial Display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+            // Update button text to reflect the number
+             generateMoreBtn.innerHTML = `<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Ampliar Archivos Temporales (${TITLES_TO_GENERATE})`;
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

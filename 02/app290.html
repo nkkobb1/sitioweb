@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Religión Fenicia - Exploración Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes clásicas/legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Religión Fenicia --- */
+        :root {
+            --color-primary: #6a0dad; /* Púrpura de Tiro */
+            --color-secondary: #003366; /* Azul Marino Profundo */
+            --color-tertiary: #e0ae5f; /* Ocre/Dorado Arena */
+            --color-background: #fdf6e8; /* Beige Papiro Muy Claro */
+            --color-text: #4a3b33; /* Marrón Oscuro (Texto Principal) */
+            --color-text-muted: #8c7b70; /* Marrón Grisáceo (Texto Secundario) */
+            --color-modal-bg: #fffaf0; /* Blanco Floral / Crema */
+            --color-border: #dcd0c0; /* Borde Arena Claro */
+            --color-error-bg: #fde8e8; /* Fondo error rosa pálido */
+            --color-error-text: #9b2c2c; /* Texto error rojo oscuro */
+            --color-error-border: #fecaca; /* Borde error rojo claro */
+
+            --shadow-sm: 0 2px 4px 0 rgba(106, 13, 173, 0.1);
+            --shadow-md: 0 4px 8px -1px rgba(106, 13, 173, 0.15), 0 2px 6px -2px rgba(106, 13, 173, 0.1);
+            --shadow-lg: 0 10px 20px -5px rgba(106, 13, 173, 0.2), 0 8px 10px -6px rgba(106, 13, 173, 0.15);
+            --border-radius: 5px; /* Bordes suavemente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.7; font-weight: 400; }
+        h1, h2, h3, h4, .logo { font-family: 'Cinzel', serif; font-weight: 700; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-secondary); font-weight: 700; }
+        .navbar { background-color: rgba(253, 246, 232, 0.85); /* Fondo papiro semi-transparente */ backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-modal-bg); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(106, 13, 173, 0.2); outline: none; background-color: #ffffff; }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Lato'; font-size: 0.95rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-tertiary); color: var(--color-primary); background-color: #fffefb; border-left-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color: white; padding: 0.8rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Cinzel', serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 0.5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-secondary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.02); }
+        #generate-more-btn:disabled { background: var(--color-text-muted); color: var(--color-background); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(74, 59, 51, 0.88); /* Overlay Marrón Oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 10px; background: var(--color-border); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: white; transform: rotate(90deg); }
+        #modal-title { font-size: 1.8rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-tertiary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-tertiary); border-radius: var(--border-radius); border: 1px solid var(--color-border); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-secondary); font-style: italic; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Cinzel', serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-secondary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.4em; }
+        #modal-content h2 { font-size: 1.25em; }
+        #modal-content h3 { font-size: 1.15em; color: var(--color-primary); }
+        #modal-content h4 { font-size: 1.05em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-md); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(220, 208, 192, 0.7); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; color: var(--color-tertiary);}
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(253, 246, 232, 0.6); scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-tertiary); color: var(--color-text); margin-left: auto; text-align: right; font-weight: 400;}
+        .ai-message { background-color: #e9e0d4; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 400; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: white; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Lato'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); }
+        #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-secondary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: var(--color-primary); }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* Loading Overlay con Puzzle */
+        #modal-loading {
+            text-align: center;
+            padding: 1rem; /* Menos padding para dar espacio al juego */
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(253, 246, 232, 0.97); /* Fondo papiro semi-opaco */
+            display: none; /* Se muestra con JS */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Centrar verticalmente */
+            z-index: 55;
+            border-radius: var(--border-radius);
+        }
+        #modal-loading.active { display: flex; } /* Clase para mostrar */
+
+        #loading-status { margin-bottom: 1rem; }
+        #loading-text { font-weight: 700; color: var(--color-primary); font-size: 1.3rem; font-family: 'Cinzel'; margin-bottom: 0.5rem; }
+        #puzzle-score-level { font-weight: 400; color: var(--color-text); font-size: 1rem; font-family: 'Lato'; }
+
+        #puzzle-canvas {
+            background-color: #eee5d8; /* Fondo tablero un poco más oscuro */
+            border: 2px solid var(--color-secondary);
+            border-radius: 4px;
+            display: block; /* Evita espacio extra debajo */
+            margin-bottom: 1rem; /* Espacio antes del texto final */
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        #loading-final-text { font-weight: 400; color: var(--color-text-muted); font-size: 0.9rem; font-family: 'Lato'; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Lato'; }
+        .error-msg i { margin-right: 0.7rem; }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay (sin cambios visuales mayores) */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(74, 59, 51, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-tertiary); box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-tertiary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-tertiary); color: var(--color-text); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-ankh mr-3 text-purple-700"></i> <!-- Ankh (o similar antiguo) -->
+                     Religión Fenicia
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wider">» Exploración Interactiva «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Misterios de Canaán Marítima</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-light">Navega por el panteón, los rituales y las creencias de los antiguos fenicios. Selecciona un tema o busca para desvelar sus secretos.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar deidad, rito, lugar...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-purple-700 mr-2"></i>
+                 Índice Temático
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Consultando los archivos antiguos...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron registros para esa consulta «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Más Conocimiento (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Overlay con Puzzle -->
+             <div id="modal-loading">
+                 <div id="loading-status">
+                     <p id="loading-text">Descifrando Inscripciones...</p>
+                     <p id="puzzle-score-level">Nivel: 1 | Puntos: 0 / 1000</p>
+                 </div>
+                 <canvas id="puzzle-canvas" width="300" height="300"></canvas> <!-- Tamaño base del puzzle -->
+                 <p id="loading-final-text">Mientras esperas, alinea los símbolos fenicios.</p>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Consultando al oráculo...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta más sobre este tema...">
+                         <button id="chat-send-btn" aria-label="Enviar Consulta"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Interpretaciones basadas en evidencia arqueológica e histórica sobre la religión fenicia, generadas por IA.</p>
+              <p class="mt-1">La información debe ser contrastada con fuentes académicas especializadas.</p>
+              <p class="mt-2">© 2025 Exploración Fenicia</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Dioses Principales
+            "Ba'al Hammon: El Señor de los Altares de Incienso", "Tanit: Diosa Lunar y Celestial de Cartago", "Melqart: Dios Patrono de Tiro y la Navegación", "Astarte (Ashtart): Diosa del Amor, la Fertilidad y la Guerra", "Eshmun: Dios Sanador de Sidón", "Reshef: Dios de la Plaga y la Guerra", "Baalat Gebal: La 'Señora de Byblos'", "Mot: Personificación de la Muerte y el Inframundo", "Yam: Dios Primordial del Mar Caótico", "Kothar-wa-Khasis: Dios Artesano y de la Sabiduría", "Shadrafa: Dios Sanador o Demonio?", "Dagon: Dios del Grano y la Agricultura (Origen Cananeo)", "Anat: Diosa Guerrera (Influencia Cananea)", "El (Il): Padre de los Dioses (Rol en Fenicia)", "Bes: Protector del Hogar (Influencia Egipcia)",
+            // Panteón y Cosmología
+            "El Panteón Fenicio: Estructura y Jerarquías", "Mitos de Creación Fenicios (Fragmentarios)", "La Lucha entre Ba'al y Yam: Mito del Orden contra el Caos", "El Descenso de Ba'al al Inframundo (vs. Mot)", "Cosmología Fenicia: El Cielo, la Tierra y el Inframundo", "Influencias Cananeas y Ugaríticas en la Religión Fenicia", "Sincretismo Religioso: Fusión con Dioses Egipcios, Griegos y Romanos", "El Concepto Fenicio del Alma y la Vida Después de la Muerte", "Ángeles y Demonios Menores en la Creencia Fenicia", "Genios Protectores (Genii) de Lugares y Personas", "El Papel de los Astros: Sol, Luna y Estrellas", "La Montaña Divina: Sede de los Dioses (Monte Sapan/Cassius)", "El Mar como Entidad Divina y Peligrosa",
+            // Rituales y Prácticas
+            "El Sacrificio 'Molk': Interpretaciones y Controversias", "Sacrificios Animales Comunes: Ofrendas a los Dioses", "Ofrendas Votivas: Exvotos y Dedicatorias", "Libaciones: Ofrendas Líquidas (Vino, Aceite)", "Rituales de Purificación: Agua y Fuego", "Festivales Religiosos Fenicios (Calendario)", "Prácticas Adivinatorias: Hepatoscopia y Oráculos", "Ritos Funerarios: Inhumación vs. Cremación", "Ajuar Funerario Fenicio: Creencias sobre el Más Allá", "El Sacerdocio Fenicio: Roles y Organización", "Las Sacerdotisas de Astarte: Culto y Funciones", "La Música y la Danza en los Rituales Fenicios", "Uso de Incienso y Perfumes en el Culto", "Juramentos y Maldiciones en Nombre de los Dioses", "Procesiones Religiosas y Actos Públicos", "Magia y Amuletos en la Religión Popular Fenicia",
+            // Lugares Sagrados
+            "Templos Fenicios: Arquitectura y Diseño General", "El Templo de Melqart en Tiro: Descripción Histórica", "El Templo de Eshmun en Sidón (Bostan esh-Sheikh)", "Santuarios Rurales y en Lugares Altos ('High Places')", "Los 'Tophets': Santuarios de Sacrificio Infantil (Interpretación)", "Estelas Votivas de los Tophets (Cartago, Motya)", "Árboles y Arboledas Sagradas (Culto a Asherah/Astarte?)", "Fuentes y Manantiales Sagrados", "Las Necrópolis Fenicias: Ciudades de los Muertos (Byblos, Sidón, Cartago)", "Altares Domésticos y Culto Familiar", "Betilos: Piedras Sagradas como Representación Divina",
+            // Símbolos e Iconografía
+            "El Símbolo de Tanit: Origen y Significado", "Representaciones Iconográficas de Ba'al Hammon", "La Corona Atef y su Adopción por Ba'al Hammon", "Iconografía de Melqart: El León y la Maza", "Representaciones de Astarte: La Paloma, la Estrella", "El Caduceo de Eshmun: Símbolo de Sanación", "El Barco Fenicio como Símbolo Religioso y Comercial", "El Árbol de la Vida en el Arte Fenicio", "El Ojo Protector (Udyat) en Amuletos Fenicios", "Esfinges y Grifos en el Arte Religioso Fenicio", "Motivos Egipcios en la Iconografía Fenicia", "El Alfabeto Fenicio: ¿Origen Divino?",
+            // Religión y Sociedad
+            "La Religión como Pilar de la Identidad Fenicia", "El Rol de la Religión en el Comercio y la Colonización", "Religión Cívica: Dioses Patronos de las Ciudades-Estado", "Reyes Fenicios como Sumos Sacerdotes", "Influencia de la Religión Fenicia en Grecia (Cadmo, Europa)", "Influencia de la Religión Fenicia en Roma (Dido, Cartago)", "Religión Fenicia en las Colonias: Cartago, Iberia, Cerdeña", "Pervivencia de Creencias Fenicias tras la Conquista Romana", "Fuentes para el Estudio de la Religión Fenicia: Arqueología y Textos", "Autores Clásicos sobre la Religión Fenicia (Heródoto, Filón de Biblos)", "La Biblia como Fuente (Crítica) sobre Religión Cananea/Fenicia",
+            // Temas Específicos y Comparativos
+            "Religión Fenicia vs. Religión Cananea: Similitudes y Diferencias", "Comparación con la Mitología Ugarítica (Ras Shamra)", "Paralelos con la Religión Mesopotámica", "Interacciones con la Religión Egipcia", "El Culto a Adonis (Tammuz): Orígenes Fenicios?", "Mitos Solares y Lunares en Fenicia", "El Concepto de 'Ba'al' (Señor) en Diferentes Contextos", "La Ética y Moral en la Religión Fenicia (Inferida)", "Visiones del Mundo y Escatología Fenicia", "El Legado de la Religión Fenicia en el Mediterráneo",
+            // ... (Se añadirán más para alcanzar ~400 iniciales, cubriendo variantes, figuras menores, detalles rituales, etc.)
+            // Ejemplo de títulos adicionales para volumen:
+            "Ba'al Shamem: Señor de los Cielos", "Sydyk y Misor: Dioses del Orden y la Ley", "Tabnit: Rey Sacerdote de Sidón", "Sarcófago de Ahiram: Iconografía Funeraria", "El 'Cippus de Melqart' de Malta: Bilingüismo", "Prácticas Mágicas para la Navegación Segura", "Amuletos contra el Mal de Ojo", "Rituales Agrícolas y de Fertilidad", "El Culto a los Antepasados en Fenicia", "Interpretación de los Sueños y Augurios", "Tabúes Alimenticios y de Comportamiento", "El Templo como Centro Económico", "Ofrendas de Terracota: Figurillas Votivas", "Máscaras Rituales Fenicias", "Influencia Fenicia en el Culto a Hércules", "Dido y la Fundación Mítica de Cartago", "Religión Fenicia en Gadir (Cádiz)", "Religión Fenicia en Ibiza (Ebusus)", "La Diosa Luna en Diferentes Culturas Fenicias", "Ba'al Addir: El 'Señor Poderoso'", "Sacrificios Humanos: Evidencia Arqueológica vs. Textual", "El Santuario de Astarte en Eryx (Sicilia)", "Orfebrería Religiosa Fenicia", "Sellos Cilíndricos con Motivos Divinos", "La Vid y el Vino en Rituales Fenicios", "El Olivo y el Aceite Sagrado", "Deidades Menores del Hogar y la Familia", "Creencias sobre Fantasmas y Espíritus Malignos", "Rituales de Paso: Nacimiento, Matrimonio, Muerte", "El Papel de los Niños en el Culto (Más allá del Molk)", "Continuidad Religiosa Púnica bajo Roma", "Filón de Biblos y la 'Historia Fenicia'", "Sanchuniathon: ¿Fuente Histórica o Mítica?", "Pausanias sobre Cultos Fenicios en Grecia", "Plutarco y las Interpretaciones de Dioses Fenicios", "San Agustín y sus Referencias al Pasado Púnico", "Evidencia Epigráfica: Inscripciones Votivas y Funerarias", "Iconografía en Monedas Fenicias y Púnicas", "Toponimia de Origen Religioso Fenicio", "El Debate Académico sobre la Naturaleza del 'Tophet'", "Reconstrucción del Calendario Litúrgico Fenicio", "El Papel del Mar en la Psicología Religiosa Fenicia", "Miedo a los Dioses vs. Confianza y Petición", "Conceptos de Pureza e Impureza Ritual", "El Santuario como Espacio de Asilo", "Reliquias y Objetos Sagrados", "Peregrinaciones a Lugares Santos", "Mitos sobre Héroes Culturales Fenicios", "La Música en el Templo y las Festividades", "Instrumentos Musicales Asociados al Culto", "Vestimentas Sacerdotales", "Jerarquía y Funciones del Clero Menor", "Financiación de Templos y Rituales", "Relación entre Templos de la Metrópoli y Colonias", "Adaptaciones Locales de la Religión Fenicia", "El Culto a Eshmun fuera de Sidón", "Astarte y sus Diversas Manifestaciones Regionales", "Ba'al Hammon en el Norte de África", "Melqart en el Mediterráneo Occidental", "Sincretismo Fenicio-Egipcio en Byblos", "Sincretismo Fenicio-Griego en Chipre", "Resistencia Cultural y Religiosa Púnica", "El Legado Lingüístico Religioso (Nombres Teofóricos)" // ... y así sucesivamente, profundizando en cada aspecto.
+        ];
+        const phoenicianThemes = [
+            "dioses fenicios", "mitología fenicia", "rituales fenicios", "sacrificios fenicios", "templos fenicios", "tophets", "religión de Cartago", "religión de Tiro", "religión de Sidón", "influencia fenicia en Grecia", "sincretismo religioso fenicio", "Astarte", "Ba'al Hammon", "Tanit", "Melqart", "Eshmun", "vida después de la muerte fenicia", "sacerdocio fenicio", "alfabeto y religión", "navegación y religión fenicia", "arte religioso fenicio", "influencia cananea", "mitos de creación fenicios", "religión popular fenicia", "amuletos fenicios", "historia de la religión fenicia"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un historiador y arqueólogo altamente especializado en las religiones del antiguo Próximo Oriente, con un enfoque experto en la civilización fenicia y púnica. Tu tarea es proporcionar una descripción detallada, académica y matizada sobre el aspecto específico de la religión fenicia indicado (dios, mito, ritual, lugar, concepto). Basa tu respuesta en evidencia arqueológica, epigráfica y textual (incluyendo fuentes primarias y secundarias, reconociendo sus sesgos). Cubre orígenes, características principales, iconografía, áreas de influencia, prácticas asociadas, evolución histórica, interpretaciones académicas (mencionando debates si existen), y su contexto sociocultural. Utiliza un lenguaje preciso y formal. El objetivo es una exposición exhaustiva de aproximadamente 1200-1300 palabras. Aborda el tema consultado:",
+            timeoutSeconds: 180 // Aumentado a 3 minutos
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un asistente académico especializado únicamente en el tema de religión fenicia que se está discutiendo. Responde preguntas de seguimiento sobre detalles específicos, clarificaciones o conexiones mencionadas en la descripción principal. Sé conciso, preciso y mantente estrictamente dentro del contexto fenicio/púnico proporcionado.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            // Prompt ajustado para pedir 40 títulos
+            systemPrompt: "Actúa como un generador de ideas conciso para una enciclopedia sobre religión fenicia. Genera exactamente 40 nombres de deidades, mitos, rituales, lugares sagrados, símbolos o conceptos relevantes y específicos de la religión fenicia y púnica, adecuados para una descripción académica detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Un poco más de tiempo para generar más títulos
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Igual que antes, pero añadiendo elementos del puzzle)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading'); // Ahora el overlay del puzzle
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        // Puzzle Elements
+        const puzzleCanvas = document.getElementById('puzzle-canvas');
+        const loadingText = document.getElementById('loading-text');
+        const puzzleScoreLevelText = document.getElementById('puzzle-score-level');
+
+        // ========== PUZZLE GAME LOGIC ==========
+        const PuzzleGame = {
+            canvas: null,
+            ctx: null,
+            gridSize: 8, // 8x8 grid
+            tileSize: 36, // Size of each tile in pixels
+            tiles: [], // 2D array for the game board
+            tileTypes: 6, // Number of different symbols/colors
+            tileColors: ['#6a0dad', '#003366', '#e0ae5f', '#b87333', '#4682b4', '#8b4513'], // Purple, Blue, Gold, Bronze, SteelBlue, SaddleBrown
+            tileSymbols: ['<i class="fas fa-ankh"></i>', '<i class="fas fa-ship"></i>', '<i class="fas fa-coins"></i>', '<i class="fas fa-tree"></i>', '<i class="fas fa-om"></i>', '<i class="fas fa-vihara"></i>'], // Ankh, Ship, Coins(Amphora?), Tree, Tanit-like(Om?), Temple(Vihara?) - Use FA icons for simplicity
+            selectedTile: null,
+            isSwapping: false,
+            isDropping: false,
+            score: 0,
+            level: 1,
+            pointsPerLevel: 1000,
+            gameLoopInterval: null,
+            isRunning: false,
+            lastFrameTime: 0,
+            comboMultiplier: 1,
+
+            init(canvasElement, scoreLevelElement) {
+                this.canvas = canvasElement;
+                if (!this.canvas) {
+                    console.error("Puzzle canvas not found!");
+                    return;
+                }
+                this.ctx = this.canvas.getContext('2d');
+                this.canvas.width = this.gridSize * this.tileSize;
+                this.canvas.height = this.gridSize * this.tileSize;
+                this.scoreLevelElement = scoreLevelElement;
+
+                this.canvas.addEventListener('click', this.handleClick.bind(this));
+                console.log("Puzzle Initialized");
+            },
+
+            start() {
+                if (this.isRunning) return;
+                console.log("Starting Puzzle Game");
+                this.isRunning = true;
+                this.score = 0;
+                this.level = 1;
+                this.comboMultiplier = 1;
+                this.selectedTile = null;
+                this.isSwapping = false;
+                this.isDropping = false;
+                this.updateScoreLevelDisplay();
+                this.initBoard();
+                // Ensure board is stable before starting loop
+                while(this.findAndClearMatches()) {
+                    this.dropTiles();
+                }
+                this.lastFrameTime = performance.now();
+                this.gameLoopInterval = requestAnimationFrame(this.gameLoop.bind(this));
+            },
+
+            stop() {
+                if (!this.isRunning) return;
+                console.log("Stopping Puzzle Game");
+                this.isRunning = false;
+                if (this.gameLoopInterval) {
+                    cancelAnimationFrame(this.gameLoopInterval);
+                    this.gameLoopInterval = null;
+                }
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear canvas on stop
+            },
+
+            gameLoop(currentTime) {
+                if (!this.isRunning) return;
+
+                const deltaTime = (currentTime - this.lastFrameTime) / 1000; // Time in seconds
+                this.lastFrameTime = currentTime;
+
+                this.update(deltaTime); // Update game state (animations, etc.)
+                this.draw(); // Draw the current state
+
+                this.gameLoopInterval = requestAnimationFrame(this.gameLoop.bind(this));
+            },
+
+            update(deltaTime) {
+                if (this.isSwapping || this.isDropping) {
+                    // Handle animations (simplified here, would need proper animation logic)
+                    // For now, just assume swaps/drops are instant for simplicity
+                } else {
+                    // Core game logic: Find matches -> Clear -> Drop -> Repeat
+                    if (this.findAndClearMatches()) {
+                         this.isDropping = true; // Start drop "animation"
+                         // In a real game, drops would take time. Here, we do it instantly.
+                         this.dropTiles();
+                         this.isDropping = false;
+                         this.comboMultiplier++; // Increase combo for consecutive matches
+                    } else {
+                         this.comboMultiplier = 1; // Reset combo if no matches found
+                    }
+                }
+                 // Check for level up
+                if (this.score >= this.level * this.pointsPerLevel) {
+                    this.level++;
+                    console.log("Level Up! Reached Level", this.level);
+                    // Potentially increase difficulty here (e.g., faster timer if implemented)
+                    this.updateScoreLevelDisplay();
+                }
+            },
+
+            initBoard() {
+                this.tiles = [];
+                for (let r = 0; r < this.gridSize; r++) {
+                    this.tiles[r] = [];
+                    for (let c = 0; c < this.gridSize; c++) {
+                        this.tiles[r][c] = this.getRandomTileType();
+                    }
+                }
+                // Prevent initial matches - Keep generating until no matches exist
+                while (this.checkForInitialMatches()) {
+                     for (let r = 0; r < this.gridSize; r++) {
+                        for (let c = 0; c < this.gridSize; c++) {
+                             this.tiles[r][c] = this.getRandomTileType();
+                        }
+                    }
+                }
+                console.log("Board Initialized");
+            },
+
+            checkForInitialMatches() {
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        // Check horizontal match
+                        if (c < this.gridSize - 2 && this.tiles[r][c] === this.tiles[r][c+1] && this.tiles[r][c] === this.tiles[r][c+2]) {
+                            return true;
+                        }
+                        // Check vertical match
+                        if (r < this.gridSize - 2 && this.tiles[r][c] === this.tiles[r+1][c] && this.tiles[r][c] === this.tiles[r+2][c]) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            },
+
+            getRandomTileType() {
+                return Math.floor(Math.random() * this.tileTypes);
+            },
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize; c++) {
+                        if (this.tiles[r][c] !== null) { // Draw only if tile exists
+                            const x = c * this.tileSize;
+                            const y = r * this.tileSize;
+                            const tileType = this.tiles[r][c];
+
+                            // Draw background color
+                            this.ctx.fillStyle = this.tileColors[tileType];
+                            this.ctx.fillRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4);
+                             this.ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                             this.ctx.strokeRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4);
+
+
+                            // Draw symbol (using Font Awesome via innerHTML on a temporary element)
+                            // This is a HACK for canvas, better to use actual images or SVG paths
+                            this.ctx.font = `${this.tileSize * 0.6}px "Font Awesome 6 Free"`; // Ensure FA is loaded
+                            this.ctx.fillStyle = 'white'; // Color for the icon
+                             this.ctx.textAlign = 'center';
+                             this.ctx.textBaseline = 'middle';
+
+                             // Find the correct Font Awesome unicode character for the icon class
+                             // Example: fas fa-ship -> find unicode for 'ship'
+                             let symbolChar = '?'; // Default
+                             switch(this.tileSymbols[tileType]) {
+                                 case '<i class="fas fa-ankh"></i>': symbolChar = '\uf644'; break; // Ankh
+                                 case '<i class="fas fa-ship"></i>': symbolChar = '\uf21a'; break; // Ship
+                                 case '<i class="fas fa-coins"></i>': symbolChar = '\uf51e'; break; // Coins (representing amphora/trade good)
+                                 case '<i class="fas fa-tree"></i>': symbolChar = '\uf1bb'; break; // Tree (Cedar)
+                                 case '<i class="fas fa-om"></i>': symbolChar = '\uf679'; break; // Om (Placeholder for Tanit-like)
+                                 case '<i class="fas fa-vihara"></i>': symbolChar = '\uf6a7'; break; // Vihara (Placeholder for temple)
+                             }
+
+                            this.ctx.fillText(symbolChar, x + this.tileSize / 2, y + this.tileSize / 2 + 2); // Adjust position slightly
+
+
+                            // Highlight selected tile
+                            if (this.selectedTile && this.selectedTile.r === r && this.selectedTile.c === c) {
+                                this.ctx.strokeStyle = '#FFFF00'; // Yellow highlight
+                                this.ctx.lineWidth = 3;
+                                this.ctx.strokeRect(x + 1, y + 1, this.tileSize - 2, this.tileSize - 2);
+                                this.ctx.lineWidth = 1; // Reset line width
+                            }
+                        }
+                    }
+                }
+            },
+
+            handleClick(event) {
+                if (!this.isRunning || this.isSwapping || this.isDropping) return;
+
+                const rect = this.canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                const c = Math.floor(x / this.tileSize);
+                const r = Math.floor(y / this.tileSize);
+
+                if (r < 0 || r >= this.gridSize || c < 0 || c >= this.gridSize) return; // Click outside grid
+
+                if (!this.selectedTile) {
+                    // First tile selected
+                    this.selectedTile = { r, c };
+                    console.log("Selected:", r, c);
+                } else {
+                    // Second tile selected - attempt swap
+                    const dr = Math.abs(r - this.selectedTile.r);
+                    const dc = Math.abs(c - this.selectedTile.c);
+
+                    if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+                        // Adjacent tile selected, attempt swap
+                        this.attemptSwap(this.selectedTile.r, this.selectedTile.c, r, c);
+                    } else {
+                         // Clicked same tile or non-adjacent, deselect or select new
+                        if(this.selectedTile.r === r && this.selectedTile.c === c) {
+                            this.selectedTile = null; // Deselect
+                        } else {
+                             this.selectedTile = { r, c }; // Select new tile
+                             console.log("Selected new:", r, c);
+                        }
+                    }
+                }
+                this.draw(); // Redraw immediately to show selection/deselection
+            },
+
+            attemptSwap(r1, c1, r2, c2) {
+                this.isSwapping = true; // Lock input during check
+
+                // Perform the swap visually (or logically for now)
+                [this.tiles[r1][c1], this.tiles[r2][c2]] = [this.tiles[r2][c2], this.tiles[r1][c1]];
+
+                // Check if the swap results in a match
+                const matchFound = this.checkForMatchesAfterSwap(r1, c1) || this.checkForMatchesAfterSwap(r2, c2);
+
+                if (matchFound) {
+                    console.log("Valid Swap - Match found!");
+                    // Keep the swap, clear matches in the next update cycle
+                    this.findAndClearMatches(); // Clear immediately
+                    this.dropTiles();         // Drop immediately
+                    this.selectedTile = null;
+                    this.isSwapping = false; // Unlock
+                } else {
+                    console.log("Invalid Swap - No match");
+                    // Swap back visually (or logically)
+                     [this.tiles[r1][c1], this.tiles[r2][c2]] = [this.tiles[r2][c2], this.tiles[r1][c1]];
+                    this.selectedTile = null;
+                    this.isSwapping = false; // Unlock
+                }
+                 this.draw(); // Redraw after swap attempt
+            },
+
+            checkForMatchesAfterSwap(r, c) {
+                 const tileType = this.tiles[r][c];
+                 if (tileType === null) return false;
+
+                 // Check Horizontal
+                 let hMatch = [{r,c}];
+                 // Left
+                 for (let i = c - 1; i >= 0 && this.tiles[r][i] === tileType; i--) hMatch.push({r, c:i});
+                 // Right
+                 for (let i = c + 1; i < this.gridSize && this.tiles[r][i] === tileType; i++) hMatch.push({r, c:i});
+
+                 // Check Vertical
+                 let vMatch = [{r,c}];
+                  // Up
+                 for (let i = r - 1; i >= 0 && this.tiles[i][c] === tileType; i--) vMatch.push({r:i, c});
+                 // Down
+                 for (let i = r + 1; i < this.gridSize && this.tiles[i][c] === tileType; i++) vMatch.push({r:i, c});
+
+                 return hMatch.length >= 3 || vMatch.length >= 3;
+            },
+
+
+            findAndClearMatches() {
+                let matchesFound = false;
+                let tilesToClear = []; // Store {r, c} of matched tiles
+
+                // Check Horizontal Matches
+                for (let r = 0; r < this.gridSize; r++) {
+                    for (let c = 0; c < this.gridSize - 2; c++) {
+                        if (this.tiles[r][c] !== null && this.tiles[r][c] === this.tiles[r][c+1] && this.tiles[r][c] === this.tiles[r][c+2]) {
+                            matchesFound = true;
+                            let length = 3;
+                            while (c + length < this.gridSize && this.tiles[r][c] === this.tiles[r][c+length]) {
+                                length++;
+                            }
+                            for (let i = 0; i < length; i++) {
+                                tilesToClear.push({ r: r, c: c + i });
+                            }
+                            c += length - 1; // Skip checked tiles
+                        }
+                    }
+                }
+
+                // Check Vertical Matches
+                 for (let c = 0; c < this.gridSize; c++) {
+                    for (let r = 0; r < this.gridSize - 2; r++) {
+                         if (this.tiles[r][c] !== null && this.tiles[r][c] === this.tiles[r+1][c] && this.tiles[r][c] === this.tiles[r+2][c]) {
+                             matchesFound = true;
+                             let length = 3;
+                             while (r + length < this.gridSize && this.tiles[r][c] === this.tiles[r+length][c]) {
+                                 length++;
+                             }
+                             for (let i = 0; i < length; i++) {
+                                // Avoid adding duplicates if part of horizontal match too
+                                if (!tilesToClear.some(t => t.r === r + i && t.c === c)) {
+                                     tilesToClear.push({ r: r + i, c: c });
+                                }
+                             }
+                             r += length - 1; // Skip checked tiles
+                         }
+                     }
+                 }
+
+                if (matchesFound) {
+                    // Clear matched tiles and add score
+                    let pointsEarned = 0;
+                    tilesToClear.forEach(tilePos => {
+                        if (this.tiles[tilePos.r][tilePos.c] !== null) { // Avoid double counting cleared tiles
+                            this.tiles[tilePos.r][tilePos.c] = null; // Mark as cleared
+                            pointsEarned += 10; // Base points per tile
+                        }
+                    });
+                     this.score += pointsEarned * this.comboMultiplier;
+                     this.updateScoreLevelDisplay();
+                    console.log(`Cleared ${tilesToClear.length} tiles. Score: ${this.score} (Combo x${this.comboMultiplier})`);
+                }
+
+                return matchesFound;
+            },
+
+            dropTiles() {
+                this.isDropping = true;
+                for (let c = 0; c < this.gridSize; c++) {
+                    let emptyRow = this.gridSize - 1;
+                    for (let r = this.gridSize - 1; r >= 0; r--) {
+                        if (this.tiles[r][c] !== null) {
+                            if (r !== emptyRow) {
+                                // Move tile down
+                                this.tiles[emptyRow][c] = this.tiles[r][c];
+                                this.tiles[r][c] = null;
+                            }
+                            emptyRow--;
+                        }
+                    }
+                    // Fill empty top rows with new tiles
+                    for (let r = emptyRow; r >= 0; r--) {
+                        this.tiles[r][c] = this.getRandomTileType();
+                    }
+                }
+                 this.isDropping = false;
+                 // Important: After dropping, check for new matches immediately
+                // This handles cascading matches
+                // if (this.findAndClearMatches()) {
+                //     this.dropTiles(); // Recursive call to handle cascades
+                // }
+            },
+
+            updateScoreLevelDisplay() {
+                 if(this.scoreLevelElement) {
+                    this.scoreLevelElement.textContent = `Nivel: ${this.level} | Puntos: ${this.score} / ${this.level * this.pointsPerLevel}`;
+                 }
+            }
+        };
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Para el contexto del chat
+
+        // ========== API FUNCTIONS ==========
+        // fetchTextFromApi (adaptar mensajes de error)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentTopicTitle
+                 ? `Eres un asistente académico especializado únicamente en el tema de religión fenicia llamado '${currentTopicTitle}'. Responde preguntas de seguimiento sobre sus características, uso, o detalles mencionados en la descripción principal. Sé conciso, preciso y mantente estrictamente dentro del contexto fenicio/púnico proporcionado.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     // *** MENSAJE DE ERROR AMIGABLE ***
+                     throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento, por favor intenta de nuevo en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía. Intenta reformular o espera un momento.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La consulta tardó demasiado (>${config.timeoutSeconds}s). La conexión puede ser lenta o los servidores están ocupados. Inténtalo de nuevo.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado contactando a los escribas digitales.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentTopicTitle) throw new Error("Error interno: Contexto del tema no establecido."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        // fetchGeneratedTitles (adaptar para pedir 40)
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(phoenicianThemes) || "religión fenicia general";
+            const specificPrompt = `Genera 40 ítems (deidades, mitos, rituales, conceptos) sobre ${randomTheme}`; // Pide 40
+            const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) }; // Seed para variedad
+            return fetchTextFromApi(specificPrompt, configForThisRequest, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 5 && line.length < 150);
+                     if (titles.length < 10) throw new Error("La IA no generó suficientes ideas."); // Umbral más bajo por si acaso
+                     return titles.slice(0, 40); // Devuelve hasta 40
+                 });
+        }
+        // createPollinationsImageUrl (adaptar prompt)
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "ancient phoenician religious scene";
+             const enhancedPrompt = `Conceptual artwork inspired by '${safePromptText}'. Ancient Phoenician / Punic style. Focus on symbolism, atmosphere, mythology, temple ruins, sea trade. Use terracotta, deep blue, purple, gold color palette. Avoid text, labels, modern elements, photorealism.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, realistic photograph, modern clothing, cars, technology";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... (igual que antes) ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            PuzzleGame.stop(); // Asegurarse de detener el juego al cerrar modal
+            resetModalState();
+        }
+        function resetModalState() {
+             // No mostramos el loading indicator por defecto, se activa en handleTitleClick
+             modalLoadingIndicator.classList.remove('active');
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTopicTitle = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... (igual que antes) ... */
+            if (!imageFullscreenOverlay || !fullscreenImage) return;
+            fullscreenImage.src = imgSrc;
+            imageFullscreenOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function hideFullscreenImage() { /* ... (igual que antes) ... */
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message, sender) { /* ... (igual que antes) ... */
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message;
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+         }
+        function addChatError(message) { /* ... (igual que antes) ... */
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() { /* ... (igual que antes) ... */
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+         }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay temas en los archivos «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick to start puzzle and handle its stop ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            currentTopicTitle = title;
+            modalTitle.textContent = title; // Mostrar título inmediatamente
+            modalStoryContentArea.classList.add('content-hidden'); // Ocultar contenido principal
+            modalError.classList.add('content-hidden');
+
+            // *** START PUZZLE and show loading overlay ***
+            modalLoadingIndicator.classList.add('active');
+            PuzzleGame.start();
+
+            try {
+                // Fetch explanation in parallel with puzzle running
+                const rawExplanationText = await fetchExplanationText(title);
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // *** STOP PUZZLE and hide loading overlay ***
+                PuzzleGame.stop();
+                modalLoadingIndicator.classList.remove('active');
+
+                // Display content
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalTextArea.scrollTop = 0; // Reset scroll
+
+                // Prepare and load image (like before)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-palette placeholder-icon"></i><p style="font-size: 0.8em; margin-top: 0.5rem;">Creando representación visual...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Representación de ${title}`;
+                imgElement.style.display = 'none';
+                imgElement.onload = () => { placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); };
+                imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Visualización fallida.</p>`; };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) { imgElement.src = imageUrl; modalContent.appendChild(imgElement); }
+                else { placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL imagen.</p>`;}
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                // *** STOP PUZZLE and hide loading overlay on error ***
+                PuzzleGame.stop();
+                modalLoadingIndicator.classList.remove('active');
+
+                // Display error message
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el tema.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // handleGenerateMoreTitles (adaptar texto botón y lógica para 40)
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando textos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches up to 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron encontrar más temas en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar temas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // Texto del botón actualizado
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Más Conocimiento (40)';
+             }
+         }
+
+         // Search Filter Function (sin cambios)
+         function filterTitles(searchTerm) { /* ... (igual que antes) ... */
+            const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+        }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Check for essential elements, including puzzle canvas
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !puzzleCanvas || !puzzleScoreLevelText) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes de la interfaz.</p>';
+                return;
+             }
+
+            // Initialize Puzzle Game
+            PuzzleGame.init(puzzleCanvas, puzzleScoreLevelText);
+
+            // Event Listeners (igual que antes)
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>
