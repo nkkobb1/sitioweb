@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Snippets HTML/CSS/JS</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts: UI font + Code font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Generador de Código --- */
+        :root {
+            --color-primary: #4ade80; /* Verde Lima (Éxito, Código) */
+            --color-secondary: #60a5fa; /* Azul Claro (Enlaces, Info) */
+            --color-tertiary: #c084fc; /* Púrpura Claro (JS, Eventos) */
+            --color-background: #1f2937; /* Gris Azulado Oscuro (Fondo) */
+            --color-surface: #374151; /* Gris Medio Oscuro (Superficies) */
+            --color-text: #e5e7eb; /* Gris Muy Claro (Texto Principal) */
+            --color-text-muted: #9ca3af; /* Gris Claro (Texto Secundario) */
+            --color-border: #4b5563; /* Gris Oscuro (Bordes) */
+            --color-error-bg: #450a0a; /* Fondo error rojo muy oscuro */
+            --color-error-text: #fca5a5; /* Texto error rojo claro */
+            --color-error-border: #ef4444; /* Borde error rojo */
+            --font-ui: 'Roboto', sans-serif;
+            --font-code: 'Source Code Pro', monospace;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+            --border-radius: 4px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        html { background-color: var(--color-background); }
+        body { font-family: var(--font-ui); background-color: var(--color-background); color: var(--color-text); line-height: 1.6; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: var(--font-ui); font-weight: 700; }
+        .logo { color: var(--color-primary); font-weight: 500; letter-spacing: 0.5px; }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 500; }
+        #modal-title { color: var(--color-primary); font-weight: 500; }
+        .navbar { background-color: var(--color-surface); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Search Bar */
+        #search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-background); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: var(--font-ui); }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.3); outline: none; background-color: var(--color-surface); }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-surface); padding: 1.1rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: var(--font-ui); font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #4b5563; } /* Gris más claro hover */
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: var(--color-background); padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: var(--font-ui); font-weight: 500; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #22c55e; box-shadow: var(--shadow-md); } /* Verde más oscuro hover */
+        #generate-more-btn:disabled { background-color: var(--color-text-muted); color: var(--color-surface); cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        /* Modal */
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.9); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 1100px; /* Más ancho para código y preview */
+            width: 95%;
+            max-height: 90vh;
+            min-height: 500px; /* Altura mínima */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 12px; background: var(--color-border); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(90deg); }
+        #modal-title { font-size: 1.7rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Contenido del Modal: Código + Preview */
+        #modal-output-area {
+            flex-grow: 1;
+            min-height: 0; /* Para que overflow funcione */
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+            gap: 1.5rem;
+            overflow: hidden; /* Evita overflow general, cada panel tendrá el suyo */
+        }
+        .code-panel, .preview-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Ocultar overflow aquí */
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            background-color: var(--color-background); /* Fondo más oscuro para paneles */
+        }
+        .panel-header {
+            font-family: var(--font-ui);
+            font-weight: 500;
+            padding: 0.6rem 1rem;
+            background-color: var(--color-border);
+            color: var(--color-text);
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--color-surface);
+            font-size: 0.9rem;
+        }
+        .panel-header i { margin-right: 0.5rem; color: var(--color-primary); }
+        #code-display-container, #preview-container {
+            flex-grow: 1;
+            overflow: auto; /* Scroll independiente */
+            padding: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-surface);
+        }
+        #code-display-container::-webkit-scrollbar, #preview-container::-webkit-scrollbar { width: 8px; }
+        #code-display-container::-webkit-scrollbar-track, #preview-container::-webkit-scrollbar-track { background: var(--color-surface); border-radius: var(--border-radius); }
+        #code-display-container::-webkit-scrollbar-thumb, #preview-container::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-surface); }
+
+        /* Estilos para PrismJS (ajustados para encajar con el tema) */
+        #code-output { font-family: var(--font-code); font-size: 0.9em; line-height: 1.5; white-space: pre; word-wrap: normal; color: #d1d5db; /* Gris claro texto código */ background: none; text-shadow: none;}
+        #code-output .token.comment,
+        #code-output .token.prolog,
+        #code-output .token.doctype,
+        #code-output .token.cdata { color: #6b7280; font-style: italic;} /* Gris comentarios */
+        #code-output .token.punctuation { color: #9ca3af; } /* Puntuación gris medio */
+        #code-output .token.namespace { opacity: .7; }
+        #code-output .token.property,
+        #code-output .token.tag, /* Tags principales */
+        #code-output .token.boolean,
+        #code-output .token.number,
+        #code-output .token.constant,
+        #code-output .token.symbol,
+        #code-output .token.deleted { color: #60a5fa; } /* Azul claro */
+        #code-output .token.selector,
+        #code-output .token.attr-name, /* Nombres de atributos */
+        #code-output .token.string, /* Strings */
+        #code-output .token.char,
+        #code-output .token.builtin,
+        #code-output .token.inserted { color: #4ade80; } /* Verde primario */
+        #code-output .token.operator,
+        #code-output .token.entity,
+        #code-output .token.url,
+        .language-css .token.string,
+        .style .token.string { color: #e5e7eb; background: none;} /* Blanco/Gris muy claro */
+        #code-output .token.atrule,
+        #code-output .token.attr-value, /* Valores de atributos */
+        #code-output .token.keyword { color: #c084fc; } /* Púrpura */
+        #code-output .token.function,
+        #code-output .token.class-name { color: #facc15; } /* Amarillo */
+        #code-output .token.regex,
+        #code-output .token.important,
+        #code-output .token.variable { color: #fb923c; } /* Naranja */
+        #code-output .token.important,
+        #code-output .token.bold { font-weight: bold; }
+        #code-output .token.italic { font-style: italic; }
+        #code-output .token.entity { cursor: help; }
+
+        #preview-iframe { width: 100%; height: 100%; border: none; background-color: #ffffff; /* Fondo blanco para preview */ }
+
+        /* Loading Overlay & Minigame */
+        #modal-loading {
+            text-align: center; padding: 2rem; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(31, 41, 55, 0.98); display: none; /* Oculto inicialmente */ flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius);
+        }
+        #modal-loading.active { display: flex; } /* Mostrar cuando carga */
+        .loading-spinner-modal { width: 50px; height: 50px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin-bottom: 1rem; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.2rem; margin-bottom: 1.5rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Minigame Styles (Pong Example) --- */
+        #minigame-container { width: 80%; max-width: 300px; height: 150px; background-color: #000; position: relative; border: 2px solid var(--color-primary); margin-top: 1rem; overflow: hidden; cursor: none; /* Ocultar cursor sobre el juego */ }
+        .paddle { position: absolute; width: 10px; height: 40px; background-color: var(--color-primary); bottom: 10px; }
+        #player-paddle { left: 10px; top: 55px; /* Posición inicial Y explícita */ }
+        /* #ai-paddle { right: 10px; } */ /* Opcional: Añadir pala IA */
+        .ball { position: absolute; width: 10px; height: 10px; background-color: var(--color-secondary); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        #minigame-instructions { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem; }
+        /* --- End Minigame Styles --- */
+
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1rem; text-align: center; flex-shrink: 0; font-weight: 400; font-size: 0.95rem; }
+        .error-msg i { margin-right: 0.5rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+    </style>
+    <!-- Prism JS CSS (Theme) -->
+    <!-- Usaremos estilos personalizados arriba en lugar de un tema predefinido -->
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" /> -->
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fas fa-code mr-2"></i>
+                     Snippet<span class="text-gray-400">Gen</span>
+                 </h1>
+             </div>
+             <span class="text-xs text-gray-400 font-light tracking-wide">Generador de Código HTML/CSS/JS</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Crea Código al Instante</h1>
+             <p class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto font-light">Selecciona un concepto y obtén un ejemplo funcional de HTML, CSS y JavaScript listo para usar o estudiar.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto relative">
+             <input type="text" id="search-input" placeholder="Buscar snippet (ej: 'botón', 'formulario', 'hover'...)">
+             <i class="fas fa-search text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-list-alt text-blue-400 mr-2"></i>
+                 Conceptos Disponibles
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Cargando lista de snippets...</p>
+                  <!-- .title-item will be added here -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden">No se encontraron snippets para tu búsqueda.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Ideas (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Code Snippet Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator with Minigame -->
+             <div id="modal-loading"> <!-- NOT active by default -->
+                 <div class="loading-spinner-modal"></div>
+                 <p>Generando código...</p>
+                 <!-- Minigame Area -->
+                 <div id="minigame-container">
+                     <div id="player-paddle" class="paddle"></div>
+                     <!-- <div id="ai-paddle" class="paddle"></div> -->
+                     <div class="ball"></div>
+                 </div>
+                 <p id="minigame-instructions">Mueve el ratón para jugar mientras esperas</p>
+                 <!-- End Minigame Area -->
+             </div>
+
+             <!-- Content Area (Code + Preview) -->
+             <div id="modal-story-content-area" class="flex flex-col flex-grow min-h-0 content-hidden"> <!-- Hidden by default -->
+                <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                <div id="modal-output-area">
+                    <!-- Code Panel -->
+                    <div class="code-panel">
+                         <div class="panel-header"><i class="fas fa-file-code"></i>Código Generado</div>
+                         <div id="code-display-container">
+                             <!-- Note the class for Prism -->
+                             <pre><code id="code-output" class="language-html"></code></pre>
+                         </div>
+                    </div>
+                    <!-- Preview Panel -->
+                    <div class="preview-panel">
+                         <div class="panel-header"><i class="fas fa-eye"></i>Vista Previa</div>
+                         <div id="preview-container">
+                             <iframe id="preview-iframe" title="Vista Previa del Código" srcdoc="<html><head><title>Preview</title><style>body{display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#9ca3af;background:#374151;font-size:0.9em;}</style></head><body><div>Esperando generación de código...</div></body></html>"></iframe>
+                         </div>
+                    </div>
+                </div>
+                <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-800 text-gray-500 py-6 mt-12 border-t border-gray-700">
+          <div class="container mx-auto px-4 text-center text-xs font-light">
+              <p>Código generado por IA con fines educativos y de demostración.</p>
+              <p class="mt-1">Revisa y adapta el código antes de usarlo en producción.</p>
+              <p class="mt-2">© 2025 SnippetGen</p>
+          </div>
+      </footer>
+
+      <!-- Prism JS (Core + Autoloader for languages) -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // HTML Básico
+            "Estructura básica de una página HTML5", "Encabezados HTML (h1 a h6)", "Párrafo de texto simple", "Enlace a otra página web", "Enlace que abre en nueva pestaña", "Imagen simple (con alt text)", "Imagen con enlace", "Lista desordenada (ul)", "Lista ordenada (ol)", "Lista de definición (dl, dt, dd)", "Comentario en HTML", "Línea horizontal (hr)", "Salto de línea (br)", "Texto preformateado (pre)", "Bloque de cita (blockquote)", "Cita en línea (q)", "Abreviatura (abbr)", "Dirección (address)", "Énfasis (em)", "Texto importante (strong)", "Texto marcado (mark)", "Texto pequeño (small)", "Subíndice (sub)", "Superíndice (sup)", "Código en línea (code)", "Variable (var)", "Entrada de teclado (kbd)", "Salida de ejemplo (samp)", "Elemento semántico <article>", "Elemento semántico <section>", "Elemento semántico <nav>", "Elemento semántico <aside>", "Elemento semántico <header>", "Elemento semántico <footer>", "Elemento semántico <main>", "Elemento semántico <figure> y <figcaption>", "Elemento <details> y <summary>", "Elemento <time>",
+            // Formularios HTML
+            "Formulario simple (action, method)", "Campo de entrada de texto (input type text)", "Campo de entrada de contraseña (input type password)", "Campo de entrada de email (input type email)", "Campo de entrada numérico (input type number)", "Campo de entrada de fecha (input type date)", "Campo de entrada de rango (input type range)", "Campo de entrada de color (input type color)", "Botón de envío (input type submit)", "Botón simple (button tag)", "Botón de reseteo (input type reset)", "Casilla de verificación (input type checkbox)", "Grupo de botones de opción (input type radio)", "Área de texto (textarea)", "Menú desplegable (select, option)", "Grupo de opciones (optgroup)", "Etiqueta para control (label)", "Agrupar elementos (fieldset, legend)", "Campo de búsqueda (input type search)", "Campo de teléfono (input type tel)", "Campo de URL (input type url)", "Campo oculto (input type hidden)", "Desactivar un campo (disabled attribute)", "Campo de solo lectura (readonly attribute)", "Campo obligatorio (required attribute)", "Placeholder para input", "Autocompletado (autocomplete attribute)", "Validación básica (pattern attribute)", "Lista de datos predefinidos (datalist)", "Campo de subida de archivos (input type file)", "Atributo 'name' en formularios", "Atributo 'value' en inputs",
+            // CSS Básico
+            "Cambiar color de texto", "Cambiar color de fondo", "Aplicar estilo a un ID específico", "Aplicar estilo a una clase", "Aplicar estilo a un tipo de elemento (ej: p)", "Selector universal (*)", "Agrupar selectores (h1, h2)", "Selector descendente (div p)", "Selector hijo directo (ul > li)", "Selector hermano adyacente (h1 + p)", "Selector hermano general (h1 ~ p)", "Selector de atributo ([href])", "Selector de atributo con valor ([target='_blank'])", "Pseudo-clase :hover", "Pseudo-clase :active", "Pseudo-clase :focus", "Pseudo-clase :first-child", "Pseudo-clase :last-child", "Pseudo-clase :nth-child(n)", "Pseudo-elemento ::before", "Pseudo-elemento ::after", "Pseudo-elemento ::first-letter", "Pseudo-elemento ::first-line", "Pseudo-elemento ::placeholder", "Comentario en CSS", "Propiedad 'font-family'", "Propiedad 'font-size'", "Propiedad 'font-weight'", "Propiedad 'font-style'", "Propiedad 'text-align'", "Propiedad 'text-decoration'", "Propiedad 'text-transform'", "Propiedad 'line-height'", "Propiedad 'letter-spacing'", "Propiedad 'word-spacing'", "Propiedad 'color'", "Propiedad 'background-color'", "Propiedad 'background-image'", "Propiedad 'background-repeat'", "Propiedad 'background-position'", "Propiedad 'background-size'", "Modelo de caja: padding", "Modelo de caja: border", "Modelo de caja: margin", "Propiedad 'width'", "Propiedad 'height'", "Propiedad 'max-width'", "Propiedad 'min-height'", "Propiedad 'overflow'", "Propiedad 'box-sizing: border-box'", "Estilo de borde (solid, dashed, dotted)", "Color de borde", "Ancho de borde", "Redondear esquinas (border-radius)", "Sombra de caja (box-shadow)", "Sombra de texto (text-shadow)", "Propiedad 'display: block'", "Propiedad 'display: inline'", "Propiedad 'display: inline-block'", "Propiedad 'display: none'", "Propiedad 'visibility: hidden'", "Propiedad 'opacity'", "Unidades CSS: px, em, rem, %", "Unidades CSS: vw, vh", "Colores CSS: nombre, HEX, RGB, RGBA", "Colores CSS: HSL, HSLA",
+            // CSS Layout (Simple)
+            "Centrar un elemento de bloque (margin auto)", "Centrar texto horizontalmente (text-align center)", "Layout con Flexbox: Contenedor básico (display flex)", "Flexbox: Dirección de elementos (flex-direction)", "Flexbox: Alinear items horizontalmente (justify-content)", "Flexbox: Alinear items verticalmente (align-items)", "Flexbox: Envolver elementos (flex-wrap)", "Flexbox: Espacio entre elementos (gap)", "Flexbox: Orden de un item (order)", "Flexbox: Crecimiento de un item (flex-grow)", "Flexbox: Encogimiento de un item (flex-shrink)", "Flexbox: Base de un item (flex-basis)", "Layout con Grid: Contenedor básico (display grid)", "Grid: Definir columnas (grid-template-columns)", "Grid: Definir filas (grid-template-rows)", "Grid: Espacio entre celdas (gap)", "Grid: Colocar un item (grid-column, grid-row)", "Posicionamiento: static (default)", "Posicionamiento: relative", "Posicionamiento: absolute", "Posicionamiento: fixed", "Posicionamiento: sticky", "Propiedad 'z-index'", "Propiedad 'float: left' (uso básico/legado)", "Propiedad 'float: right' (uso básico/legado)", "Limpiar flotantes (clear: both)", "Crear un clearfix",
+            // CSS Efectos Simples
+            "Efecto hover: cambiar color de fondo", "Efecto hover: cambiar color de texto", "Efecto hover: subrayar texto", "Efecto hover: escalar elemento (transform scale)", "Efecto hover: rotar elemento (transform rotate)", "Transición suave de color (transition property)", "Transición suave de tamaño", "Transición con retardo (transition-delay)", "Transición con curva de tiempo (transition-timing-function)", "Animación simple: cambiar color (keyframes)", "Animación simple: mover elemento", "Aplicar animación (animation name, duration)", "Repetir animación (animation-iteration-count)", "Dirección de animación (animation-direction)", "Estado de animación (animation-play-state)", "Filtro CSS: escala de grises (filter grayscale)", "Filtro CSS: desenfoque (filter blur)", "Filtro CSS: brillo (filter brightness)", "Filtro CSS: contraste (filter contrast)", "Propiedad 'cursor: pointer'", "Propiedad 'cursor: not-allowed'", "Estilo de lista: quitar viñetas (list-style: none)", "Estilo de lista: círculo, cuadrado, etc.", "Estilo de tabla: bordes colapsados", "Estilo de tabla: espaciado de bordes", "Estilo de tabla: padding en celdas", "Estilo de tabla: resaltar filas (hover)",
+            // JavaScript Básico
+            "Mostrar alerta simple (alert)", "Escribir en la consola (console.log)", "Comentario de una línea en JS", "Comentario multilínea en JS", "Declarar variable (let)", "Declarar constante (const)", "Variable de tipo string", "Variable de tipo number", "Variable de tipo boolean", "Variable de tipo array", "Variable de tipo object", "Operadores aritméticos (+, -, *, /)", "Operador de módulo (%)", "Operadores de asignación (=, +=, -=)", "Operadores de comparación (==, ===, !=, !==, >, <)", "Operadores lógicos (&&, ||, !)", "Concatenación de strings (+)", "Template literals (backticks)", "Obtener longitud de string (length)", "Convertir a mayúsculas (toUpperCase)", "Convertir a minúsculas (toLowerCase)", "Condicional if", "Condicional if...else", "Condicional if...else if...else", "Operador ternario", "Switch statement", "Bucle for", "Bucle while", "Bucle do...while", "Sentencia break", "Sentencia continue", "Definir una función simple", "Llamar a una función", "Función con parámetros", "Función que retorna un valor", "Función flecha (arrow function)", "Ámbito de variables (scope)",
+            // JavaScript DOM (Simple)
+            "Seleccionar elemento por ID (getElementById)", "Seleccionar elementos por clase (getElementsByClassName)", "Seleccionar elementos por etiqueta (getElementsByTagName)", "Seleccionar primer elemento con selector CSS (querySelector)", "Seleccionar todos los elementos con selector CSS (querySelectorAll)", "Obtener contenido HTML (innerHTML)", "Establecer contenido HTML (innerHTML)", "Obtener contenido de texto (innerText / textContent)", "Establecer contenido de texto (innerText / textContent)", "Obtener valor de un input (value)", "Establecer valor de un input (value)", "Obtener atributo (getAttribute)", "Establecer atributo (setAttribute)", "Añadir una clase CSS (classList.add)", "Quitar una clase CSS (classList.remove)", "Alternar una clase CSS (classList.toggle)", "Comprobar si existe una clase (classList.contains)", "Modificar estilo CSS directamente (style property)", "Crear un nuevo elemento HTML (createElement)", "Añadir elemento al DOM (appendChild)", "Quitar elemento del DOM (removeChild)", "Reemplazar elemento del DOM (replaceChild)", "Insertar elemento antes de otro (insertBefore)", "Navegar por el DOM: parentNode", "Navegar por el DOM: children", "Navegar por el DOM: firstElementChild", "Navegar por el DOM: lastElementChild", "Navegar por el DOM: nextElementSibling", "Navegar por el DOM: previousElementSibling",
+            // JavaScript Eventos (Simple)
+            "Ejecutar función al hacer clic (onclick attribute)", "Ejecutar función al hacer clic (addEventListener 'click')", "Evento 'mouseover' (pasar ratón por encima)", "Evento 'mouseout' (ratón sale)", "Evento 'mousedown' (botón presionado)", "Evento 'mouseup' (botón soltado)", "Evento 'mousemove' (movimiento del ratón)", "Evento 'keydown' (tecla presionada)", "Evento 'keyup' (tecla soltada)", "Evento 'keypress' (carácter introducido - legado)", "Obtener la tecla presionada (event.key)", "Prevenir acción por defecto (event.preventDefault)", "Detener propagación de evento (event.stopPropagation)", "Evento 'change' en input/select", "Evento 'input' en input/textarea", "Evento 'submit' en formulario", "Evento 'focus' (elemento obtiene foco)", "Evento 'blur' (elemento pierde foco)", "Evento 'load' (página/imagen cargada)", "Evento 'DOMContentLoaded' (DOM listo)", "El objeto 'event'", "Pasar 'this' en un evento", "Eliminar un event listener (removeEventListener)", "Delegación de eventos (básico)",
+            // Ejemplos Combinados Simples
+            "Botón que cambia el texto de un párrafo al hacer clic", "Input que actualiza un texto en tiempo real", "Mostrar/ocultar un elemento con un botón", "Cambiar el color de fondo de la página con un botón", "Validar un formulario simple (campo no vacío)", "Crear una lista dinámica desde un input", "Efecto hover con JavaScript (cambiar clase)", "Alerta al enviar un formulario", "Contador simple con botones + y -", "Reloj digital básico", "Generador de colores aleatorios simple", "Menú desplegable simple (toggle)", "Acordeón simple (mostrar/ocultar contenido)", "Pestañas simples (mostrar contenido asociado)", "Comprobar si una checkbox está marcada", "Obtener el valor de un radio button seleccionado", "Calculadora simple (suma)", "Pequeño juego de adivinar número", "Slider de imágenes básico (manual)"
+        ];
+        const codeGenThemes = [ // Temas para generar más títulos
+            "elementos HTML básicos", "formularios HTML", "semántica HTML5", "estilos CSS de texto", "colores y fondos CSS", "modelo de caja CSS", "selectores CSS", "pseudo-clases CSS", "layout con Flexbox", "layout con Grid", "posicionamiento CSS", "transiciones CSS", "animaciones CSS simples", "variables JavaScript", "operadores JavaScript", "condicionales JavaScript", "bucles JavaScript", "funciones JavaScript", "manipulación del DOM", "selección de elementos DOM", "modificación de contenido DOM", "modificación de atributos DOM", "modificación de clases CSS con JS", "modificación de estilos CSS con JS", "creación y eliminación de elementos DOM", "eventos de ratón JavaScript", "eventos de teclado JavaScript", "eventos de formulario JavaScript", "eventos de foco JavaScript", "objeto evento JavaScript", "prevenir acciones por defecto en JS", "event listener add/remove", "ejemplos prácticos HTML/CSS", "ejemplos prácticos JS DOM", "interacciones de usuario simples"
+        ];
+        const textApiConfig = { // Para generación de código HTML
+            model: "mistral", // Podría ser otro, evaluar calidad/velocidad
+            systemPrompt: `Eres un asistente de IA experto en desarrollo web frontend. Tu tarea es generar un ejemplo de código simple, autocontenido y funcional basado en el título proporcionado. Debes generar un **documento HTML completo** (incluyendo <!DOCTYPE html>, <html>, <head>, y <body>).
+- Incluye el CSS necesario dentro de etiquetas <style> en el <head>.
+- Incluye el JavaScript necesario dentro de etiquetas <script> al final del <body>.
+- El código debe ser claro, bien comentado (en inglés o español, sé consistente) y fácil de entender para alguien que está aprendiendo.
+- El ejemplo debe ilustrar directamente el concepto del título.
+- **Genera únicamente el código HTML completo.** No incluyas explicaciones adicionales antes o después del código.`,
+            timeoutSeconds: 120 // Ajustado, generar código puede ser más rápido que texto largo
+        };
+        const titleGenerationConfig = {
+            model: "mistral", // Modelo para generar ideas
+            systemPrompt: `Actúa como un generador de ideas conciso para ejemplos de código web. Genera exactamente **40** títulos cortos y descriptivos para snippets de código HTML, CSS o JavaScript simples y autocontenidos. Los títulos deben ser claros sobre qué hace el código (ej: 'Botón con alerta al hacer clic', 'Centrar un div con Flexbox', 'Input que cambia texto en vivo'). Devuelve *solo* la lista de títulos, uno por línea. Sin números, guiones, introducciones ni despedidas.`,
+            timeoutSeconds: 60 // Un poco más de tiempo para generar 40
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const codeOutputElement = document.getElementById('code-output');
+        const previewIframe = document.getElementById('preview-iframe');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Minigame Elements
+        const minigameContainer = document.getElementById('minigame-container');
+        const playerPaddle = document.getElementById('player-paddle');
+        const ball = document.querySelector('.ball');
+
+        // ========== Minigame State & Logic ==========
+        let gameLoopId = null;
+        let ballX = 150, ballY = 75;
+        let ballSpeedX = 1.5, ballSpeedY = 1.5;
+        let paddleY = 55; // Initial position Y (center relative to container height 150 - paddle height 40) / 2
+        const paddleHeight = 40;
+        const containerHeight = 150;
+        const containerWidth = 300; // Approx based on max-width
+
+        function startGame() {
+            if (!minigameContainer || !playerPaddle || !ball) return;
+            console.log("Starting minigame...");
+            // Reset positions
+            ballX = containerWidth / 2;
+            ballY = containerHeight / 2;
+            paddleY = (containerHeight - paddleHeight) / 2;
+            ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * 1.5;
+            ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * 1.5;
+            // Ensure initial style application
+            playerPaddle.style.top = `${paddleY}px`;
+            ball.style.left = `${ballX}px`;
+            ball.style.top = `${ballY}px`;
+
+            minigameContainer.addEventListener('mousemove', movePaddle);
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function stopGame() {
+            console.log("Stopping minigame...");
+            if (gameLoopId) {
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = null;
+            }
+            minigameContainer.removeEventListener('mousemove', movePaddle);
+        }
+
+        function movePaddle(event) {
+            if (!minigameContainer || !playerPaddle) return;
+            const rect = minigameContainer.getBoundingClientRect();
+            // Calculate mouse Y relative to the container
+            const mouseY = event.clientY - rect.top;
+            // Calculate desired paddle top position (center paddle on mouse Y)
+            paddleY = mouseY - paddleHeight / 2;
+
+            // Clamp paddle position within container bounds
+            if (paddleY < 0) paddleY = 0;
+            if (paddleY > containerHeight - paddleHeight) paddleY = containerHeight - paddleHeight;
+
+            // Apply the clamped position
+            playerPaddle.style.top = `${paddleY}px`;
+        }
+
+        function gameLoop() {
+            if (!ball || !playerPaddle) {
+                stopGame();
+                return;
+            }
+            // Move ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Collision with top/bottom walls
+            if (ballY <= 0 || ballY >= containerHeight - 10) { // 10 is ball height
+                ballSpeedY *= -1;
+                ballY = ballY <= 0 ? 0 : containerHeight - 10; // Prevent sticking
+            }
+
+            // Collision with player paddle
+            const paddleRect = playerPaddle.getBoundingClientRect();
+            const ballRect = ball.getBoundingClientRect();
+             // Simple collision check (more robust might be needed for higher speeds)
+            if (ballX <= 20 && ballX > 10 && // Ball is horizontally aligned with paddle width
+                ballY + 10 > paddleY &&    // Ball bottom is below paddle top
+                ballY < paddleY + paddleHeight) // Ball top is above paddle bottom
+            {
+                 ballSpeedX *= -1.05; // Bounce back and increase speed slightly
+                 ballX = 20; // Move ball out of paddle immediately
+
+                 // Adjust vertical speed based on where it hit the paddle for angle
+                 let deltaY = ballY + 5 - (paddleY + paddleHeight / 2); // Ball center Y - Paddle center Y
+                 ballSpeedY += deltaY * 0.08; // Adjust factor for angle change
+
+                 // Limit vertical speed to prevent excessive angles
+                 ballSpeedY = Math.max(-3, Math.min(3, ballSpeedY));
+
+                 console.log("Paddle Hit! New SpeedX:", ballSpeedX, "New SpeedY:", ballSpeedY);
+            }
+
+
+            // Collision with right wall (Bounce)
+             if (ballX >= containerWidth - 10) {
+                 ballSpeedX *= -1;
+                 ballX = containerWidth - 10;
+             }
+
+            // Collision with left wall (Reset)
+            if (ballX <= 0) {
+                // Reset ball to center
+                ballX = containerWidth / 2;
+                ballY = containerHeight / 2;
+                ballSpeedX = 1.5; // Start towards player again
+                ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * 1.5;
+                console.log("Ball Reset");
+            }
+
+
+            // Update ball position in DOM
+            ball.style.left = `${ballX}px`;
+            ball.style.top = `${ballY}px`;
+
+            // Continue the loop
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        // ========== API FUNCTIONS ==========
+        async function fetchApiData(prompt, config) { // Renamed for clarity
+             const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed); // Use seed for title generation if needed
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching API (${config.model}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     // Friendly Error Message
+                     throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento. Por favor, intenta en unos segundos.`);
+                 }
+                 const data = await response.text();
+                 if (!data || data.trim().length === 0) {
+                     throw new Error("La respuesta de la API llegó vacía. Intenta de nuevo.");
+                 }
+                 console.log(`API Response received (${data.length} chars)`);
+                 return data;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La solicitud tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+         }
+        // Wrapper for fetching the HTML code
+        async function fetchHtmlCode(conceptTitle) {
+            return fetchApiData(conceptTitle, textApiConfig);
+        }
+        // Wrapper for fetching generated titles
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(codeGenThemes) || "ejemplos HTML CSS JS";
+             const specificPrompt = `Genera 40 títulos de snippets de código sobre ${randomTheme}`;
+             const text = await fetchApiData(specificPrompt, titleGenerationConfig);
+             const titles = text.split('\n')
+                              .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                              .filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 10) throw new Error("No se pudieron generar suficientes ideas (se esperaban 40)."); // Check for reasonable number
+             return titles.slice(0, 40); // Ensure max 40
+         }
+
+        // ========== Utility Functions ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+
+        /**
+         * NEW: Cleans the raw code output from the AI, removing potential
+         * Markdown code block fences (like ```html ... ```).
+         * @param {string} rawCode The raw string received from the API.
+         * @returns {string} The cleaned code, ready to be displayed or rendered.
+         */
+        function cleanAiCodeOutput(rawCode) {
+            if (!rawCode) return '';
+            let cleanedCode = rawCode.trim(); // Start by trimming whitespace
+
+            // Regex to find Markdown code blocks: ``` optional_lang newline code newline ```
+            // It captures the code part. [\s\S]*? matches any character non-greedily.
+            const codeBlockRegex = /^```(?:\w*\s*)?\r?\n?([\s\S]*?)\r?\n?```$/; // Added optional \r for windows newlines
+            const match = cleanedCode.match(codeBlockRegex);
+
+            if (match && match[1]) {
+                 // If it matches the full pattern, extract the content inside
+                 cleanedCode = match[1].trim();
+                 console.log("Cleaned code using regex match.");
+            } else {
+                 // Fallback: If the regex didn't match perfectly (e.g., missing newlines),
+                 // try removing the start and end fences more directly.
+                 // Remove starting ```html (or similar) possibly followed by a newline
+                 const startFenceRegex = /^```(?:\w*\s*)?\r?\n?/;
+                 if (startFenceRegex.test(cleanedCode)) {
+                    cleanedCode = cleanedCode.replace(startFenceRegex, '');
+                    console.log("Cleaned code removing start fence.");
+                 }
+                 // Remove ending ``` possibly preceded by a newline
+                 const endFenceRegex = /\r?\n?```$/;
+                 if (endFenceRegex.test(cleanedCode)) {
+                     cleanedCode = cleanedCode.replace(endFenceRegex, '');
+                     console.log("Cleaned code removing end fence.");
+                 }
+            }
+            // Final check: Sometimes the AI might just add ```html at the start
+             if (cleanedCode.startsWith('html') && cleanedCode.includes('<!DOCTYPE html>')) {
+                cleanedCode = cleanedCode.substring(cleanedCode.indexOf('<!DOCTYPE html>'));
+                console.log("Cleaned code removing initial 'html' tag line.");
+             }
+
+
+            return cleanedCode.trim(); // Final trim for safety
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            document.body.style.overflow = '';
+            stopGame(); // Ensure game stops when modal closes
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.classList.remove('active'); // Hide loading indicator
+             modalStoryContentArea.classList.add('content-hidden'); // Hide content area
+             modalError.classList.add('content-hidden'); // Hide error area
+             modalTitle.textContent = '';
+             codeOutputElement.textContent = ''; // Clear code
+             // Reset iframe to a blank or placeholder state
+             previewIframe.srcdoc = `<html><head><title>Preview</title><style>body{display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#9ca3af;background:#374151;font-size:0.9em;}</style></head><body><div>Esperando generación de código...</div></body></html>`;
+             modalErrorMessage.textContent = '';
+             // No game reset needed here, it resets on start
+        }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No hay snippets disponibles.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+             console.log(`Added ${addedCount} new titles.`);
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick for code generation and minigame ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Clear previous state
+            showModal(); // Show modal structure
+            modalTitle.textContent = title;
+            modalLoadingIndicator.classList.add('active'); // Show loading overlay
+            modalStoryContentArea.classList.add('content-hidden'); // Hide content area initially
+            startGame(); // Start the minigame
+
+            try {
+                const generatedHtmlRaw = await fetchHtmlCode(title); // Get the RAW output
+                console.log("Raw API Output:\n", generatedHtmlRaw.substring(0, 500) + "..."); // Log raw output for debugging
+
+                // *** APPLY CLEANING HERE ***
+                const generatedHtml = cleanAiCodeOutput(generatedHtmlRaw);
+                console.log("Cleaned HTML Output:\n", generatedHtml.substring(0, 500) + "..."); // Log cleaned output
+
+                // Code received, stop game and show content
+                stopGame();
+                modalLoadingIndicator.classList.remove('active');
+
+                // Display Code with Syntax Highlighting
+                codeOutputElement.textContent = generatedHtml; // Use the cleaned code
+                // Check if Prism is loaded before highlighting
+                if (window.Prism) {
+                    Prism.highlightElement(codeOutputElement);
+                } else {
+                    console.warn("Prism not loaded, skipping syntax highlighting.");
+                }
+
+                // Display Preview in Iframe
+                previewIframe.srcdoc = generatedHtml; // Use the cleaned code
+
+                modalStoryContentArea.classList.remove('content-hidden'); // Show the code/preview area
+                modalError.classList.add('content-hidden'); // Ensure error is hidden
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                stopGame(); // Stop game on error too
+                modalLoadingIndicator.classList.remove('active'); // Hide loading
+                // Use the friendly error message from the error object
+                modalErrorMessage.textContent = error.message || "Error desconocido al generar el código.";
+                modalError.classList.remove('content-hidden'); // Show error message
+                modalStoryContentArea.classList.add('content-hidden'); // Keep content hidden on error
+            }
+        }
+
+
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Generando...';
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron generar más ideas en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 // Use the friendly error message
+                 alert(`Error al generar ideas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Ideas (40)';
+             }
+         }
+
+         // Search Filter Function (using normalized text)
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 // Ensure item has the dataset attribute before accessing it
+                 const titleText = item.dataset && item.dataset.title
+                     ? item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                     : "";
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             // Show 'no results' if count is 0 AND there were items to search initially
+             const hasItems = titleListContainer.querySelectorAll('.title-item:not(.hidden)').length > 0 || titleListContainer.querySelectorAll('.title-item.hidden').length > 0;
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0 || !hasItems);
+         }
+
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Robust check for essential elements
+            const essentialElements = [
+                titleListContainer, storyModal, modalCloseBtn, generateMoreBtn, titlesLoading,
+                searchInput, noResultsMsg, codeOutputElement, previewIframe, modalLoadingIndicator,
+                minigameContainer, playerPaddle, ball // Include game elements
+            ];
+            if (essentialElements.some(el => !el)) {
+                console.error("Initialization failed: Missing one or more essential DOM elements.");
+                document.body.innerHTML = '<p style="color: #f87171; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes de la interfaz. Recarga la página o contacta soporte.</p>';
+                return; // Stop execution if critical elements are missing
+            }
+
+            console.log("All essential elements found. Initializing...");
+
+            // Event Listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => {
+                // Close only if clicking directly on the overlay, not its children
+                if (event.target === storyModal) hideModal();
+            });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => {
+                 // Optional: Prevent form submission feel if inside a form
+                 if (event.key === 'Enter') event.preventDefault();
+            });
+
+
+            // Initial Display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden'); // Ensure hidden initially
+            console.log("SnippetGen Initialized successfully.");
+        }
+
+        // Defer initialization until DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

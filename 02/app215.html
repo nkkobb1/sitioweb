@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leyendas de Caballería - Crónicas Interactivas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Medieval/Fantasia Legibles -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Historias de Caballería --- */
+        :root {
+            --color-primary: #8b0000; /* Rojo Oscuro/Borgoña */
+            --color-secondary: #daa520; /* Dorado */
+            --color-tertiary: #006400; /* Verde Bosque Oscuro */
+            --color-background: #f5f5dc; /* Beige (Pergamino Claro) */
+            --color-text: #3a2d24; /* Marrón Oscuro (Tinta) */
+            --color-text-muted: #7a6d64; /* Marrón Grisáceo */
+            --color-modal-bg: #e8e0c4; /* Beige más oscuro/Pergamino */
+            --color-border: #a08d5c; /* Borde Dorado/Marrón */
+            --color-error-bg: #f8d7da; /* Fondo error rosa claro */
+            --color-error-text: #721c24; /* Texto error rojo oscuro */
+            --color-error-border: #f5c6cb; /* Borde error rosa */
+
+            --shadow-sm: 0 2px 4px rgba(58, 45, 36, 0.1);
+            --shadow-md: 0 5px 10px rgba(58, 45, 36, 0.15);
+            --shadow-lg: 0 10px 20px rgba(58, 45, 36, 0.2);
+            --border-radius: 4px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Merriweather', serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.75; font-weight: 300; background-image: url('data:image/svg+xml,%3Csvg width="52" height="26" viewBox="0 0 52 26" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23d2c6a8" fill-opacity="0.1"%3E%3Cpath d="M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z" /%3E%3C/g%3E%3C/g%3E%3C/svg%3E'); /* Subtle background pattern */
+        }
+        h1, h2, h3, h4, .logo { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 0.5px; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-primary); padding-bottom: 0.7rem; display: inline-block; font-weight: 700; }
+        #modal-title { color: var(--color-primary); font-weight: 700; }
+        .navbar { background-color: rgba(245, 245, 220, 0.85); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: rgba(255, 255, 255, 0.7); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Merriweather'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.15); outline: none; background-color: #fff; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.3rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.4rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 70px; font-family: 'Merriweather'; font-size: 0.95rem; border-left: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-primary); background-color: #fffaf0; /* Floral White/Light cream */ border-left-color: var(--color-secondary); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-secondary)); color: white; padding: 0.9rem 1.8rem; border: none; border-radius: var(--border-radius); font-family: 'Cinzel', serif; font-weight: 400; cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-secondary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.03); }
+        #generate-more-btn:disabled { background: var(--color-text-muted); color: var(--color-background); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; text-shadow: none;}
+        #generate-more-btn .fa-sync-alt { color: white; }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(58, 45, 36, 0.88); /* Overlay marrón oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 2px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px; width: 95%; max-height: 90vh; min-height: 450px; /* More height for chat */
+            overflow: hidden; position: relative; box-shadow: var(--shadow-lg);
+            display: flex; flex-direction: column;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXVvb29sbm5rcnJrb29jZ2dzc3NbW1tmpkpaXmN9fX39/f3f39/h4eHv7+/y8vLq6urf39/a2trw8PD9/f0aZ+QyAAAAEUlEQVR42mNQwagCoTDBxAUALEIAEFnQ5QAAAAASUVORK5CYII='); /* Subtle paper texture */
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-border); border: 1px solid var(--color-primary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(90deg); box-shadow: 0 0 10px var(--color-secondary); }
+        #modal-title { font-size: 2rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.4; }
+
+        /* Área de Contenido Principal (Texto + Imagen al final) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 12px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) rgba(160, 141, 92, 0.3);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 10px; }
+        #modal-content-area::-webkit-scrollbar-track { background: rgba(160, 141, 92, 0.3); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); border: 2px solid rgba(160, 141, 92, 0.3); }
+
+        #modal-content { padding: 0 5px; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.5em; }
+        #modal-content strong { color: var(--color-primary); font-weight: 700; }
+        #modal-content em { color: var(--color-tertiary); font-style: italic; font-weight: 400; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Cinzel', serif; margin-top: 2.3em; margin-bottom: 1.2em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.6em; font-weight: 400; letter-spacing: 0.5px;}
+        #modal-content h1 { font-size: 1.6em; }
+        #modal-content h2 { font-size: 1.4em; }
+        #modal-content h3 { font-size: 1.25em; color: var(--color-tertiary); }
+        #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 3rem auto 1.5rem auto; border: 3px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); box-shadow: 0 0 15px var(--color-secondary); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; margin: 3rem auto 1.5rem auto; color: var(--color-text-muted); border: 2px dashed var(--color-border); padding: 1rem; border-radius: var(--border-radius); background-color: rgba(255,250,240, 0.5); }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(160, 141, 92, 0.3); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; margin-bottom: 0.8rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 3rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 2px solid var(--color-border); padding-top: 1.2rem; margin-top: 1.5rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 280px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(245, 245, 220, 0.6); /* Pergamino más claro */ scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) rgba(160, 141, 92, 0.3);
+        }
+        #chat-history::-webkit-scrollbar { width: 8px; }
+        #chat-history::-webkit-scrollbar-track { background: rgba(160, 141, 92, 0.3); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.8rem; padding: 0.6rem 1rem; border-radius: var(--border-radius); max-width: 88%; word-wrap: break-word; line-height: 1.6; box-shadow: var(--shadow-sm); }
+        .user-message { background-color: var(--color-tertiary); color: var(--color-background); margin-left: auto; text-align: left; font-weight: 400; border: 1px solid #004d00; }
+        .ai-message { background-color: #fffaf0; /* Floral White */ color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; border: 1px solid var(--color-border); }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.6rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 1px solid var(--color-border); background-color: #fff; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Merriweather'; font-size: 1rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1); }
+        #chat-send-btn { padding: 0.7rem 1.2rem; background-color: var(--color-primary); color: var(--color-background); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 1rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #a52a2a; /* Brown */ }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.6rem; font-size: 0.9em; color: var(--color-text-muted); display: none; font-style: italic; }
+        #chat-loading .fa-spinner { margin-right: 0.6rem; }
+
+        /* --- Modal Loading & Minigame --- */
+        #modal-loading {
+            text-align: center; padding: 2rem 1rem; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(232, 224, 196, 0.97); /* Pergamino Opaco */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 55; border-radius: var(--border-radius);
+        }
+        .loading-spinner-modal { width: 60px; height: 60px; border: 6px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1rem auto; flex-shrink: 0; }
+        #modal-loading p.loading-text { font-weight: 700; color: var(--color-primary); font-size: 1.5rem; font-family: 'Cinzel'; margin-bottom: 1.5rem; flex-shrink: 0; }
+
+        /* Minigame Area */
+        #minigame-area {
+            width: 90%; max-width: 400px; height: 180px; /* Ajustar altura */
+            background-color: rgba(245, 245, 220, 0.7); /* Fondo pergamino más claro */
+            border: 2px dashed var(--color-primary); border-radius: var(--border-radius);
+            position: relative; overflow: hidden; cursor: crosshair;
+            margin-top: 1rem; flex-shrink: 0; display: none; /* Oculto por defecto */
+        }
+        #minigame-target {
+            width: 45px; height: 45px;
+            background-color: transparent; /* Sin fondo */
+            color: #b22222; /* Firebrick red */
+            font-size: 2.5rem; /* Tamaño del icono */
+            text-align: center; line-height: 45px;
+            border-radius: 50%;
+            position: absolute;
+            transition: transform 0.1s ease-out, top 0.3s ease-out, left 0.3s ease-out;
+            cursor: pointer;
+            user-select: none; /* Evitar selección de texto */
+            display: flex; align-items: center; justify-content: center;
+        }
+         #minigame-target:hover {
+            transform: scale(1.15);
+         }
+        #minigame-score {
+            margin-top: 0.8rem; font-size: 1.1rem; color: var(--color-tertiary); font-weight: 700;
+            font-family: 'Cinzel'; flex-shrink: 0; display: none; /* Oculto por defecto */
+        }
+        #minigame-score span { font-size: 1.3rem; color: var(--color-primary); }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Merriweather'; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-text); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(58, 45, 36, 0.95); /* Marrón muy oscuro */ display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 3px solid var(--color-secondary); box-shadow: var(--shadow-lg); background-color: var(--color-modal-bg); }
+        #fullscreen-close-btn { position: absolute; top: 25px; right: 30px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 45px; height: 45px; font-size: 2rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-secondary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-shield-alt mr-3 text-red-800"></i> <!-- Icono Escudo -->
+                     Leyendas de Caballería
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-700 font-sans tracking-wider">» Crónicas Interactivas «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">Donde Nacen las Leyendas</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-light">Explora los anales del valor, la magia y el honor. Descubre las historias de nobles caballeros, bestias míticas y gestas olvidadas.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar caballero, leyenda, objeto...">
+             <i class="fas fa-search fa-scroll"></i> <!-- Icono Lupa/Pergamino -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-book-open text-yellow-700 mr-2"></i> <!-- Icono Libro Abierto -->
+                 Índice de Crónicas
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-600 col-span-full text-center text-lg font-sans">Desenrollando los antiguos pergaminos...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-600 col-span-full text-center text-lg mt-4 hidden font-sans">» Ninguna crónica coincide con vuestra búsqueda «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Descubrir Más Leyendas (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator & Minigame -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p class="loading-text">Forjando la Leyenda...</p>
+                 <!-- Minigame Area -->
+                 <div id="minigame-area">
+                     <div id="minigame-target"><i class="fas fa-dragon"></i></div> <!-- Icono del objetivo -->
+                 </div>
+                 <div id="minigame-score">Puntuación: <span>0</span></div>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image placeholder/image added here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section (Fixed at bottom) -->
+                 <div id="chat-section">
+                     <div id="chat-history">
+                         <!-- Chat messages -->
+                     </div>
+                     <div id="chat-loading">
+                         <i class="fas fa-spinner fa-spin"></i> El bardo medita tu pregunta...
+                     </div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta al cronista sobre esta leyenda...">
+                         <button id="chat-send-btn" aria-label="Enviar Pregunta">
+                             <i class="fas fa-feather-alt"></i> <!-- Icono Pluma -->
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Ilustración Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-700 py-6 mt-12 border-t border-gray-300 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Crónicas generadas por IA, inspiradas en leyendas, historia y fantasía medieval.</p>
+              <p class="mt-1">Los detalles pueden variar respecto a las fuentes originales. Disfruta del relato.</p>
+              <p class="mt-2">© Año del Señor 1485 - Archivos del Scriptorium Digital</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Caballeros y Héroes Famosos
+            "Rey Arturo Pendragon", "Sir Lancelot du Lac", "Sir Galahad el Puro", "Sir Gawain", "Sir Perceval", "Sir Tristán", "Merlín el Encantador", "La Dama del Lago", "Reina Ginebra", "Morgana le Fay", "Rolando (Canción de Roldán)", "Oliveros (Canción de Roldán)", "El Cid Campeador (Rodrigo Díaz de Vivar)", "Juana de Arco", "Guillermo Tell", "Robin Hood", "Ricardo Corazón de León", "Godofredo de Bouillón", "Saladino (Salah ad-Din)", "Beowulf", "Sigurd (Siegfried)", "San Jorge", "Amadís de Gaula", "Palmerín de Oliva", "Tirant lo Blanch", "Ivanhoe (Personaje de Scott)", "El Caballero Verde", "Parsifal (Wolfram von Eschenbach)", "Lohengrin, el Caballero del Cisne", "Guillermo el Mariscal", "Bertran de Born (Trovador y Caballero)", "Bayardo (Caballo Legendario)", "El Caballero Negro (Figura Arquetípica)", "Sir Kay", "Sir Bedivere", "Sir Mordred", "Uther Pendragon", "Don Quijote de la Mancha (Parodia Caballeresca)",
+            // Espadas y Objetos Legendarios
+            "Excalibur", "La Espada en la Piedra", "El Santo Grial", "La Lanza del Destino (Lanza de Longinus)", "Durandal (Espada de Rolando)", "Joyeuse (Espada de Carlomagno)", "Arondight (Espada de Lancelot)", "Caliburn (Otro nombre de Excalibur)", "Clarent (Espada de Mordred)", "Tizona (Espada del Cid)", "Colada (Espada del Cid)", "Gram (Espada de Sigurd)", "Hrunting (Espada de Beowulf)", "Nægling (Espada de Beowulf)", "La Mesa Redonda (Tabla Redonda)", "El Cuerno de Rolando (Olifante)", "La Piedra Filosofal (Relacionada a veces)", "El Vellocino de Oro (Mitología Griega, influencia)", "El Anillo de los Nibelungos (Influencia)", "Las Manzanas de Idunn (Mitología Nórdica, influencia)", "El Martillo Mjolnir (Mitología Nórdica, influencia)", "Escudo de Aquiles (Mitología Griega, influencia)", "Sudario de Turín (Reliquia)", "Fragmento de la Vera Cruz (Reliquia)", "Capa de Invisibilidad (Folclore)", "Botas de Siete Leguas (Folclore)",
+            // Criaturas Míticas y Monstruos
+            "Dragones (Europeos)", "Grifos", "Unicornios", "Hipogrifos", "Basiliscos", "Cocatrice", "Wyverns", "Gárgolas", "Gigantes", "Trolls", "Ogros", "Goblins", "Orcos (En fantasía moderna)", "Elfos (En folclore y fantasía)", "Enanos (En folclore y fantasía)", "Hadas", "Ninfas", "Sátiros / Faunos", "Centauros", "Sirenas / Nereidas", "Kraken / Monstruos Marinos", "Leviatán", "Cancerbero (Mitología Griega)", "La Hidra de Lerna (Mitología Griega)", "Medusa (Mitología Griega)", "Minotauro (Mitología Griega)", "Esfinge", "Mantícora", "Ave Fénix", "Roc (Ave Gigante)", "Golem", "El Hombre Lobo (Licántropo)", "Vampiros (Folclore temprano)", "Fantasmas y Espectros", "El Grendel (Beowulf)", "La Bestia Aulladora (Questing Beast)", "El Monstruo del Lago Ness (Leyenda posterior)",
+            // Órdenes de Caballería y Grupos
+            "Los Caballeros de la Mesa Redonda", "Los Caballeros Templarios", "Los Caballeros Hospitalarios (Orden de Malta)", "Los Caballeros Teutónicos", "La Orden de Santiago", "La Orden de Calatrava", "La Orden de Alcántara", "La Orden de Montesa", "La Orden de la Jarretera", "La Orden del Toisón de Oro", "Los Nueve de la Fama", "Los Paladines de Carlomagno", "Los Hashashin (Asesinos, antagonistas a veces)", "La Hermandad sin Estandartes (Fantasía)", "La Guardia de la Noche (Fantasía)", "Compañías Mercenarias (Condotieros)",
+            // Conceptos, Lugares y Eventos
+            "El Código de Caballería", "El Amor Cortés", "Las Justas y Torneos", "La Heráldica y los Escudos de Armas", "El Feudalismo", "Las Cruzadas (En general)", "La Primera Cruzada", "La Tercera Cruzada", "La Reconquista Española", "La Guerra de los Cien Años", "La Guerra de las Dos Rosas", "Camelot", "Avalon", "Brocéliande (Bosque de Merlín)", "El Castillo de Tintagel", "El Muro de Adriano (Contexto histórico)", "Jerusalén (Contexto Cruzadas)", "Constantinopla (Contexto Cruzadas)", "El Camino de Santiago", "Asedio a un Castillo", "Defensa de un Castillo", "Armadura de Placas Completa", "Cota de Malla", "El Yelmo (Casco)", "La Carga de Caballería", "El Arco Largo Inglés", "La Ballesta", "El Trebuchet (Arma de Asedio)", "Ariete", "Torre de Asedio", "Foso del Castillo", "Almenas y Merlones", "El Gremio (Contexto medieval)", "El Monasterio (Contexto medieval)", "La Catedral Gótica", "El Trovador / Juglar / Bardo", "La Dama en Apuros (Arquetipo)", "La Búsqueda del Caballero (Quest)", "El Juramento del Caballero", "El Vasallaje", "El Derecho de Pernada (Mito vs Realidad)", "La Peste Negra (Contexto histórico)", "La Inquisición (Contexto histórico)", "La Alquimia", "La Magia y la Hechicería (En leyendas)", "Profecías y Augurios", "Reliquias Sagradas", "Peregrinaciones", "Ferias Medievales", "Banquete Medieval", "Caza Mayor (Actividad noble)", "Cetrería",
+            // Cuentos y Leyendas Específicas
+            "La Leyenda del Rey Arturo (Ciclo Artúrico)", "La Búsqueda del Santo Grial", "La Muerte de Arturo (Le Morte d'Arthur)", "Tristán e Isolda", "La Canción de Roldán", "El Cantar de Mio Cid", "Beowulf (Poema Épico)", "Sir Gawain y el Caballero Verde", "El Caballero de la Carreta (Lancelot)", "Las Baladas de Robin Hood", "La Leyenda de Guillermo Tell", "Parsifal y el Grial (Ópera de Wagner)", "Los Cuentos de Canterbury (Contexto)", "El Decamerón (Contexto)", "La Divina Comedia (Contexto/Influencia)", "El Roman de la Rose", "Flores y Blancaflor", "Aucassin y Nicolette",
+            // Añadir más para llegar a ~400... se necesitarán muchos títulos específicos.
+            "La Doncella Guerrera (Arquetipo)", "El Ermitaño Sabio", "El Puente Peligroso", "El Castillo Encantado", "El Bosque Prohibido", "El Juicio por Combate", "La Traición en la Corte", "El Exilio del Héroe", "El Regreso del Rey", "La Batalla Final contra el Mal", "La Fundación de una Orden", "El Legado de un Caballero", "La Redención de un Caballero Caído", "El Secreto de un Linaje Noble", "La Maldición de una Familia", "El Pacto con Fuerzas Sobrenaturales", "La Defensa del Campesinado", "El Caballero Andante", "El Torneo por la Mano de la Princesa", "La Intriga Política Medieval", "El Espionaje en la Corte", "La Vida en un Castillo Medieval", "Construcción de una Catedral", "Rutas Comerciales Medievales", "La Hansa (Contexto comercial)", "Vikingos (Incursores/Contexto)", "Mongoles (Invasores/Contexto)", "Sarracenos (Contexto Cruzadas)", "Cátaros (Contexto religioso/conflicto)", "La Danza Macabra (Alegoría)", "El Bestiario Medieval", "Mapamundis Medievales (T en O)", "Astrología Medieval", "Medicina Medieval (Humores)", "Justicia y Castigo Medieval", "El Papel de la Mujer en la Nobleza", "La Infancia en la Edad Media", "Música Medieval (Cantigas, etc.)", "Instrumentos Musicales Medievales", "Técnicas Agrícolas Medievales", "Vida Monástica", "Scriptorium Medieval", "Iluminación de Manuscritos", "Arquitectura Románica", "Arquitectura Gótica", "Vidrieras Góticas", "Tapices Medievales (Bayeux)", "Escultura Medieval (Portadas)", "Pintura Medieval (Retablos)", "Vestimenta Medieval (Nobleza)", "Vestimenta Medieval (Campesinado)", "Cocina Medieval", "Bebidas Medievales (Vino, Cerveza, Hidromiel)", "Juegos y Pasatiempos Medievales", "El Carnaval Medieval", "Las Relaciones Iglesia-Estado", "Herejías Medievales", "Supersticiones Medievales", "Folclore y Tradiciones Orales", "El Desarrollo de las Lenguas Romances", "La Influencia del Latín", "Universidades Medievales (Bolonia, París, Oxford)", "Filosofía Escolástica (Tomás de Aquino)", "La Caballería como Ideal Social", "Decadencia de la Caballería", "Impacto de la Pólvora"
+            // ... y así sucesivamente. La clave es ser granular y cubrir muchos aspectos.
+        ];
+        const chivalryThemes = [
+            "caballeros de la Mesa Redonda", "leyendas artúricas", "el Santo Grial", "caballeros famosos", "espadas legendarias", "dragones y monstruos", "órdenes de caballería", "el código de caballería", "amor cortés", "torneos y justas", "castillos medievales", "las Cruzadas", "héroes épicos", "mitología nórdica relacionada", "mitología celta relacionada", "bestiarios medievales", "reliquias sagradas", "magia y hechicería medieval", "batallas medievales famosas", "la Reconquista", "trovadores y juglares", "vida cotidiana medieval", "damas y reinas legendarias", "criaturas fantásticas", "objetos mágicos medievales"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un erudito cronista y bardo del medievo tardío, versado en historia, leyenda y el arte de la caballería. Describe el caballero, leyenda, objeto, lugar o concepto indicado con detalle y elocuencia. Incluye: Orígenes (históricos o legendarios), hazañas notables o características principales, simbolismo asociado, contexto cultural o histórico, variaciones importantes de la historia (si existen), y su legado o influencia. Usa un lenguaje evocador, respetando el tono de las crónicas y cantares de gesta. El objetivo es un relato detallado de aproximadamente 1200-1300 palabras. Basa tu crónica únicamente en el siguiente tema:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un sabio consejero o un juglar informado, especializado únicamente en la leyenda o tema que se está discutiendo actualmente. Responde preguntas adicionales sobre sus detalles, interpretaciones o conexiones con otras historias. Sé cortés, claro y mantente enfocado en el tema presente.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            // *** MODIFIED TO REQUEST 40 ***
+            systemPrompt: "Actúa como un generador de ideas conciso para un scriptorium medieval. Genera exactamente 40 nombres evocadores de caballeros, damas, bestias míticas, lugares legendarios, objetos mágicos, órdenes de caballería o conceptos relacionados con las historias de caballería y la Edad Media. Devuelve *solo* la lista de nombres/conceptos, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Slightly more time for potentially longer list
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+        // Minigame Elements
+        const minigameArea = document.getElementById('minigame-area');
+        const minigameTarget = document.getElementById('minigame-target');
+        const minigameScoreDisplay = document.getElementById('minigame-score');
+        const minigameScoreValue = minigameScoreDisplay.querySelector('span');
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Renamed from currentWeaponTitle
+        let minigameInterval = null;
+        let minigameScore = 0;
+        let gameIsActive = false;
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentTopicTitle
+                 ? `Eres un sabio consejero especializado únicamente en la leyenda o tema de '${currentTopicTitle}'. Responde preguntas de seguimiento sobre sus detalles, interpretaciones o conexiones. Sé cortés y enfócate en el tema.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                     throw new Error(`(Error ${response.status}) Nuestros escribas están ocupados o las líneas de comunicación están congestionadas. Por favor, inténtalo de nuevo en unos momentos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("El pergamino de respuesta llegó en blanco. Intenta reformular tu consulta al bardo.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión con el scriptorium tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o inténtalo más tarde.`);
+                 }
+                 throw new Error(error.message || "Una bruma inesperada impidió la comunicación con nuestros archivos.");
+             }
+        }
+        async function fetchExplanationText(topicTitle) { return fetchTextFromApi(topicTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) {
+             if (!currentTopicTitle) throw new Error("Error Interno: El tema de la conversación no está claro para el bardo.");
+             return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(chivalryThemes) || "leyendas de caballería";
+            // *** MODIFIED PROMPT FOR 40 ***
+            const specificPrompt = `Genera 40 nombres/conceptos relacionados con ${randomTheme}`;
+            console.log("Generating 40 titles with prompt:", specificPrompt);
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+                     if (titles.length < 10) throw new Error("El bardo no encontró suficientes nuevas leyendas en los archivos."); // Adjusted threshold
+                     // *** SLICE 40 ***
+                     return titles.slice(0, 40);
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "medieval knight legend";
+             // Prompt adaptado a estilo ilustración/pintura medieval
+             const enhancedPrompt = `Illustrative artwork, fantasy painting style, depicting '${safePromptText}'. Medieval setting, focus on character/scene/object. Knights, castles, dragons, swords, shields, banners, magic elements if appropriate. Detailed, atmospheric. Inspired by classic fantasy art and medieval manuscript illumination.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "photograph, photorealistic, 3D render, modern elements, text, words, labels, signature, watermark, UI, blurry, low quality, deformed figures, multiple panels";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            stopMinigame(); // Ensure game stops when modal closes
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            console.log("Scroll set to 0 on hideModal");
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex'; // Show loading initially
+             // Hide minigame elements initially on reset
+             minigameArea.style.display = 'none';
+             minigameScoreDisplay.style.display = 'none';
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTopicTitle = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... */ if(!imageFullscreenOverlay||!fullscreenImage)return;fullscreenImage.src=imgSrc;imageFullscreenOverlay.classList.add('active');document.body.style.overflow='hidden'; }
+        function hideFullscreenImage() { /* ... */ if(!imageFullscreenOverlay)return;imageFullscreenOverlay.classList.remove('active');if(!storyModal.classList.contains('active')){document.body.style.overflow='';}fullscreenImage.src=''; }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios funcionales, solo texto)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv=document.createElement('div');msgDiv.classList.add('chat-message',sender==='user'?'user-message':'ai-message');message=message.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');message=message.replace(/\*(.*?)\*/g,'<em>$1</em>');msgDiv.innerHTML=message;chatHistory.appendChild(msgDiv);chatHistory.scrollTop=chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errorDiv=document.createElement('div');errorDiv.classList.add('chat-error');errorDiv.textContent=message;chatHistory.appendChild(errorDiv);chatHistory.scrollTop=chatHistory.scrollHeight; }
+        async function handleSendMessage() { /* ... */
+            const userQuery=chatInput.value.trim(); if(!userQuery||chatSendBtn.disabled)return; addChatMessage(userQuery,'user'); chatInput.value=''; chatSendBtn.disabled=true; chatLoadingIndicator.style.display='block'; try{ const aiResponse=await fetchChatResponse(userQuery); addChatMessage(aiResponse,'ai'); } catch(error){ console.error("Chat Error:",error); addChatError(`Error del Bardo: ${error.message}`); } finally { chatLoadingIndicator.style.display='none'; chatSendBtn.disabled=false; chatInput.focus(); }
+         }
+
+        // ========== MINIGAME FUNCTIONS ==========
+        function startGame() {
+            if (!minigameArea || !minigameTarget || !minigameScoreDisplay || gameIsActive) return;
+            console.log("Starting minigame...");
+            minigameScore = 0;
+            minigameScoreValue.textContent = minigameScore;
+            minigameArea.style.display = 'block';
+            minigameScoreDisplay.style.display = 'block';
+            gameIsActive = true;
+            moveTarget(); // Initial position
+            minigameInterval = setInterval(moveTarget, 1200); // Move target periodically
+
+            // Add click listener only when game starts
+            minigameTarget.onclick = handleTargetClick;
+        }
+
+        function stopMinigame() {
+            if (!gameIsActive) return;
+            console.log("Stopping minigame...");
+            clearInterval(minigameInterval);
+            minigameInterval = null;
+            minigameArea.style.display = 'none';
+            minigameScoreDisplay.style.display = 'none';
+            gameIsActive = false;
+            // Remove click listener
+            minigameTarget.onclick = null;
+        }
+
+        function moveTarget() {
+            if (!gameIsActive || !minigameArea || !minigameTarget) return;
+            const areaRect = minigameArea.getBoundingClientRect();
+            const targetRect = minigameTarget.getBoundingClientRect();
+            const maxX = areaRect.width - targetRect.width;
+            const maxY = areaRect.height - targetRect.height;
+
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+
+            minigameTarget.style.left = `${randomX}px`;
+            minigameTarget.style.top = `${randomY}px`;
+        }
+
+        function handleTargetClick(event) {
+            if (!gameIsActive) return;
+            event.stopPropagation(); // Prevent clicks bubbling up
+            minigameScore++;
+            minigameScoreValue.textContent = minigameScore;
+             // Optional: Visual feedback
+             minigameTarget.style.transform = 'scale(1.2)';
+             setTimeout(() => { minigameTarget.style.transform = 'scale(1)'; }, 100);
+            moveTarget(); // Move immediately after click
+        }
+
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center font-sans">» Los archivos están vacíos por ahora «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick to START MINIGAME ***
+        async function handleTitleClick(title) {
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentTopicTitle = title;
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Show loading container
+
+            startGame(); // *** START THE MINIGAME ***
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                // *** STOP MINIGAME BEFORE DISPLAYING CONTENT ***
+                stopMinigame();
+
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalLoadingIndicator.style.display = 'none'; // Hide loading container
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Image Handling (unchanged logic, just inside try)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-palette placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">El ilustrador prepara sus pinceles...</p>
+                `;
+                modalContent.appendChild(placeholderDiv);
+
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración de ${title}`;
+                imgElement.style.display = 'none';
+
+                imgElement.onload = () => {
+                    console.log("Image loaded.");
+                    placeholderDiv.remove();
+                    imgElement.style.display = 'block';
+                    imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                };
+                imgElement.onerror = () => {
+                    console.error("Error loading image:", title);
+                    placeholderDiv.innerHTML = `<i class="fas fa-image-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">La ilustración se ha perdido.</p>`;
+                };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) {
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement);
+                } else {
+                     console.error("Could not create image URL:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error al encargar la ilustración.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                // *** STOP MINIGAME ON ERROR TOO ***
+                stopMinigame();
+                modalLoadingIndicator.style.display = 'none'; // Hide loading indicator even on error
+                modalErrorMessage.textContent = error.message || "Una oscura hechicería impidió cargar esta leyenda.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles for 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Consultando a los oráculos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches 40 now
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("Los oráculos no revelaron nuevas leyendas por ahora."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar leyendas: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // *** UPDATE BUTTON TEXT ***
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Descubrir Más Leyendas (40)';
+             }
+         }
+
+         // *** Search Filter Function (con normalización) ***
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Check all essential elements, including minigame ones
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !minigameArea || !minigameTarget || !minigameScoreDisplay) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: #8b0000; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: Cinzel;">¡Zas! El Scriptorium ha sufrido un percance. Faltan componentes esenciales.</p>';
+                return;
+             }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

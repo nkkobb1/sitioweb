@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Ejemplos Prácticos JS</title> <!-- Title Changed -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fonts: UI font + Code font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos (Mostly unchanged, dev theme is suitable) --- */
+        :root {
+            --color-primary: #facc15; /* Amarillo JS */
+            --color-secondary: #60a5fa; /* Azul Claro */
+            --color-tertiary: #a78bfa; /* Violeta Claro */
+            --color-background: #18181b; /* Zinc 900 - Más oscuro */
+            --color-surface: #27272a; /* Zinc 800 */
+            --color-text: #f4f4f5; /* Zinc 100 */
+            --color-text-muted: #a1a1aa; /* Zinc 400 */
+            --color-border: #3f3f46; /* Zinc 700 */
+            --color-error-bg: #450a0a;
+            --color-error-text: #fca5a5;
+            --color-error-border: #ef4444;
+            --font-ui: 'Roboto', sans-serif;
+            --font-code: 'Source Code Pro', monospace;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+            --border-radius: 4px;
+            --transition-normal: all 0.2s ease-in-out;
+        }
+        html { background-color: var(--color-background); }
+        body { font-family: var(--font-ui); background-color: var(--color-background); color: var(--color-text); line-height: 1.6; font-weight: 300; }
+        h1, h2, h3, h4, .logo { font-family: var(--font-ui); font-weight: 700; }
+        .logo { color: var(--color-primary); font-weight: 500; letter-spacing: 0.5px; text-shadow: 0 0 5px rgba(250, 204, 21, 0.3); }
+        h1.page-title { color: var(--color-primary); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 500; }
+        #modal-title { color: var(--color-primary); font-weight: 500; }
+        .navbar { background-color: var(--color-surface); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Search Bar Styles */
+        #search-input { width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-background); color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: var(--font-ui); }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.3); outline: none; background-color: var(--color-surface); }
+        #search-container .fa-search { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        /* Title List Styles */
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-surface); padding: 1.1rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; /* Align left for longer titles */ font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; min-height: 65px; font-family: var(--font-ui); font-size: 0.95rem; padding-left: 1.5rem; position: relative; }
+        .title-item::before { /* JS icon bullet */ content: "\f3b9"; /* Font Awesome JS icon */ font-family: "Font Awesome 6 Brands"; position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 0.85em; opacity: 0.7; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-primary); color: var(--color-primary); background-color: #3f3f46; /* Zinc 700 hover */ }
+        .title-item:hover::before { opacity: 1; }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: var(--color-background); padding: 0.7rem 1.4rem; border: none; border-radius: var(--border-radius); font-family: var(--font-ui); font-weight: 500; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; text-shadow: none; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #eab308; /* Yellow 600 hover */ box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: var(--color-text-muted); color: var(--color-surface); cursor: not-allowed; opacity: 0.8; }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        /* Modal Styles */
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(24, 24, 27, 0.92); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 1100px; width: 95%; max-height: 90vh; min-height: 500px;
+            overflow: hidden; position: relative; box-shadow: var(--shadow-lg);
+            display: flex; flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 10px; right: 12px; background: var(--color-border); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.6rem; color: var(--color-text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(90deg); }
+        #modal-title { font-size: 1.7rem; text-align: center; margin-bottom: 1.5rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; }
+
+        /* Code & Preview Panels Styles */
+        #modal-output-area { flex-grow: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; overflow: hidden; }
+        .code-panel, .preview-panel { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: var(--color-background); }
+        .panel-header { font-family: var(--font-ui); font-weight: 500; padding: 0.6rem 1rem; background-color: var(--color-border); color: var(--color-text); flex-shrink: 0; border-bottom: 1px solid var(--color-surface); font-size: 0.9rem; }
+        .panel-header i { margin-right: 0.5rem; color: var(--color-primary); }
+        #code-display-container, #preview-container { flex-grow: 1; overflow: auto; padding: 1rem; scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-surface); }
+        #code-display-container::-webkit-scrollbar, #preview-container::-webkit-scrollbar { width: 8px; }
+        #code-display-container::-webkit-scrollbar-track, #preview-container::-webkit-scrollbar-track { background: var(--color-surface); border-radius: var(--border-radius); }
+        #code-display-container::-webkit-scrollbar-thumb, #preview-container::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-surface); }
+
+        /* PrismJS Syntax Highlighting Styles */
+        #code-output { font-family: var(--font-code); font-size: 0.9em; line-height: 1.5; white-space: pre; word-wrap: normal; color: #d1d5db; background: none; text-shadow: none;}
+        #code-output .token.comment, #code-output .token.prolog, #code-output .token.doctype, #code-output .token.cdata { color: #6b7280; font-style: italic;}
+        #code-output .token.punctuation { color: #9ca3af; }
+        #code-output .token.namespace { opacity: .7; }
+        #code-output .token.property, #code-output .token.tag, #code-output .token.boolean, #code-output .token.number, #code-output .token.constant, #code-output .token.symbol, #code-output .token.deleted { color: #60a5fa; } /* Azul */
+        #code-output .token.selector, #code-output .token.attr-name, #code-output .token.string, #code-output .token.char, #code-output .token.builtin, #code-output .token.inserted { color: #4ade80; } /* Verde */
+        #code-output .token.operator, #code-output .token.entity, #code-output .token.url, .language-css .token.string, .style .token.string { color: #e5e7eb; background: none;} /* Blanco */
+        #code-output .token.atrule, #code-output .token.attr-value, #code-output .token.keyword { color: #a78bfa; } /* Violeta */
+        #code-output .token.function, #code-output .token.class-name { color: #facc15; } /* Amarillo (JS Primary) */
+        #code-output .token.regex, #code-output .token.important, #code-output .token.variable { color: #fb923c; } /* Naranja */
+        #code-output .token.important, #code-output .token.bold { font-weight: bold; }
+        #code-output .token.italic { font-style: italic; }
+        #code-output .token.entity { cursor: help; }
+
+        #preview-iframe { width: 100%; height: 100%; border: none; background-color: #ffffff; }
+
+        /* Loading Overlay & Minigame Styles */
+        #modal-loading { text-align: center; padding: 2rem; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(24, 24, 27, 0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 55; border-radius: var(--border-radius); }
+        #modal-loading.active { display: flex; }
+        .loading-spinner-modal { width: 50px; height: 50px; border: 5px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1.2s linear infinite; margin-bottom: 1rem; }
+        #modal-loading p { font-weight: 400; color: var(--color-text); font-size: 1.2rem; margin-bottom: 1.5rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Minigame Styles */
+        #minigame-container { width: 80%; max-width: 300px; height: 150px; background-color: #000; position: relative; border: 2px solid var(--color-primary); margin-top: 1rem; overflow: hidden; cursor: none; }
+        .paddle { position: absolute; width: 10px; height: 40px; background-color: var(--color-primary); }
+        #player-paddle { left: 10px; top: 55px; }
+        .ball { position: absolute; width: 10px; height: 10px; background-color: var(--color-secondary); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        #minigame-instructions { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem; }
+
+        /* Error Message Styles */
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1rem; text-align: center; flex-shrink: 0; font-weight: 400; font-size: 0.95rem; }
+        .error-msg i { margin-right: 0.5rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+    </style>
+    <!-- Prism JS CSS - Not needed as styles are inline -->
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-2xl sm:text-3xl">
+                     <i class="fab fa-js-square mr-2"></i> <!-- JS Icon -->
+                     JS<span class="text-gray-400">_Ejemplos</span>
+                 </h1>
+             </div>
+             <span class="text-xs text-gray-400 font-light tracking-wide">Generador de Código JavaScript Práctico</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">JavaScript en Acción</h1> <!-- Title Changed -->
+             <p class="text-lg text-gray-300 mb-8 max-w-3xl mx-auto font-light">Explora ejemplos prácticos de JavaScript para tareas comunes de desarrollo web. Selecciona una tarea y obtén el código.</p> <!-- Text Changed -->
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto relative">
+             <input type="text" id="search-input" placeholder="Buscar ejemplo (ej: 'contador', 'validar', 'toggle'...)"> <!-- Placeholder Changed -->
+             <i class="fas fa-search text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-8 text-center mx-auto">
+                 <i class="fas fa-tasks text-blue-400 mr-2"></i> <!-- Tasks Icon -->
+                 Ejemplos Disponibles
+             </h2> <!-- Title Changed -->
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-400 col-span-full text-center text-lg">Cargando lista de ejemplos...</p> <!-- Text Changed -->
+                  <!-- .title-item will be added here -->
+             </div>
+             <p id="no-results" class="text-gray-400 col-span-full text-center text-lg mt-4 hidden">No se encontraron ejemplos para tu búsqueda.</p> <!-- Text Changed -->
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Generar Más Ejemplos (40)
+                  </button> <!-- Text Changed -->
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Code Snippet Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator with Minigame -->
+             <div id="modal-loading">
+                 <div class="loading-spinner-modal"></div>
+                 <p>Generando ejemplo JS...</p> <!-- Text Changed -->
+                 <div id="minigame-container">
+                     <div id="player-paddle" class="paddle"></div>
+                     <div class="ball"></div>
+                 </div>
+                 <p id="minigame-instructions">Mueve el ratón para jugar mientras esperas</p>
+             </div>
+
+             <!-- Content Area (Code + Preview) -->
+             <div id="modal-story-content-area" class="flex flex-col flex-grow min-h-0 content-hidden">
+                <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                <div id="modal-output-area">
+                    <!-- Code Panel -->
+                    <div class="code-panel">
+                         <div class="panel-header"><i class="fas fa-file-code"></i>Código Fuente (HTML/CSS/JS)</div>
+                         <div id="code-display-container">
+                             <pre><code id="code-output" class="language-html"></code></pre>
+                         </div>
+                    </div>
+                    <!-- Preview Panel -->
+                    <div class="preview-panel">
+                         <div class="panel-header"><i class="fas fa-play-circle"></i>Ejemplo en Funcionamiento</div> <!-- Header Changed -->
+                         <div id="preview-container">
+                             <iframe id="preview-iframe" title="Vista Previa del Código JavaScript" srcdoc="<html><head><title>Preview</title><style>body{display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#a1a1aa;background:#27272a;font-size:0.9em;}</style></head><body><div>Esperando generación de código...</div></body></html>"></iframe>
+                         </div>
+                    </div>
+                </div>
+                <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-gray-500 py-6 mt-12 border-t border-gray-700"> <!-- Darker Footer -->
+          <div class="container mx-auto px-4 text-center text-xs font-light">
+              <p>Ejemplos de JavaScript generados por IA con fines educativos.</p> <!-- Text Changed -->
+              <p class="mt-1">El código es ilustrativo y puede requerir ajustes.</p>
+              <p class="mt-2">© 2025 JS_Ejemplos</p> <!-- Name Changed -->
+          </div>
+      </footer>
+
+      <!-- Prism JS (Core + Autoloader for languages) -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+             // DOM Manipulation & Events
+            "Botón que cambia el texto de un párrafo",
+            "Alternar (toggle) la visibilidad de un elemento con un botón",
+            "Cambiar el color de fondo de un div al hacer clic",
+            "Contador simple con botones de incrementar y decrementar",
+            "Añadir un item a una lista al enviar un formulario",
+            "Eliminar un item de una lista al hacer clic en él",
+            "Mostrar alerta con el valor de un input al hacer clic",
+            "Actualizar un elemento <p> con el texto de un <input> en tiempo real (evento 'input')",
+            "Cambiar la imagen mostrada al hacer clic en botones 'anterior'/'siguiente'",
+            "Resaltar un elemento al pasar el ratón por encima (mouseover/mouseout)",
+            "Obtener y mostrar las coordenadas del ratón dentro de un div",
+            "Deshabilitar un botón después de hacer clic",
+            "Validación simple de formulario (campo no vacío) al enviar",
+            "Marcar/desmarcar todas las checkboxes con un botón",
+            "Mostrar/ocultar un menú desplegable (dropdown) simple",
+            "Crear un efecto de 'acordeón' simple (mostrar/ocultar paneles)",
+            "Abrir un enlace en una nueva ventana con JavaScript",
+            "Copiar texto al portapapeles desde un botón",
+            "Detectar qué tecla se presionó y mostrar su código",
+            "Mover un pequeño elemento (div) con las teclas de flecha",
+            "Arrastrar y soltar (drag and drop) un elemento simple dentro de un contenedor",
+             // Data Handling & Logic
+            "Generador de números aleatorios dentro de un rango",
+            "Seleccionar un elemento aleatorio de un array (ej: cita aleatoria)",
+            "Calculadora simple (sumar dos números de inputs)",
+            "Convertidor simple de unidades (ej: Celsius a Fahrenheit)",
+            "Ordenar una lista de nombres alfabéticamente",
+            "Filtrar elementos de una lista basados en un input de búsqueda",
+            "Calcular el factorial de un número introducido",
+            "Comprobar si un número introducido es primo (básico)",
+            "Generador de contraseñas aleatorias simple",
+            "Contador de caracteres en un textarea",
+            "Invertir el texto introducido en un input",
+            "Comprobar si una palabra introducida es un palíndromo",
+            "Crear un objeto JS simple y mostrar sus propiedades",
+            "Iterar sobre un array de objetos y mostrarlos en una tabla HTML",
+             // Timers & Basic Async
+            "Reloj digital simple que se actualiza cada segundo",
+            "Temporizador/Cuenta regresiva simple",
+            "Mostrar un mensaje después de X segundos (setTimeout)",
+            "Ejecutar una función repetidamente cada X segundos (setInterval)",
+            "Detener un intervalo (clearInterval)",
+            "Simular carga de datos con setTimeout y mostrar 'spinner'",
+             // Browser APIs (Simple)
+            "Guardar una preferencia simple (ej: tema oscuro) en LocalStorage",
+            "Leer y aplicar una preferencia desde LocalStorage al cargar",
+            "Eliminar un item de LocalStorage",
+            "Obtener la geolocalización básica del usuario (latitud, longitud)",
+            "Mostrar las dimensiones actuales de la ventana del navegador",
+            "Cambiar el título del documento HTML",
+            "Hacer scroll suave hacia un elemento de la página",
+            "Detectar si el navegador está online/offline",
+             // Fetch API (Very Basic)
+            "Realizar una solicitud GET simple a una API pública (ej: JSONPlaceholder) y mostrar datos",
+            "Manejar errores básicos en una solicitud Fetch",
+            "Enviar datos simples (POST) a un endpoint de prueba (reqres.in)",
+             // Canvas (Very Basic)
+            "Dibujar un rectángulo simple en un Canvas",
+            "Dibujar un círculo simple en un Canvas",
+            "Escribir texto simple en un Canvas",
+             // Common UI Patterns
+            "Crear pestañas (tabs) simples para mostrar/ocultar contenido",
+            "Modal/Popup simple que se abre con un botón",
+            "Slider/Carrusel de imágenes muy básico (con botones)",
+            "Barra de progreso simple actualizada con JS",
+            "Tooltip simple que aparece al hacer hover",
+            "Validación de fortaleza de contraseña básica (mostrar indicador)",
+            "Formulario multi-paso simple (mostrar/ocultar secciones)",
+            "Efecto 'máquina de escribir' para un texto"
+        ];
+        const codeGenThemes = [ // Updated themes for practical JS
+            "Manipulación del DOM con JS", "Eventos de usuario en JavaScript", "Formularios y validación JS",
+            "Listas dinámicas y arrays JS", "Lógica y algoritmos simples en JS", "Temporizadores y JS asíncrono básico",
+            "LocalStorage y Web Storage", "API Fetch básica", "Coordenadas y teclado JS",
+            "Efectos visuales con JS", "Componentes UI comunes con JS", "Canvas básico JS",
+            "Objetos y datos en JavaScript", "API del Navegador (Geolocation, etc.)", "Interacción usuario-interfaz JS"
+        ];
+        const textApiConfig = { // Updated system prompt for practical JS
+            model: "mistral",
+            systemPrompt: `Eres un asistente de IA experto en desarrollo web frontend, especializado en JavaScript práctico. Tu tarea es generar un ejemplo de código **completo, autocontenido y funcional** basado en el título proporcionado, que describe una tarea práctica común.
+Debes generar un **documento HTML completo** (incluyendo <!DOCTYPE html>, <html>, <head>, y <body>).
+- Incluye el CSS necesario dentro de etiquetas <style> en el <head> para que el ejemplo sea visualmente claro y usable.
+- Incluye el JavaScript necesario dentro de etiquetas <script> al final del <body>. **Este script debe implementar la funcionalidad descrita en el título.**
+- El código debe ser claro, bien comentado (preferiblemente en inglés o español consistente) y fácil de entender para alguien aprendiendo JavaScript práctico.
+- El ejemplo debe ilustrar **directamente** la tarea del título.
+- **Genera únicamente el código HTML completo.** No incluyas explicaciones adicionales ANTES o DESPUÉS del bloque de código HTML. Asegúrate de que el output sea solo el código HTML.`,
+            timeoutSeconds: 120
+        };
+        const titleGenerationConfig = { // Updated prompt for practical JS titles
+            model: "mistral",
+            systemPrompt: `Actúa como un generador de ideas conciso para ejemplos de código JavaScript prácticos. Genera exactamente **40** títulos cortos y descriptivos para snippets de código que resuelvan tareas comunes en desarrollo web usando JavaScript (DOM, eventos, fetch, etc.). Los títulos deben describir la *tarea* (ej: 'Contador de clics en botón', 'Validar campo email en formulario', 'Slider de imágenes simple', 'Obtener datos de API con Fetch'). Devuelve *solo* la lista de títulos, uno por línea. Sin números, guiones, introducciones ni despedidas.`,
+            timeoutSeconds: 60
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const codeOutputElement = document.getElementById('code-output');
+        const previewIframe = document.getElementById('preview-iframe');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Minigame Elements
+        const minigameContainer = document.getElementById('minigame-container');
+        const playerPaddle = document.getElementById('player-paddle');
+        const ball = document.querySelector('.ball');
+
+        // ========== Minigame State & Logic (Unchanged) ==========
+        let gameLoopId = null;
+        let ballX = 150, ballY = 75;
+        let ballSpeedX = 1.5, ballSpeedY = 1.5;
+        let paddleY = 55;
+        const paddleHeight = 40;
+        const containerHeight = 150;
+        const containerWidth = 300;
+
+        function startGame() { /* ... (same as before) ... */
+            if (!minigameContainer || !playerPaddle || !ball) return;
+            console.log("Starting minigame...");
+            ballX = containerWidth / 2;
+            ballY = containerHeight / 2;
+            paddleY = (containerHeight - paddleHeight) / 2;
+            ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * 1.5;
+            ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * 1.5;
+            playerPaddle.style.top = `${paddleY}px`;
+            ball.style.left = `${ballX}px`;
+            ball.style.top = `${ballY}px`;
+            minigameContainer.addEventListener('mousemove', movePaddle);
+            if (gameLoopId) cancelAnimationFrame(gameLoopId); // Prevent multiple loops
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+        function stopGame() { /* ... (same as before) ... */
+            console.log("Stopping minigame...");
+            if (gameLoopId) {
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = null;
+            }
+            minigameContainer.removeEventListener('mousemove', movePaddle);
+        }
+        function movePaddle(event) { /* ... (same as before) ... */
+             if (!minigameContainer || !playerPaddle) return;
+             const rect = minigameContainer.getBoundingClientRect();
+             const mouseY = event.clientY - rect.top;
+             paddleY = mouseY - paddleHeight / 2;
+             if (paddleY < 0) paddleY = 0;
+             if (paddleY > containerHeight - paddleHeight) paddleY = containerHeight - paddleHeight;
+             playerPaddle.style.top = `${paddleY}px`;
+        }
+        function gameLoop() { /* ... (same as before, includes collision/bounce logic) ... */
+             if (!ball || !playerPaddle) { stopGame(); return; }
+             ballX += ballSpeedX; ballY += ballSpeedY;
+             if (ballY <= 0 || ballY >= containerHeight - 10) { ballSpeedY *= -1; ballY = ballY <= 0 ? 0 : containerHeight - 10; }
+             const paddleRect = playerPaddle.getBoundingClientRect(); const ballRect = ball.getBoundingClientRect();
+             if (ballX <= 20 && ballX > 10 && ballY + 10 > paddleY && ballY < paddleY + paddleHeight) {
+                 ballSpeedX *= -1.05; ballX = 20;
+                 let deltaY = ballY + 5 - (paddleY + paddleHeight / 2); ballSpeedY += deltaY * 0.08;
+                 ballSpeedY = Math.max(-3, Math.min(3, ballSpeedY));
+             }
+             if (ballX >= containerWidth - 10) { ballSpeedX *= -1; ballX = containerWidth - 10; }
+             if (ballX <= 0) { ballX = containerWidth / 2; ballY = containerHeight / 2; ballSpeedX = 1.5; ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * 1.5; }
+             ball.style.left = `${ballX}px`; ball.style.top = `${ballY}px`;
+             gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+
+        // ========== API FUNCTIONS (Unchanged structure) ==========
+        async function fetchApiData(prompt, config) { /* ... (same as before) ... */
+            const encodedPrompt = encodeURIComponent(prompt);
+             const encodedSystem = encodeURIComponent(config.systemPrompt);
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching API (${config.model}): ${url.substring(0, 200)}...`);
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) { throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento. Por favor, intenta en unos segundos.`); }
+                 const data = await response.text();
+                 if (!data || data.trim().length === 0) { throw new Error("La respuesta de la API llegó vacía. Intenta de nuevo."); }
+                 console.log(`API Response received (${data.length} chars)`);
+                 return data;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') { throw new Error(`La solicitud tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`); }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        async function fetchHtmlCode(conceptTitle) { return fetchApiData(conceptTitle, textApiConfig); }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(codeGenThemes) || "ejemplos prácticos JavaScript"; // Updated default theme
+             const specificPrompt = `Genera 40 títulos de ejemplos prácticos de JavaScript sobre ${randomTheme}`; // Updated prompt text
+             const text = await fetchApiData(specificPrompt, titleGenerationConfig);
+             const titles = text.split('\n')
+                              .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                              .filter(line => line.length > 5 && line.length < 150);
+             if (titles.length < 10) throw new Error("No se pudieron generar suficientes ideas (se esperaban 40).");
+             return titles.slice(0, 40);
+         }
+
+        // ========== Utility Functions (Includes cleanAiCodeOutput) ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function cleanAiCodeOutput(rawCode) { /* ... (same as before) ... */
+            if (!rawCode) return ''; let cleanedCode = rawCode.trim();
+            const codeBlockRegex = /^```(?:\w*\s*)?\r?\n?([\s\S]*?)\r?\n?```$/;
+            const match = cleanedCode.match(codeBlockRegex);
+            if (match && match[1]) { cleanedCode = match[1].trim(); }
+            else {
+                 const startFenceRegex = /^```(?:\w*\s*)?\r?\n?/; if (startFenceRegex.test(cleanedCode)) { cleanedCode = cleanedCode.replace(startFenceRegex, ''); }
+                 const endFenceRegex = /\r?\n?```$/; if (endFenceRegex.test(cleanedCode)) { cleanedCode = cleanedCode.replace(endFenceRegex, ''); }
+            }
+             if (cleanedCode.startsWith('html') && cleanedCode.includes('<!DOCTYPE html>')) { cleanedCode = cleanedCode.substring(cleanedCode.indexOf('<!DOCTYPE html>')); }
+            return cleanedCode.trim();
+        }
+
+        // ========== MODAL FUNCTIONS (Unchanged structure) ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() { /* ... (same as before, calls stopGame) ... */
+             storyModal.classList.remove('active');
+             document.body.style.overflow = '';
+             stopGame();
+             resetModalState();
+        }
+        function resetModalState() { /* ... (same as before) ... */
+             modalLoadingIndicator.classList.remove('active');
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             codeOutputElement.textContent = '';
+             previewIframe.srcdoc = `<html><head><title>Preview</title><style>body{display:flex;justify-content:center;align-items:center;height:100%;margin:0;font-family:sans-serif;color:#a1a1aa;background:#27272a;font-size:0.9em;}</style></head><body><div>Esperando generación de código...</div></body></html>`;
+             modalErrorMessage.textContent = '';
+        }
+
+        // ========== UI & EVENT HANDLERS (Unchanged structure) ==========
+        function createTitleItem(title) { /* ... (same as before) ... */
+            const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div;
+        }
+        function displayTitles(titles) { /* ... (same as before) ... */
+            if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-400 col-span-full text-center">No hay ejemplos disponibles.</p>'; return; } // Text changed
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+        }
+        function appendTitles(newTitles) { /* ... (same as before) ... */
+            if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+             console.log(`Added ${addedCount} new titles.`);
+             filterTitles(searchInput.value);
+        }
+
+        // *** handleTitleClick (Unchanged core logic, uses updated fetchHtmlCode) ***
+        async function handleTitleClick(title) { /* ... (same as before, calls cleanAiCodeOutput) ... */
+            resetModalState(); showModal(); modalTitle.textContent = title;
+            modalLoadingIndicator.classList.add('active');
+            modalStoryContentArea.classList.add('content-hidden');
+            startGame();
+            try {
+                const generatedHtmlRaw = await fetchHtmlCode(title);
+                const generatedHtml = cleanAiCodeOutput(generatedHtmlRaw);
+                stopGame(); modalLoadingIndicator.classList.remove('active');
+                codeOutputElement.textContent = generatedHtml;
+                if (window.Prism) { Prism.highlightElement(codeOutputElement); }
+                else { console.warn("Prism not loaded, skipping syntax highlighting."); }
+                previewIframe.srcdoc = generatedHtml;
+                modalStoryContentArea.classList.remove('content-hidden');
+                modalError.classList.add('content-hidden');
+            } catch (error) {
+                console.error("Failed display:", error); stopGame();
+                modalLoadingIndicator.classList.remove('active');
+                modalErrorMessage.textContent = error.message || "Error desconocido al generar el ejemplo."; // Text changed
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.add('content-hidden');
+            }
+        }
+        // *** handleGenerateMoreTitles (Unchanged logic, uses updated fetchGeneratedTitles) ***
+        async function handleGenerateMoreTitles() { /* ... (same as before) ... */
+             if (!generateMoreBtn || !generateMoreSpinner) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Generando...'; // Text changed
+             try {
+                 const newTitles = await fetchGeneratedTitles();
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron generar más ejemplos en este momento."); } // Text changed
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al generar ejemplos: ${error.message}`); // Text changed
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Generar Más Ejemplos (40)'; // Text changed
+             }
+        }
+        // *** filterTitles (Unchanged logic) ***
+        function filterTitles(searchTerm) { /* ... (same as before) ... */
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset && item.dataset.title ? item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             const hasItems = titleListContainer.querySelector('.title-item'); // Check if any item exists at all
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0 || !hasItems);
+         }
+
+        // ========== INITIALIZATION (Unchanged logic) ==========
+        function initApp() { /* ... (same as before) ... */
+            const essentialElements = [ titleListContainer, storyModal, modalCloseBtn, generateMoreBtn, titlesLoading, searchInput, noResultsMsg, codeOutputElement, previewIframe, modalLoadingIndicator, minigameContainer, playerPaddle, ball ];
+            if (essentialElements.some(el => !el)) { console.error("Initialization failed: Missing one or more essential DOM elements."); document.body.innerHTML = '<p style="color: #f87171; font-size: 1.5em; text-align: center; padding-top: 3em;">Error Crítico: Faltan componentes de la interfaz. Recarga la página.</p>'; return; }
+            console.log("All essential elements found. Initializing JS Examples Generator...");
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+            console.log("JS Examples Generator Initialized successfully.");
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

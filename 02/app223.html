@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trucos de Google Chrome - Guía Interactiva</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Google (Roboto) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Trucos Chrome --- */
+        :root {
+            --color-chrome-red: #DB4437;
+            --color-chrome-blue: #4285F4;
+            --color-chrome-green: #0F9D58;
+            --color-chrome-yellow: #F4B400;
+            --color-background: #f1f3f4; /* Gris claro Google */
+            --color-text: #202124; /* Gris oscuro Google */
+            --color-text-muted: #5f6368;
+            --color-modal-bg: #ffffff; /* Blanco */
+            --color-border: #dadce0; /* Borde gris claro Google */
+            --color-error-bg: #fce8e6; /* Fondo error rojo claro */
+            --color-error-text: #a50e0e; /* Texto error rojo oscuro */
+            --color-error-border: #ea4335; /* Borde error rojo */
+
+            --shadow-sm: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+            --shadow-md: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+            --shadow-lg: 0 4px 5px 0 rgba(60, 64, 67, 0.3), 0 1px 10px 0 rgba(60, 64, 67, 0.15);
+            --border-radius: 8px; /* Bordes redondeados estilo Google */
+            --transition-normal: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.65; font-weight: 400; }
+        h1, h2, h3, h4, .logo { font-family: 'Roboto', sans-serif; font-weight: 500; }
+        .logo { color: var(--color-chrome-blue); } /* Logo azul */
+        h1.page-title { color: var(--color-text); font-weight: 700; }
+        h2.section-title { color: var(--color-text); border-bottom: 3px solid var(--color-chrome-blue); padding-bottom: 0.5rem; display: inline-block; font-weight: 500;}
+        #modal-title { color: var(--color-chrome-blue); font-weight: 700; }
+        .navbar { background-color: var(--color-modal-bg); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2rem; position: relative; }
+        #search-input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: var(--color-modal-bg); color: var(--color-text); box-shadow: none; transition: var(--transition-normal); font-family: 'Roboto'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-chrome-blue); box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-chrome-blue); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: var(--color-modal-bg); padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: left; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; min-height: 65px; font-family: 'Roboto'; font-size: 0.95rem; }
+        .title-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-chrome-blue); background-color: #e8f0fe; /* Azul muy claro hover */ }
+        .title-item i { margin-right: 0.8rem; color: var(--color-chrome-blue); width: 18px; text-align: center; } /* Icono en cada item */
+
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-chrome-blue); color: white; padding: 0.75rem 1.6rem; border: none; border-radius: var(--border-radius); font-family: 'Roboto', sans-serif; font-weight: 500; cursor: pointer; transition: var(--transition-normal); margin-top: 1.5rem; letter-spacing: 0.5px; }
+        #generate-more-btn:hover:not(:disabled) { background-color: #1a73e8; box-shadow: var(--shadow-sm); }
+        #generate-more-btn:disabled { background-color: #bdc1c6; color: #f8f9fa; cursor: not-allowed; opacity: 0.8; transform: none; box-shadow: none; }
+        #generate-more-btn .fa-sync-alt { /* No necesita color, ya es blanco por el botón */ }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(32, 33, 36, 0.7); /* Overlay gris oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 400px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: transparent; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: #f1f3f4; color: var(--color-text); }
+        #modal-title { font-size: 1.7rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.3; font-weight: 500; }
+
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: #bdc1c6 var(--color-background); /* Scrollbar gris */
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-background); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: #bdc1c6; border-radius: var(--border-radius); border: 1px solid var(--color-background); }
+
+        #modal-content { padding: 0 5px; font-size: 1rem; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-text); font-weight: 700; }
+        #modal-content em { color: var(--color-chrome-blue); font-style: italic; font-weight: 500;}
+        #modal-content code { background-color: #f1f3f4; padding: 0.2em 0.4em; margin: 0; font-size: 85%; border-radius: 3px; font-family: monospace; color: #3c4043; }
+        #modal-content kbd { background-color: #e8eaed; border: 1px solid #bdc1c6; border-radius: 3px; padding: 0.1em 0.4em; font-size: 85%; color: #3c4043; } /* Estilo para atajos */
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Roboto', sans-serif; margin-top: 2em; margin-bottom: 1em; color: var(--color-chrome-blue); border-bottom: 1px solid var(--color-border); padding-bottom: 0.4em; font-weight: 500; }
+        #modal-content h1 { font-size: 1.4em; } #modal-content h2 { font-size: 1.25em; } #modal-content h3 { font-size: 1.1em; color: var(--color-chrome-green); } #modal-content h4 { font-size: 1em; color: var(--color-text-muted); border-bottom: none;}
+        /* Estilos imagen final y placeholder */
+        #modal-content .final-image { display: block; max-width: 75%; height: auto; margin: 2rem auto 1rem auto; border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.03); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); }
+        #modal-content .image-placeholder .spinner { border: 4px solid #e8eaed; width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-chrome-blue); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; color: var(--color-chrome-yellow); } /* Icono amarillo */
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 220px; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #f8f9fa; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: #bdc1c6 var(--color-background);
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: var(--color-background); border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: #bdc1c6; border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.6rem 0.9rem; border-radius: 18px; /* Mensajes redondeados */ max-width: 85%; word-wrap: break-word; line-height: 1.5; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-chrome-blue); color: white; margin-left: auto; text-align: left; border-bottom-right-radius: 4px;}
+        .ai-message { background-color: #e8eaed; color: var(--color-text); margin-right: auto; text-align: left; border-bottom-left-radius: 4px;}
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 1rem; border: 1px solid var(--color-border); background-color: #f1f3f4; color: var(--color-text); border-radius: 20px; font-family: 'Roboto'; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-chrome-blue); background-color: white; box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.3); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-chrome-blue); color: white; border: none; border-radius: 50%; /* Botón redondo */ cursor: pointer; transition: background-color 0.2s ease; font-size: 1rem; flex-shrink: 0;}
+        #chat-send-btn:hover:not(:disabled) { background-color: #1a73e8; }
+        #chat-send-btn:disabled { background-color: #bdc1c6; cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* --- Loading Modal con Minijuego --- */
+        #modal-loading {
+            text-align: center; padding: 2rem; position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--color-modal-bg); /* Fondo blanco */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 55; border-radius: var(--border-radius); overflow: hidden;
+        }
+        #loading-game-container { width: 100%; height: 80%; position: relative; overflow: hidden; background-color: #e8f0fe; border-radius: var(--border-radius); margin-bottom: 1rem; cursor: pointer; }
+        #falling-item {
+            position: absolute; width: 35px; height: 35px;
+            /* Usar font-awesome para el icono de chrome */
+            font-family: "Font Awesome 6 Free"; font-weight: 900; content: "\f268"; /* Icono de Chrome */
+            font-size: 30px; text-align: center; line-height: 35px; border-radius: 50%;
+            color: white; /* El color se aplicará con clases */
+            cursor: pointer; user-select: none; will-change: top, left;
+            /* Animación inicial */
+             top: -40px;
+        }
+        .item-red { background-color: var(--color-chrome-red); }
+        .item-blue { background-color: var(--color-chrome-blue); }
+        .item-green { background-color: var(--color-chrome-green); }
+        .item-yellow { background-color: var(--color-chrome-yellow); }
+
+        #loading-info { margin-top: 1rem; font-weight: 500; color: var(--color-text); font-size: 1.1rem; }
+        #loading-score { font-size: 1rem; color: var(--color-text-muted); }
+        /* Fin estilos Minijuego */
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Roboto'; font-size: 0.95rem; }
+        .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        #image-fullscreen-overlay { /* Mismos estilos que antes, ajustar fondo */ background-color: rgba(32, 33, 36, 0.9); position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-border); box-shadow: var(--shadow-lg); background-color: white; /* Fondo blanco por si la imagen tiene transparencia */ }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-border); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: #f1f3f4; color: var(--color-text); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                  <!-- Usar icono de Font Awesome para Chrome -->
+                  <i class="fab fa-chrome text-3xl mr-3" style="color: #4285F4;"></i>
+                 <h1 class="logo text-2xl sm:text-3xl font-medium">
+                     Trucos de Chrome
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-normal">Guía Interactiva Definitiva</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-10 text-center">
+             <h1 class="page-title text-4xl sm:text-5xl mb-4">Domina Google Chrome</h1>
+             <p class="text-lg text-gray-700 mb-8 max-w-3xl mx-auto font-light">Descubre funciones ocultas, atajos y secretos para navegar más rápido y eficientemente.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-8 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar truco, atajo o función...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-2xl sm:text-3xl mb-6 text-center mx-auto">
+                 <i class="fas fa-magic text-yellow-500 mr-2"></i> <!-- Icono magia/truco -->
+                 Explora los Trucos
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Cargando trucos disponibles...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">No se encontraron trucos para tu búsqueda.</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Mostrar Más Trucos (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator con Minijuego -->
+             <div id="modal-loading">
+                 <div id="loading-game-container">
+                     <!-- Aquí se añadirán los items que caen -->
+                 </div>
+                 <div id="loading-info">Cargando detalles del truco...</div>
+                 <div id="loading-score">Puntos: 0</div>
+             </div>
+
+             <!-- Content Area Wrapper (Scrollable Text + Fixed Chat below) -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                     </div>
+                 </div>
+
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Consultando al experto...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta más sobre este truco...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-arrow-up"></i></button>
+                     </div>
+                 </div>
+
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                  </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-100 text-gray-600 py-6 mt-12 border-t border-gray-200 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información generada por IA con fines educativos y de referencia sobre Google Chrome.</p>
+              <p class="mt-1">Los trucos y funciones pueden variar según la versión de Chrome y el sistema operativo.</p>
+              <p class="mt-2">© 2025 Guía Interactiva Chrome</p>
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Atajos de Teclado (Fundamentales)
+            "Abrir nueva pestaña (Ctrl+T / Cmd+T)", "Cerrar pestaña actual (Ctrl+W / Cmd+W)", "Reabrir última pestaña cerrada (Ctrl+Shift+T / Cmd+Shift+T)",
+            "Abrir nueva ventana (Ctrl+N / Cmd+N)", "Abrir nueva ventana de incógnito (Ctrl+Shift+N / Cmd+Shift+N)", "Cerrar ventana actual (Alt+F4 / Cmd+Shift+W)",
+            "Ir a la pestaña siguiente (Ctrl+Tab / Cmd+Option+Right)", "Ir a la pestaña anterior (Ctrl+Shift+Tab / Cmd+Option+Left)", "Ir a una pestaña específica (Ctrl+1 a 8 / Cmd+1 a 8)",
+            "Ir a la última pestaña (Ctrl+9 / Cmd+9)", "Abrir enlace en nueva pestaña (Ctrl+Click / Cmd+Click)", "Abrir enlace en nueva pestaña y cambiar a ella (Ctrl+Shift+Click / Cmd+Shift+Click)",
+            "Abrir enlace en nueva ventana (Shift+Click)", "Recargar página (F5 / Ctrl+R / Cmd+R)", "Recargar página ignorando caché (Ctrl+F5 / Ctrl+Shift+R / Cmd+Shift+R)",
+            "Detener carga de página (Esc)", "Buscar en la página (Ctrl+F / Cmd+F)", "Ir a la siguiente coincidencia (Ctrl+G / Cmd+G)", "Ir a la anterior coincidencia (Ctrl+Shift+G / Cmd+Shift+G)",
+            "Aumentar zoom (Ctrl + '+')", "Disminuir zoom (Ctrl + '-')", "Restablecer zoom (Ctrl+0 / Cmd+0)", "Guardar página actual (Ctrl+S / Cmd+S)", "Imprimir página (Ctrl+P / Cmd+P)",
+            "Mostrar/Ocultar barra de marcadores (Ctrl+Shift+B / Cmd+Shift+B)", "Abrir administrador de marcadores (Ctrl+Shift+O / Cmd+Shift+O)", "Abrir historial (Ctrl+H / Cmd+Y)",
+            "Abrir descargas (Ctrl+J / Cmd+Shift+J)", "Abrir administrador de tareas de Chrome (Shift+Esc)", "Abrir herramientas para desarrolladores (F12 / Ctrl+Shift+I / Cmd+Option+I)",
+            "Abrir consola de JavaScript (Ctrl+Shift+J / Cmd+Option+J)", "Inspeccionar elemento (Ctrl+Shift+C / Cmd+Shift+C)", "Ir a la barra de direcciones (Alt+D / Ctrl+L / Cmd+L)",
+            "Buscar con motor predeterminado desde barra (Ctrl+E / Ctrl+K / Cmd+Option+F)", "Añadir www. y .com y abrir (Ctrl+Enter / Cmd+Enter)", "Abrir buscador en nueva pestaña (Alt+Enter)",
+            "Borrar datos de navegación (Ctrl+Shift+Del / Cmd+Shift+Del)", "Ir a la página anterior (Alt+Left / Backspace / Cmd+[ )", "Ir a la página siguiente (Alt+Right / Shift+Backspace / Cmd+] )",
+            "Ir a la página de inicio (Alt+Home)", "Desplazarse hacia abajo (Space)", "Desplazarse hacia arriba (Shift+Space)", "Ir al final de la página (End)", "Ir al principio de la página (Home)",
+
+            // Gestión de Pestañas
+            "Agrupar pestañas", "Nombrar y colorear grupos de pestañas", "Fijar pestaña (Pin tab)", "Silenciar pestaña (Mute tab)", "Duplicar pestaña", "Buscar entre pestañas abiertas (Ctrl+Shift+A)",
+            "Mover pestaña a nueva ventana", "Seleccionar múltiples pestañas (Ctrl/Cmd o Shift + Click)", "Cerrar pestañas a la derecha",
+
+            // Omnibox (Barra de Direcciones)
+            "Realizar cálculos matemáticos en la Omnibox", "Convertir unidades (ej: '10 kg to lbs')", "Buscar directamente en un sitio (ej: 'youtube.com [Tab] búsqueda')",
+            "Ver definiciones (ej: 'define: cromatografía')", "Ver el tiempo (ej: 'tiempo en Bogotá')", "Traducir palabras o frases (ej: 'translate hola to english')",
+            "Buscar historial directamente", "Buscar marcadores directamente", "Usar palabras clave para buscadores personalizados",
+
+            // Configuración y Flags (`chrome://`)
+            "Acceder a `chrome://flags` (Funciones experimentales)", "Habilitar lectura en voz alta (`Read Aloud`)", "Forzar modo oscuro en todas las webs (`Force Dark Mode`)",
+            "Habilitar desplazamiento suave (`Smooth Scrolling`)", "Activar `Parallel Downloading` para acelerar descargas", "Activar `Memory Saver` para reducir uso de RAM",
+            "Activar `Energy Saver` para portátiles", "Ver componentes de Chrome (`chrome://components`)", "Ver información de GPU (`chrome://gpu`)",
+            "Ver volcados de memoria (`chrome://crashes`)", "Ver experimentos de interfaz (`chrome://flags` UI experiments)", "Gestionar perfiles de usuario (`chrome://settings/manageProfile`)",
+            "Configurar página de inicio y nueva pestaña (`chrome://settings/onStartup`)", "Gestionar motores de búsqueda (`chrome://settings/searchEngines`)",
+            "Limpiar datos de navegación (`chrome://settings/clearBrowserData`)", "Ajustar configuración de privacidad y seguridad (`chrome://settings/privacy`)",
+            "Gestionar contraseñas guardadas (`chrome://settings/passwords`)", "Realizar comprobación de seguridad (`Safety Check`)",
+            "Gestionar cookies y datos de sitios (`chrome://settings/cookies`)", "Ajustar permisos de sitios (cámara, micrófono, ubicación) (`chrome://settings/content`)",
+            "Ver políticas aplicadas (`chrome://policy`)", "Ver información de versión (`chrome://version`)", "Acerca de Chrome (`chrome://settings/help`)",
+
+            // Extensiones
+            "Instalar extensiones desde Chrome Web Store", "Gestionar extensiones instaladas (`chrome://extensions`)", "Atajos de teclado para extensiones",
+            "Fijar extensiones a la barra de herramientas", "Habilitar extensiones en modo incógnito", "Entender los permisos de las extensiones",
+            "Tipos de extensiones útiles (Gestores de contraseñas, Ad Blockers, VPNs, Productividad, etc.)",
+
+            // Herramientas para Desarrolladores (DevTools)
+            "Inspeccionar y modificar HTML/CSS en tiempo real", "Usar la consola para ejecutar JavaScript y ver errores", "Analizar tráfico de red (Pestaña Network)",
+            "Medir rendimiento de carga (Pestaña Performance/Lighthouse)", "Simular dispositivos móviles", "Ver y editar almacenamiento local/session/cookies (Pestaña Application)",
+            "Depurar código JavaScript (Pestaña Sources)", "Trabajar con puntos de interrupción (Breakpoints)", "Analizar uso de memoria (Pestaña Memory)",
+
+            // Perfiles y Sincronización
+            "Crear y gestionar múltiples perfiles de usuario", "Ventajas de usar perfiles separados (trabajo/personal)", "Sincronizar marcadores, historial, contraseñas entre dispositivos",
+            "Gestionar datos sincronizados (`chrome://settings/syncSetup`)", "Usar perfil de invitado",
+
+            // Privacidad y Seguridad
+            "Navegar en modo incógnito: Qué hace y qué no hace", "Borrar historial, cookies y caché", "Gestionar contraseñas de forma segura",
+            "Activar Navegación Segura Mejorada", "Revisar permisos concedidos a sitios web", "Bloquear cookies de terceros", "Usar DNS seguro (DoH)",
+
+            // Otras Funciones
+            "Usar el Administrador de Tareas de Chrome para identificar pestañas problemáticas", "Guardar páginas como PDF", "Rellenar formularios automáticamente",
+            "Controlar la reproducción multimedia (Controles multimedia globales)", "Enviar pestañas a otros dispositivos (Send to Your Devices)",
+            "Usar la función 'Leer más tarde' (Reading List)", "Jugar al Dino T-Rex sin conexión (`chrome://dino`)", "Castear contenido a Chromecast",
+            "Crear accesos directos a sitios web como aplicaciones", "Traducción automática de páginas web", "Ver código fuente de la página (Ctrl+U / Cmd+Option+U)",
+            "Accesibilidad: Lector de pantalla, subtítulos automáticos", "Gestionar descargas (`chrome://downloads`)",
+            // Añadir más trucos específicos...
+            "Forzar actualización de componentes (`chrome://components`)", "Ver estado de la red (`chrome://net-export`)",
+            "Ver predicciones de red (`chrome://predictors`)", "Historial de sincronización interna (`chrome://sync-internals`)",
+            "Manejar protocolos (`chrome://settings/handlers`)", "Atajos de teclado para emojis (Windows: Win+. / Mac: Cmd+Ctrl+Space)",
+            "Usar 'Copiar enlace a texto destacado'", "Crear un código QR para la página actual",
+            "Reordenar pestañas arrastrando", "Arrastrar pestaña fuera para crear nueva ventana",
+            "Arrastrar URL o texto seleccionado a la barra de pestañas para buscar/abrir",
+            "Click derecho en botón 'Atrás'/'Adelante' para ver historial de la pestaña",
+            "Usar `site:ejemplo.com busqueda` en Google para buscar dentro de un sitio",
+            "Combinar ventanas de Chrome arrastrando pestañas",
+            "Cerrar Chrome completamente desde el icono de la bandeja del sistema (si está configurado)",
+            "Añadir notas a los marcadores",
+            "Organizar marcadores en carpetas",
+             "Importar/Exportar marcadores",
+             "Usar `cache:url` en la Omnibox para ver versión en caché de Google",
+             "Personalizar tema de Chrome (`chrome://settings/appearance`)",
+             "Cambiar ubicación de descargas (`chrome://settings/downloads`)",
+             "Activar/Desactivar aceleración por hardware (`chrome://settings/system`)",
+             "Ver certificados de seguridad de un sitio (Candado en Omnibox)",
+             "Reportar sitio sospechoso",
+             "Restablecer configuración de Chrome a valores predeterminados (`chrome://settings/reset`)",
+             // La lista es muy larga, el botón 'Generar Más' será útil
+        ];
+        const chromeTricksThemes = [ // Temas para generar más títulos
+            "atajos de teclado Chrome", "gestión de pestañas Chrome", "trucos omnibox Chrome", "chrome://flags útiles", "extensiones Chrome recomendadas",
+            "herramientas desarrollador Chrome", "perfiles de usuario Chrome", "privacidad seguridad Chrome", "optimizar rendimiento Chrome", "funciones ocultas Chrome",
+            "marcadores Chrome", "descargas Chrome", "modo incógnito Chrome", "configuración avanzada Chrome", "atajos DevTools Chrome",
+            "trucos de búsqueda Chrome", "personalización Chrome", "productividad con Chrome", "Chrome para trabajo", "Chrome en móvil"
+        ];
+        const textApiConfig = { // Para descripción principal
+            model: "mistral",
+            systemPrompt: "Eres un experto absoluto en Google Chrome, un 'power user' que conoce todos los trucos y funciones. Explica el truco, atajo o función de Chrome indicada de forma clara, concisa y práctica. Incluye: Qué hace, cómo se activa (pasos o atajo de teclado), beneficios o casos de uso, y si aplica, alguna advertencia o truco relacionado. Formatea los atajos de teclado claramente (ej: `Ctrl+Shift+T` o `Cmd+Shift+T`). Usa un lenguaje amigable y directo. El objetivo es una explicación detallada de aproximadamente 1200-1300 palabras. Basa tu explicación únicamente en el siguiente truco/función de Chrome:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = { // Config base para chat
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un asistente experto en Chrome, enfocado únicamente en el truco o función que se está mostrando actualmente. Responde preguntas de seguimiento sobre cómo usarlo, sus detalles o problemas comunes. Sé breve y ve al grano.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = { // *** SOLICITAR 40 TÍTULOS ***
+            model: "mistral",
+            systemPrompt: "Eres un generador de ideas conciso para una guía de Google Chrome. Genera exactamente 40 nombres cortos y claros de trucos, atajos de teclado, funciones (`chrome://...`), o consejos de uso para Google Chrome, adecuados para una explicación detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 70 // *** Aumentar timeout para 40 títulos ***
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        // Loading Modal Elements
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        const loadingGameContainer = document.getElementById('loading-game-container');
+        const loadingInfo = document.getElementById('loading-info');
+        const loadingScoreDisplay = document.getElementById('loading-score');
+        // Main Content Modal Elements
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentTrickTitle = null; // Contexto para chat
+        let loadingGameInterval = null; // Intervalo para generar items del juego
+        let loadingGameScore = 0;
+        let isGameActive = false;
+        const gameItemFallSpeed = 5000; // ms para caer
+        const gameItemSpawnRate = 800; // ms entre items nuevos
+
+        // ========== API FUNCTIONS ========== (Adaptadas mensajes error)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentTrickTitle
+                 ? `Eres un asistente experto en Chrome, enfocado únicamente en el truco '${currentTrickTitle}'. Responde preguntas de seguimiento sobre cómo usarlo, sus detalles o problemas comunes. Sé breve y ve al grano.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+                 if (!response.ok) {
+                      // *** Mensaje Amigable ***
+                     throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento. Por favor, intenta en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                     throw new Error("La respuesta de la IA llegó vacía. Intenta reformular la pregunta o seleccionar otro truco.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     throw new Error(`La conexión tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o el servidor podría estar ocupado.`);
+                 }
+                 throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) {
+             if (!currentTrickTitle) throw new Error("Error interno: No se estableció el contexto del truco para el chat.");
+             return fetchTextFromApi(userQuery, chatApiConfig, true);
+        }
+        // *** MODIFIED: fetchGeneratedTitles to get 40 ***
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(chromeTricksThemes) || "trucos generales Chrome";
+             // Prompt pide explícitamente 40
+             const specificPrompt = `Genera 40 nombres/conceptos de trucos o funciones sobre ${randomTheme} para Google Chrome.`;
+             const configForThisRequest = { ...titleGenerationConfig, seed: Math.floor(Math.random() * 1000000) };
+             return fetchTextFromApi(specificPrompt, configForThisRequest, false)
+                 .then(text => {
+                     const titles = text.split('\n')
+                         .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                         .filter(line => line.length > 5 && line.length < 150); // Filtrar líneas vacías o muy cortas/largas
+                     if (titles.length < 20) { // Esperar al menos la mitad
+                         console.warn("La IA generó menos de 20 títulos, pueden ser repetitivos:", titles.length);
+                         // No lanzar error necesariamente, pero avisar
+                         if (titles.length === 0) throw new Error("La IA no generó ninguna idea de truco.");
+                     }
+                     console.log(`Generated ${titles.length} new titles.`);
+                     return titles.slice(0, 40); // Asegurar máximo 40
+                 });
+         }
+         function createPollinationsImageUrl(promptText, options = {}) { // Adaptado para Chrome
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 600, height: 450, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "Google Chrome feature abstract";
+             // Pedir imagen conceptual/abstracta, NO UI.
+             const enhancedPrompt = `Abstract or conceptual representation of the Google Chrome feature or trick: '${safePromptText}'. Use Google's color palette (red, blue, green, yellow) and clean lines. Focus on the concept (speed, organization, security, connection). Avoid text, labels, UI elements, screenshots. Minimalist vector style or flat design illustration.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, label, letter, number, screenshot, user interface, UI, browser window, realism, photograph, complex background, watermark, signature";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (Añadido estilo KBD)
+        function formatExplanationText(rawText) {
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             // Formato básico
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+
+             // Encabezados
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+
+             // Énfasis y código
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+              // Detectar `texto entre backticks` como código inline
+             formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+             // *** Detectar y formatear atajos de teclado comunes ***
+             // (Esto es heurístico, puede necesitar ajustes)
+             // Ej: Ctrl+Shift+T, Cmd+Option+I, Alt+F4, F5, Shift+Esc
+             formatted = formatted.replace(/(?:Ctrl|Cmd)\s*\+\s*(?:Shift\s*\+\s*)?(?:Alt\s*\+\s*)?([a-zA-Z0-9\[\]\\;,./`=+-]|F\d{1,2}|Tab|Esc|Enter|Space|Backspace|Home|End|PageUp|PageDown|Left|Right|Up|Down)/g, '<kbd>$&</kbd>');
+             // Casos especiales como Alt+Left/Right que no fueron capturados
+              formatted = formatted.replace(/Alt\s*\+\s*(Left|Right)/g, '<kbd>$&</kbd>');
+             // Backspace / Shift+Backspace
+             formatted = formatted.replace(/(?<!\+)(Backspace|Shift\s*\+\s*Backspace)/g, '<kbd>$&</kbd>');
+
+             // Párrafos
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">') || block.startsWith('<kbd>')) return block; // No envolver encabezados, fórmulas o kbd ya formateados
+                 // Convertir saltos de línea simples DENTRO de un párrafo en espacio
+                 let content = block.replace(/\n/g, ' ');
+                 // Re-aplicar formato de código/kbd por si acaso
+                 content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+                 // No re-aplicar kbd aquí para evitar doble formato
+
+                 return `<p>${content}</p>`;
+             }).join('');
+
+             return formatted;
+         }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            stopLoadingGame(); // Detener juego al cerrar
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            modalTextArea.scrollTop = 0;
+            resetModalState();
+        }
+        function resetModalState() {
+             modalLoadingIndicator.style.display = 'flex'; // Mostrar área de carga (con juego)
+             loadingInfo.textContent = "Cargando detalles del truco..."; // Texto inicial
+             loadingScoreDisplay.textContent = "Puntos: 0"; // Resetear marcador visible
+             loadingGameScore = 0; // Resetear puntuación interna
+             if (loadingGameContainer) loadingGameContainer.innerHTML = ''; // Limpiar items viejos del juego
+
+             modalStoryContentArea.classList.add('content-hidden'); // Ocultar contenido principal
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTrickTitle = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... */ if(!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src=imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /* ... */ if(!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if(!storyModal.classList.contains('active')){ document.body.style.overflow=''; } fullscreenImage.src=''; }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv=document.createElement('div'); msgDiv.classList.add('chat-message',sender==='user'?'user-message':'ai-message'); message=message.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'); message=message.replace(/\*(.*?)\*/g,'<em>$1</em>'); msgDiv.innerHTML=message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop=chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errDiv=document.createElement('div'); errDiv.classList.add('chat-error'); errDiv.textContent=message; chatHistory.appendChild(errDiv); chatHistory.scrollTop=chatHistory.scrollHeight; }
+        async function handleSendMessage() { /* ... */ const q=chatInput.value.trim(); if(!q||chatSendBtn.disabled) return; addChatMessage(q,'user'); chatInput.value=''; chatSendBtn.disabled=true; chatLoadingIndicator.style.display='block'; try { const r=await fetchChatResponse(q); addChatMessage(r,'ai'); } catch(e){ console.error("Chat Error:",e); addChatError(`Error IA: ${e.message}`); } finally { chatLoadingIndicator.style.display='none'; chatSendBtn.disabled=false; chatInput.focus(); } }
+
+        // ========== LOADING MINIGAME FUNCTIONS ==========
+        function startGame() {
+            if (!loadingGameContainer || isGameActive) return;
+            console.log("Starting loading game...");
+            isGameActive = true;
+            loadingGameScore = 0;
+            loadingScoreDisplay.textContent = "Puntos: 0";
+            loadingGameContainer.innerHTML = ''; // Clear previous items
+            modalLoadingIndicator.style.display = 'flex'; // Ensure loading area is visible
+
+             // Start spawning items
+            loadingGameInterval = setInterval(createFallingItem, gameItemSpawnRate);
+         }
+
+        function stopGame() {
+            if (!isGameActive) return;
+            console.log("Stopping loading game.");
+            isGameActive = false;
+            clearInterval(loadingGameInterval);
+            loadingGameInterval = null;
+             // Optionally clear remaining items or let them finish falling
+             // loadingGameContainer.innerHTML = '';
+        }
+
+        function createFallingItem() {
+            if (!isGameActive || !loadingGameContainer) return;
+
+            const item = document.createElement('i'); // Usar <i> para FontAwesome
+             item.id = `item-${Date.now()}-${Math.random().toString(16).slice(2)}`; // Unique ID
+            item.className = 'fas fa-chrome'; // Icono base
+            item.classList.add('falling-item'); // Estilo base de caída
+
+            // Random color class
+            const colors = ['item-red', 'item-blue', 'item-green', 'item-yellow'];
+            item.classList.add(getRandomElement(colors));
+
+            // Random horizontal position
+            const containerWidth = loadingGameContainer.offsetWidth;
+             const itemSize = 35; // Match CSS width/height
+            item.style.left = `${Math.random() * (containerWidth - itemSize)}px`;
+            item.style.top = `-${itemSize}px`; // Start above the container
+
+             loadingGameContainer.appendChild(item);
+
+            // Animate fall using JS for better control over removal
+            const targetY = loadingGameContainer.offsetHeight;
+             item.animate([
+                 { top: `-${itemSize}px` },
+                 { top: `${targetY}px` }
+             ], {
+                 duration: gameItemFallSpeed,
+                 easing: 'linear'
+             }).onfinish = () => {
+                 // Remove item if it hasn't been clicked and reached the bottom
+                 if (item.parentNode === loadingGameContainer) {
+                     item.remove();
+                 }
+             };
+
+
+            // Click handler for the item
+            item.addEventListener('click', (e) => {
+                 e.stopPropagation(); // Prevent triggering container click if any
+                if (!isGameActive) return; // Don't score if game stopped
+                 loadingGameScore++;
+                 loadingScoreDisplay.textContent = `Puntos: ${loadingGameScore}`;
+                 item.remove(); // Remove item when clicked
+            }, { once: true }); // Ensure click only happens once
+        }
+
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { /* ... */ let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        // *** MODIFIED: createTitleItem to add icon ***
+        function createTitleItem(title) {
+             const div = document.createElement('div');
+             div.className = 'title-item';
+             div.setAttribute('data-title', title);
+             div.addEventListener('click', () => handleTitleClick(title));
+             // Add an icon based on keywords (simple heuristic)
+             const icon = document.createElement('i');
+             icon.className = 'fas'; // Base class
+             if (title.match(/pestaña|tab/i)) icon.classList.add('fa-folder-plus'); // fa-window-restore
+             else if (title.match(/atajo|ctrl|cmd|shift|alt|f\d/i)) icon.classList.add('fa-keyboard');
+             else if (title.match(/ventana|window/i)) icon.classList.add('fa-window-maximize');
+             else if (title.match(/buscar|search|omnibox/i)) icon.classList.add('fa-search');
+             else if (title.match(/flag|experimental|chrome:\/\//i)) icon.classList.add('fa-flask');
+             else if (title.match(/extensi[oó]n/i)) icon.classList.add('fa-puzzle-piece');
+             else if (title.match(/devtool|desarrollador|inspect/i)) icon.classList.add('fa-code');
+             else if (title.match(/perfil|profile|sync|sincroni/i)) icon.classList.add('fa-user-circle');
+             else if (title.match(/privacidad|seguridad|contraseña|password|incognito/i)) icon.classList.add('fa-shield-alt');
+             else if (title.match(/rendimiento|memoria|velocidad|performance|ram/i)) icon.classList.add('fa-tachometer-alt');
+             else if (title.match(/marcador|bookmark/i)) icon.classList.add('fa-bookmark');
+             else if (title.match(/descarga|download/i)) icon.classList.add('fa-download');
+             else icon.classList.add('fa-lightbulb'); // Default icon
+
+             div.appendChild(icon);
+             div.appendChild(document.createTextNode(title)); // Add text after icon
+             return div;
+        }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">No hay trucos disponibles.</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             let addedCount = 0;
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); addedCount++; } });
+             console.log(`Appended ${addedCount} new unique titles.`);
+             filterTitles(searchInput.value); // Re-apply filter
+         }
+
+        // *** MODIFIED: handleTitleClick to start game ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Reset general state
+            showModal();
+            modalTitle.textContent = title;
+            currentTrickTitle = title;
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+
+            startGame(); // *** START THE MINIGAME ***
+            modalLoadingIndicator.style.display = 'flex'; // Ensure loading screen is visible
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                 stopGame(); // *** STOP GAME on success ***
+                modalLoadingIndicator.style.display = 'none'; // Hide loading screen
+
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalContent.innerHTML = formattedExplanation;
+                modalStoryContentArea.classList.remove('content-hidden');
+
+                modalTextArea.scrollTop = 0;
+                console.log("Scroll set to 0 after content visible");
+
+                // Prepare image placeholder
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-palette placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Generando visualización conceptual...</p>`;
+                modalContent.appendChild(placeholderDiv);
+
+                // Create image element
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Visualización conceptual de ${title}`;
+                imgElement.style.display = 'none';
+                imgElement.onload = () => { placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src)); };
+                imgElement.onerror = () => { placeholderDiv.innerHTML = `<i class="fas fa-image-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Visualización fallida.</p>`; };
+
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) { imgElement.src = imageUrl; modalContent.appendChild(imgElement); }
+                else { placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de imagen.</p>`; }
+
+            } catch (error) {
+                 stopGame(); // *** STOP GAME on error ***
+                console.error("Failed display:", error);
+                modalLoadingIndicator.style.display = 'none'; // Hide loading screen
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar datos.";
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+         // *** MODIFIED: handleGenerateMoreTitles for 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando más trucos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches up to 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se pudieron encontrar más trucos en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar trucos: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                  // Update button text to reflect 40
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Mostrar Más Trucos (40)';
+             }
+         }
+
+        function filterTitles(searchTerm) { /* ... */ const term=searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();const items=titleListContainer.querySelectorAll('.title-item');let vc=0;items.forEach(i=>{const tt=i.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");const v=tt.includes(term);i.classList.toggle('hidden',!v);if(v)vc++;});noResultsMsg.classList.toggle('hidden',vc>0); }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Check for all essential elements, including game container
+             if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !modalLoadingIndicator || !loadingGameContainer || !loadingInfo || !loadingScoreDisplay) {
+                console.error("Initialization failed: Missing essential elements.");
+                document.body.innerHTML = '<p style="color: red; font-size: 1.5em; text-align: center; padding-top: 3em;">Error crítico: Faltan componentes de la interfaz. Recarga la página.</p>';
+                return;
+             }
+            // Event listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

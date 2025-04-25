@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas Urbanas: Marvel & DC - Vidas Comunes</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes: Comic para títulos, legible para cuerpo -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para Marvel/DC Common Folk --- */
+        :root {
+            --color-primary: #e62429; /* Rojo Marvel/Spider-Man */
+            --color-secondary: #00529b; /* Azul DC/Superman */
+            --color-tertiary: #f7b731; /* Amarillo Wonder Woman/Acción */
+            --color-background: #e1e1e1; /* Gris claro urbano/papel periódico */
+            --color-text: #222222; /* Negro/Gris muy oscuro texto */
+            --color-text-muted: #555555; /* Gris medio */
+            --color-modal-bg: #ffffff; /* Blanco para modal */
+            --color-border: #cccccc; /* Borde gris claro */
+            --color-error-bg: #fff5f5; /* Fondo error rojo muy claro */
+            --color-error-text: #c53030; /* Texto error rojo oscuro */
+            --color-error-border: #fc8181; /* Borde error rojo claro */
+            /* Halftone background sutil (opcional, puede ser pesado) */
+            /* --halftone-bg: radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px); */
+            /* background-size: 5px 5px; */
+
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 5px 10px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 4px; /* Bordes ligeramente redondeados */
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Lato', sans-serif; background-color: var(--color-background); /* background-image: var(--halftone-bg); */ color: var(--color-text); line-height: 1.65; font-weight: 400; }
+        /* Títulos con fuente de Comic */
+        h1, h2, h3, h4, .logo, .title-item, #generate-more-btn { font-family: 'Bangers', cursive; letter-spacing: 1.5px; font-weight: 400; /* Bangers suele ser bold por defecto */ }
+        .logo { color: var(--color-primary); text-shadow: 2px 2px var(--color-secondary); -webkit-text-stroke: 1px #111; /* Borde negro fino */ }
+        h1.page-title { color: var(--color-secondary); text-shadow: 1px 1px var(--color-primary); -webkit-text-stroke: 0.5px #fff; margin-bottom: 0.5rem !important; }
+        h2.section-title { color: var(--color-text); border-bottom: 4px dotted var(--color-primary); padding-bottom: 0.5rem; display: inline-block; margin-bottom: 1.5rem !important; }
+        #modal-title { font-family: 'Bangers', cursive; color: var(--color-primary); text-shadow: 1px 1px #ccc; letter-spacing: 1px; -webkit-text-stroke: 0.5px #111; }
+        .navbar { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 2px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 3rem; border: 2px solid var(--color-border); border-radius: var(--border-radius); font-size: 1rem; background-color: #fff; color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Lato'; }
+        #search-input::placeholder { color: var(--color-text-muted); font-style: italic; }
+        #search-input:focus { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(0, 82, 155, 0.25); outline: none; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-secondary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: #fefefe; padding: 1.1rem 0.8rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; color: var(--color-secondary); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 75px; font-size: 1.4rem; line-height: 1.2; border-bottom: 4px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-primary); background-color: #fff8f8; border-bottom-color: var(--color-primary); }
+        #generate-more-btn { grid-column: 1 / -1; background: linear-gradient(45deg, var(--color-primary), var(--color-tertiary)); color: white; padding: 0.9rem 1.8rem; border: none; border-radius: var(--border-radius); cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; letter-spacing: 2px; font-size: 1.5rem; text-shadow: 1px 1px #000; }
+        #generate-more-btn:hover:not(:disabled) { background: linear-gradient(45deg, var(--color-tertiary), var(--color-primary)); box-shadow: var(--shadow-lg); transform: scale(1.03); }
+        #generate-more-btn:disabled { background: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; text-shadow: none; }
+        #generate-more-btn .fa-sync-alt { color: white !important; font-family: "Font Awesome 6 Free"; /* Reset font */ letter-spacing: normal; font-size: 1.2rem; vertical-align: middle; }
+
+        /* Modal Styles */
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(34, 34, 34, 0.9); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 2px solid var(--color-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Allow space for content */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 8px; right: 8px; background: var(--color-text-muted); border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 1.6rem; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; font-family: 'Lato'; /* Reset font */}
+        .modal-close-btn:hover { background-color: var(--color-primary); transform: rotate(90deg); }
+        #modal-title { font-size: 2.5rem; text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.1; }
+
+        /* --- Loading Screen & Minigame --- */
+        #modal-loading {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 55; border-radius: var(--border-radius); padding: 2rem;
+            text-align: center;
+        }
+        #loading-text-area { /* Default text/spinner area */
+             font-family: 'Lato', sans-serif;
+             color: var(--color-text);
+        }
+        .loading-spinner-modal { /* Default spinner */
+            width: 50px; height: 50px;
+            border: 5px solid var(--color-border); border-top-color: var(--color-primary);
+            border-radius: 50%; animation: spin 1.2s linear infinite; margin: 0 auto 1rem auto;
+        }
+        #loading-status-text { font-weight: 700; font-size: 1.2rem; }
+
+        #loading-minigame { /* Container for the game */
+            display: none; /* Hidden by default */
+            width: 100%; max-width: 400px; /* Limit game area width */
+            flex-direction: column; align-items: center;
+            font-family: 'Lato', sans-serif;
+        }
+        #game-area {
+            width: 100%; height: 200px; /* Adjust size as needed */
+            border: 2px dashed var(--color-secondary);
+            background-color: #f0f8ff; /* Light blue bg */
+            position: relative; overflow: hidden;
+            margin-bottom: 1rem; cursor: crosshair;
+            border-radius: var(--border-radius);
+        }
+        .game-icon {
+            position: absolute; font-size: 2rem; /* Icon size */
+            cursor: pointer; transition: transform 0.1s ease-out;
+            animation: appearFade 1.5s linear forwards; /* Animation */
+            user-select: none; /* Prevent text selection */
+        }
+        .game-icon:hover { transform: scale(1.2); }
+        .target-icon { color: var(--color-tertiary); } /* Yellow for target */
+        .distractor-icon { color: var(--color-primary); } /* Red for distractors */
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes appearFade { /* Simple appear/fade animation */
+            0% { opacity: 0; transform: scale(0.5); }
+            20% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
+        #game-info { display: flex; justify-content: space-between; width: 100%; padding: 0 1rem; }
+        #game-score { font-size: 1.1rem; font-weight: 700; color: var(--color-secondary); }
+        #game-instructions { font-size: 0.9rem; color: var(--color-text-muted); }
+
+        /* --- End Loading Screen & Minigame --- */
+
+        /* Main Content Area (Scrollable) */
+        #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+            scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border);
+        }
+        #modal-content-area::-webkit-scrollbar { width: 8px; }
+        #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+        #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); }
+        #modal-content { padding: 0 5px; font-family: 'Lato', sans-serif; font-size: 1rem; line-height: 1.7; }
+        #modal-content p:not(:last-child) { margin-bottom: 1.3em; }
+        #modal-content strong { color: var(--color-secondary); font-weight: 700; }
+        #modal-content em { color: var(--color-primary); font-style: italic; font-weight: 400; }
+        #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'Bangers', cursive; margin-top: 2em; margin-bottom: 1em; color: var(--color-secondary); border-bottom: 2px solid var(--color-border); padding-bottom: 0.4em; font-weight: 400; letter-spacing: 1px; }
+        #modal-content h1 { font-size: 1.8em; }
+        #modal-content h2 { font-size: 1.6em; }
+        #modal-content h3 { font-size: 1.4em; color: var(--color-primary); }
+        #modal-content h4 { font-size: 1.2em; color: var(--color-text-muted); border-bottom: none; }
+        /* Image styles */
+        #modal-content .final-image { display: block; max-width: 85%; height: auto; margin: 2rem auto 1rem auto; border: 2px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #modal-content .final-image:hover { transform: scale(1.02); box-shadow: var(--shadow-lg); border-color: var(--color-primary); }
+        #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2rem auto 1rem auto; color: var(--color-text-muted); font-family: 'Lato'; }
+        #modal-content .image-placeholder .spinner { border: 4px solid rgba(0,0,0,0.1); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-secondary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+        #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+
+        /* Chat Section Styles */
+        #chat-section { border-top: 2px dashed var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 220px; font-family: 'Lato'; }
+        #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: #f9f9f9; scroll-behavior: smooth;
+            scrollbar-width: thin; scrollbar-color: var(--color-secondary) #eee;
+        }
+        #chat-history::-webkit-scrollbar { width: 6px; }
+        #chat-history::-webkit-scrollbar-track { background: #eee; border-radius: var(--border-radius); }
+        #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+        .chat-message { margin-bottom: 0.6rem; padding: 0.6rem 0.9rem; border-radius: 15px; /* Bubble effect */ max-width: 85%; word-wrap: break-word; line-height: 1.4; font-size: 0.95rem; }
+        .user-message { background-color: var(--color-secondary); color: white; margin-left: auto; border-bottom-right-radius: 3px; }
+        .ai-message { background-color: #e9e9eb; color: var(--color-text); margin-right: auto; border-bottom-left-radius: 3px; }
+        .chat-error { color: var(--color-error-text); font-style: italic; text-align: center; font-size: 0.9em; padding: 0.3rem; }
+        #chat-input-area { display: flex; gap: 0.5rem; }
+        #chat-input { flex-grow: 1; padding: 0.7rem 0.9rem; border: 1px solid var(--color-border); background-color: white; color: var(--color-text); border-radius: var(--border-radius); font-size: 0.9rem; }
+        #chat-input:focus { outline: none; border-color: var(--color-secondary); box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2); }
+        #chat-send-btn { padding: 0.7rem 1.1rem; background-color: var(--color-primary); color: white; border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+        #chat-send-btn:hover:not(:disabled) { background-color: #c51e23; }
+        #chat-send-btn:disabled { background-color: var(--color-text-muted); cursor: not-allowed; }
+        #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; }
+        #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+        /* Error Message Style */
+        .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 700; font-family: 'Lato'; font-size: 1rem; }
+        .error-msg i { margin-right: 0.7rem; }
+
+        .content-hidden { display: none !important; }
+        .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30, 30, 30, 0.95); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 3px solid white; box-shadow: var(--shadow-lg); }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: #333; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); font-family: 'Lato'; }
+        #fullscreen-close-btn:hover { background-color: white; transform: scale(1.1); color: #000; }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-2 sm:mb-0">
+                 <h1 class="logo text-4xl sm:text-5xl">
+                     <i class="fas fa-newspaper mr-3 text-blue-600"></i> <!-- Icono periódico -->
+                     Crónicas Urbanas
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-700 font-bold font-sans tracking-wide">MARVEL & DC: Historias No Contadas</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-6xl sm:text-7xl">¡Extra! ¡Extra!</h1>
+             <p class="text-xl text-gray-800 mt-2 mb-8 max-w-3xl mx-auto font-light">Vidas comunes en un mundo extraordinario. Lee las historias de los ciudadanos atrapados en medio de la acción superheroica.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar por personaje, evento o profesión...">
+             <i class="fas fa-search"></i>
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-4xl sm:text-5xl text-center mx-auto">
+                 <i class="fas fa-book-open text-red-600 mr-2"></i> <!-- Icono libro -->
+                 Archivos de Historias
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-600 col-span-full text-center text-lg font-sans">Recopilando testimonios...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» No se encontraron historias con esos criterios «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     ¡Más Historias!
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Indicator (with Minigame) -->
+             <div id="modal-loading">
+                 <!-- Default Loading Text/Spinner (Hidden when game active) -->
+                 <div id="loading-text-area">
+                     <div class="loading-spinner-modal"></div>
+                     <p id="loading-status-text">Recopilando informe...</p>
+                 </div>
+                 <!-- Minigame Area (Shown when game active) -->
+                 <div id="loading-minigame">
+                     <div id="game-info">
+                         <span id="game-score">Puntos: 0</span>
+                         <span id="game-instructions"><i class="fas fa-mouse-pointer"></i> ¡Clic en <i class="fas fa-hands-helping target-icon"></i>!</span>
+                     </div>
+                     <div id="game-area">
+                         <!-- Icons appear here -->
+                     </div>
+                 </div>
+             </div>
+
+             <!-- Content Area Wrapper -->
+             <div id="modal-story-content-area" class="content-hidden flex flex-col flex-grow min-h-0">
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image placeholder/final image appended here -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Analizando consulta...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta más sobre esta historia...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-paper-plane"></i></button>
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Imagen Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-800 text-gray-300 py-6 mt-12 border-t-4 border-gray-600 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Historias ficticias generadas por IA, inspiradas en los universos Marvel y DC Comics.</p>
+              <p class="mt-1">Todos los personajes y eventos referenciados son propiedad de sus respectivos dueños.</p>
+              <p class="mt-2">© 2024 Crónicas Urbanas - Un proyecto no oficial</p>
+          </div>
+      </footer>
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // NYC (Marvel Centric + General)
+            "Taxista en NYC durante la invasión Chitauri", "Dueño de puesto de hot dogs cerca de la Torre Stark", "Estudiante en Midtown High viendo a Spider-Man pasar", "Paramédico atendiendo heridos tras pelea Hulk vs Abominación", "Limpiador de ventanas en el Edificio Baxter (4 Fantásticos)", "Policía dirigiendo tráfico durante un atraco frustrado por Daredevil", "Vecino de Hell's Kitchen escuchando peleas nocturnas", "Oficinista evacuando durante ataque de Ultron", "Turista tomando fotos del Sanctum Sanctorum", "Periodista del Daily Bugle (no Peter) cubriendo a Spider-Man", "Chef en restaurante dañado por pelea callejera (Luke Cage)", "Bibliotecario ayudando a civiles a refugiarse", "Grafitero pintando mural de los Vengadores", "Músico callejero cuya actuación es interrumpida", "Vendedor de souvenirs de superhéroes en Times Square", "Guardia de seguridad de museo frustrando robo (¿Gata Negra?)", "Bombero apagando incendio causado por Electro", "Controlador aéreo durante incidente con Iron Man", "Empleado de Stark Industries (nivel bajo) reaccionando a noticias", "Residente de Harlem viendo a Luke Cage en acción", "Científico de bajo nivel en Oscorp", "Barrendero encontrando tecnología alienígena", "Dueño de tienda de cómics comentando eventos reales", "Conductor de metro durante pelea subterránea (Morlocks?)", "Artista callejero dibujando caricaturas de héroes",
+            // Gotham (DC Centric)
+            "Empleado de Ace Chemicals antes del incidente del Joker", "Guardia en el Asilo Arkham (noche movida)", "Dueño de restaurante en 'Restaurant Row' tras ataque de Pingüino", "Taxista llevando a pasajero misterioso (¿Bruce Wayne?)", "Policía novato en GCPD durante aparición de Batman", "Bibliotecaria de Gotham viendo a Batgirl pasar", "Médico en Gotham General tratando víctimas del Espantapájaros", "Periodista del Gotham Gazette cubriendo crimen", "Residente de los Narrows durante cuarentena", "Obrero de construcción reparando daños por pelea de Batman", "Dueño de casa de empeños recibiendo objetos extraños", "Profesor universitario cuyos alumnos debaten sobre Batman", "Asistente en Museo de Gotham durante robo (Catwoman?)", "Empleado de Wayne Enterprises ajeno a secretos", "Niño viendo la Batiseñal desde su ventana", "Vendedor ambulante cerca de la 'Calle del Crimen'", "Pescador en el puerto de Gotham encontrando algo raro", "Florista cuya tienda es destrozada por Hiedra Venenosa", "Mecánico que repara (sin saberlo) un Batmóvil dañado", "Fotógrafo intentando captar a Batman", "Ciudadano común reaccionando al miedo del Espantapájaros", "Asistente del Fiscal del Distrito Harvey Dent (antes)", "Socorrista durante inundación causada por Acertijo", "Joyero nervioso por posibles robos", "Sepulturero en cementerio de Gotham (noche tranquila... o no)",
+            // Metropolis (DC Centric)
+            "Oficinista viendo a Superman volar por primera vez", "Vendedor de perritos calientes durante pelea Superman vs Zod", "Periodista del Daily Planet (no Lois/Clark) cubriendo a Superman", "Científico de S.T.A.R. Labs presenciando experimento fallido", "Residente con vistas al Daily Planet", "Policía de Metropolis dirigiendo evacuación", "Paramédico tras ataque de Brainiac", "Dueño de tienda reparando daños colaterales", "Estudiante en Universidad de Metropolis", "Guía turístico mostrando lugares 'tocados' por Superman", "Granjero cerca de Smallville viendo llegar la nave Kent", "Controlador de tráfico aéreo lidiando con Superman", "Empleado de LexCorp (nivel bajo) ajeno a planes", "Bombero rescatando gato... y siendo ayudado por Superman", "Constructor reparando estatua de Superman", "Bibliotecario ayudando a buscar información sobre kryptonita", "Taxista llevando a 'Clark Kent'", "Niño intentando imitar el vuelo de Superman", "Investigador privado siguiendo pista relacionada con Luthor", "Piloto cuyo avión es salvado por Superman", "Ciudadano inspirado por el heroísmo de Superman", "Empleado de cafetería sirviendo a Lois Lane", "Guardia de museo durante intento de robo de artefacto kryptoniano", "Profesor explicando física... interrumpido por evento Super", "Músico callejero componiendo canción sobre Superman",
+            // Central/Keystone City (DC - Flash)
+            "Dueño de cafetería viendo pasar un borrón rojo (Flash)", "Científico en Laboratorios Mercury (rival de S.T.A.R.)", "Policía de CCPD intentando seguir a Flash", "Paramédico llegando 'tarde' porque Flash ya ayudó", "Víctima de robo salvada en un instante por Flash", "Empleado de museo durante robo del Capitán Frío", "Periodista local cubriendo las hazañas de Flash", "Residente sintiendo el 'viento' de Flash al pasar", "Ingeniero estudiando los rayos misteriosos", "Repartidor de pizza llegando sospechosamente rápido", "Testigo ocular de pelea Flash vs Gorilla Grodd", "Estudiante cuyo experimento es afectado por vibraciones", "Controlador de tráfico viendo 'anomalías'", "Taxista escuchando reportes de Flash en la radio", "Niño disfrazado de Flash en Halloween",
+            // Otras Locaciones y Eventos Generales (Marvel/DC)
+            "Residente de Coast City durante destrucción (Green Lantern)", "Habitante de Atlantis antes/después de ataque (Aquaman)", "Amazona en Themyscira reaccionando a llegada de extraño (Wonder Woman)", "Sheriff en pueblo pequeño lidiando con Hulk de paso", "Astronauta viendo batalla espacial desde la ISS", "Soldado raso durante evento de Capitán América", "Agente de S.H.I.E.L.D. de bajo nivel", "Agente de A.R.G.U.S. de bajo nivel", "Habitante de Wakanda (antes de ser revelada)", "Monje en Kamar-Taj observando a Dr. Strange", "Mutante joven descubriendo sus poderes (X-Men)", "Vigilante nocturno en Star City (Green Arrow)", "Arqueólogo encontrando artefacto místico", "Marinero testigo de Aquaman", "Piloto de pruebas en Ferris Aircraft (Green Lantern)", "Campista en el bosque encontrando a ¿Sasquatch? (Alpha Flight)", "Residente de suburbio durante pelea de Ant-Man (tamaño normal)", "Científico estudiando anillo de poder encontrado", "Guardián de faro viendo batalla naval superheroica", "Explorador perdido en la Tierra Salvaje",
+             // Perspectivas específicas
+            "Mi perro reacciona raro desde el 'Blip'", "Cómo afectó la invasión Chitauri a mi seguro", "Tratando de vender mi piso con vistas a la Zona Negativa", "Mi gato adoptó a un ¿Flerken?", "Encontré un Batarang en mi jardín", "¿Es legal tener un puesto de 'Shawarma Vengador'?", "Mi cita fue interrumpida por Doomsday", "Tratando de explicar a mi jefe por qué llegué tarde (culpa de Flash)", "La conexión a internet se cae cada vez que Electro ataca", "Mi vecino es sospechosamente musculoso y siempre rompe cosas (¿Hulk?)", "Intentando ligar mientras Gotham está bajo ataque", "El desafío de ser fontanero en Atlantis", "Vendiendo 'Merchandising No Oficial' de Batman", "Mi terapia después de ver a Darkseid", "Cómo invertir en la reconstrucción post-superpelea",
+            // ... (Continuar generando variaciones y nuevas ideas)
+        ];
+        const marvelDcThemes = [ // Para 'Generar Más'
+            "vida en NYC Marvel", "ciudadanos de Gotham City", "gente común en Metropolis", "testigos de Spider-Man", "víctimas colaterales de Batman", "civiles durante eventos de Superman", "experiencias en Central City con Flash", "vida cerca de la Torre Stark", "residentes de Hell's Kitchen", "empleados de Wayne Enterprises", "trabajadores del Daily Planet", "científicos de S.T.A.R. Labs", "policías de GCPD", "paramédicos en batallas de héroes", "taxistas en ciudades con héroes", "daños a propiedad por villanos", "reacciones al Blip/Crisis", "encontrar tecnología extraña", "ser salvado por un héroe", "miedo causado por villanos DC", "inspiración por héroes Marvel", "limpieza post-batalla", "vida cerca de Asilo Arkham", "eventos en Coast City", "vida en Themyscira", "perspectiva desde Wakanda", "trabajadores de LexCorp", "estudiantes en Midtown High", "habitantes de los Narrows (Gotham)", "vida cerca del Sanctum Sanctorum"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un escritor de ficción especializado en 'slice of life' dentro de universos de superhéroes. Tu tarea es narrar una historia corta (1200-1300 palabras) desde la perspectiva de una persona común descrita en el título/situación proporcionada. Enfócate en sus pensamientos, miedos, rutinas interrumpidas, observaciones cotidianas y cómo el evento superheroico impacta su vida normal. Captura el asombro, el peligro, la inconveniencia o la inspiración. Evita centrarte en la estrategia del héroe/villano; el foco es la experiencia humana ordinaria en un mundo extraordinario. Usa un tono realista y creíble para el personaje. Basa la historia únicamente en la siguiente situación:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Actúas como un PNJ (Personaje No Jugador) o un ciudadano informado dentro del universo Marvel/DC. Responde preguntas sobre la historia específica que se acaba de leer ('[currentStoryTitle]'). Ofrece detalles adicionales desde la perspectiva de alguien que vive allí, opina sobre los héroes/villanos mencionados, o especula sobre las consecuencias locales. Mantén el personaje y el contexto. Sé conversacional y relevante a la historia.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            // *** PROMPT PARA GENERAR 40 TÍTULOS ***
+            systemPrompt: "Eres un generador de ideas para historias cortas ambientadas en los universos Marvel y DC. Genera exactamente 40 situaciones ÚNICAS y CONCISAS vistas desde la perspectiva de gente común (taxistas, oficinistas, tenderos, estudiantes, etc.) durante o después de eventos superheroicos. Enfócate en la experiencia cotidiana impactada. Devuelve *solo* la lista de situaciones/títulos, uno por línea. Sin números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Aumentado ligeramente para más títulos
+        };
+
+        // ========== DOM ELEMENTS ==========
+        // (Igual que antes, pero añadiendo los del minijuego)
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        const modalLoadingIndicator = document.getElementById('modal-loading');
+        // Loading screen areas
+        const loadingTextArea = document.getElementById('loading-text-area');
+        const loadingStatusText = document.getElementById('loading-status-text');
+        const loadingMinigameArea = document.getElementById('loading-minigame');
+        const gameArea = document.getElementById('game-area');
+        const gameScoreDisplay = document.getElementById('game-score');
+        // Modal content areas
+        const modalStoryContentArea = document.getElementById('modal-story-content-area');
+        const modalTextArea = document.getElementById('modal-content-area');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentStoryTitle = null;
+        // Minigame State
+        let gameInterval = null;
+        let gameScore = 0;
+        let gameSpeed = 2000; // Initial interval in ms
+        const minGameSpeed = 800; // Fastest interval
+        const speedIncreaseFactor = 0.95; // Multiplier to decrease interval
+
+        // ========== API FUNCTIONS ==========
+        // fetchTextFromApi (Modified for Friendlier Errors)
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+             const encodedPrompt = encodeURIComponent(prompt);
+             const systemPromptToUse = isChat && currentStoryTitle
+                 ? `Actúas como un PNJ (Personaje No Jugador) o un ciudadano informado dentro del universo Marvel/DC. Responde preguntas sobre la historia específica que se acaba de leer ('${currentStoryTitle}'). Ofrece detalles adicionales desde la perspectiva de alguien que vive allí, opina sobre los héroes/villanos mencionados, o especula sobre las consecuencias locales. Mantén el personaje y el contexto. Sé conversacional y relevante a la historia.`
+                 : config.systemPrompt;
+             const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+             const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+             // Seed no es tan relevante para historias/chat, podemos omitirlo o hacerlo opcional
+             // if (config.seed && !isChat) params.append('seed', config.seed);
+             const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+             console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+             const controller = new AbortController();
+             const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+             try {
+                 const response = await fetch(url, { signal: controller.signal });
+                 clearTimeout(timeoutId);
+
+                 if (!response.ok) {
+                     // *** MENSAJE DE ERROR AMIGABLE ***
+                     throw new Error(`(Código ${response.status}) Nuestros servidores tienen mucho tráfico ahora mismo. Por favor, inténtalo de nuevo en unos segundos.`);
+                 }
+                 const text = await response.text();
+                 if (!text || text.trim().length === 0) {
+                      // *** MENSAJE DE ERROR AMIGABLE ***
+                     throw new Error("La IA no pudo generar una respuesta esta vez. Quizás intenta con otro título o reformula tu pregunta en el chat.");
+                 }
+                 console.log(`API Response received (${text.length} chars)`);
+                 return text;
+             } catch (error) {
+                 clearTimeout(timeoutId);
+                 console.error("API Fetch Error:", error);
+                 if (error.name === 'AbortError') {
+                     // *** MENSAJE DE ERROR AMIGABLE ***
+                     throw new Error(`La conexión con la IA tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o inténtalo más tarde.`);
+                 }
+                 // Propaga el error (ya debería ser amigable)
+                 throw new Error(error.message || "Ocurrió un error inesperado contactando con la IA. Intenta de nuevo.");
+             }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentStoryTitle) throw new Error("Error interno: No se ha establecido el contexto de la historia para el chat."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        // fetchGeneratedTitles (Modified for 40 titles)
+        async function fetchGeneratedTitles() {
+            const randomTheme = getRandomElement(marvelDcThemes) || "vida cotidiana en universos de superheroes";
+            const specificPrompt = `Genera 40 situaciones únicas de gente común en Marvel/DC sobre ${randomTheme}`;
+            return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                 .then(text => {
+                     const titles = text.split('\n')
+                         .map(line => line.replace(/^[-\d.\s*]+/, '').trim())
+                         .filter(line => line.length > 10 && line.length < 200); // Ajustar filtros si es necesario
+                     if (titles.length < 20) { // Esperar al menos la mitad
+                        throw new Error("La IA no generó suficientes ideas de historias nuevas.");
+                     }
+                     return titles.slice(0, 40); // Devolver hasta 40
+                 });
+        }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "citizen perspective marvel dc";
+             // Prompt adaptado a la estética comic/realista
+             const enhancedPrompt = `Street-level view, ordinary person's perspective of event related to '${safePromptText}'. Blend comic book aesthetic (dynamic composition, maybe subtle halftone) with realism. Focus on environment, emotion, reaction. Avoid showing main hero/villain face clearly. Cinematic, gritty or awe-inspiring depending on context. No text, labels.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "text, words, labels, letters, title, caption, diagram, chart, graph, UI, menu, button, watermark, signature, multiple images, collage, perfect hero shot, clean empty street, generic background";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+        }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... (igual que antes) */
+             if (!rawText) return '';
+             let formatted = rawText.trim();
+             formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+             formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+             formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+             formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+             formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+             formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+             formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+             formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+             formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+             formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+             const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+             formatted = blocks.map(block => {
+                 if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                 let content = block.replace(/\n/g, ' ');
+                 return `<p>${content}</p>`;
+             }).join('');
+             return formatted;
+        }
+
+        // ========== MINIGAME FUNCTIONS ==========
+        function startGame() {
+            console.log("Starting minigame...");
+            gameScore = 0;
+            gameSpeed = 2000; // Reset speed
+            gameScoreDisplay.textContent = `Puntos: ${gameScore}`;
+            loadingTextArea.classList.add('content-hidden'); // Hide default text/spinner
+            loadingMinigameArea.style.display = 'flex'; // Show game area
+            gameArea.innerHTML = ''; // Clear previous icons
+
+            if (gameInterval) clearInterval(gameInterval); // Clear any existing interval
+            gameInterval = setInterval(gameLoop, gameSpeed);
+        }
+        function stopGame() {
+            console.log("Stopping minigame...");
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = null;
+            loadingMinigameArea.style.display = 'none'; // Hide game
+            loadingTextArea.classList.remove('content-hidden'); // Show default text/spinner
+            gameArea.innerHTML = ''; // Clear icons
+        }
+        function gameLoop() {
+            // Create a target icon
+            createGameIcon(true);
+            // Create one or two distractor icons
+            createGameIcon(false);
+            if (Math.random() > 0.4) { // Add a second distractor sometimes
+                createGameIcon(false);
+            }
+
+             // Optional: Gradually increase speed
+             if (gameSpeed > minGameSpeed) {
+                 gameSpeed *= speedIncreaseFactor;
+                 clearInterval(gameInterval);
+                 gameInterval = setInterval(gameLoop, gameSpeed);
+                 // console.log("Game speed increased:", gameSpeed);
+             }
+        }
+        function createGameIcon(isTarget) {
+            const icon = document.createElement('i');
+            const targetClass = "fas fa-hands-helping"; // Icono de ciudadano/ayuda
+            const distractorIcons = ["fas fa-bomb", "fas fa-skull-crossbones", "fas fa-biohazard", "fas fa-meteor", "fas fa-radiation"]; // Iconos de peligro/villano/escombro
+            icon.className = `game-icon ${isTarget ? 'target-icon' : 'distractor-icon'} ${isTarget ? targetClass : getRandomElement(distractorIcons)}`;
+            icon.style.left = `${Math.random() * 90}%`; // Random position (0-90% to avoid edge clipping)
+            icon.style.top = `${Math.random() * 85}%`; // Random position (0-85%)
+            icon.dataset.isTarget = isTarget;
+
+            icon.addEventListener('click', handleIconClick);
+
+            gameArea.appendChild(icon);
+
+            // Remove icon after animation duration (1.5s in this case)
+            setTimeout(() => {
+                 if(icon.parentNode === gameArea) { // Check if still exists before removing
+                    gameArea.removeChild(icon);
+                 }
+            }, 1500); // Match animation duration
+        }
+        function handleIconClick(event) {
+             const clickedIcon = event.target;
+             if (!clickedIcon || !gameInterval) return; // Ignore clicks if game not running
+
+             if (clickedIcon.dataset.isTarget === 'true') {
+                 gameScore++;
+                 gameScoreDisplay.textContent = `Puntos: ${gameScore}`;
+                 // Add a visual feedback (optional)
+                 clickedIcon.style.transform = 'scale(1.5)';
+                 clickedIcon.style.opacity = '0';
+                 setTimeout(() => { if(clickedIcon.parentNode) clickedIcon.remove() }, 150); // Remove quickly after click
+             } else {
+                  // Penalty for clicking wrong icon (optional)
+                 // gameScore = Math.max(0, gameScore - 1);
+                 // gameScoreDisplay.textContent = `Puntos: ${gameScore}`;
+                 // Add visual feedback for wrong click
+                 gameArea.style.borderColor = 'red';
+                 setTimeout(() => { gameArea.style.borderColor = 'var(--color-secondary)'; }, 200);
+                 if(clickedIcon.parentNode) clickedIcon.remove(); // Remove immediately
+             }
+             // Prevent event bubbling if needed
+             event.stopPropagation();
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            stopGame(); // Ensure game stops when modal is hidden
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) {
+                document.body.style.overflow = '';
+            }
+            modalTextArea.scrollTop = 0;
+            resetModalState();
+        }
+        function resetModalState() {
+             stopGame(); // Stop game on reset
+             modalLoadingIndicator.style.display = 'flex'; // Show loading container initially
+             loadingTextArea.classList.remove('content-hidden'); // Ensure default text/spinner is visible
+             loadingMinigameArea.style.display = 'none'; // Ensure game area is hidden
+             modalStoryContentArea.classList.add('content-hidden');
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentStoryTitle = null;
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... */ if (!imageFullscreenOverlay || !fullscreenImage) return; fullscreenImage.src = imgSrc; imageFullscreenOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideFullscreenImage() { /* ... */ if (!imageFullscreenOverlay) return; imageFullscreenOverlay.classList.remove('active'); if (!storyModal.classList.contains('active')) { document.body.style.overflow = ''; } fullscreenImage.src = ''; }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message, sender) { /* ... */ const msgDiv = document.createElement('div'); msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message'); message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); message = message.replace(/\*(.*?)\*/g, '<em>$1</em>'); msgDiv.innerHTML = message; chatHistory.appendChild(msgDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        function addChatError(message) { /* ... */ const errorDiv = document.createElement('div'); errorDiv.classList.add('chat-error'); errorDiv.textContent = message; chatHistory.appendChild(errorDiv); chatHistory.scrollTop = chatHistory.scrollHeight; }
+        async function handleSendMessage() { /* ... */ const userQuery = chatInput.value.trim(); if (!userQuery || chatSendBtn.disabled) return; addChatMessage(userQuery, 'user'); chatInput.value = ''; chatSendBtn.disabled = true; chatLoadingIndicator.style.display = 'block'; try { const aiResponse = await fetchChatResponse(userQuery); addChatMessage(aiResponse, 'ai'); } catch (error) { console.error("Chat Error:", error); addChatError(`${error.message}`); } finally { chatLoadingIndicator.style.display = 'none'; chatSendBtn.disabled = false; chatInput.focus(); } }
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay testimonios archivados «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick to integrate Minigame ***
+        async function handleTitleClick(title) {
+            resetModalState(); // Reset general state, including chat context
+            showModal();
+            modalTitle.textContent = title;
+            currentStoryTitle = title; // SET CHAT CONTEXT
+            modalContent.innerHTML = '';
+            chatHistory.innerHTML = '';
+            modalError.classList.add('content-hidden');
+            modalLoadingIndicator.style.display = 'flex'; // Show loading overlay
+            loadingStatusText.textContent = "Recopilando informe..."; // Reset status text
+
+            startGame(); // <<<--- START MINIGAME
+
+            try {
+                const rawExplanationText = await fetchExplanationText(title);
+                // Update loading text briefly before stopping game
+                loadingStatusText.textContent = "¡Informe recibido! Procesando...";
+                await new Promise(resolve => setTimeout(resolve, 300)); // Small delay
+
+                stopGame(); // <<<--- STOP MINIGAME
+
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+                modalLoadingIndicator.style.display = 'none'; // Hide loading overlay
+                modalContent.innerHTML = formattedExplanation; // Add text
+                modalStoryContentArea.classList.remove('content-hidden'); // Show main content area
+
+                modalTextArea.scrollTop = 0; // Reset text area scroll
+                console.log("Scroll set to 0 after content visible");
+
+                // --- Image Handling (Same as before) ---
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `<div class="spinner"></div><i class="fas fa-image placeholder-icon"></i><p style="font-size: 0.8em; margin-top: 0.5rem;">Generando ilustración...</p>`;
+                modalContent.appendChild(placeholderDiv);
+                const imgElement = document.createElement('img');
+                imgElement.className = 'final-image';
+                imgElement.alt = `Ilustración conceptual para: ${title}`;
+                imgElement.style.display = 'none';
+                imgElement.onload = () => { console.log("Image loaded."); placeholderDiv.remove(); imgElement.style.display = 'block'; imgElement.addEventListener('click', () => { showFullscreenImage(imgElement.src); }); };
+                imgElement.onerror = () => { console.error("Error loading image."); placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Ilustración no disponible.</p>`; };
+                const imageUrl = createPollinationsImageUrl(title);
+                if (imageUrl) { imgElement.src = imageUrl; modalContent.appendChild(imgElement); }
+                else { console.error("Could not create image URL."); placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL ilustración.</p>`; }
+                // --- End Image Handling ---
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                stopGame(); // <<<--- STOP MINIGAME on error too
+                modalLoadingIndicator.style.display = 'none';
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar la historia."; // Use friendly error
+                modalError.classList.remove('content-hidden');
+                modalStoryContentArea.classList.remove('content-hidden'); // Show area to display error
+                modalContent.innerHTML = '';
+                chatSection.classList.add('content-hidden');
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles for 40 titles ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando Archivos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches up to 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se encontraron nuevas historias en los archivos ahora mismo."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al buscar historias: ${error.message}`); // Friendly error
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> ¡Más Historias!';
+             }
+         }
+
+         // Search Filter Function (with normalization)
+         function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            // Check all essential elements, including game area
+            if (!titleListContainer || !storyModal || !modalCloseBtn || !generateMoreBtn || !titlesLoading || !searchInput || !noResultsMsg || !chatInput || !chatSendBtn || !imageFullscreenOverlay || !fullscreenCloseBtn || !gameArea || !loadingMinigameArea) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: red; font-family: Bangers; font-size: 2em; text-align: center; padding-top: 3em;">¡ERROR CRÍTICO! Faltan componentes de la interfaz. Recarga la página.</p>';
+                 return;
+             }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            // Title generation listener
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivos de la Santa Inquisición - Estudio Interactivo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Fuentes Históricas/Serifadas -->
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        /* --- Estilos Adaptados para la Santa Inquisición --- */
+        :root {
+            --color-primary: #8B4513; /* Marrón Silla de Montar (Madera/Cuero) */
+            --color-secondary: #B8860B; /* Oro Oscuro (Sellos/Detalles) */
+            --color-tertiary: #800000; /* Borgoña/Maroon (Acentos) */
+            --color-background: #f5f5dc; /* Beige (Papiro/Pared) */
+            --color-background-dark: #2b1d0e; /* Marrón muy oscuro */
+            --color-text: #3a2e20; /* Marrón Oscuro (Texto principal) */
+            --color-text-light: #f0e6d2; /* Texto claro sobre fondo oscuro */
+            --color-text-muted: #7a6a53; /* Texto atenuado */
+            --color-modal-bg: #ede8d8; /* Beige ligeramente más oscuro para modal */
+            --color-border: #c8bca8; /* Borde beige/marrón claro */
+            --color-error-bg: #4d0f0f; /* Fondo error rojo muy oscuro */
+            --color-error-text: #f5caca; /* Texto error claro */
+            --color-error-border: #a04040; /* Borde error rojo oscuro */
+
+            --shadow-sm: 1px 1px 3px rgba(43, 29, 14, 0.2);
+            --shadow-md: 2px 3px 6px rgba(43, 29, 14, 0.3);
+            --shadow-lg: 4px 6px 12px rgba(43, 29, 14, 0.4);
+            --border-radius: 4px;
+            --transition-normal: all 0.25s ease-in-out;
+        }
+        body { font-family: 'Crimson Pro', serif; background-color: var(--color-background); color: var(--color-text); line-height: 1.75; font-weight: 300; }
+        h1, h2, h3, h4, .logo, #generate-more-btn { font-family: 'MedievalSharp', cursive; /* Fuente temática para títulos */ font-weight: 400; letter-spacing: 1px; }
+        .logo { color: var(--color-primary); }
+        h1.page-title { color: var(--color-primary); font-weight: 400; }
+        h2.section-title { color: var(--color-text); border-bottom: 2px solid var(--color-primary); padding-bottom: 0.6rem; display: inline-block; font-weight: 400; }
+        #modal-title { color: var(--color-tertiary); font-weight: 400; font-size: 2.1rem; /* Más grande para fuente temática */ }
+        .navbar { background-color: rgba(245, 245, 220, 0.85); /* Beige semi-transparente */ backdrop-filter: blur(4px); box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--color-border); }
+        /* Estilos Buscador */
+        #search-container { margin-bottom: 2.5rem; position: relative; }
+        #search-input { width: 100%; padding: 0.8rem 1.1rem 0.8rem 3rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); font-size: 1.05rem; background-color: #fffaf0; /* Blanco floral */ color: var(--color-text); box-shadow: var(--shadow-sm); transition: var(--transition-normal); font-family: 'Crimson Pro'; }
+        #search-input::placeholder { color: var(--color-text-muted); }
+        #search-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.2); outline: none; background-color: #ffffff; }
+        #search-container .fa-search { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 1.1rem; transition: color 0.2s ease; }
+        #search-input:focus + .fa-search { color: var(--color-primary); }
+
+        #title-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .title-item { background-color: #fffdfa; /* Blanco antiguo */ padding: 1.2rem 1rem; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition-normal); text-align: center; font-weight: 400; color: var(--color-text); border: 1px solid var(--color-border); display: flex; align-items: center; justify-content: center; min-height: 65px; font-family: 'Crimson Pro'; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .title-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-secondary); color: var(--color-primary); background-color: #faf0e6; /* Lino */ border-left-color: var(--color-secondary); }
+        #generate-more-btn { grid-column: 1 / -1; background-color: var(--color-primary); color: var(--color-background); padding: 0.9rem 1.6rem; border: 1px solid var(--color-secondary); border-radius: var(--border-radius); cursor: pointer; transition: var(--transition-normal); margin-top: 2rem; font-size: 1.2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        #generate-more-btn:hover:not(:disabled) { background-color: #a0522d; /* Sienna */ border-color: #cd853f; /* Peru */ box-shadow: var(--shadow-md); }
+        #generate-more-btn:disabled { background-color: var(--color-border); color: var(--color-text-muted); cursor: not-allowed; opacity: 0.7; border-color: var(--color-border); }
+        #generate-more-btn .fa-sync-alt { color: var(--color-background); }
+
+        #story-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(43, 29, 14, 0.9); /* Overlay marrón oscuro */ display: none; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        #story-modal.active { display: flex; }
+        .modal-content-wrapper {
+            background-color: var(--color-modal-bg);
+            border: 2px solid var(--color-primary);
+            border-radius: var(--border-radius);
+            padding: 1.5rem 2rem;
+            max-width: 950px;
+            width: 95%;
+            max-height: 90vh;
+            min-height: 450px; /* Altura para juego y contenido */
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 12px; background: var(--color-border); border: 1px solid var(--color-primary); border-radius: 50%; width: 38px; height: 38px; font-size: 1.7rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); z-index: 60; }
+        .modal-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: rotate(90deg); box-shadow: 0 0 8px var(--color-primary); }
+        #modal-title { text-align: center; margin-bottom: 1.2rem; flex-shrink: 0; padding: 0 1rem; line-height: 1.2; }
+
+        /* Loading Minigame Container */
+        #modal-loading-game-container {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(237, 232, 216, 0.98); /* Fondo del modal casi opaco */
+            display: none; /* Oculto por defecto */
+            flex-direction: column; align-items: center; justify-content: center;
+            z-index: 55; padding: 1.5rem; border-radius: var(--border-radius);
+            font-family: 'Crimson Pro', serif; color: var(--color-text);
+        }
+        #modal-loading-game-container.active { display: flex; } /* Mostrar cuando carga */
+        #game-instructions { margin-bottom: 1rem; text-align: center; font-size: 1rem; }
+        #game-area {
+            width: 90%; max-width: 500px; height: 250px; /* Ajustar altura */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path fill="%23c8bca8" d="M0 0h100v100H0z" fill-opacity="0.05"/><path fill="%238B4513" d="M10 10h80v80H10z" fill-opacity="0.02"/></svg>'); /* Fondo sutil */
+            border: 1px solid var(--color-border);
+            position: relative; overflow: hidden; cursor: none; /* Ocultar cursor normal */
+            box-shadow: inset 1px 1px 5px rgba(43, 29, 14, 0.2);
+        }
+        #game-catcher {
+            position: absolute; bottom: 5px; width: 60px; height: 20px;
+            background-color: var(--color-primary); border: 1px solid var(--color-secondary);
+            border-radius: 2px; box-shadow: var(--shadow-sm);
+            /* Representa un libro o tabla para atrapar */
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+            background-size: 10px 10px;
+        }
+        .game-item {
+            position: absolute; top: -30px; /* Start above screen */
+            font-size: 1.5rem; /* Tamaño del icono */
+            color: var(--color-tertiary); /* Color del icono */
+            transition: top 0.1s linear; /* Movimiento suave */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        #game-score { margin-top: 1rem; font-size: 1.2rem; font-weight: 600; color: var(--color-primary); }
+        #loading-text-below-game { margin-top: 0.5rem; font-size: 1rem; color: var(--color-text-muted); font-style: italic; }
+
+        /* Área de Contenido Principal (Texto + Imagen + Chat) */
+         #modal-story-content-area {
+            /* Mismos estilos que antes, asegurando que esté oculto cuando el juego está activo */
+             display: none; /* Oculto por defecto */
+             flex-direction: column; flex-grow: 1; min-height: 0;
+         }
+         #modal-story-content-area.active { display: flex; } /* Mostrar cuando hay contenido */
+
+         /* Resto de estilos de modal-content-area, modal-content, chat-section, etc., se mantienen similares */
+         #modal-content-area { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; padding-right: 10px; margin-bottom: 1rem;
+             scrollbar-width: thin; scrollbar-color: var(--color-primary) var(--color-border); }
+         #modal-content-area::-webkit-scrollbar { width: 8px; }
+         #modal-content-area::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+         #modal-content-area::-webkit-scrollbar-thumb { background-color: var(--color-primary); border-radius: var(--border-radius); border: 1px solid var(--color-modal-bg); }
+         #modal-content { padding: 0 5px; }
+         #modal-content p:not(:last-child) { margin-bottom: 1.4em; }
+         #modal-content strong { color: var(--color-tertiary); font-weight: 600; }
+         #modal-content em { color: var(--color-primary); font-style: italic; }
+         #modal-content h1, #modal-content h2, #modal-content h3, #modal-content h4 { font-family: 'MedievalSharp', cursive; margin-top: 2.2em; margin-bottom: 1.1em; color: var(--color-primary); border-bottom: 1px solid var(--color-border); padding-bottom: 0.5em; font-weight: 400; letter-spacing: 0.5px;}
+         #modal-content h1 { font-size: 1.6em; }
+         #modal-content h2 { font-size: 1.4em; }
+         #modal-content h3 { font-size: 1.25em; color: var(--color-tertiary); }
+         #modal-content h4 { font-size: 1.1em; color: var(--color-text-muted); border-bottom: none;}
+         #modal-content .final-image { display: block; max-width: 80%; height: auto; margin: 2.5rem auto 1rem auto; border: 1px solid var(--color-primary); border-radius: var(--border-radius); box-shadow: var(--shadow-md); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+         #modal-content .final-image:hover { transform: scale(1.03); box-shadow: var(--shadow-lg); }
+         #modal-content .image-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; margin: 2.5rem auto 1rem auto; color: var(--color-text-muted); }
+         #modal-content .image-placeholder .spinner { border: 4px solid rgba(122, 106, 83, 0.5); width: 35px; height: 35px; border-radius: 50%; border-left-color: var(--color-primary); animation: spin 1s linear infinite; margin-bottom: 0.5rem; }
+         #modal-content .image-placeholder .placeholder-icon { font-size: 2.5rem; }
+         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+         /* Chat Section Styles (adaptados) */
+         #chat-section { border-top: 1px solid var(--color-border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; display: flex; flex-direction: column; max-height: 250px; }
+         #chat-history { flex-grow: 1; overflow-y: auto; margin-bottom: 0.8rem; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--border-radius); background-color: rgba(245, 245, 220, 0.6); /* Fondo chat beige claro */ scroll-behavior: smooth;
+             scrollbar-width: thin; scrollbar-color: var(--color-secondary) var(--color-border); }
+         #chat-history::-webkit-scrollbar { width: 6px; }
+         #chat-history::-webkit-scrollbar-track { background: var(--color-border); border-radius: var(--border-radius); }
+         #chat-history::-webkit-scrollbar-thumb { background-color: var(--color-secondary); border-radius: var(--border-radius); }
+         .chat-message { margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; border-radius: var(--border-radius); max-width: 85%; word-wrap: break-word; line-height: 1.5; font-family: 'Crimson Pro'; }
+         .user-message { background-color: var(--color-primary); color: var(--color-background); margin-left: auto; text-align: right; font-weight: 400;}
+         .ai-message { background-color: #dcd6c8; color: var(--color-text); margin-right: auto; text-align: left; font-weight: 300; }
+         .chat-error { color: var(--color-error-text); background-color: var(--color-error-bg); padding: 0.4rem; border-radius: var(--border-radius); font-style: italic; text-align: center; font-size: 0.9em; margin: 0.5rem; }
+         #chat-input-area { display: flex; gap: 0.5rem; }
+         #chat-input { flex-grow: 1; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); background-color: #fffaf0; color: var(--color-text); border-radius: var(--border-radius); font-family: 'Crimson Pro'; font-size: 0.95rem; }
+         #chat-input:focus { outline: none; border-color: var(--color-primary); background-color: #ffffff; }
+         #chat-send-btn { padding: 0.6rem 1rem; background-color: var(--color-primary); color: var(--color-background); border: 1px solid var(--color-secondary); border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9rem; }
+         #chat-send-btn:hover:not(:disabled) { background-color: #a0522d; }
+         #chat-send-btn:disabled { background-color: var(--color-text-muted); border-color: var(--color-text-muted); cursor: not-allowed; }
+         #chat-loading { text-align: center; padding: 0.5rem; font-size: 0.9em; color: var(--color-text-muted); display: none; font-style: italic; }
+         #chat-loading .fa-spinner { margin-right: 0.5rem; }
+
+         /* Error Message */
+         .error-msg { background-color: var(--color-error-bg); color: var(--color-error-text); padding: 1.2rem; border-radius: var(--border-radius); border: 1px solid var(--color-error-border); margin-top: 1.5rem; text-align: center; flex-shrink: 0; font-weight: 400; font-family: 'Crimson Pro'; }
+         .error-msg i { margin-right: 0.7rem; color: var(--color-error-border); }
+         .content-hidden { display: none !important; }
+         .title-item.hidden { display: none; }
+
+        /* Fullscreen Image Overlay */
+        #image-fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(43, 29, 14, 0.96); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; cursor: zoom-out; }
+        #image-fullscreen-overlay.active { display: flex; }
+        #fullscreen-image { max-width: 95%; max-height: 95%; object-fit: contain; border: 2px solid var(--color-secondary); box-shadow: var(--shadow-lg); background-color: var(--color-modal-bg); /* Fondo por si la imagen es transparente */ }
+        #fullscreen-close-btn { position: absolute; top: 20px; right: 25px; background: var(--color-modal-bg); border: 1px solid var(--color-secondary); border-radius: 50%; width: 40px; height: 40px; font-size: 1.8rem; color: var(--color-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition-normal); }
+        #fullscreen-close-btn:hover { background-color: var(--color-primary); color: var(--color-background); transform: scale(1.1); }
+    </style>
+</head>
+<body>
+     <!-- Header/Navbar -->
+     <nav class="navbar mb-10">
+         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+             <div class="flex items-center text-center mb-3 sm:mb-0">
+                 <h1 class="logo text-3xl sm:text-4xl">
+                     <i class="fas fa-landmark mr-3"></i> <!-- Icono edificio histórico/tribunal -->
+                     Archivos de la Inquisición
+                 </h1>
+             </div>
+             <span class="text-sm text-gray-600 font-sans tracking-wider">» Estudio Interactivo «</span>
+         </div>
+     </nav>
+
+     <!-- Main content -->
+     <main class="container mx-auto px-4 pb-16">
+         <!-- Hero section -->
+         <section class="mb-12 text-center">
+             <h1 class="page-title text-5xl sm:text-6xl mb-5">El Santo Oficio</h1>
+             <p class="text-xl text-gray-700 mb-8 max-w-3xl mx-auto font-light">Consulta los registros históricos. Analiza procedimientos, figuras clave y el impacto de la Santa Inquisición a través de los siglos.</p>
+         </section>
+
+         <!-- Search Bar -->
+         <section id="search-container" class="mb-10 max-w-2xl mx-auto">
+             <input type="text" id="search-input" placeholder="Buscar término, figura o evento...">
+             <i class="fas fa-book-open fa-search"></i> <!-- Icono libro/búsqueda -->
+         </section>
+
+         <!-- Title List Container -->
+         <section class="mb-10">
+             <h2 class="section-title text-3xl sm:text-4xl mb-8 text-center mx-auto">
+                 <i class="fas fa-archive text-yellow-700 mr-2"></i> <!-- Icono archivo -->
+                 Índice de Expedientes
+             </h2>
+             <div id="title-list">
+                  <p id="titles-loading" class="text-gray-500 col-span-full text-center text-lg font-sans">Accediendo a los archivos...</p>
+                  <!-- Los .title-item se añadirán aquí -->
+             </div>
+             <p id="no-results" class="text-gray-500 col-span-full text-center text-lg mt-4 hidden font-sans">» Ningún expediente coincide con la consulta «</p>
+             <div id="generate-more-container" class="text-center mt-8">
+                 <button id="generate-more-btn">
+                      <i class="fas fa-sync-alt mr-2 animate-spin hidden"></i>
+                     Solicitar Más Expedientes (40)
+                  </button>
+             </div>
+         </section>
+
+     </main>
+
+     <!-- Explanation Modal -->
+     <div id="story-modal">
+         <div class="modal-content-wrapper">
+             <button class="modal-close-btn" id="modal-close" aria-label="Cerrar">&times;</button>
+
+             <!-- Loading Minigame Container -->
+             <div id="modal-loading-game-container">
+                 <div id="game-instructions">
+                     <p>Mientras se cargan los archivos...</p>
+                     <p>¡Atrapa los <i class="fas fa-scroll text-red-800"></i> (pergaminos) con el <i class="fas fa-book text-yellow-800"></i> (libro)!</p>
+                 </div>
+                 <div id="game-area">
+                     <div id="game-catcher"></div>
+                     <!-- Falling items added by JS -->
+                 </div>
+                 <div id="game-score">Puntos: 0</div>
+                 <div id="loading-text-below-game">Consultando registros...</div>
+             </div>
+
+             <!-- Content Area Wrapper (Hidden during game) -->
+             <div id="modal-story-content-area">
+                 <!-- Scrollable Text Area -->
+                 <div id="modal-content-area">
+                     <h2 id="modal-title" class="text-xl md:text-2xl font-bold mb-4 text-center flex-shrink-0"></h2>
+                     <div id="modal-content">
+                         <!-- Explanation text (HTML) goes here -->
+                         <!-- Image placeholder/image added here -->
+                     </div>
+                 </div>
+                 <!-- Chat Section -->
+                 <div id="chat-section">
+                     <div id="chat-history"></div>
+                     <div id="chat-loading"><i class="fas fa-spinner fa-spin"></i> Consultando al experto...</div>
+                     <div id="chat-input-area">
+                         <input type="text" id="chat-input" placeholder="Pregunta sobre este expediente...">
+                         <button id="chat-send-btn" aria-label="Enviar Mensaje"><i class="fas fa-feather-alt"></i></button> <!-- Icono pluma -->
+                     </div>
+                 </div>
+                 <!-- Error Display Area -->
+                 <div id="modal-error" class="error-msg content-hidden mt-4 flex-shrink-0">
+                      <i class="fas fa-exclamation-triangle"></i>
+                      <span id="modal-error-message"></span>
+                 </div>
+             </div>
+          </div>
+      </div>
+
+      <!-- Fullscreen Image Overlay -->
+      <div id="image-fullscreen-overlay">
+          <button id="fullscreen-close-btn" aria-label="Cerrar Imagen">&times;</button>
+          <img id="fullscreen-image" src="" alt="Ilustración Ampliada">
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-700 py-6 mt-12 border-t border-gray-300 font-sans">
+          <div class="container mx-auto px-4 text-center text-sm">
+              <p>Información generada por IA con fines educativos e históricos sobre la Santa Inquisición.</p>
+              <p class="mt-1">Se recomienda consultar fuentes académicas especializadas para estudios profundos.</p>
+              <p class="mt-2">© 1478 - 1834 (Período Aproximado)</p> <!-- Fechas simbólicas -->
+          </div>
+      </footer>
+
+
+    <script>
+        // ========== CONFIG & DATA ==========
+        const predefinedTitles = [
+            // Tribunales y Ramas
+            "Inquisición Medieval (Episcopal y Papal)", "Inquisición Española (1478-1834)", "Inquisición Portuguesa (1536-1821)", "Inquisición Romana (Congregación del Santo Oficio, 1542)", "Tribunal del Santo Oficio de la Inquisición", "Supremo Consejo de la Inquisición (La Suprema, España)", "Tribunales de distrito de la Inquisición Española", "Inquisición en las Américas (México, Lima, Cartagena)", "Inquisición en Goa (India Portuguesa)", "Relación entre Inquisición Episcopal y Papal",
+            // Figuras Clave
+            "Tomás de Torquemada", "Francisco Jiménez de Cisneros", "Diego de Deza", "Alonso Manrique", "Fernando de Valdés y Salas", "Papa Sixto IV", "Papa Paulo III", "Papa Paulo IV (Carafa)", "Bernardo Gui", "Nicolás Aymerich", "Pedro de Arbués", "Alonso de Salazar y Frías (Caso Zugarramurdi)",
+            // Procedimientos y Conceptos
+            "Edicto de Fe", "Edicto de Gracia", "Auto de Fe (Acto de Fe)", "Proceso inquisitorial: Denuncia", "Proceso inquisitorial: Investigación y arresto", "Proceso inquisitorial: Audiencias y testimonios", "Proceso inquisitorial: Calificación (teológica)", "Proceso inquisitorial: Uso de la tortura", "Proceso inquisitorial: Sentencia", "Sambenito", "Coroza", "Abjuración (De levi, de vehementi)", "Reconciliación con la Iglesia", "Relajación al brazo secular", "Consulta de Fe", "Limpieza de sangre", "Estatutos de limpieza de sangre", "Secretismo del proceso inquisitorial", "Uso de testigos secretos", "El papel de los 'familiares' de la Inquisición", "El papel de los 'calificadores' del Santo Oficio", "El papel de los 'comisarios'", "Apelaciones a Roma (Inquisición Española)", "Manuales de inquisidores (Ej. Directorium Inquisitorum)",
+            // Objetivos y Delitos Perseguidos
+            "Heresía (Definición general)", "Catarismo (Albigenses)", "Valdenses", "Protestantismo (Luteranismo, Calvinismo)", "Iluminismo (Alumbrados)", "Judaizantes (Conversos sospechosos)", "Criptojudaísmo", "Moriscos (Sospecha de prácticas islámicas)", "Criptoislamismo", "Brujería y hechicería (Visión de la Inquisición)", "Pacto con el Diablo (Creencia)", "Superstición", "Blasfemia", "Bigamia", "Solicitación en confesión", "Proposiciones heréticas", "Libros prohibidos", "Index Librorum Prohibitorum", "Censura de libros", "Delitos contra la moral (sodomía, en algunos períodos/lugares)",
+            // Contexto Histórico
+            "Contexto de la Reconquista (España)", "Unificación religiosa de España", "Expulsión de los judíos (1492)", "Expulsión de los musulmanes (1609)", "La Reforma Protestante", "La Contrarreforma Católica", "Guerras de Religión en Europa", "Absolutismo monárquico y la Inquisición", "Relación entre Iglesia y Estado", "Mentalidad religiosa en la Edad Media y Moderna", "Miedo a la herejía y la disidencia", "El rol social del control religioso",
+            // Lugares Relevantes
+            "Tribunal de Toledo", "Tribunal de Sevilla", "Tribunal de Zaragoza", "Tribunal de Valencia", "Tribunal de Llerena", "Tribunal de Logroño (Caso Zugarramurdi)", "Tribunal de México", "Tribunal de Lima", "Tribunal de Cartagena de Indias", "Palacio de la Inquisición (Diversos lugares)", "Cárceles secretas de la Inquisición",
+            // Legado y Debate Historiográfico
+            "La Leyenda Negra de la Inquisición Española", "Debate sobre el número de víctimas", "Impacto en la ciencia y la cultura (España)", "Impacto social en comunidades conversas y moriscas", "Revisionismo histórico de la Inquisición", "Comparación entre las diferentes Inquisiciones", "Abolición de la Inquisición Española (siglo XIX)", "Abolición de la Inquisición Portuguesa", "Transformación de la Inquisición Romana (Congregación para la Doctrina de la Fe)", "La Inquisición en la literatura y el arte", "Memoria histórica y representaciones actuales",
+            // Estructura y Financiación
+            "Financiación de la Inquisición (Confiscaciones)", "Bienes confiscados a los reos", "Salarios de los inquisidores y oficiales", "Organigrama del Tribunal del Santo Oficio", "El Inquisidor General", "Los Consejeros de la Suprema", "Fiscales, Secretarios, Alguaciles", "Médicos y Cirujanos del tribunal",
+            // Casos Famosos (Ejemplos)
+            "Proceso a los Alumbrados de Toledo", "Proceso a los Protestantes de Sevilla y Valladolid", "Caso de Fray Luis de León", "Caso de Bartolomé de Carranza", "Procesos contra judaizantes en Portugal", "Las brujas de Zugarramurdi", "Proceso a Galileo Galilei (Inquisición Romana)", "Proceso a Giordano Bruno (Inquisición Romana)",
+            // Más Conceptos
+            "Prueba de la hoguera (Ordalía, anterior a Inquisición formal)", "Dogma católico", "Sacramentos", "Excomunión", "Interdicto", "Penitencia pública", "Peregrinación forzada", "Galeras (Pena)", "Destierro", "Prisión perpetua (a menudo revisable)", "Visitas de distrito (Inspecciones)", "Autos de fe privados vs. públicos"
+            // Muy exhaustivo, listo para generar más
+        ];
+        const inquisitionThemes = [
+            "tribunales de la Inquisición", "procedimientos inquisitoriales", "figuras clave de la Inquisición", "herejías medievales y modernas", "Inquisición Española", "Inquisición Romana", "Inquisición Portuguesa", "autos de fe", "limpieza de sangre", "criptojudaísmo", "moriscos", "brujería y la Inquisición", "censura y libros prohibidos", "tortura en la Inquisición", "Tomás de Torquemada", "la Leyenda Negra", "abolición de la Inquisición", "impacto cultural de la Inquisición", "arte y literatura sobre la Inquisición", "relación Iglesia-Estado en la época"
+        ];
+        const textApiConfig = {
+            model: "mistral",
+            systemPrompt: "Eres un historiador erudito especializado en la Santa Inquisición en sus diversas formas (Medieval, Española, Portuguesa, Romana). Tu tarea es proporcionar una descripción detallada, objetiva y contextualizada sobre el tema específico indicado (tribunal, figura, concepto, procedimiento, evento). Explica sus orígenes, características, desarrollo, actores involucrados, objetivos, métodos, impacto histórico y, si aplica, su legado o debate historiográfico. Utiliza un lenguaje académico pero accesible. Evita juicios de valor anacrónicos, pero describe los hechos con rigor histórico. El objetivo es un texto de aproximadamente 1200-1300 palabras. Basa tu exposición únicamente en el siguiente tema relacionado con la Santa Inquisición:",
+            timeoutSeconds: 150
+        };
+        const chatApiConfig = {
+            model: "mistral-tiny",
+            systemPrompt: "Actúa como un asistente de investigación histórica, experto únicamente en el tema específico de la Inquisición que se está mostrando. Responde preguntas de seguimiento sobre detalles mencionados, clarificaciones o contexto relacionado directamente con el expediente actual. Sé conciso, preciso y mantén un tono académico.",
+            timeoutSeconds: 45
+        };
+        const titleGenerationConfig = {
+            model: "mistral",
+            // *** INCREASED TO 40 ***
+            systemPrompt: "Actúa como un archivista generando referencias concisas para una base de datos sobre la Santa Inquisición. Genera exactamente 40 nombres de conceptos, figuras, tribunales, procedimientos, delitos o eventos relevantes para la Inquisición, adecuados para una descripción detallada. Devuelve *solo* la lista de ítems, uno por línea. No incluyas números, guiones, introducciones ni despedidas.",
+            timeoutSeconds: 60 // Allow slightly more time for 40 titles
+        };
+
+        // ========== DOM ELEMENTS ==========
+        const searchInput = document.getElementById('search-input');
+        const titleListContainer = document.getElementById('title-list');
+        const titlesLoading = document.getElementById('titles-loading');
+        const noResultsMsg = document.getElementById('no-results');
+        const generateMoreContainer = document.getElementById('generate-more-container');
+        const generateMoreBtn = document.getElementById('generate-more-btn');
+        const generateMoreSpinner = generateMoreBtn.querySelector('i');
+        const storyModal = document.getElementById('story-modal');
+        const modalCloseBtn = document.getElementById('modal-close');
+        // Loading Game Elements
+        const modalLoadingGameContainer = document.getElementById('modal-loading-game-container');
+        const gameArea = document.getElementById('game-area');
+        const gameCatcher = document.getElementById('game-catcher');
+        const gameScoreDisplay = document.getElementById('game-score');
+        const loadingTextBelowGame = document.getElementById('loading-text-below-game');
+        // Main Content Elements
+        const modalStoryContentArea = document.getElementById('modal-story-content-area'); // Wrapper principal del contenido modal
+        const modalTextArea = document.getElementById('modal-content-area'); // Área de texto y imagen
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content'); // Div para el texto HTML
+        const modalError = document.getElementById('modal-error');
+        const modalErrorMessage = document.getElementById('modal-error-message');
+        // Chat Elements
+        const chatSection = document.getElementById('chat-section');
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatLoadingIndicator = document.getElementById('chat-loading');
+        // Fullscreen Image Elements
+        const imageFullscreenOverlay = document.getElementById('image-fullscreen-overlay');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenCloseBtn = document.getElementById('fullscreen-close-btn');
+
+        // ========== State Variables ==========
+        let currentTopicTitle = null; // Contexto para el chat
+        let gameInterval = null;
+        let gameScore = 0;
+        let catcherX = 0;
+        let gameAreaRect = null;
+        const fallingItemIcons = ['fa-scroll', 'fa-book-dead', 'fa-gavel', 'fa-feather-alt']; // Iconos para caer
+
+        // ========== API FUNCTIONS ==========
+        async function fetchTextFromApi(prompt, config, isChat = false) {
+            const encodedPrompt = encodeURIComponent(prompt);
+            const systemPromptToUse = isChat && currentTopicTitle
+                ? `Eres un asistente de investigación histórica, experto únicamente en el tema '${currentTopicTitle}' de la Inquisición. Responde preguntas de seguimiento sobre detalles mencionados, clarificaciones o contexto relacionado directamente con el expediente actual. Sé conciso, preciso y mantén un tono académico.`
+                : config.systemPrompt;
+            const encodedSystem = encodeURIComponent(systemPromptToUse);
+
+            const params = new URLSearchParams({ model: config.model, system: encodedSystem });
+            if (config.seed && !isChat) params.append('seed', config.seed);
+            const url = `https://text.pollinations.ai/${encodedPrompt}?${params.toString()}`;
+            console.log(`Fetching text from API (${config.model}, Chat: ${isChat}): ${url.substring(0, 200)}...`);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), config.timeoutSeconds * 1000);
+
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`(Error ${response.status}) Nuestros servidores tienen mucho tráfico en este momento, intenta en unos segundos.`);
+                const text = await response.text();
+                if (!text || text.trim().length === 0) throw new Error("La respuesta de la IA llegó vacía. Intenta reformular la pregunta.");
+                console.log(`API Response received (${text.length} chars)`);
+                return text;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error("API Fetch Error:", error);
+                if (error.name === 'AbortError') throw new Error(`La consulta tardó demasiado (>${config.timeoutSeconds}s). Revisa tu conexión o intenta más tarde.`);
+                throw new Error(error.message || "Ocurrió un error inesperado al contactar la IA.");
+            }
+        }
+        async function fetchExplanationText(conceptTitle) { return fetchTextFromApi(conceptTitle, textApiConfig, false); }
+        async function fetchChatResponse(userQuery) { if (!currentTopicTitle) throw new Error("Error interno: No se ha establecido el contexto del expediente para el chat."); return fetchTextFromApi(userQuery, chatApiConfig, true); }
+        async function fetchGeneratedTitles() {
+             const randomTheme = getRandomElement(inquisitionThemes) || "la Santa Inquisición general";
+             // *** UPDATED PROMPT FOR 40 ***
+             const specificPrompt = `Genera 40 ítems (conceptos, figuras, eventos) sobre ${randomTheme}`;
+             return fetchTextFromApi(specificPrompt, titleGenerationConfig, false)
+                  .then(text => {
+                      const titles = text.split('\n').map(line => line.replace(/^[-\d.\s*]+/, '').trim()).filter(line => line.length > 3 && line.length < 150);
+                      // *** UPDATED CHECK FOR 40 (aim for at least 20-30) ***
+                      if (titles.length < 20) throw new Error("La IA no generó suficientes referencias.");
+                      return titles.slice(0, 40); // Take up to 40
+                  });
+         }
+        function createPollinationsImageUrl(promptText, options = {}) {
+             const defaults = { seed: Math.floor(Math.random() * 10000000), width: 800, height: 600, nologo: true };
+             const settings = { ...defaults, ...options };
+             const safePromptText = typeof promptText === 'string' && promptText.trim() !== '' ? promptText : "escena histórica conceptual sobre la inquisición";
+             // *** UPDATED IMAGE PROMPT: Evita violencia explícita ***
+             const enhancedPrompt = `Conceptual historical illustration inspired by '${safePromptText}' related to the Holy Inquisition. Evocative atmosphere, symbolic elements (books, seals, scales, architecture). Style of historical engraving or dark painting. Muted color palette (ochre, brown, grey, deep red). Avoid explicit depictions of violence, torture, or suffering. Focus on mood and symbolism.`;
+             const escapedPrompt = encodeURIComponent(enhancedPrompt);
+             if (!escapedPrompt) return '';
+             const negativePrompt = "photorealistic, photograph, modern elements, bright colors, neon, graphic violence, gore, blood, explicit torture scene, smiley face, cartoon, anime, text, signature, watermark";
+             const escapedNegative = encodeURIComponent(negativePrompt);
+             let url = `https://image.pollinations.ai/prompt/${escapedPrompt}?seed=${settings.seed}&width=${settings.width}&height=${settings.height}&negative=${escapedNegative}`;
+             if (settings.nologo) url += '&nologo=true';
+             console.log("Image URL:", url);
+             return url;
+         }
+
+        // ========== Text Formatting Function ========== (sin cambios)
+        function formatExplanationText(rawText) { /* ... (same as before) */
+            if (!rawText) return '';
+            let formatted = rawText.trim();
+            formatted = formatted.replace(/\\text\{(.*?)\}/g, '$1');
+            formatted = formatted.replace(/(\w)_\{?(\d+)\}?/g, '$1<sub>$2</sub>');
+            formatted = formatted.replace(/(\w)\^\{?([\d+\-−]+)\}?/g, (match, base, exponent) => { const cleanExponent = exponent.replace('−', '-'); return `${base}<sup>${cleanExponent}</sup>`; });
+            formatted = formatted.replace(/\\rightarrow/g, '&rarr;');
+            formatted = formatted.replace(/\\\[\s*(.*?)\s*\\\]/g, '<p class="formula">$1</p>');
+            formatted = formatted.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+            formatted = formatted.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+            formatted = formatted.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            const blocks = formatted.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            formatted = blocks.map(block => {
+                if (block.startsWith('<h') || block.startsWith('<p class="formula">')) return block;
+                let content = block.replace(/\n/g, ' ');
+                return `<p>${content}</p>`;
+            }).join('');
+            return formatted;
+        }
+
+        // ========== MODAL FUNCTIONS ==========
+        function showModal() { storyModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function hideModal() {
+            storyModal.classList.remove('active');
+            if (!imageFullscreenOverlay.classList.contains('active')) { document.body.style.overflow = ''; }
+            stopGame(); // Ensure game stops when modal closes
+            modalTextArea.scrollTop = 0;
+            resetModalState();
+        }
+        function resetModalState() {
+             // Hide content, show loading (game container)
+             modalStoryContentArea.classList.remove('active'); // Hide main content
+             modalLoadingGameContainer.classList.remove('active'); // Hide game container initially
+             modalError.classList.add('content-hidden');
+             modalTitle.textContent = '';
+             modalContent.innerHTML = '';
+             modalErrorMessage.textContent = '';
+             // Reset Chat
+             chatHistory.innerHTML = '';
+             chatInput.value = '';
+             chatLoadingIndicator.style.display = 'none';
+             chatSendBtn.disabled = false;
+             currentTopicTitle = null;
+             // Reset Game State
+             gameScore = 0;
+             if(gameScoreDisplay) gameScoreDisplay.textContent = `Puntos: 0`;
+             // Clear any remaining game items
+             if (gameArea) {
+                 const items = gameArea.querySelectorAll('.game-item');
+                 items.forEach(item => item.remove());
+             }
+             hideFullscreenImage();
+        }
+
+        // ========== FULLSCREEN IMAGE FUNCTIONS ========== (sin cambios)
+        function showFullscreenImage(imgSrc) { /* ... (same as before) */
+             if (!imageFullscreenOverlay || !fullscreenImage) return;
+             fullscreenImage.src = imgSrc;
+             imageFullscreenOverlay.classList.add('active');
+             document.body.style.overflow = 'hidden';
+         }
+        function hideFullscreenImage() { /* ... (same as before) */
+            if (!imageFullscreenOverlay) return;
+            imageFullscreenOverlay.classList.remove('active');
+            // Only restore scroll if the main modal is ALSO closed
+            if (!storyModal.classList.contains('active')) {
+                 document.body.style.overflow = '';
+            }
+            fullscreenImage.src = '';
+        }
+
+        // ========== CHAT FUNCTIONS ========== (sin cambios)
+        function addChatMessage(message, sender) { /* ... (same as before) */
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'ai-message');
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            msgDiv.innerHTML = message; // Use innerHTML for formatting
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll
+        }
+        function addChatError(message) { /* ... (same as before) */
+             const errorDiv = document.createElement('div');
+             errorDiv.classList.add('chat-error');
+             errorDiv.textContent = message;
+             chatHistory.appendChild(errorDiv);
+             chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        async function handleSendMessage() { /* ... (same as before) */
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || chatSendBtn.disabled) return;
+            addChatMessage(userQuery, 'user');
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatLoadingIndicator.style.display = 'block';
+            try {
+                const aiResponse = await fetchChatResponse(userQuery);
+                addChatMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Chat Error:", error);
+                addChatError(`Error IA: ${error.message}`);
+            } finally {
+                chatLoadingIndicator.style.display = 'none';
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ========== MINIGAME FUNCTIONS ==========
+        function startGame() {
+            if (!modalLoadingGameContainer || !gameArea || !gameCatcher || !gameScoreDisplay) return;
+            resetModalState(); // Ensure clean slate before starting game
+            modalLoadingGameContainer.classList.add('active'); // Show game container
+            modalStoryContentArea.classList.remove('active'); // Hide content area
+
+            gameScore = 0;
+            gameScoreDisplay.textContent = `Puntos: ${gameScore}`;
+            gameAreaRect = gameArea.getBoundingClientRect();
+            catcherX = gameAreaRect.width / 2 - gameCatcher.offsetWidth / 2;
+            gameCatcher.style.left = `${catcherX}px`;
+
+            // Clear existing items and interval
+            const items = gameArea.querySelectorAll('.game-item');
+            items.forEach(item => item.remove());
+            if (gameInterval) clearInterval(gameInterval);
+
+            // Start game loop
+            gameInterval = setInterval(gameLoop, 100); // Adjust speed as needed
+
+            // Add mouse listener for catcher
+             gameArea.addEventListener('mousemove', moveCatcher);
+             gameArea.addEventListener('mouseleave', () => {
+                 // Optional: Keep catcher centered if mouse leaves? Or let it stay?
+             });
+        }
+
+        function stopGame() {
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
+             if(modalLoadingGameContainer) modalLoadingGameContainer.classList.remove('active'); // Hide game container
+             if (gameArea) {
+                gameArea.removeEventListener('mousemove', moveCatcher);
+                // Clear remaining items
+                const items = gameArea.querySelectorAll('.game-item');
+                items.forEach(item => item.remove());
+             }
+        }
+
+        function moveCatcher(event) {
+             if (!gameAreaRect || !gameCatcher) return;
+             // Calculate mouse position relative to the game area
+             let newX = event.clientX - gameAreaRect.left - gameCatcher.offsetWidth / 2;
+             // Constrain catcher within game area boundaries
+             newX = Math.max(0, Math.min(newX, gameAreaRect.width - gameCatcher.offsetWidth));
+             catcherX = newX;
+             gameCatcher.style.left = `${catcherX}px`;
+         }
+
+        function createFallingItem() {
+             if (!gameArea || !gameAreaRect) return;
+             const item = document.createElement('div');
+             item.classList.add('game-item');
+             const iconClass = getRandomElement(fallingItemIcons); // Get random icon
+             item.innerHTML = `<i class="fas ${iconClass}"></i>`;
+             // Random horizontal start position
+             const startX = Math.random() * (gameAreaRect.width - 20); // -20 for item width approx
+             item.style.left = `${startX}px`;
+             item.style.top = `-30px`; // Start above the area
+             gameArea.appendChild(item);
+         }
+
+        function gameLoop() {
+             if (!gameArea || !gameAreaRect || !gameCatcher || !gameScoreDisplay) {
+                 stopGame();
+                 return;
+             }
+
+             // Create new items occasionally
+             if (Math.random() < 0.1) { // Adjust frequency
+                 createFallingItem();
+             }
+
+             // Move existing items & check collisions/bounds
+             const items = gameArea.querySelectorAll('.game-item');
+             const catcherRect = gameCatcher.getBoundingClientRect();
+
+             items.forEach(item => {
+                 let currentTop = parseFloat(item.style.top) || 0;
+                 currentTop += 10; // Adjust fall speed
+                 item.style.top = `${currentTop}px`;
+
+                 // Check collision with catcher
+                 const itemRect = item.getBoundingClientRect();
+                 if (
+                     itemRect.bottom > catcherRect.top &&
+                     itemRect.top < catcherRect.bottom &&
+                     itemRect.right > catcherRect.left &&
+                     itemRect.left < catcherRect.right
+                 ) {
+                     gameScore += 10; // Increase score
+                     gameScoreDisplay.textContent = `Puntos: ${gameScore}`;
+                     item.remove(); // Remove caught item
+                 }
+                 // Check if item fell off screen
+                 else if (currentTop > gameAreaRect.height) {
+                     item.remove(); // Remove missed item
+                     // Optional: Penalize score? gameScore -= 5;
+                 }
+             });
+        }
+
+
+        // ========== UI & EVENT HANDLERS ==========
+        function getRandomElement(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffleArray(array) { let ci=array.length,ri;while(ci>0){ri=Math.floor(Math.random()*ci);ci--;[array[ci],array[ri]]=[array[ri],array[ci]];} return array; }
+        function createTitleItem(title) { const div=document.createElement('div'); div.className='title-item'; div.textContent=title; div.setAttribute('data-title', title); div.addEventListener('click', () => handleTitleClick(title)); return div; }
+        function displayTitles(titles) {
+             if (!titleListContainer || !titlesLoading) return;
+             const sortedTitles = titles.sort((a, b) => a.localeCompare(b));
+             titleListContainer.innerHTML = '';
+             titlesLoading.style.display = 'none';
+             if (sortedTitles.length === 0) { titleListContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center font-sans">» No hay expedientes disponibles en el archivo «</p>'; return; }
+             sortedTitles.forEach(title => titleListContainer.appendChild(createTitleItem(title)));
+         }
+        function appendTitles(newTitles) {
+             if (!titleListContainer || !newTitles || newTitles.length === 0) return;
+             const existingTitles = new Set(Array.from(titleListContainer.querySelectorAll('.title-item')).map(item => item.dataset.title));
+             newTitles.forEach(title => { if (!existingTitles.has(title)) { titleListContainer.appendChild(createTitleItem(title)); } });
+             filterTitles(searchInput.value);
+         }
+
+        // *** MODIFIED: handleTitleClick to integrate minigame ***
+        async function handleTitleClick(title) {
+            // 1. Reset state (includes stopping previous game if any) & Show Modal Shell
+            resetModalState();
+            showModal();
+            modalTitle.textContent = title;
+            currentTopicTitle = title; // Set chat context
+
+            // 2. Start the Loading Minigame
+            startGame();
+
+            // 3. Initiate API Calls (asynchronously)
+            let explanationPromise = fetchExplanationText(title);
+            let imageUrlPromise = Promise.resolve(createPollinationsImageUrl(title)); // Get URL sync, load async
+
+            try {
+                // 4. Wait for Text API Response
+                const rawExplanationText = await explanationPromise;
+                const formattedExplanation = formatExplanationText(rawExplanationText);
+
+                // 5. Text Ready: Stop Game, Show Content Area, Populate Text
+                stopGame(); // Stop and hide the game
+                modalStoryContentArea.classList.add('active'); // Show the content area
+                modalContent.innerHTML = formattedExplanation; // Populate text
+                modalTextArea.scrollTop = 0; // Reset text scroll
+                console.log("Scroll set to 0 after content visible");
+
+                // 6. Prepare Image Placeholder (while image loads)
+                const placeholderDiv = document.createElement('div');
+                placeholderDiv.className = 'image-placeholder';
+                placeholderDiv.innerHTML = `
+                    <div class="spinner"></div>
+                    <i class="fas fa-image placeholder-icon"></i>
+                    <p style="font-size: 0.8em; margin-top: 0.5rem;">Cargando ilustración...</p>
+                `;
+                modalContent.appendChild(placeholderDiv); // Add placeholder to text content
+
+                // 7. Handle Image Loading
+                const imageUrl = await imageUrlPromise; // Get the URL
+                if (imageUrl) {
+                    const imgElement = document.createElement('img');
+                    imgElement.className = 'final-image';
+                    imgElement.alt = `Ilustración conceptual de ${title}`;
+                    imgElement.style.display = 'none';
+
+                    imgElement.onload = () => {
+                        console.log("Image loaded successfully.");
+                        placeholderDiv.remove();
+                        imgElement.style.display = 'block';
+                        imgElement.addEventListener('click', () => showFullscreenImage(imgElement.src));
+                    };
+                    imgElement.onerror = () => {
+                        console.error("Error loading image for:", title);
+                        placeholderDiv.innerHTML = `<i class="fas fa-eye-slash placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Ilustración no disponible.</p>`;
+                    };
+                    imgElement.src = imageUrl;
+                    modalContent.appendChild(imgElement); // Append image to the text content
+                } else {
+                     console.error("Could not create image URL for:", title);
+                     placeholderDiv.innerHTML = `<i class="fas fa-exclamation-circle placeholder-icon"></i><p style="font-size:0.8em;margin-top:0.5rem;">Error URL de ilustración.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Failed display:", error);
+                // 8. Handle Errors: Stop Game, Show Error
+                stopGame();
+                modalStoryContentArea.classList.add('active'); // Show content area to display error
+                modalErrorMessage.textContent = error.message || "Error desconocido al cargar el expediente.";
+                modalError.classList.remove('content-hidden');
+                modalContent.innerHTML = ''; // Clear partial content
+                chatSection.classList.add('content-hidden'); // Hide chat on main error
+            }
+        }
+
+        // *** MODIFIED: handleGenerateMoreTitles for 40 ***
+        async function handleGenerateMoreTitles() {
+             if (!generateMoreBtn || !generateMoreSpinner || !generateMoreContainer) return;
+             generateMoreBtn.disabled = true;
+             generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin"></i> Buscando en archivos...';
+             try {
+                 const newTitles = await fetchGeneratedTitles(); // Fetches up to 40
+                 if (newTitles && newTitles.length > 0) { appendTitles(newTitles); }
+                 else { alert("No se encontraron más expedientes en este momento."); }
+             } catch (error) {
+                 console.error("Failed title generation:", error);
+                 alert(`Error al solicitar expedientes: ${error.message}`);
+             } finally {
+                 generateMoreBtn.disabled = false;
+                 // *** UPDATE BUTTON TEXT ***
+                 generateMoreBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 animate-spin hidden"></i> Solicitar Más Expedientes (40)';
+             }
+         }
+
+        // Search Filter Function (sin cambios)
+        function filterTitles(searchTerm) {
+             const term = searchTerm.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+             const titleItems = titleListContainer.querySelectorAll('.title-item');
+             let visibleCount = 0;
+             titleItems.forEach(item => {
+                 const titleText = item.dataset.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                 const isVisible = titleText.includes(term);
+                 item.classList.toggle('hidden', !isVisible);
+                 if (isVisible) visibleCount++;
+             });
+             noResultsMsg.classList.toggle('hidden', visibleCount > 0);
+         }
+
+        // ========== INITIALIZATION ==========
+        function initApp() {
+            const requiredElements = [titleListContainer, storyModal, modalCloseBtn, generateMoreBtn, titlesLoading, searchInput, noResultsMsg, chatInput, chatSendBtn, imageFullscreenOverlay, fullscreenCloseBtn, modalLoadingGameContainer, gameArea, gameCatcher, gameScoreDisplay];
+            if (requiredElements.some(el => !el)) {
+                 console.error("Initialization failed: Missing essential elements.");
+                 document.body.innerHTML = '<p style="color: #800000; font-size: 1.5em; text-align: center; padding-top: 3em; font-family: MedievalSharp;">Error Crítico: Componentes de la interfaz no encontrados.</p>';
+                 return;
+            }
+            // Modal listeners
+            modalCloseBtn.addEventListener('click', hideModal);
+            storyModal.addEventListener('click', (event) => { if (event.target === storyModal) hideModal(); });
+
+            // Title generation listener
+            generateMoreBtn.addEventListener('click', handleGenerateMoreTitles);
+
+            // Search listener
+            searchInput.addEventListener('input', (event) => filterTitles(event.target.value));
+            searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') event.preventDefault(); });
+
+            // Chat listeners
+            chatSendBtn.addEventListener('click', handleSendMessage);
+            chatInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') handleSendMessage(); });
+
+            // Fullscreen image listeners
+            imageFullscreenOverlay.addEventListener('click', hideFullscreenImage);
+            fullscreenCloseBtn.addEventListener('click', (event) => { event.stopPropagation(); hideFullscreenImage(); });
+
+            // Initial display
+            displayTitles(predefinedTitles);
+            noResultsMsg.classList.add('hidden');
+            // Ensure game container is hidden initially
+            modalLoadingGameContainer.classList.remove('active');
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+</body>
+</html>
