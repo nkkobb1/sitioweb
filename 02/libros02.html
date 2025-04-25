@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100 Libros VOL 1 (Descargar) EPUB - HTML - KINDLE - TXT</title>
+    <title>100 Libros VOL 2 (Descargar) EPUB - HTML - KINDLE - TXT</title> 
     <style>
         /* --- Estilos Generales (Idénticos a la versión anterior) --- */
         body {
@@ -105,10 +105,11 @@
             font-size: 0.85em;
             font-weight: 500;
             border: 1px solid #bdc3c7;
-            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease, opacity 0.3s ease;
             text-align: center;
             flex-grow: 1;
             min-width: 100px;
+            cursor: pointer; /* Ensure cursor indicates clickability */
         }
 
         /* Colores específicos por tipo de formato */
@@ -123,11 +124,28 @@
              border-color: #2980b9;
         }
 
-
-        .download-links .btn:hover {
-            filter: brightness(110%); /* Ligeramente más brillante al pasar el ratón */
+        /* --- MODIFICACIÓN CSS: Ajuste de hover y estados de espera/desbloqueo --- */
+        .download-links .btn:hover:not(.waiting):not(.unlocked) { /* Only brighten if not waiting or unlocked */
+            filter: brightness(110%);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+
+        /* Estilos para el estado de espera */
+        .download-links .btn.waiting {
+            cursor: not-allowed;
+            filter: grayscale(80%) brightness(90%);
+            opacity: 0.7;
+            pointer-events: none; /* Prevenir clics durante la espera */
+        }
+
+        /* Estilo opcional para indicar que el enlace está listo después de esperar */
+        .download-links .btn.unlocked {
+             /* Puede añadir un borde verde o algo para indicar que está listo */
+             /* border: 2px solid #2ecc71; */
+             box-shadow: 0 0 5px rgba(46, 204, 113, 0.7); /* Un brillo verde */
+        }
+        /* --- FIN MODIFICACIÓN CSS --- */
+
          /* --- Mensaje de estado (opcional) --- */
          #status {
             text-align: center;
@@ -154,8 +172,61 @@
         const bookListContainer = document.getElementById('book-list');
         const statusMessage = document.getElementById('status');
 
-        // --- INICIO: PEGA AQUÍ TU LISTA COMPLETA DE LIBROS ---
-        // Mantén el formato: Título, Página, Enlaces (con o sin guión), y el separador.
+        // --- MODIFICACIÓN JS: Configuración del anuncio ---
+        const adUrl = 'https://increasingbelieveabonnement.com/pcmu77j4?key=1f38fa224b5ecf757563a32d2d8ac126';
+        const waitTimeInSeconds = 5;
+        // --- FIN MODIFICACIÓN JS ---
+
+
+        // --- MODIFICACIÓN JS: Función para manejar el anuncio ---
+        function handleAdRedirect(event) {
+            event.preventDefault(); // Evitar que el enlace navegue inmediatamente
+            const linkElement = event.currentTarget; // El elemento <a> en el que se hizo clic
+
+            // Si el enlace ya está desbloqueado, ir a la URL real
+            if (linkElement.classList.contains('unlocked')) {
+                // Navegar a la URL real guardada en data attribute
+                // Usamos window.location.href para navegar en la misma pestaña
+                // o window.open(linkElement.dataset.realHref, '_blank') para nueva pestaña
+                window.location.href = linkElement.dataset.realHref;
+                // Consider downloading directly if it's a download link instead of navigating
+                // (This often triggers the browser's download behavior automatically)
+                return; // No hacer nada más
+            }
+
+            // Si ya está esperando, no hacer nada (evitar múltiples clics)
+            if (linkElement.classList.contains('waiting')) {
+                return;
+            }
+
+            // --- PRIMER CLIC: Mostrar anuncio y empezar cuenta atrás ---
+            linkElement.classList.add('waiting');
+            linkElement.dataset.originalText = linkElement.textContent; // Guardar texto original
+
+            // Abrir anuncio en nueva pestaña
+            window.open(adUrl, '_blank', 'noopener,noreferrer');
+
+            let countdown = waitTimeInSeconds;
+            linkElement.textContent = `Espera ${countdown}s...`;
+
+            const intervalId = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    linkElement.textContent = `Espera ${countdown}s...`;
+                } else {
+                    clearInterval(intervalId);
+                    linkElement.classList.remove('waiting');
+                    linkElement.classList.add('unlocked');
+                    linkElement.textContent = linkElement.dataset.originalText; // Restaurar texto
+                    // Opcional: Cambiar texto a "Descargar Ahora" o similar
+                    // linkElement.textContent = "Descargar Ahora";
+                }
+            }, 1000);
+        }
+        // --- FIN MODIFICACIÓN JS ---
+
+
+        // --- INICIO: PEGA AQUÍ TU LISTA COMPLETA DE LIBROS (VOL 2) ---
         const rawBookData = `
 ----------------------------------------
 Libro 101: Correspondencia Oficial e Inedita sobre la Demarcacion de Limites entre el Paraguay y el Brasil
@@ -957,7 +1028,7 @@ Enlaces de descarga principales:
         `; // <--- FIN DE LA LISTA DE LIBROS
         // --- FIN: PEGA AQUÍ TU LISTA COMPLETA DE LIBROS ---
 
-
+        // --- FUNCIÓN PARA GENERAR LA LISTA DE LIBROS (YA NO ES NECESARIO MODIFICAR ESTA PARTE) ---
         function generateBookList() {
             const rawText = rawBookData.trim();
             bookListContainer.innerHTML = ''; // Limpiar por si acaso
@@ -1034,7 +1105,13 @@ Enlaces de descarga principales:
                         else if (formatLower.includes('text') || formatLower.includes('txt')) btnClass += ' btn-text';
                         // Añadir otros 'else if' si necesitas más clases específicas
 
-                        downloadLinksHTML += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="${btnClass}">${link.format}</a>`; // Added rel attribute for security
+                        // --- MODIFICACIÓN JS: Generación de enlace con manejo de anuncio ---
+                        downloadLinksHTML += `<a href="#"
+                                                 data-real-href="${link.url}"
+                                                 class="${btnClass}"
+                                                 onclick="handleAdRedirect(event)">${link.format}</a>`;
+                        // --- FIN MODIFICACIÓN JS ---
+
                     });
 
                     card.innerHTML = `
@@ -1051,8 +1128,6 @@ Enlaces de descarga principales:
             // Actualizar o eliminar mensaje de estado
             if (booksGenerated > 0) {
                  statusMessage.textContent = `Mostrando ${booksGenerated} libros.`;
-                 // Opcional: ocultar el mensaje después de un tiempo
-                 // setTimeout(() => { statusMessage.style.display = 'none'; }, 3000);
             } else {
                 statusMessage.textContent = 'No se pudieron procesar los datos de los libros. Revisa el formato en el código fuente.';
             }
