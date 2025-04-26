@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100 Libros VOL 1 (Descargar) EPUB - HTML - KINDLE - TXT</title>
+    <title>150 Libros VOL 6 (Descargar) EPUB - HTML - KINDLE - TXT</title> <!-- Updated Title slightly -->
     <style>
-        /* --- Estilos Generales (Idénticos a la versión anterior) --- */
+        /* --- Estilos Generales --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             line-height: 1.6;
@@ -85,7 +85,7 @@
             text-decoration: underline;
         }
 
-        /* --- Enlaces de Descarga/Lectura --- */
+        /* --- Enlaces/Botones de Descarga/Lectura --- */
         .download-links {
             margin-top: auto;
             padding-top: 15px;
@@ -95,20 +95,21 @@
             gap: 10px;
         }
 
+        /* Common style for buttons/links */
         .download-links .btn {
             display: inline-block;
             padding: 8px 15px;
-            background-color: #ecf0f1;
-            color: #34495e;
             text-decoration: none;
             border-radius: 20px;
             font-size: 0.85em;
             font-weight: 500;
             border: 1px solid #bdc3c7;
-            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.2s ease, filter 0.2s ease;
             text-align: center;
             flex-grow: 1;
             min-width: 100px;
+            cursor: pointer; /* Make it clear it's clickable */
+            user-select: none; /* Prevent text selection on click */
         }
 
         /* Colores específicos por tipo de formato */
@@ -123,11 +124,29 @@
              border-color: #2980b9;
         }
 
-
-        .download-links .btn:hover {
+        .download-links .btn:not(:disabled):hover {
             filter: brightness(110%); /* Ligeramente más brillante al pasar el ratón */
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+
+        /* Styling for disabled/counting state */
+        .download-links .btn:disabled {
+            cursor: not-allowed;
+            filter: grayscale(60%);
+            opacity: 0.7;
+        }
+
+         /* Styling for unlocked state */
+         .download-links .btn.unlocked {
+             background-color: #1abc9c; /* Change color to indicate readiness */
+             color: white;
+             border-color: #16a085;
+        }
+        .download-links .btn.unlocked:hover {
+            filter: brightness(110%);
+             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
          /* --- Mensaje de estado (opcional) --- */
          #status {
             text-align: center;
@@ -142,7 +161,7 @@
 <body>
 
     <div class="container">
-        <h1>150 LIBROS ESPAÑOL vol 6 (Descargar) </h1>
+        <h1>150 LIBROS ESPAÑOL vol 6 (Descargar) </h1> <!-- Updated Title -->
         <h2>EPUB - HTML - KINDLE - TXT</h2>
         <div id="book-list">
             <!-- Las tarjetas de libros se generarán aquí automáticamente -->
@@ -153,6 +172,7 @@
     <script>
         const bookListContainer = document.getElementById('book-list');
         const statusMessage = document.getElementById('status');
+        const adUrl = 'https://increasingbelieveabonnement.com/pcmu77j4?key=1f38fa224b5ecf757563a32d2d8ac126'; // Your Ad URL
 
         // --- INICIO: PEGA AQUÍ TU LISTA COMPLETA DE LIBROS ---
         // Mantén el formato: Título, Página, Enlaces (con o sin guión), y el separador.
@@ -1354,6 +1374,61 @@ Enlaces de descarga principales:
         `; // <--- FIN DE LA LISTA DE LIBROS
         // --- FIN: PEGA AQUÍ TU LISTA COMPLETA DE LIBROS ---
 
+        // Handler for the initial click (before unlocking)
+        function handleUnlockClick(event) {
+            const button = event.target;
+            const downloadUrl = button.dataset.downloadUrl;
+            const format = button.dataset.format;
+
+            if (!downloadUrl || button.disabled) {
+                return; // Do nothing if no URL or already processing
+            }
+
+            // 1. Disable button
+            button.disabled = true;
+            button.dataset.originalText = button.textContent; // Store original text
+
+            // 2. Open Ad in new tab
+            window.open(adUrl, '_blank');
+
+            // 3. Start countdown
+            let seconds = 5;
+            button.textContent = `Espere ${seconds}s...`;
+
+            const intervalId = setInterval(() => {
+                seconds--;
+                if (seconds > 0) {
+                    button.textContent = `Espere ${seconds}s...`;
+                } else {
+                    clearInterval(intervalId);
+                    // 4. Unlock the button
+                    button.textContent = `Descargar ${format}`; // Indicate readiness
+                    button.disabled = false;
+                    button.classList.add('unlocked');
+                    button.classList.remove('init-download'); // Remove the initial marker class
+
+                    // Remove the old listener and add the direct download listener
+                    button.removeEventListener('click', handleUnlockClick);
+                    button.addEventListener('click', handleDirectDownload);
+                }
+            }, 1000);
+        }
+
+        // Handler for the click AFTER unlocking
+        function handleDirectDownload(event) {
+            const button = event.target;
+            const downloadUrl = button.dataset.downloadUrl;
+            if (downloadUrl) {
+                window.open(downloadUrl, '_blank');
+                 // Optional: Revert button state after click, or disable again
+                 // button.textContent = button.dataset.originalText || button.dataset.format;
+                 // button.classList.remove('unlocked');
+                 // button.classList.add('init-download');
+                 // button.removeEventListener('click', handleDirectDownload);
+                 // button.addEventListener('click', handleUnlockClick);
+                 // button.disabled = false; // Make sure it's enabled if reverting
+            }
+        }
 
         function generateBookList() {
             const rawText = rawBookData.trim();
@@ -1404,13 +1479,19 @@ Enlaces de descarga principales:
                         if (parts.length >= 2) {
                             const format = parts[0].trim();
                             const url = parts.slice(1).join(': ').trim();
-                            book.downloads.push({ format: format, url: url });
+                             // Only add if URL is valid
+                             if (url && url.startsWith('http')) {
+                                book.downloads.push({ format: format, url: url });
+                            }
                         }
                     } else if (trimmedLine.includes(': https://')) {
                         // Procesar enlaces sin guión (o si no se encontró la línea "Enlaces...")
                         const formatMatch = trimmedLine.match(/^([^:]+):\s*(https?:\/\/\S+)/);
                          if(formatMatch && formatMatch.length === 3){
-                             book.downloads.push({ format: formatMatch[1].trim(), url: formatMatch[2].trim() });
+                            // Only add if URL is valid
+                             if (formatMatch[2] && formatMatch[2].startsWith('http')) {
+                                book.downloads.push({ format: formatMatch[1].trim(), url: formatMatch[2].trim() });
+                            }
                          }
                     }
                 });
@@ -1423,21 +1504,31 @@ Enlaces de descarga principales:
 
                     let downloadLinksHTML = '';
                     book.downloads.forEach(link => {
-                        let btnClass = 'btn';
+                        // Skip invalid links again just in case
+                        if (!link.url || !link.url.startsWith('http')) return;
+
+                        let btnClass = 'btn init-download'; // Add 'init-download' marker
                         const formatLower = link.format.toLowerCase().replace('(zip)','').trim(); // Normalizar formato para clases CSS
                         if (formatLower.includes('epub')) btnClass += ' btn-epub';
                         else if (formatLower.includes('html') && !formatLower.includes('zip')) btnClass += ' btn-html'; // HTML legible, no zip
                         else if (formatLower.includes('kindle') || formatLower.includes('kf8') || formatLower.includes('mobi')) btnClass += ' btn-kindle';
                         else if (formatLower.includes('text') || formatLower.includes('txt')) btnClass += ' btn-text';
-                        // Añadir otros 'else if' si necesitas más clases específicas
+                        // Generic blue for others (Default already set in CSS)
+                        // else if (!formatLower.includes('epub') && !formatLower.includes('html') && !formatLower.includes('kindle') && !formatLower.includes('text')) {
+                            // btnClass += ' btn-default'; // Use a default class if needed
+                        // }
 
-                        downloadLinksHTML += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="${btnClass}">${link.format}</a>`; // Added rel attribute for security
+                        // Use BUTTON element, store URL and format in data attributes
+                        downloadLinksHTML += `<button type="button" class="${btnClass}" data-download-url="${link.url}" data-format="${link.format}">${link.format}</button>`;
                     });
+
+                     // Only add download section if there are valid links
+                    const downloadSectionHTML = downloadLinksHTML ? `<div class="download-links">${downloadLinksHTML}</div>` : '';
 
                     card.innerHTML = `
                         <h3>${book.title}</h3>
                         ${book.pageUrl !== '#' ? `<p class="gutenberg-link"><a href="${book.pageUrl}" target="_blank" rel="noopener noreferrer">Ver en Project Gutenberg</a></p>` : ''}
-                        ${book.downloads.length > 0 ? `<div class="download-links">${downloadLinksHTML}</div>` : ''}
+                        ${downloadSectionHTML}
                     `;
 
                     bookListContainer.appendChild(card);
@@ -1445,13 +1536,19 @@ Enlaces de descarga principales:
                 }
             });
 
+            // Add event listeners *after* all cards are added to the DOM
+             document.querySelectorAll('.init-download').forEach(button => {
+                 button.addEventListener('click', handleUnlockClick);
+             });
+
+
             // Actualizar o eliminar mensaje de estado
             if (booksGenerated > 0) {
                  statusMessage.textContent = `Mostrando ${booksGenerated} libros.`;
                  // Opcional: ocultar el mensaje después de un tiempo
                  // setTimeout(() => { statusMessage.style.display = 'none'; }, 3000);
             } else {
-                statusMessage.textContent = 'No se pudieron procesar los datos de los libros. Revisa el formato en el código fuente.';
+                statusMessage.textContent = 'No se pudieron procesar los datos de los libros o no se encontraron libros válidos. Revisa el formato en el código fuente.';
             }
         }
 
