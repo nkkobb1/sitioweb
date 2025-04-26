@@ -17,6 +17,7 @@
             --border-color: rgba(0, 255, 204, 0.3);
             --glow-color: rgba(0, 255, 204, 0.5);
             --button-hover-bg: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            --button-ready-bg: linear-gradient(45deg, #00c6a7, #00ffcc); /* Color for unlocked */
         }
 
         * {
@@ -45,8 +46,6 @@
             margin-bottom: 30px;
             border-bottom: 2px solid;
             border-image: linear-gradient(to right, var(--bg-color), var(--primary-color), var(--bg-color)) 1;
-            /* Quitamos animación del header para simplificar aún más si es necesario */
-            /* animation: fadeInDown 1s ease-out; */
         }
 
         .main-header h1 {
@@ -100,14 +99,8 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease; /* Reducimos duración transición hover */
-            /* === Removidas las propiedades de animación de entrada === */
-            /* opacity: 0; */
-            /* animation: fadeInUp 0.5s ease-out forwards; */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-
-        /* Ya no necesitamos delays escalonados */
-        /* .game-item:nth-child(1) { animation-delay: 0.1s; } ... */
 
         .game-item:hover {
             transform: translateY(-3px);
@@ -117,6 +110,8 @@
         .game-info {
             flex-grow: 1;
             margin-right: 15px;
+            /* Prevent info from taking full width if button wraps */
+             min-width: 200px;
         }
 
         .game-info h3 {
@@ -124,11 +119,10 @@
             margin-bottom: 3px;
             color: var(--text-color);
             font-weight: 600;
-             /* Para evitar que títulos largos rompan el layout en una línea */
-             white-space: nowrap;
-             overflow: hidden;
-             text-overflow: ellipsis;
-             max-width: 95%; /* Ajusta si es necesario */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 95%; /* Adjust if necessary */
         }
 
         .game-info .region-tag {
@@ -148,22 +142,50 @@
             border-radius: 5px;
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.2s ease; /* Reducimos duración transición */
+            transition: all 0.2s ease;
             cursor: pointer;
             background: linear-gradient(45deg, var(--primary-color), #00c6a7);
             color: var(--bg-color);
             border: none;
             text-align: center;
             font-size: 0.9rem;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Prevent button from shrinking too much */
+            white-space: nowrap; /* Prevent text wrapping initially */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none; /* Prevent text selection during clicks */
         }
 
-        .download-button:hover {
+        .download-button.disabled {
+             pointer-events: none; /* Disable clicks */
+             cursor: not-allowed;
+             opacity: 0.6;
+             background: grey;
+         }
+
+         /* Style when button is unlocked */
+        .download-button.unlocked {
+             background: var(--button-ready-bg); /* Use the ready background */
+             color: var(--bg-color);
+              /* Allow text wrapping for longer "Listo para..." text */
+              white-space: normal;
+              text-overflow: clip; /* Stop ellipsis when unlocked */
+         }
+
+        /* Hover effect only for non-disabled states */
+        .download-button:not(.disabled):hover {
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(0, 255, 204, 0.4);
-            background: var(--button-hover-bg);
-            color: #fff;
+            /* Change hover background slightly depending on state */
         }
+        .download-button:not(.disabled):not(.unlocked):hover {
+             background: var(--button-hover-bg);
+             color: #fff;
+         }
+         .download-button.unlocked:hover {
+             background: var(--button-ready-bg);
+             filter: brightness(110%);
+         }
 
         .main-footer {
             text-align: center;
@@ -174,10 +196,6 @@
             border-top: 1px solid var(--border-color);
         }
 
-        /* Quitamos keyframes no usados */
-        /* @keyframes fadeInDown { ... } */
-        /* @keyframes fadeInUp { ... } */
-
         @media (max-width: 600px) {
             .main-header h1 {
                 font-size: 2rem;
@@ -187,18 +205,21 @@
             }
             .game-item {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch; /* Align items full width */
             }
             .game-info {
                 margin-right: 0;
                 margin-bottom: 10px;
-                width: 100%; /* Asegura que ocupe el ancho para ellipsis */
+                width: 100%;
+                 min-width: unset; /* Override desktop min-width */
             }
              .game-info h3 {
-                 max-width: 100%; /* Ajuste para móvil */
+                 max-width: 100%;
              }
             .download-button {
                 width: 100%;
+                 /* Ensure unlocked text can wrap */
+                 white-space: normal;
             }
         }
     </style>
@@ -207,9 +228,9 @@
     <div id="mi-rincon-de-juegos-unico">
     <header class="main-header">
         <div class="container">
-            <h1>Lista de Juegos Xbox 360 RGH (Exe.io)</h1>
-            <p>Presiona CTRL + F para buscar el juego que buscas.</p> 
-        </p>Recuerda iniciar sesion en archive.org para descargar los juegos.</p>
+            <h1>Lista de Juegos Xbox 360 RGH</h1> <!-- Title updated slightly -->
+            <p>Presiona CTRL + F para buscar el juego que buscas.</p>
+            <p>Recuerda iniciar sesion en archive.org para descargar los juegos.</p>
         </div>
     </header>
 
@@ -227,13 +248,13 @@
     </div>
 
     <footer class="main-footer">
-        <p>&copy; 2025 papitasfritas.com - Lista de Juegos RGH.</p>
+        <p>© 2025 papitasfritas.com - Lista de Juegos RGH.</p>
     </footer>
 
-    <script defer> // <--- Añadido 'defer' para asegurar que no bloquee el parseo HTML
-        // --- Lista de Enlaces de Juegos ---
-        // ¡Simplemente añade más URLs a esta lista para que aparezcan en la página!
-        const gameUrls = [
+    <script defer> // <--- Using 'defer' is generally good practice
+
+        // <<<--- PASTE YOUR 'const gameUrls = [...]' ARRAY HERE --->>>
+         const gameUrls = [
             "https://archive.org/download/mx360gcxpt1-x360-ztm/007.Blood.Stone.USA.X360-ZTM.rar",
 "https://archive.org/download/mx360gcxpt1-x360-ztm/007.Legends.USA.X360-ZTM.rar",
 "https://archive.org/download/mx360gcxpt1-x360-ztm/007.Quantum.of.Solace.USA.X360-ZTM.rar",
@@ -1740,57 +1761,132 @@
 
 
         ];
+        // <<<--- END OF gameUrls ARRAY --->>>
+
 
         const listContainer = document.getElementById('game-list-container');
         const loadingIndicator = document.getElementById('loading-indicator');
+        const adUrl = 'https://increasingbelieveabonnement.com/pcmu77j4?key=1f38fa224b5ecf757563a32d2d8ac126'; // Your Ad URL
 
         function parseGameUrl(url) {
             try {
                 const filenameWithExt = url.substring(url.lastIndexOf('/') + 1);
                 const decodedFilename = decodeURIComponent(filenameWithExt);
-                const filename = decodedFilename.replace(/\.(rar|zip|iso|7z|god|xex)$/i, ''); // Soporte para más extensiones
+                const filename = decodedFilename.replace(/\.(rar|zip|iso|7z|god|xex)$/i, '');
 
-                const groupTagMatch = filename.match(/\.([A-Z]{2,5})\.(X360-[A-Z0-9\-_]+)$/i); // Permitir guiones en grupo
-                const regionMatchSimple = filename.match(/\.([A-Z]{2,5})$/i); // Búsqueda simple de región al final
+                // Regex mejorada para capturar título y región
+                const complexMatch = filename.match(/^(.*?)\.([A-Z]{2,5})\.?(X360-[A-Z0-9\-_]+)?$/i);
+                const simpleMatch = filename.match(/^(.*?)\.([A-Z]{2,5})$/i); // Intenta un match más simple al final
 
-                let title = filename; // Fallback inicial
-                let region = "???";   // Fallback inicial
+                let title = filename.replace(/[._]/g, ' ').trim(); // Fallback: limpiar nombre completo
+                let region = "???";
 
-                 if (groupTagMatch && groupTagMatch.length >= 3) {
-                    region = groupTagMatch[1].toUpperCase();
-                    const groupTag = groupTagMatch[2];
-                    const titleDots = filename.substring(0, filename.lastIndexOf(`.${region}.${groupTag}`));
-                    title = titleDots.replace(/[._]/g, ' ').trim(); // Reemplaza punto o guión bajo
-                } else if (regionMatchSimple && regionMatchSimple.length >= 2) {
-                     // Intentar extraer si solo hay región al final
-                    const potentialRegion = regionMatchSimple[1].toUpperCase();
-                    // Evitar falsos positivos como 'Update' o 'DLC'
-                    if (potentialRegion.length <= 5 && !['UPDATE', 'DLC', 'DEMO'].includes(potentialRegion)) {
+                if (complexMatch && complexMatch.length >= 3) {
+                    const potentialRegion = complexMatch[2].toUpperCase();
+                     // Evitar falsos positivos como 'GOTY', 'HD', etc., que a veces van antes del tag X360
+                    if (!['GOTY', 'HD', 'EDITION', 'PACK', 'VOL', 'XEX'].some(kw => potentialRegion.includes(kw))) {
+                         title = complexMatch[1].replace(/[._]/g, ' ').trim();
                          region = potentialRegion;
-                         const titleDots = filename.substring(0, filename.lastIndexOf(`.${region}`));
-                         title = titleDots.replace(/[._]/g, ' ').trim();
-                    } else {
-                        // Si parece un falso positivo, usar el nombre completo sin la extensión como título
-                        title = filename.replace(/[._]/g, ' ').trim();
-                    }
-                } else {
-                     // Si no hay match claro, limpiar nombre de archivo como título
-                     title = filename.replace(/[._]/g, ' ').trim();
-                }
+                     } // else: usa el fallback del título completo limpiado
+                 } else if (simpleMatch && simpleMatch.length >= 3) {
+                     const potentialRegion = simpleMatch[2].toUpperCase();
+                     // Más filtros para regiones comunes
+                     if (['USA', 'EUR', 'JAP', 'ASIA', 'AUS', 'KOR', 'GER', 'FRA', 'SPA', 'ITA', 'CAN', 'HKTW'].includes(potentialRegion)) {
+                        title = simpleMatch[1].replace(/[._]/g, ' ').trim();
+                        region = potentialRegion;
+                     } // else: usa el fallback del título completo limpiado
+                 }
 
-                // Mejoras adicionales al título (opcional)
-                title = title.replace(/ X360 ZTM$/i, '') // Eliminar coletilla común si se coló
-                             .replace(/ XBOX360 /i, ' ') // Normalizar
-                             .replace(/\s+/g, ' '); // Colapsar espacios múltiples
+                // Limpieza final del título
+                 title = title.replace(/ X360 ZTM$/i, '')
+                              .replace(/ Xbox360 /gi, ' ')
+                              .replace(/ XBOX360 /gi, ' ')
+                              .replace(/\s+/g, ' ')
+                              .trim();
+
+                // Extra check: si el título aún termina con una región (error de parseo), quitarla
+                 const titleEndsWithRegion = ['USA', 'EUR', 'JAP', 'ASIA', 'AUS', 'KOR', 'GER', 'FRA', 'SPA', 'ITA', 'CAN', 'HKTW'].find(r => title.endsWith(' ' + r));
+                 if (titleEndsWithRegion) {
+                    title = title.substring(0, title.lastIndexOf(' ' + titleEndsWithRegion)).trim();
+                 }
+
+                 // Final check for generic cleanup (remove trailing dots/hyphens etc.)
+                 title = title.replace(/[\W_]+$/, '').trim();
 
 
                 return { title, region, url };
 
             } catch (error) {
                 console.error("Error parseando URL:", url, error);
-                return null;
+                return null; // Return null or a default object
             }
         }
+
+
+        // Handler for the initial click (opens ad, starts countdown)
+        function handleUnlockClick(event) {
+            event.preventDefault(); // Stop the link from navigating immediately
+
+            const link = event.target;
+            const gameTitle = link.dataset.gameTitle;
+            const downloadUrl = link.href; // href has the real download URL
+
+            if (!downloadUrl || link.classList.contains('disabled') || link.classList.contains('unlocked')) {
+                return; // Exit if no URL, or already processing/unlocked
+            }
+
+            // --- MANUALLY OPEN AD URL ---
+            window.open(adUrl, '_blank'); // Open the ad link in a new tab
+            // ---                          ---
+
+            // 1. Disable button visually and functionally
+            link.classList.add('disabled');
+            link.dataset.originalText = link.textContent; // Store original text
+
+            // 2. Start countdown (3 seconds)
+            let seconds = 3;
+            link.textContent = `Espere ${seconds}s...`;
+
+            const intervalId = setInterval(() => {
+                seconds--;
+                if (seconds > 0) {
+                    link.textContent = `Espere ${seconds}s...`;
+                } else {
+                    clearInterval(intervalId);
+                    // 3. Unlock the button
+                    link.textContent = `Listo para descargar ${gameTitle}`;
+                    link.classList.remove('disabled');
+                    link.classList.add('unlocked');
+
+                    // Remove the unlock listener and add the direct download listener
+                    link.removeEventListener('click', handleUnlockClick);
+                    link.addEventListener('click', handleDirectDownload);
+                    link.style.whiteSpace = 'normal'; // Allow text wrapping
+                    link.style.textOverflow = 'clip'; // Prevent ellipsis on wrapped text
+                }
+            }, 1000);
+        }
+
+        // Handler for the click AFTER unlocking (allows default navigation)
+        function handleDirectDownload(event) {
+            // The default action of the <a> tag (opening the href) will now proceed.
+            // The `target="_blank"` ensures it opens in a new tab.
+             console.log(`Navigating to: ${event.target.href}`);
+
+            // Optional: Revert button state after click (user must wait again next time)
+            /*
+            const link = event.target;
+            setTimeout(() => { // Delay slightly to ensure navigation starts
+                 link.textContent = link.dataset.originalText || 'Descargar';
+                 link.classList.remove('unlocked');
+                 link.style.whiteSpace = 'nowrap';
+                 link.style.textOverflow = 'ellipsis';
+                 link.removeEventListener('click', handleDirectDownload);
+                 link.addEventListener('click', handleUnlockClick);
+            }, 150);
+            */
+        }
+
 
         function createGameElement(gameData) {
             if (!gameData) return null;
@@ -1802,22 +1898,27 @@
             infoDiv.classList.add('game-info');
 
             const titleH3 = document.createElement('h3');
-            titleH3.textContent = gameData.title;
-            titleH3.title = gameData.title; // Añadir tooltip para títulos largos cortados
+            // Handle potential empty titles from parsing errors
+             titleH3.textContent = gameData.title || "Título Desconocido";
+             titleH3.title = gameData.title || "Título Desconocido";
 
             const regionSpan = document.createElement('span');
             regionSpan.classList.add('region-tag');
-            regionSpan.textContent = gameData.region;
+            regionSpan.textContent = gameData.region || "???";
 
             infoDiv.appendChild(titleH3);
             infoDiv.appendChild(regionSpan);
 
             const downloadLink = document.createElement('a');
-            downloadLink.classList.add('download-button');
+            downloadLink.classList.add('download-button'); // No 'init-download' needed anymore
             downloadLink.href = gameData.url;
             downloadLink.textContent = 'Descargar';
+            downloadLink.dataset.gameTitle = gameData.title || "este juego"; // Store title
             downloadLink.setAttribute('target', '_blank');
             downloadLink.setAttribute('rel', 'noopener noreferrer nofollow');
+
+            // Attach the INITIAL unlock click listener
+            downloadLink.addEventListener('click', handleUnlockClick);
 
             item.appendChild(infoDiv);
             item.appendChild(downloadLink);
@@ -1825,45 +1926,31 @@
             return item;
         }
 
-        // --- Cargar la Lista de Juegos Optimizada ---
-        function loadGames() {
-            // 1. Mostrar indicador de carga
-            loadingIndicator.classList.add('visible');
-            listContainer.innerHTML = ''; // Limpiar por si acaso
 
-            // 2. Crear un DocumentFragment
+        function loadGames() {
+            loadingIndicator.classList.add('visible');
+            listContainer.innerHTML = '';
             const fragment = document.createDocumentFragment();
 
-            // 3. Procesar URLs y añadir elementos AL FRAGMENTO
             gameUrls.forEach(url => {
                 const data = parseGameUrl(url);
                 const element = createGameElement(data);
                 if (element) {
-                    fragment.appendChild(element); // <-- Añadir al fragmento, no al DOM real
+                    fragment.appendChild(element);
+                } else {
+                     console.warn("Could not create element for URL:", url);
                 }
             });
 
-            // 4. Añadir el fragmento completo al DOM (UNA SOLA OPERACIÓN)
             listContainer.appendChild(fragment);
-
-            // 5. Ocultar indicador de carga
-             loadingIndicator.classList.remove('visible');
-             // Opcional: quitarlo del DOM si ya no se necesita
-             // loadingIndicator.remove();
+            loadingIndicator.classList.remove('visible');
+            // loadingIndicator.remove(); // Optionally remove the loader element entirely
         }
 
-        // Ejecutar la carga cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', loadGames);
 
     </script>
-</div>
-<script type="text/javascript">
-    var app_url = 'https://exe.io/';
-    var app_api_token = '1ff91f6dcff235d94ce092561278a118785fac62';
-    var app_advert = 2;
-    var app_domains = ["archive.org"];
-</script>
-<script src='//exe.io/js/full-page-script.js'></script>
-
+    </div>
+    <!-- EXE.IO SCRIPT BLOCK HAS BEEN REMOVED -->
 </body>
 </html>
