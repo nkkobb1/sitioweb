@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Edad Avanzada</title>
+  <style>
+    /* Encapsulamos el widget y reproducimos el diseño original */
+    #calculadora-widget {
+      /* Estilos que antes aplicaban al body */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a2a3a 0%, #0e1621 100%);
+      color: #ecf0f1; /* var(--light) */
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      
+      /* Variables CSS del diseño original */
+      --primary: #3498db;
+      --secondary: #2ecc71;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      --accent: #e74c3c;
+      --transition: all 0.3s ease;
+    }
+    
+    #calculadora-widget .container {
+      width: 90%;
+      max-width: 800px;
+      background-color: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      padding: 30px;
+    }
+    
+    #calculadora-widget h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 30px;
+      font-weight: 600;
+      font-size: 2.2rem;
+      text-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+    }
+    
+    #calculadora-widget .input-section {
+      margin-bottom: 30px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    #calculadora-widget label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+    
+    #calculadora-widget input[type="date"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid var(--primary);
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 1rem;
+      color: var(--light);
+      transition: var(--transition);
+      margin-bottom: 15px;
+    }
+    
+    #calculadora-widget input[type="date"]:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    }
+    
+    #calculadora-widget button {
+      width: 100%;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    }
+    
+    #calculadora-widget button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+    }
+    
+    #calculadora-widget .results {
+      display: none;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    #calculadora-widget .result-item {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+    }
+    
+    #calculadora-widget .result-item:hover {
+      transform: translateX(5px);
+      background-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    #calculadora-widget .result-label {
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: var(--primary);
+    }
+    
+    #calculadora-widget .result-value {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    #calculadora-widget .highlights {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    #calculadora-widget .highlight-card {
+      flex: 1 1 calc(33.333% - 20px);
+      min-width: 200px;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transform: translateY(0);
+      transition: var(--transition);
+      background: linear-gradient(135deg, rgba(52, 152, 219, 0.2) 0%, rgba(46, 204, 113, 0.2) 100%);
+    }
+    
+    #calculadora-widget .highlight-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    #calculadora-widget .highlight-value {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: var(--secondary);
+    }
+    
+    #calculadora-widget .highlight-label {
+      font-size: 1rem;
+      color: var(--light);
+    }
+    
+    #calculadora-widget .live-counter {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 1.2rem;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+    
+    #calculadora-widget #seconds-counter {
+      font-weight: bold;
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+    
+    #calculadora-widget .fact-card {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 15px;
+      background-color: rgba(46, 204, 113, 0.1);
+      border-left: 5px solid var(--secondary);
+      display: none;
+    }
+    
+    #calculadora-widget .fact-title {
+      font-size: 1.2rem;
+      color: var(--secondary);
+      margin-bottom: 10px;
+    }
+    
+    #calculadora-widget .chart-container {
+      margin-top: 30px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 20px;
+      height: 300px;
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      #calculadora-widget .container {
+        width: 95%;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Contenedor único que encapsula el widget sin alterar el resto de la página -->
+  <div id="calculadora-widget">
+    <div class="container">
+      <h1>Calculadora de Edad Avanzada</h1>
+      
+      <div class="input-section">
+        <label for="birthdate">Fecha de Nacimiento:</label>
+        <input type="date" id="birthdate" required>
+        <button id="calculate">Calcular Mi Edad</button>
+      </div>
+      
+      <div id="results" class="results">
+        <div class="result-item">
+          <span class="result-label">Años:</span>
+          <span class="result-value" id="years">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Meses:</span>
+          <span class="result-value" id="months">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Semanas:</span>
+          <span class="result-value" id="weeks">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Días:</span>
+          <span class="result-value" id="days">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Horas:</span>
+          <span class="result-value" id="hours">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Minutos:</span>
+          <span class="result-value" id="minutes">0</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Segundos:</span>
+          <span class="result-value" id="seconds">0</span>
+        </div>
+        
+        <div class="highlights">
+          <div class="highlight-card">
+            <div class="highlight-value" id="heartbeats">0</div>
+            <div class="highlight-label">Latidos del Corazón</div>
+          </div>
+          <div class="highlight-card">
+            <div class="highlight-value" id="breaths">0</div>
+            <div class="highlight-label">Respiraciones</div>
+          </div>
+          <div class="highlight-card">
+            <div class="highlight-value" id="sleep">0</div>
+            <div class="highlight-label">Días Dormidos</div>
+          </div>
+        </div>
+        
+        <div id="live-counter" class="live-counter">
+          Tus segundos están aumentando en tiempo real: <span id="seconds-counter">0</span>
+        </div>
+        
+        <div id="fact-card" class="fact-card">
+          <div class="fact-title">¿Sabías que?</div>
+          <div id="random-fact">Cargando dato curioso...</div>
+        </div>
+        
+        <div id="chart-container" class="chart-container">
+          <!-- El gráfico se añadirá aquí con JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const calculateBtn = document.getElementById('calculate');
+      const birthdateInput = document.getElementById('birthdate');
+      const resultsDiv = document.getElementById('results');
+      const liveCounter = document.getElementById('live-counter');
+      const factCard = document.getElementById('fact-card');
+      const chartContainer = document.getElementById('chart-container');
+      
+      let secondsInterval;
+      let birthdateTimestamp;
+      let myChart;
+      
+      // Datos curiosos
+      const funFacts = [
+          "El tiempo percibido parece acelerarse a medida que envejecemos porque cada año representa una proporción más pequeña de nuestra vida total.",
+          "Un bebé de un año ríe alrededor de 300 veces al día, mientras que un adulto promedio solo ríe unas 20 veces.",
+          "Durante tu vida, tu corazón latirá más de 2.500 millones de veces aproximadamente.",
+          "Si tienes 23 años, has vivido aproximadamente 1/3 de los días de una esperanza de vida promedio.",
+          "El ser humano respira aproximadamente 20,000 veces al día.",
+          "Pasamos aproximadamente 1/3 de nuestra vida durmiendo.",
+          "Las células de la piel se renuevan completamente cada 27 días aproximadamente.",
+          "El cabello humano crece aproximadamente 15 cm por año.",
+          "Parpadeamos aproximadamente 15-20 veces por minuto, lo que suma alrededor de 28,800 veces al día.",
+          "Si has vivido 20 años, la Tierra ha dado aproximadamente 20 vueltas completas alrededor del Sol contigo a bordo."
+      ];
+      
+      function getRandomFact() {
+          const randomIndex = Math.floor(Math.random() * funFacts.length);
+          return funFacts[randomIndex];
+      }
+      
+      function calculateAge() {
+          const birthdate = new Date(birthdateInput.value);
+          birthdateTimestamp = birthdate.getTime();
+          
+          if (isNaN(birthdateTimestamp)) {
+              alert("Por favor, introduce una fecha válida");
+              return;
+          }
+          
+          if (birthdate > new Date()) {
+              alert("¡No puedes haber nacido en el futuro!");
+              return;
+          }
+          
+          if (secondsInterval) {
+              clearInterval(secondsInterval);
+          }
+          
+          updateAgeValues();
+          
+          resultsDiv.style.display = 'block';
+          liveCounter.style.display = 'block';
+          factCard.style.display = 'block';
+          chartContainer.style.display = 'block';
+          
+          document.getElementById('random-fact').textContent = getRandomFact();
+          
+          secondsInterval = setInterval(updateLiveSeconds, 1000);
+          
+          createLifeChart(birthdate);
+      }
+      
+     function updateAgeValues() {
+          const now = new Date();
+          const birthdate = new Date(birthdateTimestamp);
+
+          const diffMs = now - birthdate; // Diferencia total en milisegundos
+
+          // --- Cálculos de unidades totales basados en diffMs (Estos suelen ser correctos) ---
+          const seconds = Math.floor(diffMs / 1000);
+          const minutes = Math.floor(seconds / 60);
+          const hours = Math.floor(minutes / 60);
+          const days = Math.floor(hours / 24);
+          const weeks = Math.floor(days / 7);
+
+          // --- Cálculo CORRECTO de Años Completos ---
+          let years = now.getFullYear() - birthdate.getFullYear();
+          const currentMonth = now.getMonth();
+          const birthMonth = birthdate.getMonth();
+          const currentDay = now.getDate();
+          const birthDay = birthdate.getDate();
+
+          // Si el mes actual es anterior al mes de nacimiento,
+          // O si es el mismo mes pero el día actual es anterior al día de nacimiento,
+          // entonces aún no ha pasado el cumpleaños este año. Restar 1 año.
+          if (currentMonth < birthMonth || (currentMonth === birthMonth && currentDay < birthDay)) {
+              years--;
+          }
+
+          // --- Cálculo CORRECTO de Meses Totales Completos ---
+          // Calcula la diferencia total de meses
+          let totalMonths = (now.getFullYear() - birthdate.getFullYear()) * 12;
+          totalMonths += now.getMonth() - birthdate.getMonth();
+          // Si el día actual es menor que el día de nacimiento, no se ha completado el mes actual relativo al día de nacimiento.
+          if (now.getDate() < birthdate.getDate()) {
+              totalMonths--;
+          }
+          // Asegurarse de que no sea negativo (por si acaso)
+          totalMonths = Math.max(0, totalMonths);
+
+          // --- Cálculos adicionales (estos dependen de los segundos/días totales, que están bien) ---
+          const heartbeats = Math.floor(seconds * 1.2); // Estimación promedio
+          const breaths = Math.floor(seconds * 0.2);   // Estimación promedio
+          const sleepDays = Math.floor(days / 3);     // Estimación promedio (8h/24h)
+
+          // --- Actualizar el DOM ---
+          document.getElementById('years').textContent = years.toLocaleString();
+          document.getElementById('months').textContent = totalMonths.toLocaleString(); // Mostrar meses totales
+          document.getElementById('weeks').textContent = weeks.toLocaleString();
+          document.getElementById('days').textContent = days.toLocaleString();
+          document.getElementById('hours').textContent = hours.toLocaleString();
+          document.getElementById('minutes').textContent = minutes.toLocaleString();
+          document.getElementById('seconds').textContent = seconds.toLocaleString();
+
+          document.getElementById('heartbeats').textContent = heartbeats.toLocaleString();
+          document.getElementById('breaths').textContent = breaths.toLocaleString();
+          document.getElementById('sleep').textContent = sleepDays.toLocaleString();
+
+          document.getElementById('seconds-counter').textContent = seconds.toLocaleString();
+
+          // Devolver los valores calculados (especialmente el año corregido para el gráfico)
+          return { years, months: totalMonths, weeks, days, hours, minutes, seconds };
+      }
+      
+      function updateLiveSeconds() {
+          updateAgeValues();
+      }
+      
+      function createLifeChart(birthdate) {
+          if (myChart) {
+              myChart.destroy();
+          }
+          
+          const ageValues = updateAgeValues();
+          const lifeExpectancy = 80;
+          const remainingYears = lifeExpectancy - ageValues.years;
+          
+          const data = {
+              labels: ['Tu vida'],
+              datasets: [
+                  {
+                      label: 'Años vividos',
+                      data: [ageValues.years],
+                      backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                      borderColor: 'rgba(52, 152, 219, 1)',
+                      borderWidth: 1
+                  },
+                  {
+                      label: 'Años restantes (est.)',
+                      data: [remainingYears],
+                      backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                      borderColor: 'rgba(46, 204, 113, 1)',
+                      borderWidth: 1
+                  }
+              ]
+          };
+          
+          const config = {
+              type: 'bar',
+              data: data,
+              options: {
+                  indexAxis: 'y',
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      x: {
+                          stacked: true,
+                          title: {
+                              display: true,
+                              text: 'Años',
+                              color: '#ecf0f1'
+                          },
+                          ticks: { color: '#ecf0f1' },
+                          grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                      },
+                      y: {
+                          stacked: true,
+                          ticks: { color: '#ecf0f1' },
+                          grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                      }
+                  },
+                  plugins: {
+                      title: {
+                          display: true,
+                          text: 'Tu Línea de Vida',
+                          color: '#ecf0f1',
+                          font: { size: 16 }
+                      },
+                      legend: { labels: { color: '#ecf0f1' } },
+                      tooltip: {
+                          callbacks: {
+                              label: function(context) {
+                                  let label = context.dataset.label || '';
+                                  if (label) {
+                                      label += ': ';
+                                  }
+                                  if (context.parsed.x !== null) {
+                                      label += context.parsed.x.toFixed(1) + ' años';
+                                  }
+                                  return label;
+                              }
+                          }
+                      }
+                  }
+              },
+          };
+          
+          const ctx = document.createElement('canvas');
+          ctx.id = 'life-chart';
+          ctx.style.width = '100%';
+          ctx.style.height = '100%';
+          chartContainer.innerHTML = '';
+          chartContainer.appendChild(ctx);
+          
+          myChart = new Chart(ctx, config);
+      }
+      
+      calculateBtn.addEventListener('click', calculateAge);
+      birthdateInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+              calculateAge();
+          }
+      });
+    });
+  </script>
+</body>
+</html>
