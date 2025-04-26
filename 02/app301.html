@@ -1,0 +1,3355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CraftMania 🧪 - Deluxe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Reset Básico --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Variables CSS para fácil manejo --- */
+        :root {
+            --font-primary: 'Roboto', sans-serif;
+            --font-headings: 'Montserrat', sans-serif;
+            --color-bg-start: #6a82fb; /* Azul más vibrante */
+            --color-bg-end: #fc5c7d;   /* Rosa/Coral */
+            --color-container-bg: rgba(255, 255, 255, 0.98);
+            --color-text-dark: #333;
+            --color-text-light: #555;
+            --color-primary: #7b4397; /* Púrpura más intenso */
+            --color-secondary: #dc2430; /* Rojo complementario */
+            --color-accent: #ffc107; /* Amarillo para destacar */
+            --color-success: #28a745;
+            --color-error: #dc3545;
+            --color-info: #17a2b8;
+            --border-radius-m: 10px;
+            --border-radius-l: 15px;
+            --box-shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --box-shadow-medium: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: var(--font-primary);
+            display: flex;
+            justify-content: space-around; /* Más espacio uniforme */
+            align-items: flex-start;
+            padding: 40px 25px;
+            background: linear-gradient(135deg, var(--color-bg-start) 0%, var(--color-bg-end) 100%);
+            min-height: 100vh;
+            color: var(--color-text-dark);
+            gap: 30px; /* Espacio entre contenedores */
+            flex-wrap: wrap; /* Permitir que se envuelvan en pantallas pequeñas */
+        }
+
+        /* --- Contenedores Principales --- */
+        .container {
+            background-color: var(--color-container-bg);
+            padding: 30px;
+            border-radius: var(--border-radius-l);
+            box-shadow: var(--box-shadow-medium);
+            width: 48%; /* Casi mitad y mitad */
+            max-width: 600px; /* Límite de ancho */
+            min-width: 300px; /* Ancho mínimo */
+            height: calc(100vh - 120px); /* Altura consistente, ajustar si es necesario */
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.3s ease;
+        }
+        .container:hover {
+             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+        }
+
+        .container h2 {
+            font-family: var(--font-headings);
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--color-primary);
+            font-weight: 700;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--color-primary); /* Borde más grueso */
+             position: relative; /* Para el pseudo-elemento */
+        }
+        /* Decoración sutil bajo el título */
+        .container h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; /* Justo sobre el borde */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+            border-radius: 2px;
+            opacity: 0; /* Oculto inicialmente */
+            transition: opacity 0.3s ease, width 0.3s ease;
+        }
+        .container:hover h2::after {
+             opacity: 1;
+             width: 80px; /* Animar al pasar el ratón por el contenedor */
+        }
+
+        /* --- Contenedor de Lista de Elementos --- */
+        #element-list-container {
+            position: relative; /* Para las estadísticas */
+        }
+
+        /* Barra de Búsqueda */
+        #search-bar {
+            width: 100%;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius-m);
+            font-size: 1em;
+            box-shadow: var(--box-shadow-light);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #search-bar:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(123, 67, 151, 0.2); /* Sombra de foco */
+        }
+
+        #element-list {
+            list-style: none;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 15px; /* Más espacio para scrollbar */
+            margin-bottom: 15px; /* Espacio antes de stats/hint button */
+        }
+
+        /* Estilo scrollbar */
+        #element-list::-webkit-scrollbar {
+            width: 10px;
+        }
+        #element-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: var(--border-radius-m);
+        }
+        #element-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--color-primary), var(--color-secondary));
+            border-radius: var(--border-radius-m);
+            border: 2px solid #f1f1f1; /* Borde sutil */
+        }
+        #element-list::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #5e3370, #a01c24); /* Más oscuro */
+        }
+
+        /* Elemento Individual */
+        @keyframes fadeInElement {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .element {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-m);
+            padding: 12px 18px; /* Más padding */
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.25s ease-in-out;
+            user-select: none;
+            box-shadow: var(--box-shadow-light);
+            animation: fadeInElement 0.4s ease-out forwards;
+            position: relative; /* Para Tooltip */
+            overflow: hidden; /* Para animaciones internas si se añaden */
+        }
+
+        .element:hover {
+            border-left: 5px solid var(--color-primary); /* Indicador lateral */
+            border-color: var(--color-primary); /* Ajusta otras borders si necesario */
+            background-color: #fafafa; /* Fondo sutil */
+            transform: translateX(5px) scale(1.02); /* Levitar un poco */
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .element.dragging {
+            cursor: grabbing !important;
+            opacity: 0.4;
+            transform: scale(0.95) rotate(-2deg); /* Efecto de arrastre */
+             box-shadow: none;
+             border-left: none;
+        }
+
+        .element:active {
+            /* Podría tener estilo aquí también, pero .dragging cubre el drag */
+        }
+
+        .element .emoji {
+            font-size: 1.6em; /* Emoji significativamente más grande */
+            margin-right: 15px;
+            line-height: 1;
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+         .element:hover .emoji {
+            transform: rotate(10deg) scale(1.1); /* Animación emoji al hover */
+         }
+
+        .element .element-name {
+            pointer-events: none;
+            flex-grow: 1;
+            font-weight: 500; /* Ligeramente más grueso */
+            color: var(--color-text-dark);
+        }
+
+        .element .recipe-tooltip {
+            font-size: 1.2em; /* Icono más grande */
+            color: #aaa;
+            margin-left: auto;
+            padding-left: 10px;
+            cursor: help;
+            opacity: 0;
+            transition: opacity 0.3s, color 0.3s;
+        }
+
+        .element:hover .recipe-tooltip {
+            opacity: 1;
+            color: var(--color-primary); /* Cambiar color al hover */
+        }
+
+        /* Stats y Hint Button */
+        #stats-and-hints {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        #stats-display {
+            font-size: 0.95em;
+            color: var(--color-text-light);
+            font-weight: 500;
+        }
+
+        #hint-button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            background: linear-gradient(45deg, var(--color-accent), #ffdb58); /* Amarillo dorado */
+            color: #333;
+            border: none;
+            border-radius: var(--border-radius-m);
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: var(--box-shadow-light);
+            transition: all 0.2s ease;
+            display: flex; /* Alinear icono y texto */
+            align-items: center;
+            gap: 5px;
+        }
+
+        #hint-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
+             filter: brightness(1.1); /* Ligeramente más brillante */
+        }
+         #hint-button:active {
+            transform: translateY(0);
+            box-shadow: var(--box-shadow-light);
+         }
+
+
+        /* --- Zona de Crafteo --- */
+        #crafting-area-container {}
+
+        /* Animaciones Crafting */
+        @keyframes pulseBorderCrafting {
+            0% { border-color: #e6ceff; }
+            50% { border-color: var(--color-primary); box-shadow: 0 0 15px rgba(123, 67, 151, 0.3); }
+            100% { border-color: #e6ceff; }
+        }
+
+        @keyframes shakeErrorCrafting {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px) rotate(-1deg); }
+            40%, 80% { transform: translateX(6px) rotate(1deg); }
+        }
+
+        @keyframes successGlowCrafting {
+             from { box-shadow: 0 0 15px 5px #90ee90, inset 0 0 10px rgba(144, 238, 144, 0.5); }
+             to { box-shadow: 0 0 0 0 rgba(144, 238, 144, 0), inset 0 0 0 rgba(144, 238, 144, 0); }
+        }
+
+
+        #crafting-area {
+            border: 3px dashed #d1c4e9; /* Borde suave por defecto */
+            min-height: 250px; /* Más alto */
+            padding: 25px;
+            border-radius: var(--border-radius-l);
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start; /* Alinea los slots al principio */
+            gap: 15px; /* Mayor separación */
+            background: #f9f9f9 url('data:image/svg+xml,%3Csvg width="6" height="6" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="%23e0e0e0" fill-opacity="0.4" fill-rule="evenodd"%3E%3Cpath d="M5 0h1L0 6V5zM6 5v1H5z"/%3E%3C/g%3E%3C/svg%3E'); /* Fondo con patrón sutil */
+            flex-grow: 1;
+            position: relative;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        #crafting-area.drag-over {
+            border-style: solid;
+            border-color: var(--color-primary);
+            background-color: #f3eafd;
+            animation: pulseBorderCrafting 1.2s infinite ease-in-out;
+        }
+
+         /* Animaciones de estado aplicadas aquí */
+        .shake-error {
+            animation: shakeErrorCrafting 0.4s ease-in-out;
+        }
+
+        .success-glow-animation {
+            animation: successGlowCrafting 0.8s ease-out;
+        }
+
+        /* Slot de Crafteo */
+        .crafting-slot {
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            border: 1px solid #ccc;
+            color: var(--color-text-dark);
+            padding: 15px 25px;
+            border-radius: var(--border-radius-m);
+            font-weight: 700;
+            min-width: 150px; /* Más ancho */
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--box-shadow-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative; /* Para :after */
+            animation: fadeInElement 0.4s ease-out forwards;
+            border-left: 4px solid var(--color-secondary); /* Barra lateral distintiva */
+        }
+         /* Efecto hover para eliminar */
+         .crafting-slot::after {
+            content: '❌'; /* O un icono de basura */
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--color-error);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+         }
+
+         .crafting-slot:hover::after {
+             opacity: 1;
+             transform: scale(1);
+         }
+
+         .crafting-slot:hover {
+            transform: translateY(-3px) scale(1.03);
+             box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            border-color: var(--color-secondary); /* Borde rojo al hover */
+         }
+         .crafting-slot:active {
+            transform: translateY(0) scale(1);
+         }
+
+         .crafting-slot .emoji {
+             font-size: 1.8em; /* Más grandes aún */
+             margin-right: 10px;
+             line-height: 1;
+             pointer-events: none;
+         }
+         .crafting-slot .element-name {
+             pointer-events: none;
+             font-size: 1.05em;
+         }
+
+        #crafting-area-placeholder {
+            color: #999;
+            font-style: italic;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            font-size: 1.1em; /* Un poco más grande */
+             line-height: 1.5;
+        }
+        #crafting-area-placeholder span { display: block; font-size: 1.5em; margin-bottom: 5px; } /* Emoji del placeholder */
+
+
+        /* --- Botones y Mensajes --- */
+        #clear-crafting {
+            padding: 12px 25px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #6c757d, #495057); /* Gris oscuro */
+            border: none;
+            border-radius: var(--border-radius-m);
+            color: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            align-self: center; /* Centrar botón */
+            transition: all 0.2s ease;
+            box-shadow: var(--box-shadow-light);
+             margin-bottom: 15px; /* Espacio antes del mensaje */
+             display: flex; /* Alinear icono */
+             align-items: center;
+             gap: 8px;
+        }
+        #clear-crafting:hover {
+             background: linear-gradient(45deg, #495057, #343a40); /* Más oscuro */
+             box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+             transform: translateY(-2px);
+        }
+        #clear-crafting:active {
+             transform: scale(0.98);
+             box-shadow: var(--box-shadow-light);
+        }
+
+        #status-message {
+            margin-top: auto; /* Empuja al fondo del contenedor */
+            padding: 15px;
+            border-radius: var(--border-radius-m);
+            text-align: center;
+            font-weight: bold;
+            display: none; /* Oculto inicialmente */
+            opacity: 0; /* Controlar aparición con opacity */
+            transition: opacity 0.4s ease, background-color 0.4s ease;
+            min-height: 50px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+             border: 1px solid transparent;
+             font-size: 1.05em;
+        }
+         /* Clases de estado mejoradas */
+        .status-success {
+            background-color: #e9f7ec;
+            color: #1d6430;
+            border-color: #a1d9ab;
+        }
+        .status-error {
+            background-color: #fdecea;
+            color: #a31e1e;
+            border-color: #f5c6cb;
+        }
+        .status-info {
+            background-color: #e8f4f8;
+            color: #0c5464;
+            border-color: #bee5eb;
+        }
+
+
+        /* --- Hint Modal --- */
+        .modal {
+            display: none; /* Oculto por defecto */
+            position: fixed; /* Fijo en la pantalla */
+            z-index: 1000; /* Sobre todo lo demás */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Scroll si el contenido es largo */
+            background-color: rgba(0, 0, 0, 0.6); /* Fondo oscuro semitransparente */
+             align-items: center; /* Centrar verticalmente */
+            justify-content: center; /* Centrar horizontalmente */
+             padding: 20px;
+        }
+
+        .modal.show {
+            display: flex; /* Cambiar a flex para centrar */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px 40px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px; /* Ancho máximo del modal */
+            border-radius: var(--border-radius-l);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            text-align: center;
+             animation: fadeInModal 0.4s ease-out;
+        }
+         @keyframes fadeInModal {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+         }
+
+        .modal-close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #333;
+            text-decoration: none;
+        }
+
+        #hint-display {
+            margin: 25px 0;
+            font-size: 1.2em;
+            color: var(--color-text-dark);
+            min-height: 50px; /* Espacio para el mensaje */
+             background: #f8f9fa;
+             padding: 15px;
+             border-radius: var(--border-radius-m);
+             border: 1px solid #e9ecef;
+             line-height: 1.5;
+        }
+         #hint-display .emoji {
+            font-size: 1.5em;
+            margin: 0 5px;
+         }
+         #hint-display strong { /* Para resaltar elementos en pista */
+             font-weight: 700;
+             color: var(--color-primary);
+         }
+
+
+        #ad-button {
+             padding: 12px 25px;
+             font-size: 1.1em;
+             cursor: pointer;
+             background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+             color: white;
+             border: none;
+             border-radius: var(--border-radius-m);
+             font-weight: 700;
+             transition: all 0.2s ease;
+             box-shadow: var(--box-shadow-light);
+        }
+        #ad-button:hover {
+             filter: brightness(1.15);
+             transform: scale(1.05);
+             box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        }
+        #ad-button:disabled {
+             opacity: 0.6;
+             cursor: not-allowed;
+             transform: scale(1);
+             box-shadow: none;
+             background: grey; /* Indicar visualmente inactivo */
+        }
+
+        /* --- Audio --- */
+        .audio-controls {
+            display: none; /* Ocultar controles de audio por defecto */
+        }
+
+
+         /* --- Responsive Adjustments --- */
+        @media (max-width: 768px) {
+             body {
+                 flex-direction: column;
+                 align-items: center;
+                 padding: 20px 15px;
+             }
+             .container {
+                 width: 95%; /* Ocupar casi todo el ancho */
+                 max-width: none; /* Sin límite máximo */
+                 height: auto; /* Altura automática */
+                 min-height: 400px; /* Altura mínima para mantener algo de espacio */
+                 margin-bottom: 30px; /* Espacio entre contenedores en móvil */
+             }
+              .container:last-child {
+                 margin-bottom: 0;
+              }
+             #stats-and-hints {
+                 flex-direction: column;
+                 gap: 10px;
+                 align-items: stretch; /* Ocupar ancho */
+                 text-align: center;
+             }
+             #hint-button {
+                 justify-content: center; /* Centrar contenido botón */
+             }
+             #crafting-area {
+                 min-height: 200px; /* Reducir un poco en móvil */
+             }
+             .modal-content {
+                width: 90%; /* Modal más ancho en móvil */
+             }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Elementos de Audio (Ocultos) -->
+    <!-- !! REEMPLAZA 'placeholder.mp3' CON TUS ARCHIVOS REALES !! -->
+    <audio id="audio-drag" src="placeholder.mp3" preload="auto" class="audio-controls"></audio>
+    <audio id="audio-drop" src="https://archive.org/download/01-32-cartoon/hit-soundvideo-game-type-230510.mp3" preload="auto" class="audio-controls"></audio>
+    <audio id="audio-success" src="https://archive.org/download/01-32-cartoon/8-bit-victory-sound-101319.mp3" preload="auto" class="audio-controls"></audio>
+    <audio id="audio-fail" src="https://archive.org/download/01-32-cartoon/error-126627.mp3" preload="auto" class="audio-controls"></audio>
+    <audio id="audio-new" src="https://archive.org/download/01-32-cartoon/game-start-6104.mp3" preload="auto" class="audio-controls"></audio>
+    <audio id="audio-clear" src="https://archive.org/download/01-32-cartoon/game-bonus-2-294436.mp3" preload="auto" class="audio-controls"></audio>
+    <audio id="audio-hint-unlock" src="https://archive.org/download/01-32-cartoon/sound-alert-device-turn-on-turn-off-win-done-chakongaudio-174892.mp3" preload="auto" class="audio-controls"></audio>
+
+    <!-- Contenedores Principales -->
+    <div id="element-list-container" class="container">
+        <h2>Elementos Disponibles</h2>
+        <input type="search" id="search-bar" placeholder="Buscar elementos...">
+        <div id="element-list">
+            <!-- JS cargará elementos aquí -->
+        </div>
+        <div id="stats-and-hints">
+            <div id="stats-display">Descubiertos: 0 / Total: 0</div>
+            <button id="hint-button">💡 Obtener Pista</button>
+        </div>
+    </div>
+
+    <div id="crafting-area-container" class="container">
+        <h2>Zona de Crafteo 🔬</h2>
+        <div id="crafting-area">
+             <span id="crafting-area-placeholder"><span>✨</span>Arrastra o haz clic en 2 elementos<br>para combinarlos</span>
+            <!-- JS cargará slots de crafteo aquí -->
+        </div>
+        <button id="clear-crafting">🧹 Limpiar Zona</button>
+        <div id="status-message"></div>
+    </div>
+
+    <!-- Modal para Pistas -->
+    <div id="hint-modal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" id="close-hint-modal">×</span>
+        <h2>Obtener una Pista</h2>
+        <p>¡Mira un anuncio rápido para desbloquear una pista de crafteo!</p>
+        <div id="hint-display">Haz clic en el botón de abajo...</div>
+        <button id="ad-button">ANUNCIO ➡️</button>
+      </div>
+    </div>
+
+    <script>
+        // --- Modelo de Datos ---
+
+        // 1. Mapa de Emojis
+        // Pega aquí tu objeto const elementEmojis = { ... };
+        // --- Modelo de Datos ---
+
+        // 1. Mapa de Emojis
+        const elementEmojis = {
+            // Core
+            'Agua': '💧', 'Fuego': '🔥', 'Tierra': '🌍', 'Aire': '💨',
+            // Basic Combinations
+            'Vapor': '☁️', 'Lodo': '💩', 'Niebla': '🌫️', 'Lava': '🌋',
+            'Energía': '⚡', 'Polvo': '⏳', 'Obsidiana': '🖤', 'Geiser': '♨️',
+            'Ladrillo': '🧱', 'Barro': '🏽', 'Tormenta': '⛈️', 'Nube': '☁️',
+            'Piedra': '🗿', 'Presión': '💨', // Reusing emoji might be ok
+            'Mar': '🌊', 'Océano': '🌊', // Use same emoji? Fine.
+            'Viento': '🌬️', 'Cielo': '🌌',
+            // Nature & Biology
+            'Planta': '🌱', 'Vida': '🧬', 'Pantano': '🐊', 'Semilla': '🌰',
+            'Árbol': '🌳', 'Bosque': '🌲🌲', 'Flor': '🌸', 'Rosa': '🌹', 'Jardín': '🪴',
+            'Hierba': '🌿', 'Musgo': '🦠', // Close enough?
+            'Alga': '🌿', // Re-use ok?
+            'Fruta': '🍎', 'Manzana': '🍎', 'Naranja': '🍊', 'Plátano': '🍌',
+            'Animal': '🐾', 'Pájaro': '🐦', 'Pez': '🐟', 'Insecto': '🐞',
+            'Perro': '🐶', 'Gato': '🐱', 'Caballo': '🐴', 'Vaca': '🐮', 'Oveja': '🐑',
+            'Lobo': '🐺', 'Zorro': '🦊', 'León': '🦁', 'Tigre': '🐯', 'Oso': '🐻',
+            'Serpiente': '🐍', 'Lagarto': '🦎', 'Cocodrilo': '🐊', // Re-use
+            'Araña': '🕷️', 'Abeja': '🐝', 'Mariposa': '🦋', 'Hormiga': '🐜',
+            'Huevo': '🥚', 'Pluma': '깃', // Feather in Korean, maybe use 🕊️? Let's try 🪶
+            'Carne': '🥩', 'Leche': '🥛', 'Queso': '🧀', 'Lana': '🧶', 'Cuero': '🧥', // Approximation
+            'Plancton': '🦠', // Re-use
+            'Humano': '🧑', 'Hombre': '👨', 'Mujer': '👩', 'Bebé': '👶', 'Familia': '👨‍👩‍👧‍👦',
+            'Sangre': '🩸', 'Hueso': '🦴', 'Cerebro': '🧠', 'Corazón': '❤️',
+            // Geography & Geology
+            'Arena': '🏖️', 'Desierto': '🏜️', 'Duna': '🏜️', // Re-use ok
+            'Montaña': '⛰️', 'Cordillera': '🏔️', 'Colina': '🌄', 'Valle': '🏞️',
+            'Volcán': '🌋', 'Terremoto': '🌍💥', // Maybe just '💥'? Let's use 🌍💥
+            'Roca': '🪨', // Distinct from Piedra? Let's add it.
+            'Mineral': '💎', 'Cristal': '🔮', 'Sal': '🧂', 'Arcilla': '🏺',
+            'Continente': '🗺️', 'Isla': '🏝️', 'Playa': '🏖️', // Re-use
+            'Río': '🏞️', 'Lago': '🏞️', // Re-use ok for now
+            'Glaciar': '🧊', 'Iceberg': '🧊', 'Nieve': '❄️', 'Hielo': '🧊',
+            'Ceniza': '잿', // Stick with this or use 🌫️? Let's use 🌫️ as Ash. Or ⚫? How about 🌋➡️🔥➡️🌫️(ash). Ok.
+            // Materials & Technology
+            'Metal': '🔩', 'Hierro': '⛓️', 'Acero': '🔪', 'Oro': '🏆', 'Plata': '🥈', 'Cobre': '🥉', // Approximations
+            'Herramienta': '🛠️', 'Martillo': '🔨', 'Hacha': '🪓', 'Pala': '⛏️', 'Espada': '⚔️',
+            'Armadura': '🛡️', 'Escudo': '🛡️',
+            'Electricidad': '💡', 'Bombilla': '💡', 'Cable': '🔌', 'Batería': '🔋', 'Corriente': '⚡', // Re-use
+            'Vidrio': '🔍', 'Espejo': '🪞', 'Lente': '👓', 'Telescopio': '🔭', 'Microscopio': '🔬',
+            'Madera': '🪵', 'Carbón': '⚫', 'Papel': '📄', 'Libro': '📖', 'Periódico': '📰',
+            'Tela': '🧵', 'Ropa': '👕', 'Hilo': '🧶',
+            'Plástico': '♻️', // Generic recycle symbol maybe
+            'Caucho': '🏀', // Sports ball often made of rubber
+            'Pólvora': '💥', 'Bomba': '💣', 'Explosión': '💥',
+            'Motor': '⚙️', 'Coche': '🚗', 'Avión': '✈️', 'Barco': '🚢', 'Tren': '🚆',
+            'Rueda': '🛞', 'Engranaje': '⚙️',
+            'Computadora': '💻', 'Robot': '🤖', 'Chip': '💡', // Approximation (Microchip?)
+            'Internet': '🌐', 'Wifi': '📶', 'Teléfono': '📱', 'Software': '💾',
+            'Reloj': '⏰', 'Tiempo': '⏳', // Re-use
+            'Brújula': '🧭', 'Mapa': '🗺️', // Re-use
+            // Abstract & Concepts
+            'Frío': '🥶', 'Calor': '🥵', 'Luz': '💡', // Re-use
+            'Oscuridad': '🌑', 'Noche': '🌃', 'Día': '☀️',
+            'Sonido': '🔊', 'Música': '🎵', 'Ruido': '📢',
+            'Movimiento': '🏃', 'Velocidad': '🚀',
+            'Color': '🎨', 'Rojo': '🟥', 'Azul': '🟦', 'Verde': '🟩', 'Arcoíris': '🌈',
+            'Amor': '❤️', 'Muerte': '💀', 'Enfermedad': '🤢', 'Salud': '❤️‍🩹',
+            'Conocimiento': '🧠', 'Ciencia': '🔬', 'Filosofía': '🤔', 'Idea': '💡', // Re-use
+            'Historia': '📜', 'Leyenda': '👑', 'Mito': '🐉',
+            'Magia': '✨', 'Hechizo': '🪄', 'Poción': '🧪', 'Varita': '🪄',
+            'Fuerza': '💪', 'Debilidad': '🤕',
+            'Orden': '🏛️', 'Caos': '🌀',
+            'Bien': '😇', 'Mal': '😈',
+            // Food & Drink
+            'Comida': '🍔', 'Pan': '🍞', 'Harina': '🌾', 'Trigo': '🌾',
+            'Azúcar': '🍬', 'Pastel': '🎂', 'Galleta': '🍪', 'Chocolate': '🍫',
+            'Huevo Frito': '🍳', 'Sopa': '🥣', 'Zumo': '🧃', 'Vino': '🍷', 'Cerveza': '🍺',
+            // Places & Structures
+            'Casa': '🏠', 'Pared': '🧱', 'Techo': '🛖', // Simple roof
+            'Puerta': '🚪', 'Ventana': '🪟',
+            'Edificio': '🏢', 'Rascacielos': '🏙️', 'Ciudad': '🌇', 'Aldea': '🏘️',
+            'Castillo': '🏰', 'Fortaleza': '🏯', // Japanese Castle ok?
+            'Puente': '🌉', 'Carretera': '🛣️', 'Túnel': '🚇', // Tunnel entrance/metro
+            'Campo': '🏞️', 'Granja': '🚜', // Farm implies Tractor maybe
+            'Escuela': '🏫', 'Hospital': '🏥', 'Banco': '🏦', 'Tienda': '🏪',
+            'Biblioteca': '📚', 'Museo': '🏛️', // Re-use
+            'Templo': '⛩️', 'Iglesia': '⛪️',
+            // Professions
+            'Granjero': '🧑‍🌾', 'Leñador': '🪵', // Approximation
+            'Minero': '⛏️', 'Herrero': '🔨', // Re-use ok?
+            'Constructor': '👷', 'Ingeniero': '🧑‍🔧',
+            'Médico': '🧑‍⚕️', 'Enfermero': '🧑‍⚕️',
+            'Científico': '🧑‍🔬', 'Astrónomo': '🔭', // Re-use
+            'Profesor': '🧑‍🏫', 'Estudiante': '🧑‍🎓',
+            'Escritor': '✍️', 'Artista': '🧑‍🎨', 'Músico': '🧑‍🎤',
+            'Soldado': '🧑‍✈️', 'Guerrero': '⚔️', 'Arquero': '🏹',
+            'Mago': '🧙', 'Sacerdote': '⛪️', // Re-use
+            'Rey': '👑', 'Reina': '👑',
+            'Ladrón': '👤', // Shadowy figure
+            // Fantasy & Mythical
+            'Dragón': '🐉', 'Unicornio': '🦄', 'Fénix': '🔥🐦', // Composite ok? Maybe just 🐦? Use 🦢 (swan) as placeholder? Or maybe ✨?
+            'Golem': '🤖', 'Fantasma': '👻', 'Esqueleto': '💀', 'Zombie': '🧟',
+            'Vampiro': '🧛', 'Hombre Lobo': '🐺', // Re-use
+            'Sirena': '🧜‍♀️', 'Elfo': '🧝', 'Enano': '⛏️', // Re-use
+            'Dios': '🙏', 'Ángel': '👼', 'Demonio': '😈',
+            // Weather & Sky
+            'Sol': '☀️', 'Luna': '🌙', 'Estrella': '⭐', 'Constelación': '✨', // Re-use
+            'Planeta': '🪐', 'Asteroide': '☄️', 'Galaxia': '🌌', 'Universo': '🔭', // Re-use
+            'Clima': '🌦️', 'Lluvia': '🌧️', 'Granizo': '🌨️', // Re-use snow/hail
+            'Relámpago': '⚡', // Re-use
+            'Aurora': '🏳️‍🌈', // Approximation using rainbow flag
+             // Additions based on User's initial list
+             'Motor': '⚙️', 'Armadura': '🛡️', 'Caldera': '♨️', // Reuse
+             'Hechizo': '🪄', 'Humano': '🧑', 'Pez': '🐟','Pájaro': '🐦',
+             'Fénix': '🦢', // Placeholder
+             'Golem': '🤖', 'Libro': '📖', 'Papel': '📄', 'Ceniza': '🌫️', // Ash emoji change
+            // ... Fill in as many as needed ... MANY MORE!
+            'Camello': '🐫', 'Escorpión': '🦂', 'Cactus': '🌵',
+            'Pingüino': '🐧', 'Foca': '🦭', 'Oso Polar': '🐻‍❄️',
+            'Bambú': '🎍', 'Panda': '🐼',
+            'Selva': '🌴', 'Mono': '🐒', 'Loro': '🦜',
+            'Electricista': '💡', // Reuse
+            'Panadero': '👨‍🍳', 'Cocinero': '👨‍🍳',
+            'Piloto': '🧑‍✈️', 'Marinero': '⚓', 'Capitán': '👨‍✈️',
+            'Juez': '🧑‍⚖️', 'Abogado': '🧑‍⚖️', 'Policía': '👮',
+            'Ninja': '🥷', 'Samurai': '⚔️', // Reuse
+            'Pirata': '🏴‍☠️', 'Tesoro': '💰',
+            'Espacio': '🌌', 'Tiempo': '⏳', 'Agujero Negro': '⚫',
+            'Dinosaurio': '🦖', 'Fósil': '🦴', // Reuse
+            'Extraterrestre': '👽', 'Ovni': '🛸',
+            'Guitarra': '🎸', 'Piano': '🎹', 'Tambor': '🥁',
+            'Pintura': '🖼️', 'Escultura': '🗿', // Reuse
+            'Bicicleta': '🚲', 'Motocicleta': '🏍️',
+            'Skate': '🛹', 'Patin': '⛸️',
+            'Esquí': '🎿', 'Snowboard': '🏂',
+            'Fútbol': '⚽', 'Baloncesto': '🏀', 'Tenis': '🎾', 'Béisbol': '⚾',
+            'Gafas': '👓', 'Gafas de Sol': '🕶️',
+            'Mochila': '🎒', 'Maleta': '🧳',
+            'Dinero': '💵', 'Moneda': '🪙', 'Billete': ' banknote 💶', // Added specific note
+            'Cámara': '📷', 'Foto': '📸', 'Película': '🎬', 'Cine': '🎥',
+            'Televisión': '📺', 'Radio': '📻',
+            'Libertad': '🗽', 'Estatua': '🗽', // Use statue of liberty? or 🗿? Stick to 🗿. Okay 'Estatua' gets 🗿
+            'Justicia': '⚖️', 'Paz': '☮️', 'Guerra': '⚔️', // Reuse
+            'Joya': '💎', 'Anillo': '💍', 'Collar': ' necklace 📿', // Added necklace text
+            'Perfume': '🧴', // Lotion ok? Maybe 👃 (nose)? Stick to 🧴
+            'Jabón': '🧼', 'Champú': '🧴', // Reuse
+            'Esponja': '🧽',
+            'Tijeras': '✂️', 'Cuchillo': '🔪',
+            'Pegamento': '🩹', // Bandage is close to sticking?
+            'Aguja': '📍', // Pushpin ok?
+            'Veneno': '☠️', 'Antídoto': '💉',
+            'Bacteria': '🦠', 'Virus': '🦠', // Reuse
+            'Antibiótico': '💊',
+            'Yogur': '🍦', // Ice cream emoji is close...
+            'Miel': '🍯',
+            'Café': '☕', 'Té': '🍵',
+            'Silla': '🪑', 'Mesa': '🪑', // Not ideal, maybe a generic furniture emoji exists? No. Let's use chair for both.
+            'Cama': '🛌',
+            'Lámpara': '💡', // Reuse
+            'Libreta': '📓', 'Lápiz': '✏️', 'Bolígrafo': '🖋️',
+            'Regla': '📏', 'Compás': '📐', // Set square instead
+            'Nido': '둥지', // Korean for nest, maybe 🥚 reused? Use 🪺 (Nest with Eggs)
+            'Madriguera': '굴', // Korean for burrow, maybe 🕳️ (Hole)?
+            'Cueva': '굴', // Korean for cave, reuse Hole 🕳️
+            'Gruta': '🕳️', // Reuse Hole
+            'Muro': '🧱', // Reuse Brick Wall
+            'Presa': '댐', // Korean for Dam. Maybe 🌊🧱? Use 🧱 (re-use wall)? Try 🪵 (Wood).
+            'Parque': '🏞️', // Reuse
+            'Zoológico': '🦓', // Use Zebra as representative?
+            'Acuario': '🐠', // Reuse Fish
+            'Museo': '🏛️', // Reuse
+            'Universidad': '🎓',
+            'Laboratorio': '🔬', // Reuse
+            'Observatorio': '🔭', // Reuse
+            'Faro': '🚨', // Lighthouse
+            'Ácido': '🧪', 'Base': '🧼', 'Sal Química': '🧂', 'Oxígeno': 'O₂', 'Hidrógeno': 'H₂', 'Nitrógeno': 'N₂',
+    'Carbono': 'C', 'Molécula': '⚛️', 'Átomo': '⚛️', 'Protón': '➕', 'Neutrón': '⚫', 'Electrón': '➖',
+    'Química': '🔬', 'Laboratorio': '🔬', 'Probeta': '🧪', 'Matraz': '⚗️', 'Mechero Bunsen': '🔥',
+    'ADN': '🧬', 'ARN': '🧬', 'Célula': '🦠', 'Microbio': '🦠', 'Amoníaco': 'NH₃', 'Metano': 'CH₄', 'CO2': '💨',
+    'Ozono': 'O₃', 'Radioactividad': '☢️', 'Uranio': '☢️', 'Plutonio': '☢️', 'Petróleo': '🛢️', 'Gas Natural': '💨',
+    'Gasolina': '⛽', 'Queroseno': '✈️', 'Plástico': '♻️', // Ya existe? Revisar y si no, ok.
+    'Caucho': '🏀', // Ya existe? Revisar y si no, ok.
+    'Fibra Óptica': '💡', 'Láser': '🔴', 'Plasma': '⚡️', // Reutilizar o símbolo específico?
+    'Nanotecnología': '🔬', 'Teoría de Cuerdas': '🎻', 'Gravedad': '🍎', 'Antimateria': '💥', 'Materia Oscura': '⚫',
+    'Quark': '⚛️', // Partícula subatómica
+    'Fisión Nuclear': '💥', 'Fusión Nuclear': '☀️', 'Elemento Químico': '🧪', 'Tabla Periódica': '📜',
+    'Aleación': '🔩🔗', 'Bronce': '🥉', 'Latón': '🎺', 'Acero Inoxidable': '🔪✨', 'Aluminio': '🥫', 'Titanio': '🦾',
+    'Mercurio': ' Hg ', // Símbolo
+    'Azufre': ' S ', 'Fósforo': ' P ', 'Cloro': ' Cl ', 'Sodio': ' Na ', 'Potasio': ' K ',
+    'Calcio': '🦴 Ca', 'Magnesio': ' Mg ', 'Silicio': ' Si ', // Componente de chips
+
+    // Geografía y Geología Ampliada
+    'Placa Tectónica': '🗺️', 'Falla Geológica': '🌍💥', 'Manto Terrestre': '🌍🔥', 'Núcleo Terrestre': '🔥',
+    'Sedimento': '⏳', 'Roca Sedimentaria': '🧱', 'Roca Metamórfica': '💎', 'Roca Ígnea': '🌋',
+    'Mármol': '🏛️', 'Granito': '⛰️', 'Pizarra': ' chalkboard ', // Texto
+    'Carbón': '⚫', // Ya existe? Ok.
+    'Diamante': '💎', // Ya existe? Ok.
+    'Rubí': '💎❤️', 'Zafiro': '💎💙', 'Esmeralda': '💎💚', 'Topacio': '💎💛', 'Amatista': '💎💜',
+    'Ópalo': '🌈💎', 'Jade': '💚', 'Turquesa': '💎',
+    'Fósil': '🦴', // Ya existe? Ok.
+    'Ámbar': '🍯', // Resina fósil
+    'Perla': '⚪',
+    'Coral': '🐡', // Estructura submarina
+    'Arrecife de Coral': '🐠🐡',
+    'Fiordo': '🏞️⛰️', 'Cañón': '🏜️', 'Meseta': '⛰️', 'Península': '🗺️', 'Archipiélago': '🏝️🏝️',
+    'Estrecho': '🌊', 'Bahía': '🏖️', 'Golfo': '🌊', 'Cabo': '🗺️',
+    'Corriente Marina': '🌊➡️', 'Tsunami': '🌊💥', 'Maremoto': '🌊💥', 'Erosión': '🌬️💧',
+    'Meteorito': '☄️', 'Cráter': '⚫', 'Cometa': '☄️',
+    'Estalactita': '🧊👇', 'Estalagmita': '🧊👆', 'Columna': '🏛️', // Formaciones cueva
+
+    // Flora y Fauna Ampliada
+    'Hongo': '🍄', 'Levadura': '🍞', 'Moho': '🦠', 'Liquen': '🦠',
+    'Helecho': '🌿', 'Bambú': '🎍', // Ya existe? Ok.
+    'Trigo': '🌾', // Ya existe? Ok.
+    'Arroz': '🍚', 'Maíz': '🌽', 'Patata': '🥔', 'Tomate': '🍅', 'Cebolla': '🧅', 'Ajo': '🧄',
+    'Lechuga': '🥬', 'Zanahoria': '🥕', 'Pimiento': '🌶️', 'Calabaza': '🎃', 'Uva': '🍇', 'Sandía': '🍉',
+    'Fresa': '🍓', 'Cereza': '🍒', 'Limón': '🍋', 'Coco': '🥥', 'Piña': '🍍', 'Kiwi': '🥝',
+    'Aguacate': '🥑', 'Cacao': '🍫', 'Café': '☕', // Planta
+    'Vainilla': '🍦', // Planta
+    'Algodón': '☁️', // Planta
+    'Lino': '🧵', // Planta
+    'Cáñamo': '🌿',
+    'Tabaco': '🚬',
+    'Vid': '🍇', // Planta
+    'Olivo': '🫒', // Árbol -> Fruto
+    'Aceituna': '🫒',
+    'Palmera': '🌴', 'Cactus': '🌵', // Ya existe? Ok.
+    'Secuoya': '🌲🌲', 'Roble': '🌳', 'Pino': '🌲', 'Sauce': '🌳', 'Bonsai': '🌳✂️',
+    'Plancton': '🦠', // Ya existe? Ok.
+    'Medusa': '🐙', // Similar shape jellyfish
+    'Anémona': '🐡',
+    'Estrella de Mar': '⭐',
+    'Cangrejo': '🦀', 'Langosta': '🦞', 'Camarón': '🦐',
+    'Pulpo': '🐙', 'Calamar': '🦑',
+    'Tiburón': '🦈', 'Ballena': '🐳', // Ya existe Whale/Ballena? Ok.
+    'Delfín': '🐬', 'Foca': '🦭', // Ya existe? Ok.
+    'Morsa': '🦭 colmillos?', // No hay emoji directo
+    'Castor': '🦫',
+    'Nutria': '🦦',
+    'Murciélago': '🦇',
+    'Mapache': '🦝',
+    'Zorrillo': '🦨',
+    'Erizo': '🦔',
+    'Topo': '鼹', // Coreano, usar 🕳️?
+    'Ardilla': '🐿️',
+    'Conejo': '🐇', 'Liebre': '🐇💨',
+    'Ciervo': '🦌', 'Alce': '🦌', 'Reno': '🦌', // Diferenciar?
+    'Jabalí': '🐗',
+    'Gorila': '🦍', 'Orangután': '🦧', 'Chimpancé': '🐒',
+    'Panda': '🐼', // Ya existe? Ok.
+    'Koala': '🐨',
+    'Canguro': '🦘',
+    'Rinoceronte': '🦏', 'Hipopótamo': '🦛', 'Elefante': '🐘', 'Jirafa': '🦒', 'Cebra': '🦓',
+    'Suricata': ' meerkat ', // No emoji directo
+    'Perezoso': '🦥',
+    'Oso Hormiguero': ' ant eater ',
+    'Armadillo': '🛡️🐾',
+    'Pingüino': '🐧', // Ya existe? Ok.
+    'Avestruz': '🐦💨', 'Emú': '🐦',
+    'Pavo Real': '🦚', 'Pavo': '🦃', 'Gallina': '🐔', 'Gallo': '🐓',
+    'Cisne': '🦢', 'Pato': '🦆', 'Ganso': '🦢',
+    'Pelícano': '🐦🌊',
+    'Gaviota': '🐦🌊',
+    'Loro': '🦜', // Ya existe? Ok.
+    'Tucán': '🐦🌈',
+    'Colibrí': '🐦✨',
+    'Flamenco': '🦩',
+    'Águila': '🦅', 'Halcón': '🦅', 'Búho': '🦉',
+    'Cuervo': '🐦⚫', 'Paloma': '🕊️',
+    'Rana': '🐸', // Anfibio ya existe?
+    'Sapo': '🐸', 'Salamandra': '🦎🔥', // Mítica/Real
+    'Tortuga': '🐢', // Ya existe? Ok.
+    'Caracol': '🐌', 'Babosa': '🐌💧',
+    'Lombriz': '🐛',
+    'Mosca': '🦟', 'Mosquito': '🦟', 'Tábano': '🦟',
+    'Libélula': ' dragonfly ', // No emoji directo
+    'Saltamontes': '🦗', 'Grillo': '🦗', 'Cigarra': ' cicada ',
+    'Escarabajo': '🐞', 'Mariquita': '🐞', 'Cucaracha': '🪳',
+    'Termita': '🐜🪵',
+    'Polilla': '🦋', // Reuse mariposa
+    'Escorpión': '🦂', // Ya existe? Ok.
+    'Tarántula': '🕷️',
+
+    // Comida y Bebida Ampliada
+    'Harina': '🍚', // Ya existe? Ok. Reusar o diferenciar de Arroz?
+    'Masa': '🍞', // Ya existe? Ok.
+    'Fideo': '🍜', 'Pasta': '🍝',
+    'Pizza': '🍕',
+    'Hamburguesa': '🍔', // Ya existe? Ok.
+    'Perrito Caliente': '🌭',
+    'Taco': '🌮', 'Burrito': '🌯', 'Sushi': '🍣', 'Onigiri': '🍙',
+    'Empanada': '🥟', // Dumpling close enough
+    'Croissant': '🥐', 'Baguette': '🥖',
+    'Dona': '🍩', 'Muffin': '🧁', 'Cupcake': '🧁',
+    'Helado': '🍦', 'Sorbete': '🍨', 'Paleta Helada': ' popsicle ', // No emoji directo
+    'Gelatina': '🍮', // Pudding close enough
+    'Caramelo': '🍬', 'Piruleta': '🍭', 'Gominola': '🍬', 'Malvavisco': '☁️🍬',
+    'Palomitas': '🍿', 'Patatas Fritas (Chip)': '🥔🍟', // Distinguir de Papas Fritas
+    'Papas Fritas (Francesas)': '🍟',
+    'Nueces': '🌰', // Ya existe Semilla?
+    'Almendra': '🌰', 'Pistacho': '🌰💚', 'Cacahuete': '🥜',
+    'Salsa': '🥫', 'Ketchup': '🥫🍅', 'Mostaza': '🌭', // Relacionado con perrito
+    'Mayonesa': '🥚', // Relacionado con huevo
+    'Mantequilla': '🧈',
+    'Aceite': '🏺', // Genérico?
+    'Aceite de Oliva': '🫒',
+    'Vinagre': '🍷', // Relacionado con vino
+    'Especias': '🧂🌶️', 'Pimienta': '⚫🧂', 'Orégano': '🌿', 'Canela': '🪵',
+    'Bebida': '🥤',
+    'Refresco': '🥤', // Ya existe? Ok.
+    'Leche de Coco': '🥥🥛', 'Leche de Almendras': '🌰🥛', 'Leche de Soja': '🌱🥛', // Soja = planta?
+    'Batido': '🥛🍓',
+    'Yogur': '🍦', // Ya existe? Ok.
+    'Té Helado': '🧊🍵',
+    'Limonada': '🍋🥤',
+    'Cerveza': '🍺', // Ya existe? Ok.
+    'Vino': '🍷', // Ya existe? Ok.
+    'Champán': '🍾',
+    'Whisky': '🥃', 'Ron': '🥃', 'Vodka': '🍸', 'Ginebra': '🍸', 'Tequila': '🌵🥃',
+    'Cóctel': '🍹',
+    'Hielo': '🧊', // Ya existe? Ok.
+
+    // Sociedad, Cultura y Profesiones Ampliada
+    'Gobierno': '🏛️', 'Democracia': '🗳️', 'Monarquía': '👑', 'República': '🏛️', 'Dictadura': '👤⛓️',
+    'Imperio': '👑🌍', 'Reino': '👑🏰', // Ya existe? Ok.
+    'Nación': '🏳️', 'País': '🗺️', 'Estado': '🇺🇳', // Símbolo ONU genérico
+    'Capital': '⭐🏙️',
+    'Política': '🧑‍⚖️🗣️', 'Político': '🧑‍⚖️',
+    'Elecciones': '🗳️', 'Voto': '🗳️',
+    'Ley': '📜', // Ya existe? Ok.
+    'Justicia': '⚖️', // Ya existe? Ok.
+    'Crimen': '👤💥', 'Criminal': '👤',
+    'Policía': '👮', // Ya existe? Ok.
+    'Detective': '🕵️', // Ya existe? Ok.
+    'Juez': '🧑‍⚖️', // Ya existe? Ok.
+    'Abogado': '🧑‍⚖️', // Ya existe? Ok.
+    'Prisión': '⛓️', // Ya existe? Ok.
+    'Ejército': '⚔️🛡️', 'Marina': '⚓🚢', 'Fuerza Aérea': '✈️🎖️',
+    'Soldado': '🧑‍✈️', // Ya existe? Ok.
+    'General': '🎖️⭐', 'Capitán': '👨‍✈️', // Ya existe? Ok.
+    'Espía': '🕵️🕶️', 'Agente Secreto': '🕵️',
+    'Diplomacia': '🤝', 'Embajada': '🏛️🏳️', 'Tratado': '📜🤝',
+    'Economía': '💰📈', 'Mercado': '🏪', // Ya existe? Ok.
+    'Impuesto': '💰📉', 'Deuda': '💰⛓️', 'Inflación': '📈', 'Recesión': '📉',
+    'Industria': '🏭', 'Fábrica': '🏭',
+    'Comercio': '🤝', // Ya existe? Ok.
+    'Tienda': '🏪', // Ya existe? Ok.
+    'Supermercado': '🛒', 'Centro Comercial': '🛍️',
+    'Restaurante': '🍽️', 'Cafetería': '☕️', 'Bar': '🍺',
+    'Hotel': '🏨', 'Motel': '🏨🚗', 'Hostal': '🏨🎒',
+    'Turismo': '✈️🗺️', 'Turista': '🧑📸', 'Guía Turístico': '🗺️🗣️',
+    'Transporte': '🚗🚆🚢✈️',
+    'Aeropuerto': '✈️', 'Estación de Tren': '🚉', 'Puerto': '⚓', 'Parada de Autobús': '🚌',
+    'Educación': '🧑‍🏫', // Ya existe? Ok.
+    'Escuela': '🏫', // Ya existe? Ok.
+    'Universidad': '🎓', // Ya existe? Ok.
+    'Profesor': '🧑‍🏫', // Ya existe? Ok.
+    'Estudiante': '🧑‍🎓', // Ya existe? Ok.
+    'Ciencia': '🔬', // Ya existe? Ok.
+    'Científico': '🧑‍🔬', // Ya existe? Ok.
+    'Investigación': '🔬📜', 'Experimento': '🧪💥',
+    'Arte': '🎨', 'Artista': '🧑‍🎨', // Ya existe? Ok.
+    'Pintura': '🖼️', // Ya existe? Ok.
+    'Escultura': '🗿', // Ya existe? Ok.
+    'Música': '🎵', // Ya existe? Ok.
+    'Músico': '🧑‍🎤', // Ya existe? Ok.
+    'Danza': '💃', // Ya existe? Ok.
+    'Bailarín': '💃', // Ya existe? Ok.
+    'Teatro': '🎭', 'Actor': '🎭', 'Actriz': '🎭',
+    'Cine': '🎬', // Ya existe? Ok.
+    'Director': '🎬🗣️', 'Película': '🎞️',
+    'Literatura': '📚', 'Escritor': '✍️', // Ya existe? Ok.
+    'Poesía': '📜❤️', 'Poeta': '✍️❤️',
+    'Libro': '📖', // Ya existe? Ok.
+    'Periódico': '📰', // Ya existe? Ok.
+    'Revista': '📰💅', // Magazine, related to fashion/news
+    'Noticias': '📰', // Ya existe? Ok.
+    'Periodista': '✍️📰',
+    'Fotografía': '📸', 'Fotógrafo': '🧑📸',
+    'Religión': '🙏', 'Dios': '🙏', // Ya existe? Ok.
+    'Iglesia': '⛪️', // Ya existe? Ok.
+    'Templo': '⛩️', // Ya existe? Ok.
+    'Mezquita': '🕌', 'Sinagoga': '🕍',
+    'Sacerdote': '⛪️', // Ya existe? Ok.
+    'Monje': '🧘', 'Monja': '🧘‍♀️', 'Rezar': '🙏', 'Fe': '🙏💖',
+    'Filosofía': '🤔', // Ya existe? Ok.
+    'Filósofo': '👴🤔', // Ya existe? Ok.
+    'Ética': '😇😈', 'Moral': '💖',
+    'Deporte': '⚽🏀🏈⚾', 'Atleta': '🏃‍♀️💨',
+    'Estadio': '🏟️', 'Gimnasio': '🏋️‍♀️', 'Piscina': '🏊‍♀️',
+    'Medalla': '🥇🥈🥉', // O usar 🎖️?
+    'Trofeo': '🏆', // Ya existe? Ok.
+    'Entrenador': '🧑‍🏫🏆',
+    'Aficionado': '🧑🎉', // Fan
+    'Medicina': '⚕️', // Símbolo caduceo
+    'Médico': '🧑‍⚕️', // Ya existe? Ok.
+    'Enfermero': '🧑‍⚕️', // Ya existe? Ok.
+    'Cirujano': '🧑‍⚕️🔪',
+    'Hospital': '🏥', // Ya existe? Ok.
+    'Clínica': '🏥', 'Farmacia': '💊', 'Farmacéutico': '🧑‍🔬💊',
+    'Ambulancia': '🚑',
+    'Salud': '❤️‍🩹', // Ya existe? Ok.
+    'Enfermedad': '🤢', // Ya existe? Ok.
+    'Virus': '🦠', // Ya existe? Ok.
+    'Bacteria': '🦠', // Ya existe? Ok.
+    'Vacuna': '💉', // Ya existe? Ok.
+    'Antibiótico': '💊', // Ya existe? Ok.
+    'Medicina Alternativa': '🌿✨', 'Acupuntura': '📍',
+    'Ingeniería': '🧑‍🔧⚙️', 'Ingeniero': '🧑‍🔧', // Ya existe? Ok.
+    'Construcción': '🏗️', 'Constructor': '👷', // Ya existe? Ok.
+    'Arquitectura': '🏛️📐', 'Arquitecto': '🧑‍🎨📐',
+    'Astronauta': '🧑‍🚀', // Ya existe? Ok.
+    'Bombero': '👨‍🚒', // Ya existe? Ok.
+    'Cocinero': '👨‍🍳', // Ya existe? Ok.
+    'Panadero': '👨‍🍳🍞', // Ya existe? Ok.
+    'Camarero': '🧑‍🍳🍽️',
+    'Agricultor': '🧑‍🌾', // Alias Granjero? Ok.
+    'Leñador': '🧑‍🏭🪵', // Ya existe? Ok.
+    'Minero': '🧑‍🏭⛏️', // Ya existe? Ok.
+    'Herrero': '🧑‍🏭🔨', // Ya existe? Ok.
+    'Carpintero': '🧑‍🔧🪵', // Ya existe? Ok.
+    'Electricista': '🧑‍🔧💡', // Ya existe? Ok.
+    'Fontanero': '🧑‍🔧💧', // Plumber
+    'Mecánico': '🧑‍🔧🚗',
+    'Marinero': '⚓', // Ya existe? Ok.
+    'Pescador': '🎣', // Ya existe? Ok.
+    'Piloto': '🧑‍✈️', // Ya existe? Ok.
+    'Conductor': '🧑‍✈️🚗', // Driver
+    'Cartero': '✉️🚶',
+    'Bibliotecario': '🧑‍🏫📚',
+    'Traductor': '🗣️ A->B',
+    'Guía': '🗺️🚶',
+
+    // Tecnología Ampliada
+    'Semiconductor': '💡⚫', 'Chip': '💡', // Ya existe? Ok.
+    'Microchip': '🔬💡', 'Procesador': '🧠💻', 'Memoria RAM': '💾',
+    'Tarjeta Gráfica': '💻🎨', 'Placa Base': '🧩💻', // Motherboard
+    'Disco Duro': '💾', 'SSD': '💾⚡',
+    'Software': '💾', // Ya existe? Ok.
+    'Sistema Operativo': '💻👑', 'Aplicación': '📱', 'Algoritmo': '🔢📜',
+    'Programación': '🧑‍💻', 'Código Fuente': '📜💻', 'Bug': '🐛', 'Hacker': '👤💻', // Ya existe? Ok.
+    'Internet': '🌐', // Ya existe? Ok.
+    'Navegador Web': '🌐🧭', 'Página Web': '📄🌐', 'Email': '📧', // Ya existe? Ok.
+    'Red Social': '👥', // Ya existe? Ok.
+    'Wifi': '📶', // Ya existe? Ok.
+    'Bluetooth': ' B ', // Símbolo?
+    'Fibra Óptica': '💡🔗',
+    'Satélite': '🛰️', // Ya existe? Ok.
+    'GPS': '🛰️🗺️', // Ya existe? Ok.
+    'Inteligencia Artificial': '🤖🧠', // Ya existe? Ok.
+    'Aprendizaje Automático': '🤖📈', 'Red Neuronal': '🧠🔗',
+    'Realidad Virtual': '🕶️🌐', 'Realidad Aumentada': '📱✨',
+    'Impresora': '🖨️', 'Impresora 3D': '🖨️🔧', 'Escáner': '📠', // Fax machine icon okay?
+    'Dron': '✈️🎮',
+    'Robot': '🤖', // Ya existe? Ok.
+    'Androide': '🤖🧑', // Ya existe? Ok.
+    'Cyborg': '🧑🦾', // Ya existe? Ok.
+    'Exoesqueleto': '🦾',
+    'Energía Nuclear': '☢️⚡', 'Reactor Nuclear': '☢️🏭',
+    'Energía Solar': '☀️⚡', // Ya existe? Ok.
+    'Panel Solar': '☀️🔌', // Ya existe? Ok.
+    'Energía Eólica': '🌬️⚡', 'Turbina Eólica': '🌬️⚙️', // Ya existe? Ok.
+    'Energía Hidroeléctrica': '💧⚡', 'Presa': '댐', // Ya existe? Ok. Use 🧱💧 instead?
+    'Energía Geotérmica': '🌍🔥⚡',
+    'Batería Recargable': '🔋🔄', 'Pila': '🔋', // Diferenciar? Pila = Batería
+    'Láser': '🔴⚡', // Ya existe? Ok.
+    'Biotecnología': '🧬🔧', 'Ingeniería Genética': '🧬✂️', 'Clonación': '🐑🐑',
+    'Transgénico': '🌽🧬',
+    'Criogenia': '🥶🧬',
+    'Máquina del Tiempo': '⏳⚙️', // Ya existe? Ok.
+    'Teletransportador': '🌌➡️',
+    'Motor de Combustión': '🔥⚙️', 'Motor Eléctrico': '⚡⚙️', 'Motor a Reacción': '✈️🔥',
+    'Cohete': '🚀', // Ya existe? Ok.
+    'Estación Espacial': '🛰️🏠', 'Nave Espacial': '🚀🌌',
+
+    // Objetos y Herramientas Ampliados
+    'Tijeras': '✂️', // Ya existe? Ok.
+    'Cuchillo': '🔪', // Ya existe? Ok.
+    'Navaja Suiza': '🔪🛠️',
+    'Destornillador': '🔩', // Reuse bolt? Need  screwdriver emoji? Use 🔧 instead?
+    'Alicates': '🔧', // Reuse wrench
+    'Sierra': '🪵🔪',
+    'Taladro': '🔩🧱',
+    'Cuerda': ' रस्सी ', // No emoji fácil. Usar 🧶? Reusar Hilo? Ya existe 🪢 Nudo?
+    'Cadena': '⛓️',
+    'Candado': '🔒', 'Llave': '🔑', // Ya existe? Ok.
+    'Caja': '📦', 'Cofre': '📦💰', // Treasure chest
+    'Bolsa': '👜', 'Mochila': '🎒', // Ya existe? Ok.
+    'Maleta': '🧳', // Ya existe? Ok.
+    'Gafas': '👓', // Ya existe? Ok.
+    'Lupa': '🔍', // Ya existe? Ok.
+    'Microscopio': '🔬', // Ya existe? Ok.
+    'Telescopio': '🔭', // Ya existe? Ok.
+    'Prismáticos': '👀🔭',
+    'Brújula': '🧭', // Ya existe? Ok.
+    'Mapa': '🗺️', // Ya existe? Ok.
+    'Globo Terráqueo': '🌍',
+    'Reloj': '⏰', // Ya existe? Ok.
+    'Reloj de Pulsera': '⌚',
+    'Calendario': '📅', // Ya existe Mes?
+    'Termómetro': '🌡️', // Ya existe? Ok.
+    'Barómetro': '🌡️💨',
+    'Balanza': '⚖️',
+    'Regla': '📏', // Ya existe? Ok.
+    'Compás': '🧭📐', // Ya existe compás de navegación y regla/set square
+    'Escuadra': '📐',
+    'Nivel': '📏💧', // Spirit level
+    'Papel': '📄', // Ya existe? Ok.
+    'Cartón': '📦📄',
+    'Lápiz': '✏️', // Ya existe? Ok.
+    'Bolígrafo': '🖋️', // Ya existe? Ok.
+    'Rotulador': '🖍️', 'Marcador': '🖍️',
+    'Goma de Borrar': ' eraser ', // No emoji
+    'Sacapuntas': '✏️🔪',
+    'Pegamento': '🩹', // Ya existe? Ok.
+    'Cinta Adhesiva': '🩹📜',
+    'Chincheta': '📍', // Pushpin, Ya existe Aguja?
+    'Clip': '📎',
+    'Grapadora': '📎📄',
+    'Pincel': '🖌️', // Ya existe? Ok.
+    'Lienzo': '🖼️', // Ya existe? Ok.
+    'Paleta': '🎨', // Ya existe Color?
+    'Aguja': '📍', // Ya existe? Ok. Reuse pushpin for needle.
+    'Hilo': '🧶', // Ya existe? Ok.
+    'Alfiler': '📍',
+    'Dedal': ' thimble ', // No emoji
+    'Botón': '⚫', // Generic button
+    'Cremallera': ' zipper ', // No emoji
+    'Peine': ' comb ', 'Cepillo': ' brush ', // No emojis
+    'Espejo': '🪞', // Ya existe? Ok.
+    'Perfume': '🧴', // Ya existe? Ok.
+    'Maquillaje': '💄💅',
+    'Jabón': '🧼', // Ya existe? Ok.
+    'Champú': '🧴', // Ya existe? Ok.
+    'Esponja': '🧽', // Ya existe? Ok.
+    'Toalla': '🧖‍♀️', // Towel icon inside sauna person?
+    'Pasta de Dientes': '🦷✨', 'Cepillo de Dientes': '🦷🖌️',
+    'Vela': '🕯️', 'Linterna': '🔦', // Ya existe Faro? Ok.
+    'Cerilla': ' matchstick ', // No emoji, usar 🔥🪵?
+    'Mechero': 'lighter', // No emoji, usar 🔥?
+    'Extintor': '🧯',
+    'Balón': '⚽', // Ya existe Fútbol? Genérico balón
+    'Raqueta': '🎾', // Ya existe Tenis?
+    'Bate': '⚾', // Ya existe Béisbol?
+    'Palo de Golf': '🏌️‍♂️', // Golfer emoji has club
+    'Esquís': '🎿', // Ya existe Esquí? Ok.
+    'Tabla de Snowboard': '🏂', // Ya existe Snowboard? Ok.
+    'Patinete': '🛴', 'Monopatín': '🛹', // Ya existe Skate? Ok.
+    'Patines': '⛸️', // Ya existe Patin? Ok.
+    'Bicicleta': '🚲', // Ya existe? Ok.
+    'Juguete': '🧸', 'Muñeca': '🎎', 'Pelota': '⚽', // Ya existe? Ok.
+    'Juego de Mesa': '🎲♟️', 'Cartas': '🃏', 'Ajedrez': '♟️', 'Dados': '🎲',
+    'Rompecabezas': '🧩',
+    'Cometa': '🪁', // Ya existe? Ok.
+    'Globo': '🎈',
+    'Silbato': ' whistle ', // No emoji
+    'Armónica': ' harmonica ', // No emoji
+    'Flauta': ' flute ', // No emoji
+    'Violín': '🎻', 'Guitarra': '🎸', // Ya existe? Ok.
+    'Piano': '🎹', // Ya existe? Ok.
+    'Tambor': '🥁', // Ya existe? Ok.
+    'Trompeta': '🎺', 'Saxofón': '🎷',
+    'Micrófono': '🎤', 'Altavoz': '🔊', // Ya existe Sonido? Ok.
+    'Auriculares': '🎧',
+
+    // Abstractos, Conceptos, Tiempo Ampliado
+    'Eternidad': '♾️', // Ya existe? Ok.
+    'Infinito': '♾️',
+    'Pasado': '⏪', // Ya existe? Ok.
+    'Presente': '▶️', 'Futuro': '⏩',
+    'Destino': '✨', 'Suerte': '🍀', 'Azar': '❓🎲',
+    'Libre Albedrío': '🤔', 'Determinismo': '⛓️',
+    'Verdad': '✅', 'Mentira': '🤥',
+    'Belleza': '💅💖', 'Fealdad': '🤢',
+    'Alegría': '😄', 'Tristeza': '😢', 'Miedo': '😨', 'Ira': '😠', 'Sorpresa': '😮', 'Asco': '🤢',
+    'Emoción': '💖', 'Sentimiento': '💭❤️',
+    'Pensamiento': '💭', 'Razón': '🧠', 'Lógica': '🧠⚙️', 'Intuición': '💖✨',
+    'Sabiduría': '🦉', 'Ignorancia': '❓',
+    'Creencia': '🙏', 'Duda': '❓🤔',
+    'Realidad': '🌍', 'Fantasía': '🦄✨', 'Sueño': '😴', // Ya existe? Ok.
+    'Vacío': '⚫', 'Nada': ' ', // Espacio vacío
+    'Algo': '❓',
+    'Principio': '▶️', 'Fin': '⏹️',
+    'Causa': '➡️', 'Efecto': '⬅️',
+    'Potencial': '✨', 'Actualidad': '⚡',
+    'Cambio': '🔄', 'Estabilidad': '⚓',
+    'Crecimiento': '📈', 'Decadencia': '📉',
+    'Libertad': '🗽', // Ya existe? Ok.
+    'Esclavitud': '⛓️',
+    'Poder': '👑💪', // Ya existe? Ok.
+    'Influencia': '🗣️📈',
+    'Fama': '⭐',
+    'Privacidad': '🔒', 'Secreto': '🤫',
+    'Comunicación': '🗣️',
+    'Silencio': '🤫', // Ya existe? Ok.
+    'Ritmo': '🎵🥁', 'Melodía': '🎵🎶', 'Armonía': '🎶💖',
+    'Forma': '🔷', 'Estructura': '🏗️',
+    'Patrón': '🏁', 'Simetría': '🪞', 'Asimetría': '歪', // Chino para torcido
+    'Complejidad': '🧠⚙️🔗', 'Simplicidad': '⚪',
+    'Sistema': '⚙️🔗',
+    'Red': '🌐', // Ya existe Internet? Usar 🕸️? Ok.
+    'Información': 'ℹ️', 'Dato': '🔢',
+    'Ruido': '📢', // Ya existe? Ok.
+    'Señal': '📶', // Ya existe Wifi?
+    'Contexto': '🌍📜',
+    'Significado': '❓➡️💡',
+    'Propósito': '🎯',
+    'Meta': '🏁',
+    'Conflicto': '⚔️', // Ya existe Guerra? OK.
+    'Cooperación': '🤝',
+    'Competición': '🏆🏁',
+    'Juego': '🎲🎮', // Ya existe? Ok.
+    'Trabajo': '👷💼', 'Ocio': '🏖️',
+    'Estrés': '🤯', 'Relajación': '🧘',
+    'Salud Mental': '🧠💖', 'Enfermedad Mental': '🧠⛈️',
+    'Conciencia': '💡', 'Inconsciente': '⚫🧠', 'Subconsciente': '🌊🧠',
+    'Alma': '👻💖', 'Espíritu': '✨',
+    'Virtual': '💻', 'Físico': '🧱',
+    'Dimensión': ' D ', // Placeholder
+    'Universo Paralelo': '🌌🌌',
+    'Multiverso': '🌌♾️',
+
+    // Fantasía y Mitología Ampliada
+    'Gnomo': '🧑‍🔧🪴', // Pequeño, relacionado con jardín/ingeniería simple
+    'Hada': '🧚', // Ya existe? OK.
+    'Duende': '😈🍀', // Mischievous, like goblin/leprechaun
+    'Ogro': '👹', // Ya existe? OK.
+    'Troll': '👹🌉', // Often associated with bridges
+    'Gigante': '🧑⬆️',
+    'Cíclope': '👁️‍🗨️👹',
+    'Gárgola': '🗿🦇',
+    'Grifo': '🦅🦁',
+    'Hipogrifo': '🦅🐴',
+    'Quimera': '🦁🐐🐍',
+    'Esfinge': '🦁🧑❓',
+    'Minotauro': '🐂🧑 labyrinth?', // Needs Labyrinth (🏰🌀?)
+    'Centauro': '🐎🧑', // Ya existe? OK.
+    'Sátiro': '🐐🧑🎶',
+    'Kraken': '🐙🚢💥',
+    'Leviatán': '🐳🌊💥',
+    'Basilisco': '🐍👑☠️',
+    'Hidra': '🐍🐍🐍',
+    'Cerbero': '🐶🐶🐶💀',
+    'Pegaso': '🐴🕊️',
+    'Valquiria': '👩‍✈️⚔️🕊️',
+    'Jotun': '⛰️巨人', // Giant kanji
+    'Kami': '⛩️✨', // Japanese spirit/god
+    'Yokai': '👻👹', // Japanese folklore creatures
+    'Kitsune': '🦊✨', // Fox spirit
+    'Tengu': '🐦👺', // Bird-like goblin mask
+    'Oni': '👹', // Japanese demon
+    'Djinn': '💨램프', // Genio Lámpara (Lamp in Korean) ->🏺💨✨ Use Genie Emoji 🧞
+    'Elementalista': '🧙‍♂️💧🔥🌍💨',
+    'Nigromante': '🧙‍♂️💀',
+    'Druida': '🌳🧙‍♂️',
+    'Paladín': '🛡️🙏',
+    'Bardo': '🎶🧙‍♂️',
+    'Clérigo': '🙏🧑‍⚕️',
+    'Hechicero': '🧙‍♂️✨', // Ya existe? (Warlock/Sorcerer dif?)
+    'Bruja': '🧙‍♀️🧹',
+    'Varita Mágica': '🪄', // Ya existe? Ok.
+    'Libro de Hechizos': '📖✨', // Ya existe? Ok.
+    'Poción Mágica': '🧪✨', // Ya existe? Ok.
+    'Caldero': '⚗️', // Ya existe Matraz/Alambique? OK.
+    'Escoba Voladora': '🧹✨',
+    'Bola de Cristal': '🔮', // Ya existe? Ok.
+    'Amuleto': '🧿', 'Talismán': '✨🛡️',
+    'Anillo Mágico': '💍✨',
+    'Espada Mágica': '⚔️✨', // Ya existe? Ok.
+    'Armadura Mágica': '🛡️✨',
+    'Runa': ' R ', // Placeholder
+    'Portal': '🌀➡️',
+    'Dimensión Mágica': '✨🌌',
+    'Maná': '💧✨', // Energía mágica
+    'Encantamiento': '✨📜', 'Maldición': '💀📜',
+    'Invocación': '🌀😈', 'Exorcismo': '🙏😈',
+    'Metamorfosis': '🧬✨',
+    'Invisibilidad': '👤🚫',
+    'Telequinesis': '🧠👐',
+    'Telepatía': '🧠🗣️',
+    'Precognición': '👀🔮',
+    'Alquimia': '⚗️', // Ya existe? OK.
+    'Piedra Filosofal': '🗿✨',
+    'Elixir de la Vida': '🧪💖♾️',
+    'Homúnculo': '🧑⚗️',
+    'Limo': '🦠💧', // Slime
+    'Cubo Gelatinoso': ' cube ', // Placeholder
+    'Mimic': '📦🦷', // Monster disguised as chest
+    'Liche': '💀🧙‍♂️', // Undead mage
+    'Revenant': '👻😠', // Vengeful spirit
+    'Poltergeist': '👻🏺💥', // Noisy ghost
+    'Ángel Caído': '👼🔥',
+    'Nephilim': '👼🧑', // Angel-human offspring
+    'Cambiapieles': '🐺🧑', // Shapeshifter (Werewolf ya existe?)
+    'Dragón de Hielo': '🐉❄️', 'Dragón de Fuego': '🐉🔥', 'Dragón Eléctrico': '🐉⚡',
+
+    // FINAL Elements for reaching the count
+    'Origami': '📄🦢',
+    'Kirigami': '📄✂️',
+    'Macramé': '🧶🪢',
+    'Ganchillo': '🧶 hook ', // Crochet hook
+    'Tejido': '🧶🥢', // Knitting needles
+    'Bordado': '🧵🖼️',
+    'Vidriera': '🔍🌈', // Stained glass
+    'Mosaico': '🧱🎨',
+    'Grafiti': '🎨🧱',
+    'Caligrafía': '✒️📜',
+    'Taquigrafía': '✍️⚡', // Shorthand
+    'Idioma': '🗣️', // Language ya existe? Ok.
+    'Dialecto': '🗣️🗺️',
+    'Jerga': '🗣️👤', // Slang
+    'Sarcasmo': '😏',
+    'Ironía': '🤔',
+    'Metáfora': '🍎=❤️', // Simple representation
+    'Paradoja': ' paradox ', // Placeholder text
+    'Dilema': '🤔⚖️',
+    'Meme': '🖼️😂',
+    'Viral': '📈🦠',
+    'Influencer': '🧑⭐',
+    'Moda': '💅', // Ya existe? OK.
+    'Tendencia': '📈',
+    'Contracultura': '☮️🎸', // Hippie-like symbols
+    'Subcultura': '🧑‍🎤 Punk etc.',
+    'Generación': '👨‍👩‍👧‍👦⏳',
+    'Brecha Generacional': '👴⚡👶',
+    'Nostalgia': '⏪💖',
+    'Arquetipo': '👑 archetype ', // Placeholder
+    'Estereotipo': ' stereotype ', // Placeholder
+    'Prejuicio': '😠❓',
+    'Empatía': '💖🤝',
+    'Simpatía': '🙂',
+    'Compasión': '💖😢',
+    'Altruismo': '💖🤲',
+    'Egoísmo': '💖👤',
+    'Narcisismo': '🤳💖',
+    'Humildad': '🙇',
+    'Orgullo': '👑',
+    'Envidia': '💚😠', // Green with envy
+    'Celos': '😠💔',
+    'Culpa': '😔⛓️', 'Vergüenza': '😳',
+    'Aburrimiento': ' boredom ', // Placeholder
+    'Curiosidad': '❓👀',
+    'Asombro': '😮✨',
+    'Inspiración': '💡✨',
+    'Motivación': '💪🎯',
+    'Disciplina': '🧘⛓️',
+    'Hábito': '🔄',
+    'Adicción': '⛓️🍷', // Chain and wine (example)
+    'Recuperación': '❤️‍🩹💪',
+    'Meditación': '🧘',
+    'Yoga': '🧘‍♀️',
+    'Mindfulness': '🧠💖',
+    'Zen': ' Z ', // Placeholder
+
+        };
+
+
+        // Recetas ampliadas (clave siempre ordenada alfabéticamente)
+        const recipes = {
+            // --- STARTING COMBOS (From original + additions) ---
+            'Agua+Agua': 'Mar',
+            'Agua+Aire': 'Niebla',
+            'Agua+Calor': 'Vapor',
+            'Agua+Fuego': 'Vapor',
+            'Agua+Frío': 'Hielo',
+            'Agua+Lava': 'Obsidiana', // Or Piedra
+            'Agua+Piedra': 'Arena',
+            'Agua+Tierra': 'Lodo',
+            'Agua+Viento': 'Ola',
+            'Aire+Aire': 'Presión', // Or Viento
+            'Aire+Energía': 'Tormenta',
+            'Aire+Fuego': 'Energía',
+            'Aire+Hielo': 'Frío',
+            'Aire+Lava': 'Piedra', // Cooling
+            'Aire+Piedra': 'Arena', // Erosion
+            'Aire+Planta': 'Semilla', // Pollen/Seed dispersal
+            'Aire+Presión': 'Viento',
+            'Aire+Tierra': 'Polvo',
+            'Aire+Vapor': 'Nube',
+            'Aire+Vida': 'Pájaro',
+            'Fuego+Fuego': 'Sol', // Basic sun concept
+            'Fuego+Hielo': 'Agua', // Melting
+            'Fuego+Lodo': 'Ladrillo',
+            'Fuego+Madera': 'Carbón', // Also Ceniza maybe?
+            'Fuego+Metal': 'Electricidad', // Thermoelectric? Simplified logic.
+            'Fuego+Niebla': 'Energía', // ?? Maybe vapor explosion idea
+            'Fuego+Papel': 'Ceniza',
+            'Fuego+Piedra': 'Metal',
+            'Fuego+Polvo': 'Ceniza',
+            'Fuego+Presión': 'Explosión',
+            'Fuego+Arena': 'Vidrio',
+            'Fuego+Tierra': 'Lava',
+            'Fuego+Vapor': 'Motor', // Simple steam engine idea
+            'Fuego+Vida': 'Fénix', // Mythical
+            'Lava+Mar': 'Isla', // Volcanic island
+            'Lava+Océano': 'Isla',
+            'Lava+Tierra': 'Volcán',
+            'Lodo+Planta': 'Pantano',
+            'Lodo+Sol': 'Ladrillo', // Sun-dried brick
+            'Lodo+Trigo': 'Campo', // Muddy field?
+            'Mar+Mar': 'Océano',
+            'Mar+Sol': 'Sal',
+            'Mar+Viento': 'Ola',
+            'Metal+Herramienta': 'Armadura',
+            'Metal+Vapor': 'Caldera',
+            'Niebla+Agua': 'Nube', // Already have Aire+Vapor? OK.
+            'Niebla+Tierra': 'Musgo',
+            'Piedra+Aire': 'Arena', // Repeated recipe OK.
+            'Piedra+Fuego': 'Metal', // Repeated recipe OK.
+            'Piedra+Mar': 'Arena', // Erosion
+            'Piedra+Océano': 'Arena',
+            'Piedra+Piedra': 'Montaña', // Or Muro
+            'Piedra+Tierra': 'Roca', // A slightly different type of stone
+            'Planta+Sol': 'Flor', // Needs Sol
+            'Planta+Tiempo': 'Carbón', // Or Fósil
+            'Planta+Tierra': 'Hierba', // Simpler than Árbol
+            'Polvo+Agua': 'Barro', // Already have Agua+Tierra=Lodo. Maybe different? Keep Lodo. Polvo+Agua=Lodo.
+            'Polvo+Viento': 'Duna', // Needs Sand first? Polvo+Aire = Tormenta de Arena? Let's make Duna = Arena+Viento. So Polvo+Viento = Polvo :)
+            'Polvo+Fuego': 'Ceniza',
+            'Presión+Nube': 'Lluvia', // Or Agua? Lluvia is better.
+            'Presión+Planta': 'Aceite', // Simplified fossil fuels. Need better recipe maybe. Oil=Planta+Tiempo? Presion+Tierra = Petroleo? OK.
+            'Presión+Tierra': 'Piedra', // Compaction. Or Terremoto?
+            'Tierra+Tierra': 'Presión', // Also Continent?
+            'Tierra+Vapor': 'Geiser',
+            'Tierra+Vida': 'Humano', // Simplistic, god-like creation :)
+            'Vapor+Aire': 'Nube', // Repeat
+            'Vapor+Frío': 'Hielo', // Condensation/Freezing
+            'Vapor+Metal': 'Caldera', // Repeat
+            'Vapor+Piedra': 'Geiser', // Repeat
+            'Vapor+Tierra': 'Geiser', // Repeat
+            'Viento+Planta': 'Semilla', // Repeat
+            'Viento+Rueda': 'Molino', // Needs Rueda
+
+            // --- More Nature & Biology ---
+            'Agua+Vida': 'Plancton',
+            'Alga+Piedra': 'Fósil', // Need Tiempo maybe? OK for now.
+            'Animal+Aire': 'Pájaro',
+            'Animal+Bosque': 'Lobo', // Or Oso
+            'Animal+Carbón': 'Dinosaurio', // Needs explanation :) Fossil fuel connection?
+            'Animal+Casa': 'Perro', // Domesticated
+            'Animal+Desierto': 'Camello', // Or Escorpión
+            'Animal+Hielo': 'Oso Polar', // Or Pingüino
+            'Animal+Hierba': 'Vaca', // Or Oveja, Caballo (Herbivore)
+            'Animal+Humano': 'Perro', // Companionship
+            'Animal+Luna': 'Lobo', // Mythology
+            'Animal+Madera': 'Castor', // Needs Beaver emoji  beaver 🦫. Ok, added.
+            'Animal+Montaña': 'Cabra', // Needs Goat emoji 🐐. Ok, added.
+            'Animal+Noche': 'Búho', // Needs Owl emoji 🦉. Ok, added.
+            'Animal+Pantano': 'Cocodrilo', // Or Serpiente
+            'Animal+Queso': 'Ratón', // Needs Mouse emoji 🐁. Ok, added.
+            'Animal+Selva': 'Mono',
+            'Animal+Tela': 'Gato', // Cats love yarn? Simplified.
+            'Animal+Tiempo': 'Fósil',
+            'Animal+Tierra': 'Hormiga', // Ground dwelling common animal
+            'Animal+Viento': 'Pájaro', // Reiteration ok
+            'Árbol+Árbol': 'Bosque',
+            'Árbol+Bestia': 'Ent', // Needs Bestia and Ent emoji. Let's use Animal+Árbol instead. 🌳+🐾=❓ Wild Animal? Use Animal+Bosque for Lobo/Oso. Árbol+Vida = Treant? Needs 🌳+✨ maybe? OK use:
+            'Árbol+Vida': 'Ent', // Mythical. Needs Ent emoji (use 🌳 or 🤖?) Use 🌳.
+            'Árbol+Fuego': 'Ceniza', // Or Carbón
+            'Árbol+Herramienta': 'Madera', // Logging
+            'Árbol+Casa': 'Casa del Árbol', // Needs specific emoji 🛖 (Hut maybe?) Use 🌳🏠
+            'Árbol+Fruta': 'Manzana', // Generic association
+            'Árbol+Nido': 'Pájaro', // Birds nest in trees
+            'Árbol+Papel': 'Libro', // Already have Papel+Vida? Need consistent recipe. Maybe Papel + Madera = Libro? OK.
+            'Árbol+Savana': 'Acacia', // Needs Savana. Savana = Tierra+Hierba+Sol? Ok 🌍🌿☀️=🏞️(Savana)? Add 'Savana' emoji 🏞️. OK.
+            'Árbol+Viento': 'Hoja', // Needs leaf emoji 🍃. Added.
+            'Arena+Huevo': 'Tortuga', // Nests on beaches. Needs turtle emoji 🐢. Added.
+            'Arena+Piedra': 'Arenisca', // Needs sandstone emoji 🧱? Reuse brick? OK.
+            'Arena+Vidrio': 'Reloj', // Hourglass
+            'Barro+Sol': 'Adobe', // Needs emoji. Reuse 🧱. OK.
+            'Bosque+Fuego': 'Incendio Forestal', // Use 🔥🌲🔥? Or just 🔥? Use 🔥.
+            'Bosque+Humano': 'Leñador', // Or Cazador
+            'Bosque+Niebla': 'Misterio', // Abstract. Need ❓ emoji? Or use 🌫️🌲? Use 🤔. OK.
+            'Bosque+Vida': 'Animal Salvaje', // Needs emoji 🐺? Use 🐾. OK.
+            'Campo+Animal': 'Ganado', // Use 🐄. OK.
+            'Campo+Humano': 'Granjero',
+            'Carne+Fuego': 'Filete', // Cooked meat. Use 🥩🔥->🍖? OK use 🍖 cooked meat emoji.
+            'Carne+Pan': 'Sandwich', // Need emoji 🥪. OK added.
+            'Ceniza+Vida': 'Golem', // Fantastical
+            'Cielo+Estrella': 'Noche', // Or Espacio?
+            'Cielo+Nube': 'Lluvia', // Already pressure+nube? Ok alternative.
+            'Cielo+Sol': 'Día',
+            'Colina+Colina': 'Montaña',
+            'Corazón+Humano': 'Amor', // Abstract
+            'Desierto+Agua': 'Oasis', // Needs emoji 🏝️? Use 🌴💧? OK. Use 🏝️.
+            'Desierto+Animal': 'Camello', // Repeat OK.
+            'Desierto+Arena': 'Duna',
+            'Desierto+Planta': 'Cactus', // Needs emoji 🌵. Added.
+            'Desierto+Viento': 'Tormenta de Arena', // Use 🌪️ or 🌫️? Use 🏜️🌬️ -> 🌪️? OK.
+            'Día+Noche': 'Tiempo',
+            'Duna+Viento': 'Desierto', // Wind shapes dunes into deserts? Reverse logic ok.
+            'Flor+Flor': 'Jardín',
+            'Flor+Abeja': 'Miel', // Needs Abeja, Miel.
+            'Flor+Amor': 'Rosa', // Symbolic
+            'Flor+Sol': 'Girasol', // Needs emoji 🌻. Added.
+            'Flor+Viento': 'Semilla', // Dandelion concept
+            'Fruta+Árbol': 'Manzana', // Or other fruits based on specific trees? Too complex maybe.
+            'Fruta+Pan': 'Pastel', // Fruit tart/pie
+            'Fruta+Sol': 'Fruta Seca', // Need Raisin emoji? 🍇➡️☀️➡️... Use 🌰 (chestnut?) No. Just text for now? Or reuse 🍎? Reuse 🍎.
+            'Hierba+Animal': 'Vaca', // Reiteration ok
+            'Hierba+Herramienta': 'Guadaña', // Needs Scythe emoji 낫? Use 🔪? OK.
+            'Hierba+Tierra': 'Campo',
+            'Hoja+Tierra': 'Fertilizante', // Compost concept. Use 🌱? No. 💩? Maybe. OK.
+            'Huevo+Animal': 'Pájaro', // General bird from egg
+            'Huevo+Arena': 'Tortuga', // Repeat ok
+            'Huevo+Fuego': 'Huevo Frito',
+            'Huevo+Piedra': 'Dinosaurio', // Fossilized egg idea?
+            'Huevo+Vida': 'Animal', // Generic hatching
+            'Insecto+Tierra': 'Hormiga',
+            'Jardín+Casa': 'Césped', // Needs lawn emoji? Use 🌱? Ok.
+            'Lago+Vida': 'Pez', // Reiteration ok.
+            'Lluvia+Electricidad': 'Tormenta', // Reiteration ok.
+            'Lluvia+Sol': 'Arcoíris',
+            'Lluvia+Tierra': 'Planta', // Or Lodo+Planta? This makes sense too.
+            'Luna+Mar': 'Marea', // Needs tide emoji 🌊? Reuse Wave? Ok.
+            'Luna+Noche': 'Oscuridad', // Or just Noche? Stick with Oscuridad.
+            'Luna+Sol': 'Eclipse', // Needs emoji 🌒? OK added.
+            'Luna+Tiempo': 'Mes', // Needs Month emoji 📅? OK added.
+            'Madera+Barco': 'Mástil', // Needs emoji? 돛? Use 🪵? OK.
+            'Madera+Fuego': 'Ceniza', // Or Carbón. Let's have both maybe? Fuego+Madera=Carbón. Fuego+Carbón=Ceniza? Yes. OK.
+            'Madera+Herramienta': 'Tabla', // Processed wood. Use 🪵? Or 널빤지? Use 🪵.
+            'Madera+Rueda': 'Carreta', // Needs cart emoji 🛒? Close enough.
+            'Madera+Vida': 'Pinocho', // Fairytale. Use 🤥. OK Added.
+            'Mar+Pez': 'Pesca', // Needs fishing emoji 🎣. Added.
+            'Mar+Playa': 'Concha', // Needs shell emoji 🐚. Added.
+            'Montaña+Animal': 'Cabra', // Repeat
+            'Montaña+Cueva': 'Mina', // Needs mine emoji ⛏️? Reuse pickaxe. OK.
+            'Montaña+Hielo': 'Glaciar',
+            'Montaña+Niebla': 'Misterio', // Repeat ok
+            'Montaña+Piedra': 'Cordillera',
+            'Musgo+Piedra': 'Roca', // Overgrowth
+            'Nido+Árbol': 'Pájaro', // Repeat
+            'Nieve+Animal': 'Pingüino', // Repeat
+            'Nieve+Humano': 'Esquí', // Activity
+            'Nieve+Montaña': 'Avalancha', // Need emoji? Use ❄️⛰️💥? OK.
+            'Nube+Agua': 'Lluvia', // Repeat
+            'Nube+Electricidad': 'Relámpago',
+            'Nube+Hielo': 'Nieve', // Or Granizo
+            'Nube+Tierra': 'Niebla', // Low clouds
+            'Océano+Barco': 'Exploración', // Use 🗺️ or 🧭? OK 🧭.
+            'Océano+Vida': 'Ballena', // Needs emoji 🐋. Added.
+            'Pantano+Vida': 'Bacteria', // Simplified ecosystem starter
+            'Pájaro+Canto': 'Música', // Needs Canto. Maybe Pájaro+Sonido = Canto (🐦🔊🎶). Ok.
+            'Pájaro+Metal': 'Avión', // Inspired by birds
+            'Pájaro+Pájaro': 'Bandada', // Use 🐦🐦? OK.
+            'Pájaro+Viento': 'Vuelo', // Use ✈️? OK.
+            'Pescado+Fuego': 'Pescado Cocido', // Reuse 🍖? Use 🐟🔥🍣? Sushi isn't cooked... Use 🎣🔥? No. Stick with 🐟🔥 -> 🍖. OK.
+            'Pez+Agua': 'Banco de Peces', // Use 🐟🐟? OK.
+            'Pez+Vida': 'Anfibio', // Evolutionary step. Need Frog emoji 🐸? Added.
+            'Piedra+Vida': 'Huevo', // Very basic life form idea
+            'Planta+Agua': 'Alga',
+            'Planta+Papel': 'Té', // Tea leaves. Needs Teacup emoji 🍵. Added.
+            'Planta+Planta': 'Jardín', // Or Bush? Use 🌳 (bush). Need 🌳🌳 for forest. Use 🪴 (potted plant) for Garden. Ok.
+            'Planta+Veneno': 'Belladona', // Toxic plant. Needs emoji? Use ☠️🌱? Ok.
+            'Río+Mar': 'Delta', // Needs emoji? Use 🏞️🌊? OK.
+            'Roca+Agua': 'Arena', // Erosion repeat
+            'Roca+Metal': 'Mineral', // Embedded ore
+            'Roca+Musgo': 'Liquen', // Use 🦠? Ok.
+            'Semilla+Agua': 'Planta',
+            'Semilla+Tierra': 'Planta', // Repeat ok
+            'Sol+Flor': 'Girasol', // Repeat
+            'Sol+Hielo': 'Agua', // Melting repeat
+            'Sol+Mar': 'Sal', // Evaporation repeat
+            'Sol+Nube': 'Clima', // Interaction defines weather
+            'Sol+Planta': 'Oxígeno', // Fotosíntesis output repeat
+            'Sol+Tierra': 'Desierto', // Drying out
+            'Sol+Vampiro': 'Ceniza', // Mythical weakness
+            'Sol+Vidrio': 'Lupa', // Need emoji 🔎. Added.
+            'Tormenta+Tierra': 'Inundación', // Needs emoji? 🌊🏠? Ok.
+            'Volcán+Agua': 'Géiser', // Repeat
+            'Volcán+Energía': 'Erupción', // Need emoji? 🌋💥? Ok.
+            'Volcán+Isla': 'Hawaii', // Specific place - maybe avoid? OK Avoid. Volcán+Isla = Volcán? Yes.
+
+            // --- Humans & Civilization ---
+            'Adobe+Casa': 'Hogar', // Use 🏠? OK.
+            'Acero+Edificio': 'Rascacielos',
+            'Aguja+Tela': 'Ropa',
+            'Aldea+Aldea': 'Ciudad',
+            'Aldea+Humano': 'Comunidad', // Use 👨‍👩‍👧‍👦 Family emoji? OK.
+            'Amor+Humano': 'Familia',
+            'Animal+Carreta': 'Caballo', // Pulling carts
+            'Arado+Tierra': 'Campo', // Needs Arado. Metal+Madera = Arado (use ⛏️?) OK.
+            'Arcilla+Fuego': 'Cerámica', // Use 🏺. OK.
+            'Arcilla+Humano': 'Escultura', // Use 🗿. OK.
+            'Arcilla+Rueda': 'Torno de Alfarero', // Use 🏺⚙️? OK.
+            'Arco+Humano': 'Arquero', // Needs Arco. Madera+Hilo=Arco 🏹? Added emoji. OK.
+            'Armadura+Caballo': 'Caballero', // Needs Knight emoji 騎士? Use 🛡️🐴? OK.
+            'Armadura+Humano': 'Soldado', // Or Guerrero
+            'Artista+Metal': 'Joya', // Or Piedra+Metal? Or Oro? Let's do Artista+Oro = Joya (🧑‍🎨🏆💎) OK.
+            'Artista+Piedra': 'Escultura', // Repeat ok
+            'Astrónomo+Estrella': 'Constelación',
+            'Astrónomo+Vidrio': 'Telescopio',
+            'Avión+Espacio': 'Cohete', // Needs Rocket emoji 🚀. Added.
+            'Banco+Dinero': 'Préstamo', // Use 💰🏦🧾? Needs receipt emoji? Use 📄. OK.
+            'Banco+Ladrón': 'Robo', // Use 🏃💰? OK.
+            'Barco+Comercio': 'Pirata', // Needs Comercio. Tienda+Dinero = Comercio? 🏪💰=📈? Use 🤝 Handshake? OK.
+            'Barco+Tela': 'Vela', // Sail. Use ⛵ emoji? Added. OK.
+            'Bebé+Tiempo': 'Humano', // Growth
+            'Bestia+Humano': 'Centauro', // Mythical. Need emoji 🐎🧑? OK.
+            'Biblioteca+Libro': 'Conocimiento',
+            'Bicicleta+Motor': 'Motocicleta',
+            'Bomba+Edificio': 'Ruinas', // Needs Rubble emoji? Use 🧱💥? OK.
+            'Bombilla+Electricidad': 'Luz', // Repeat ok.
+            'Bombilla+Idea': 'Invención', // Use 💡💡? OK.
+            'Bosque+Humano': 'Cabaña', // Use 🛖 Hut. OK.
+            'Caballero+Dragón': 'Leyenda', // Classic tale
+            'Cadáver+Tierra': 'Cementerio', // Needs Corpse (Muerte+Vida?). Needs Cemetery 🪦. Added. Ok.
+            'Cadáver+Tiempo': 'Esqueleto', // Needs Corpse (Humano+Muerte).
+            'Cámara+Papel': 'Foto',
+            'Camino+Río': 'Puente', // Need road? Tierra+Rueda=Camino(🛣️)? Ok.
+            'Caña de Pescar+Río': 'Pez', // Needs Fishing Rod (🎣) -> Madera+Hilo? Ok.
+            'Carbón+Presión': 'Diamante', // Needs Diamond emoji 💎. Re-use mineral. OK.
+            'Carne+Humano': 'Carnívoro', // Use 🥩🧑‍🍳? Use 🦁? OK.
+            'Carreta+Caballo': 'Transporte', // Use 🚚? OK.
+            'Carreta+Mercancía': 'Comercio', // Needs Mercancía. Maybe just Producto? Needs Producto.
+            'Carro+Caballo': 'Carruaje', // Needs Carriage 🐎🛒 maybe 🎠? OK use 🎠.
+            'Casa+Casa': 'Aldea',
+            'Casa+Comida': 'Cocina', // Use 🍳? OK.
+            'Casa+Electricidad': 'Electrodoméstico', // Use 🔌🏠? Need generic appliance emoji. Use 💡.
+            'Casa+Familia': 'Hogar', // Use ❤️🏠? OK.
+            'Casa+Fuego': 'Chimenea', // Use 🔥🏠? No use 🧱🔥? OK.
+            'Casa+Hielo': 'Iglú', // Needs emoji 🛖❄️? OK.
+            'Casa+Humano': 'Familia', // Repeat ok
+            'Casa+Libro': 'Estudio', // Use 📚🏠? OK.
+            'Casa+Metal': 'Llave', // Needs Key emoji 🔑. Added.
+            'Casa+Pared': 'Habitación', // Use 🚪? OK.
+            'Castillo+Rey': 'Reino', // Needs kingdom emoji 👑🏰? OK.
+            'Ciudad+Coche': 'Tráfico', // Use 🚗🚗🚗? OK.
+            'Ciudad+Electricidad': 'Luz Urbana', // Use 🌃💡? OK.
+            'Ciudad+Enfermedad': 'Epidemia', // Use 🤢🏙️? OK.
+            'Ciudad+Humano': 'Ciudadano', // Use 🧑🏙️? OK.
+            'Ciudad+Metal': 'Rascacielos', // Repeat Ok
+            'Ciudad+Noche': 'Farola', // Streetlight 💡🌃? OK.
+            'Ciudad+Periódico': 'Noticias', // Use 📰? OK.
+            'Ciudad+Río': 'Puente', // Repeat
+            'Ciudad+Virus': 'Pandemia', // Needs Virus (Enfermedad+Vida?) Ok 🤢🧬 -> 🦠. OK.
+            'Ciencia+Vida': 'Biología', // Use 🧬🔬? OK.
+            'Científico+Electricidad': 'Ingeniero Eléctrico', // Use 🧑‍🔬💡? Reuse 🧑‍🔧.
+            'Científico+Espacio': 'Astrónomo',
+            'Científico+Experimento': 'Descubrimiento', // Needs Experimento (🧪+💡?). OK. Use 🔬💡 -> ✨? OK.
+            'Científico+Locura': 'Científico Loco', // Needs Locura (Cerebro+Caos? 🤔🌀=🤪). OK Added 🤪 emoji. OK use 🧑‍🔬🤪.
+            'Científico+Microscopio': 'Bacteria', // Discovery
+            'Científico+Tiempo': 'Máquina del Tiempo', // Needs emoji ⏳⚙️? Or 🕰️? OK ⏳⚙️.
+            'Cobre+Electricidad': 'Cable',
+            'Coche+Carretera': 'Viaje', // Use 🗺️ or ✈️? Use 🗺️. OK.
+            'Coche+Explosión': 'Accidente', // Use 🚗💥? OK.
+            'Coche+Gasolina': 'Motor', // Needs Gasolina (Petróleo+Refinería?). Needs Petróleo (Presión+Tierra=🛢️), Needs Refinería (Fuego+Petróleo=🏭). OK.
+            'Comercio+Mapa': 'Ruta Comercial', // Use 🗺️🤝? OK.
+            'Comida+Humano': 'Energía', // Fueling the body
+            'Comida+Veneno': 'Intoxicación', // Use 🤢🍔? OK.
+            'Computadora+Humano': 'Programador', // Use 🧑‍💻. OK added.
+            'Computadora+Internet': 'Correo Electrónico', // Use 📧. OK added.
+            'Computadora+Juego': 'Videojuego', // Needs Juego (Diversión+Humano?). Needs Diversión (🥳). OK 🧑🥳 -> 🎮. OK Added. Use 💻🎮.
+            'Computadora+Libro': 'Ebook', // Use 📱📖? OK.
+            'Computadora+Virus': 'Hacker', // Use 💻🦠 -> 👤? Ok.
+            'Conocimiento+Humano': 'Sabio', // Use 🧑‍🏫 or 🧙? Use 👴? OK added. OK use 👴.
+            'Constructor+Casa': 'Edificio',
+            'Constructor+Madera': 'Carpintero', // Use 🧑‍🔧🪵? Ok.
+            'Constructor+Piedra': 'Albañil', // Use 👷🧱? Ok.
+            'Corazón+Médico': 'Cardiólogo', // Use ❤️🧑‍⚕️? OK.
+            'Cuero+Humano': 'Ropa', // Repeat OK
+            'Cuero+Herramienta': 'Zapato', // Needs Shoe emoji 👞👠👢. Use 👞. Added. OK.
+            'Cuchillo+Carne': 'Filete', // Cut of meat. Repeat ok.
+            'Cuerda+Humano': 'Nudo', // Needs Rope (Hilo+Hilo = Cuerda 🧵🧵= रस्सी?) Use 🧶🧶 -> 🪢. OK added 🪢.
+            'Cueva+Humano': 'Cavernícola', // Use 🧑‍🦱 Caveman emoji exists? No. Use 🧑🦴? OK.
+            'Demanda+Oferta': 'Mercado', // Needs these abstract concepts. Use 🛒 maybe? Use 🏪? Reuse Tienda. OK.
+            'Derecho+Juez': 'Sentencia', // Needs Derecho (Ley+Humano). Needs Ley (📜+👑). Ok. Use 🧑‍⚖️⚖️ -> 📜. OK.
+            'Diamante+Metal': 'Anillo', // Jewelry base
+            'Diamante+Rey': 'Corona', // Needs emoji 👑. OK.
+            'Dinero+Humano': 'Riqueza', // Use 💰💰💰? OK.
+            'Dinero+Papel': 'Billete',
+            'Dinero+Pirata': 'Tesoro',
+            'Electricidad+Humano': 'Electricista', // Use 🧑‍🔧💡? OK.
+            'Electricidad+Metal': 'Cable', // Repeat
+            'Electricidad+Sol': 'Panel Solar', // Needs emoji ☀️🔋? Use ☀️🔌? Ok.
+            'Electricista+Casa': 'Luz', // Installation
+            'Energía+Vida': 'Movimiento', // Life requires energy to move
+            'Enfermedad+Agua': 'Cólera', // Specific disease example
+            'Enfermedad+Aire': 'Gripe', // Airborne. Use 🤧? Added. OK.
+            'Enfermedad+Humano': 'Paciente', // Use 🤕? Ok.
+            'Enfermedad+Médico': 'Cura', // Needs Cure emoji ❤️‍🩹? OK.
+            'Engranaje+Engranaje': 'Mecanismo', // Use ⚙️⚙️? OK.
+            'Engranaje+Metal': 'Reloj', // Clockwork repeat
+            'Engranaje+Tiempo': 'Reloj', // Clockwork repeat
+            'Escritor+Libro': 'Autor', // Use 🧑‍🏫? Or ✍️? Use ✍️.
+            'Escritor+Papel': 'Carta', // Use ✉️? OK Added.
+            'Escuela+Estudiante': 'Clase', // Use 🧑‍🏫🧑‍🎓? OK.
+            'Escuela+Libro': 'Aprendizaje', // Use 🧠📚? OK.
+            'Espada+Guerrero': 'Batalla', // Use ⚔️⚔️? OK.
+            'Espada+Sangre': 'Muerte', // Outcome of fighting
+            'Espacio+Vida': 'Extraterrestre',
+            'Espejo+Humano': 'Reflejo', // Use 🧑‍<0xF0><0xAA><0x9E><0xAA>? Use 🤔? OK.
+            'Esqueleto+Vida': 'Zombie', // Reanimation
+            'Estudiante+Libro': 'Estudio', // Reuse 📚🏠 is ok.
+            'Estudiante+Profesor': 'Clase', // Repeat ok.
+            'Explosión+Metal': 'Metralla', // Shrapnel. Use 💥🔩? Ok.
+            'Familia+Casa': 'Hogar', // Repeat OK
+            'Fantasma+Casa': 'Casa Encantada', // Use 👻🏠? OK.
+            'Faro+Mar': 'Navegación', // Use 🧭? Ok.
+            'Filosofía+Humano': 'Filósofo', // Use 🤔👴? OK.
+            'Fuego+Casa': 'Incendio', // Use 🔥🏠? OK.
+            'Fuego+Humano': 'Bombero', // Needs firefighter emoji 👨‍🚒. Added. OK.
+            'Fuerza+Humano': 'Héroe', // Needs Hero emoji 🦸. Added. OK.
+            'Fuerza+Metal': 'Acero', // Strong metal
+            'Galaxia+Galaxia': 'Universo',
+            'Granja+Animal': 'Ganado', // Repeat OK.
+            'Granja+Planta': 'Cosecha', // Needs Harvest emoji 🌾🧺? Use 🧺 basket. OK added.
+            'Granjero+Campo': 'Agricultura', // Use 🧑‍🌾🌾? OK.
+            'Granjero+Trigo': 'Harina', // Processing grain
+            'Guerrero+Caballo': 'Caballería', // Use 🐴⚔️? OK.
+            'Guitarra+Músico': 'Canción', // Use 🎵? OK.
+            'Harina+Agua': 'Masa', // Dough. Needs emoji 🍞? OK.
+            'Harina+Huevo': 'Pastel', // Repeat Ok.
+            'Hechicero+Libro': 'Hechizo', // Needs Hechicero (Mago+Oscuridad?). OK use 🧙‍♂️+📖 = 🪄. OK.
+            'Herramienta+Humano': 'Trabajador', // Use 👷? Ok.
+            'Herramienta+Piedra': 'Escultura', // Repeat
+            'Herramienta+Robot': 'Cyborg', // Needs emoji 🤖🧑? OK.
+            'Hielo+Bebida': 'Refresco', // Needs Beverage (Agua+Fruta?). Needs Soda (Agua+Azúcar?). OK Agua+Azúcar=🥤. OK Hielo+🥤=🥤❄️? OK.
+            'Hierro+Carbón': 'Acero', // Steelmaking
+            'Hilo+Aguja': 'Costura', // Sewing. Use 🧵? Ok.
+            'Historia+Humano': 'Pasado', // Abstract concept. Use ⏪? Added. Ok.
+            'Hombre+Mujer': 'Amor', // Simplistic start
+            'Hospital+Enfermedad': 'Paciente', // Repeat OK.
+            'Hospital+Humano': 'Médico', // Or Enfermero
+            'Hueso+Perro': 'Felicidad', // Simple dog joy 🦴🐶=😄? Added. OK.
+            'Humano+Arcilla': 'Cerámica', // Repeat
+            'Humano+Bestia': 'Domesticación', // Needs Beast 🐾🔥? Ok. Needs Domestication (use 🤝🐾?). Ok.
+            'Humano+Bosque': 'Leñador', // Repeat
+            'Humano+Caballo': 'Jinete', // Use 🐎🧑? OK.
+            'Humano+Canto': 'Músico', // Needs Canto (Sonido+Voz?). Needs Voz (Humano+Aire?). OK 🧑💨 -> 🗣️ Added. 🔊🗣️ -> 🎶. 🧑🎶 -> 🧑‍🎤. OK.
+            'Humano+Casa': 'Residente', // Use 🧑🏠? OK.
+            'Humano+Ciencia': 'Científico',
+            'Humano+Ciudad': 'Multitud', // Use 🧑‍🤝‍🧑? Added. OK.
+            'Humano+Comida': 'Receta', // Use 📜🍔? Ok.
+            'Humano+Computadora': 'Usuario', // Use 🧑‍💻? OK.
+            'Humano+Conocimiento': 'Educación', // Use 🧑‍🏫? OK.
+            'Humano+Electricidad': 'Shock Eléctrico', // Use ⚡😵? Needs dizzy emoji. Added. OK.
+            'Humano+Energía': 'Ejercicio', // Use 💪🏃? OK.
+            'Humano+Herramienta': 'Ingeniero', // Or Constructor
+            'Humano+Hierba': 'Medicina', // Herbal medicine. Use 🌿💊? Added. OK.
+            'Humano+Hueso': 'Esqueleto', // Inside human
+            'Humano+Humano': 'Amor', // Or Familia, Aldea? Start with Amor.
+            'Humano+Idea': 'Filosofía',
+            'Humano+Internet': 'Red Social', // Use 🧑‍💻🌐 -> 👥? Added. OK.
+            'Humano+Lana': 'Suéter', // Needs Sweater emoji 👕? Reuse shirt. OK.
+            'Humano+Leche': 'Queso', // Requires discovery path. Vaca+Hierba=Leche (🐮🌿🥛). OK.
+            'Humano+Libertad': 'Democracia', // Abstract. Needs Freedom (🔓?). OK. Use 🗽+🧑 = 🏛️? Ok reuse Museum/Bank.
+            'Humano+Magia': 'Mago',
+            'Humano+Mapa': 'Cartógrafo', // Use 🧑🗺️? OK.
+            'Humano+Mar': 'Marinero',
+            'Humano+Metal': 'Herramienta', // Basic tool creation
+            'Humano+Montaña': 'Escalador', // Needs climber emoji🧗. Added. OK.
+            'Humano+Música': 'Bailarín', // Needs Dancer emoji 💃. Added. OK.
+            'Humano+Nieve': 'Hombre de Nieve', // Needs emoji ⛄️. Added. OK.
+            'Humano+Orden': 'Ley', // Need Order (🏛️). Needs Law (📜). Reuse scroll. OK.
+            'Humano+Papel': 'Escritor',
+            'Humano+Pez': 'Pescador', // Use 🎣🧑? Ok.
+            'Humano+Piedra': 'Casa', // Primitive shelter
+            'Humano+Planta': 'Granjero', // Or Comida? Granjero is better.
+            'Humano+Pluma': 'Escritor', // Quill pen needs Feather (Pluma) -> Pájaro+Herramienta = Pluma (🐦🛠️=🪶)? OK.
+            'Humano+Pólvora': 'Arma de Fuego', // Needs gun emoji 🔫. Added. OK.
+            'Humano+Robot': 'Androide', // Use 🤖? OK.
+            'Humano+Sangre': 'Vampiro', // Mythical
+            'Humano+Sonido': 'Lenguaje', // Use 🗣️? OK.
+            'Humano+Tiempo': 'Vejez', // Need Old Person emoji 👴👵. Use 👴. OK.
+            'Humano+Tierra': 'Vida', // Creation myth variant
+            'Humano+Veneno': 'Asesino', // Use 👤☠️? OK.
+            'Humano+Viento': 'Cometa', // Needs Kite emoji 🪁. Added. OK.
+            'Idea+Luz': 'Bombilla', // Represents invention
+            'Ingeniero+Metal': 'Máquina', // Generic machine ⚙️? OK.
+            'Ingeniero+Vapor': 'Tren', // Steam engine application
+            'Internet+Música': 'Streaming', // Use 🎵🌐? OK.
+            'Internet+Tienda': 'Comercio Electrónico', // Use 🛒🌐? OK.
+            'Ladrillo+Ladrillo': 'Pared',
+            'Ladrillo+Cemento': 'Casa', // Needs Cemento (Arena+Agua+Fuego = Cemento?). ⛱️💧🔥 = 🧱? OK.
+            'Lana+Herramienta': 'Hilo',
+            'Lápiz+Papel': 'Dibujo', // Use 🎨? Ok.
+            'Lava+Presión': 'Volcán', // Eruption pressure
+            'Leche+Bacteria': 'Yogur',
+            'Leche+Fuego': 'Queso', // Simplified cheesemaking
+            'Leche+Tiempo': 'Queso', // Ripening
+            'Leñador+Árbol': 'Madera', // Repeat ok.
+            'Ley+Crimen': 'Prisión', // Needs Crimen (Ladrón+Ley = Crimen?). Needs Prision ⛓️ or 🏢? Use ⛓️. OK. 👤📜 = 💥? Ladrón+Policía=Prisión? 👤👮=⛓️? Ok.
+            'Libertad+Estatua': 'Estatua de la Libertad', // Specific? OK. 🗽🔓 = 🗽? Yes.
+            'Libro+Fuego': 'Ceniza', // Burning books
+            'Libro+Historia': 'Enciclopedia', // Use 📚🌍? OK.
+            'Libro+Magia': 'Libro de Hechizos', // Use 📖✨ -> 🪄? OK.
+            'Libro+Misterio': 'Novela de Detectives', // Needs Misterio (🤔). Use 📖🤔 -> 🕵️? OK Added detective emoji.
+            'Libro+Papel': 'Biblioteca',
+            'Libro+Vida': 'Historia', // Life story -> History
+            'Luz+Oscuridad': 'Sombra', // Need Shadow emoji 👤? OK.
+            'Luz+Prisma': 'Arcoíris', // Needs Prism (Vidrio+Arcoíris=Prisma?). Use 💎 maybe? Vidrio+Luz=Arcoíris. Vidrio+Sol=Arcoíris? OK. Use 🔍+💡=🌈? Yes.
+            'Madera+Agua': 'Barco', // Simple raft/boat
+            'Madera+Metal': 'Hacha', // Or Martillo? OK Hacha.
+            'Madera+Papel': 'Muebles', // ?? Maybe Libro instead?
+            'Madera+Rueda': 'Carreta', // Repeat
+            'Madera+Sonido': 'Tambor', // Or Flauta? Needs Flute emoji? Use 🥁. OK.
+            'Madera+Tiempo': 'Petrificado', // Needs emoji? Use 🪵⏳ -> 🗿? OK.
+            'Mago+Báculo': 'Hechizo', // Needs Báculo/Staff (Madera+Magia?). OK 🪵✨->🪄. Then 🧙‍♂️🪄->✨. Ok.
+            'Mago+Energía': 'Rayo', // Magic lightning ⚡✨? Ok.
+            'Mapa+Brújula': 'Navegación', // Repeat Ok.
+            'Mapa+Isla': 'Mapa del Tesoro', // Use 🗺️💰? OK.
+            'Máquina+Vida': 'Robot',
+            'Masa+Fuego': 'Pan',
+            'Médico+Bisturí': 'Cirugía', // Needs Bisturí (Metal+Médico?🔪🧑‍⚕️). Needs Cirugía (use 🧑‍⚕️🔪 -> ❤️‍🩹?). Ok.
+            'Médico+Hierba': 'Medicina', // Repeat
+            'Médico+Hospital': 'Salud', // Outcome goal
+            'Metal+Electricidad': 'Cable', // Repeat
+            'Metal+Luz': 'Espejo', // Polished metal reflects
+            'Metal+Piedra': 'Mineral', // Repeat
+            'Metal+Sonido': 'Campana', // Needs Bell emoji 🔔. Added. OK.
+            'Metal+Tierra': 'Mina', // Repeat Ok
+            'Miel+Abeja': 'Colmena', // Needs Beehive emoji 🐝🏠? Use 🍯🏠? OK.
+            'Mina+Enano': 'Oro', // Fantasy trope. Need Dwarf (Humano+Piedra?). 🧑🗿->⛏️ (Dwarf)? OK. Mine+Dwarf = Gold ⛏️⛏️->🏆.
+            'Mina+Explosión': 'Derrumbe', // Needs emoji ⛏️💥 -> 🪨? Ok.
+            'Moneda+Moneda': 'Dinero', // Accumulation
+            'Motor+Barco': 'Lancha Motora', // Use 🛥️. Added. OK.
+            'Motor+Coche': 'Coche de Carreras', // Use 🏎️. Added. OK.
+            'Muebles+Casa': 'Habitación', // Repeat
+            'Mujer+Hombre': 'Bebé', // Simplified :)
+            'Mundo+Caos': 'Guerra', // Need Mundo (Tierra+Vida?) OK. Need Caos (🌀). OK. 🌍🧬 -> 🌎 Added. OK. 🌎🌀 -> ⚔️.
+            'Muro+Agua': 'Presa', // Dam
+            'Muro+Castillo': 'Fortaleza', // Fortified castle
+            'Música+Humano': 'Canto', // Repeat OK
+            'Música+Radio': 'Emisora de Radio', // Use 📻🎶? OK.
+            'Noche+Cielo': 'Luna', // Moon appears at night
+            'Noche+Humano': 'Sueño', // Needs Sleep/Dream emoji 😴. Added. OK.
+            'Orden+Caos': 'Equilibrio', // Abstract. Use ⚖️? Ok.
+            'Oro+Arena': 'Pepita de Oro', // Finding gold. Use 🏆? OK.
+            'Oro+Pirata': 'Tesoro', // Repeat Ok.
+            'Pan+Queso': 'Sandwich de Queso', // Use 🥪? OK.
+            'Papel+Amor': 'Carta de Amor', // Use 💌. Added. OK.
+            'Papel+Dinero': 'Cheque', // Needs emoji? Use 💵📄? Ok.
+            'Papel+Lápiz': 'Nota', // Use 📝? Added. OK.
+            'Papel+Libro': 'Página', // Use 📄? OK.
+            'Papel+Noticias': 'Periódico', // Needs Noticias (Ciudad+Papel=📰?). OK.
+            'Papel+Tijeras': 'Confeti', // Needs Scissors emoji✂️. Added. Needs Confetti emoji 🎉. Added. OK.
+            'Pared+Pintura': 'Cuadro', // Needs Pintura(🎨+🖼️?) Needs Painting emoji🖼️. Ok. Use 🧱🎨 -> 🖼️. Ok.
+            'Pescador+Red': 'Peces', // Needs Net (🎣+🧵=🕸️?). Ok Spiderweb. OK. Use 🎣🕸️->🐟🐟. OK.
+            'Petróleo+Fuego': 'Gasolina', // Refining concept
+            'Petróleo+Motor': 'Coche', // Fueling
+            'Piel+Herramienta': 'Cuero', // Needs Skin (Animal+Herramienta=Piel? 🐾🔪= Piel?) Need 🧖? No. Use Animal+Muerte=Piel (🐾💀 = 🧥?) OK. 🧥+🛠️=👞 OK.
+            'Piloto+Avión': 'Vuelo', // Repeat ok.
+            'Pintor+Lienzo': 'Pintura', // Needs Pintor (Artista+Pincel?). Needs Pincel(🖌️ Added)(Madera+Pelo?). Pelo=Lana? Ok 🪵🧶->🖌️. Needs Lienzo(Tela+Madera?). Ok 🧵🪵->🖼️? Reuse Frame for Canvas. OK. Artista+Pincel = Pintor 🧑‍🎨🖌️=🧑‍🎨. Pintor+Lienzo = Pintura 🧑‍🎨🖼️=🎨. OK.
+            'Pirata+Barco': 'Saqueo', // Use 🏴‍☠️🚢 -> 💰? Ok.
+            'Pirata+Isla': 'Tesoro Escondido', // Use 🏴‍☠️🏝️ -> 🗺️💰? OK.
+            'Plata+Luna': 'Magia Lunar', // Fantasy connection 🥈🌙 -> ✨? Ok.
+            'Playa+Sol': 'Bronceado', // Need Tan emoji? ☀️🏖️->🥵? Use 😊☀️? Ok.
+            'Plomo+Radiación': 'Mutante', // Needs Lead(Metal+Pesadez?). Needs Radiation (Energía+Fuego?). Needs Mutant (🧬💥?). Ok Pb = ⛓️🧱? No just use Metal+Tierra = Plomo(Pb)? Needs Pb emoji? Use ⚫. Ok. Radioactividad = Energia+Energia=☢️? OK. Pb + Radiactividad = Mutante? ⚫☢️=🧟? Ok.
+            'Pluma+Papel': 'Carta', // Quill writing, Repeat ok.
+            'Poción+Mago': 'Hechicero', // Upgrade? Use 🧪🧙 -> 🧙✨? Ok.
+            'Policía+Ladrón': 'Arresto', // Use 👮👤 -> ⛓️? OK.
+            'Político+Poder': 'Corrupción', // Needs Político (Humano+Ley?). Needs Poder(Fuerza+Rey?). Ok. 🧑📜 -> 🧑‍⚖️(Reuse lawyer?). Ok. 💪👑 -> ✨? Ok. Politico+Poder=Corrupcion? 🧑‍⚖️✨->😈? OK.
+            'Pólvora+Metal': 'Bala', // Need Bullet emoji? 💣🔩 -> • ? OK. Use • .
+            'Pólvora+Tubo': 'Cañón', // Needs Tube (Metal+Agua?). Needs Cannon (use 💣 metal tube?). Ok Metal+Metal = Tubo (⛓️). Pólvora+Tubo=Cañón 💥⛓️ -> 💣 OK Reuse Bomb emoji? OK.
+            'Pompas+Jabón': 'Baño', // Needs Bubbles (Aire+Agua+Jabón?). OK. Needs Soap (🧼 Added). Agua+Grasa = Jabon? Needs Grasa (Animal+Fuego?). OK 🐾🔥=🥓? OK Added. Agua+Grasa=Jabon (💧🥓=🧼). Aire+Jabon = Pompa (💨🧼 =🫧 Added). Pompa+Jabon=Baño (🫧🧼=🛁 Added). Ok.
+            'Profesor+Libro': 'Lección', // Use 🧑‍🏫📖 -> 🧠? OK.
+            'Queso+Ratón': 'Trampa para Ratones', // Needs Trap (Madera+Metal?). Ok 🪵🔩 -> 덫? Use 🥅 goal net? OK. Use 🧀🐁 -> 🥅? Ok.
+            'Radio+Electricidad': 'Ondas de Radio', // Use 📻⚡ -> 📶 Wifi symbol ok? Ok.
+            'Rascacielos+Avión': '11-S', // TOO SENSITIVE. Avoid. Rascacielos+Avión = Accidente? 🏙️✈️ = 💥? OK.
+            'Rayo+Árbol': 'Incendio Forestal', // Repeat OK.
+            'Receta+Comida': 'Plato', // Use 🍽️ Added? OK. 📜🍔->🍽️.
+            'Red+Araña': 'Telaraña', // Needs Spiderweb emoji 🕸️. OK Added. 🕸️🕷️ -> 🕸️? Yes.
+            'Reina+Rey': 'Familia Real', // Use 👑👑 -> 🏰? Ok.
+            'Reloj+Humano': 'Cita', // Appointment. Use ⏰🧑 -> 🤝? OK.
+            'Reloj+Sol': 'Reloj de Sol', // Needs Sundial emoji? Use ☀️⏰? OK.
+            'Riqueza+Humano': 'Avaricia', // Greed. Use 💰🧑 -> 🤑? OK Added.
+            'Robot+Arma': 'Terminator', // Specific character? Avoid. Robot+Arma = Robot de Combate? Use 🤖🔫 -> 🤖⚔️? OK.
+            'Robot+Vida': 'Inteligencia Artificial', // AI. Use 🤖🧬 -> 🧠? OK.
+            'Roca+Herramienta': 'Escultura', // Repeat ok
+            'Ropa+Tiempo': 'Moda', // Needs Fashion emoji 💅? Added. OK. Use 👕⏳ -> 💅.
+            'Rueda+Coche': 'Neumático', // Tire. Use 🛞🚗 -> ⚫️? OK.
+            'Sal+Agua': 'Agua Salada', // Use 💧🧂? OK.
+            'Salud+Humano': 'Vida Larga', // Use ❤️‍🩹🧑 -> 💯? Added. OK.
+            'Sangre+Tela': 'Vendaje', // Need Bandage 🩹 Added. OK. Use🩸🧵 -> 🩹.
+            'Satélite+Espacio': 'GPS', // Needs Satellite (Cohete+Metal?). Needs GPS (use 🛰️🗺️?). Ok 🚀⛓️->🛰️ Added. Ok. 🛰️🌌 -> 🛰️🗺️? OK.
+            'Semilla+Vida': 'Naturaleza', // Abstract. Use 🌱🧬 -> 🌳? OK.
+            'Silla+Madera': 'Mesa', // Combine chair and wood to make a table? Weird logic but OK for game.
+            'Silla+Rueda': 'Silla de Ruedas', // Need Wheelchair emoji 🦽. Added. OK.
+            'Skate+Humano': 'Skater', // Use 🛹🧑? OK.
+            'Soldado+Guerra': 'Veterano', // Needs emoji? Use 🧑‍✈️⚔️ -> 🎖️? Added medal emoji. OK.
+            'Soldado+Medalla': 'Héroe', // Repeat ok.
+            'Sol+Panel Solar': 'Energía Solar', // Use ☀️🔌 -> ⚡? OK.
+            'Sonido+Aire': 'Voz', // Repeat OK
+            'Sonido+Pared': 'Eco', // Needs Echo emoji? Use 🗣️🧱 -> 🗣️🗣️? OK.
+            'Sueño+Humano': 'Idea', // Dreams inspire ideas
+            'Superhéroe+Ciudad': 'Justicia', // Need Superhero (Héroe+Poder?). Use 🦸✨->🦸‍♂️ Added. OK. 🦸‍♂️🏙️ -> ⚖️? OK.
+            'Tabla+Agua': 'Tabla de Surf', // Need Surfboard emoji 🏄. Added. OK. Use 🪵💧 -> 🏄.
+            'Tablón+Clavo': 'Muebles', // Need Plank(Tabla), Nail(Metal+Martillo?). 🪵+🪵 = Tablón? OK. 🔩🔨 = 📌 Clavo? Added. OK. Tablón + Clavo = Muebles? 🪵+📌 = 🛋️? OK.
+            'Tela+Viento': 'Bandera', // Need Flag emoji 🏳️. Added. OK. 🧵🌬️->🏳️.
+            'Teléfono+Computadora': 'Smartphone', // Use 📱💻 -> 📱? Yes.
+            'Teléfono+Foto': 'Instagram', // Avoid specific brands. Teléfono+Foto = Selfie? Use 📱📸 ->🤳? OK Added.
+            'Televisión+Noticias': 'Telediario', // Use 📺📰? OK.
+            'Telescopio+Estrella': 'Galaxia', // Seeing far away
+            'Terremoto+Ciudad': 'Ruinas', // Repeat ok
+            'Tiempo+Espacio': 'Continuo Espacio-Temporal', // Abstract. Use ⏳🌌 ->🌀? OK.
+            'Tiempo+Humano': 'Muerte', // Eventually
+            'Tiempo+Playa': 'Fósil', // Things get buried over time
+            'Tiempo+Semilla': 'Árbol', // Growth over time
+            'Tierra+Cultivo': 'Campo', // Needs Cultivo (Planta+Herramienta?) Needs Plow (Arado) (Metal+Madera? -> 쟁기? Reuse ⛏️?). OK Planta+Arado = Cultivo (🌱⛏️ = 🌾?). Reuse Trigo OK. Tierra+Cultivo = Campo 🌍🌾=🏞️? OK.
+            'Tijeras+Papel': 'Recorte', // Use ✂️📄 ->📄? Yes.
+            'Tinta+Papel': 'Libro', // Needs Ink (Negro+Agua?). Needs Negro (Carbón+?). Color concept needed. Add Color 🎨. Agua+Carbón=Negro (💧⚫=⚫?). Agua+Flor=Rojo? OK 💧🌸=🟥? Agua+Cielo=Azul 💧🌌=🟦? Negro+Agua=Tinta ⚫💧->🖋️ reuse pen? OK. Tinta+Papel = Libro 🖋️📄->📖? OK.
+            'Trigo+Fuego': 'Pan Tostado', // Toast. Use 🍞🔥? OK.
+            'Trigo+Piedra': 'Molino', // Needs Windmill/Watermill. (Viento+Rueda=Molino 🌬️🛞=?) (Agua+Rueda=Molino 💧🛞=?) Need Mill emoji 🏭? No. Use Piedra? Piedra+Trigo=Harina 🗿🌾=⚪(Flour). OK. OK Molino needed. Rueda+Viento = Molino (🛞🌬️ = 🏭). Molino+Trigo=Harina (🏭🌾=⚪). OK.
+            'Tren+Vías': 'Viaje en Tren', // Needs Tracks (Metal+Madera?). Needs Railway Journey 🚆🛤️ -> 🏞️? OK ⛓️🪵->🛤️ Added. OK.
+            'Tubo+Agua': 'Tubería', // Pipe. Use ⛓️💧 -> ቧ? No emoji? Use 💧⛓️. Ok.
+            'Unicornio+Arcoíris': 'Doble Arcoíris', // Extra magic! 🦄🌈 -> 🌈🌈? OK.
+            'Universidad+Estudiante': 'Graduado', // Use 🎓? OK. 🎓🧑‍🎓 -> 👨‍🎓👩‍🎓? Use 🧑‍🎓.
+            'Vaca+Hierba': 'Leche', // Repeat ok
+            'Vampiro+Sangre': 'Inmortalidad', // Needs Immortality emoji? 🧛🩸 -> ♾️? Added. OK.
+            'Veneno+Arma': 'Flecha Venenosa', // Need Arrow (Pluma+Madera?🪶🪵=🏹?). OK. Veneno+Flecha= FlechaVenenosa ☠️🏹->☠️🏹? OK.
+            'Vidrio+Agua': 'Acuario', // Reuse 🐠? OK.
+            'Vidrio+Arena': 'Reloj de Arena', // Repeat, Hourglass emoji ⌛ Added. Ok. Use ⏳.
+            'Vidrio+Metal': 'Espejo', // Repeat ok
+            'Vidrio+Sol': 'Lupa', // Repeat ok
+            'Viento+Electricidad': 'Turbina Eólica', // Needs Wind Turbine emoji? Use 🌬️⚡ -> ⚙️? OK.
+            'Viento+Mar': 'Velero', // Needs sailboat ⛵ Added. Ok. 🌬️🌊 -> ⛵.
+            'Viento+Nube': 'Cielo', // Sky filled with clouds moved by wind
+            'Vino+Queso': 'Fiesta', // Pairing. Use 🍷🧀 -> 🎉? OK Added.
+            'Virus+Computadora': 'Antivirus', // Need Antivirus software 🦠💻 -> 🛡️? OK.
+            'Virus+Médico': 'Vacuna', // Need Vaccine emoji 💉 Added. OK. 🦠🧑‍⚕️ -> 💉.
+            'Zombie+Cerebro': 'Inteligencia', // Unlikely! Fun combo. 🧟🧠 ->💡? OK.
+
+            // --- More Abstract & Fun ---
+            'Amor+Música': 'Balada', // Use ❤️🎶? OK.
+            'Ángel+Humano': 'Milagro', // Need Miracle emoji 🙏✨? OK.
+            'Bien+Mal': 'Conflicto', // Use 😇😈 -> 💥? OK.
+            'Caos+Orden': 'Vida', // Life balances chaos and order
+            'Ciencia+Magia': 'Alquimia', // Needs Alchemy symbol? Use ⚗️ Added. OK. 🔬✨ -> ⚗️.
+            'Dios+Humano': 'Religión', // Use 🙏🧑 -> ⛪️? OK.
+            'Dios+Muerte': 'Inframundo', // Underworld 💀🙏? Use 👹? Added Ogre/Demon? Use 😈.
+            'Doble Arcoíris+Vida': 'Unicornio', // Making Unicorn back
+            'Dragón+Caballero': 'Cuento de Hadas', // Need Fairytale emoji 🧚? Added. OK 🐉🛡️->🧚.
+            'Electricidad+Vida': 'Frankenstein', // Needs emoji ⚡️🧬 ->🧟? Reuse Zombie ok.
+            'Filosofía+Tiempo': 'Eternidad', // Abstract 🤔⏳->♾️? OK.
+            'Frío+Calor': 'Termómetro', // Needs Thermometer emoji 🌡️ Added. OK. 🥶🥵->🌡️.
+            'Guerra+Paz': 'Tratado', // Use ⚔️☮️ -> 📜? OK.
+            'Idea+Error': 'Innovación', // Needs Error (💥? mistake?). OK. Use 💡💥 -> ✨? Reuse discovery. OK.
+            'Libro+Silencio': 'Concentración', // Needs Silence emoji 🤫 Added. OK. 📖🤫 -> 🤔? OK.
+            'Luz+Sonido': 'Relámpago', // Thunderstorm, sound follows light. Repeat Ok.
+            'Magia+Metal': 'Espada Mágica', // Use ✨⛓️ -> 🗡️✨? OK.
+            'Muerte+Vida': 'Ciclo', // Use 💀🧬 -> 🔄? Added. OK.
+            'Música+Silencio': 'Pausa', // Use 🎶🤫 -> ⏸️? Added. OK.
+            'Paz+Mundo': 'Utopía', // Needs Utopia emoji? Use ☮️🌎 -> 🌈? Reuse rainbow. OK.
+            'Robot+Amor': 'Sentimiento Artificial', // Use 🤖❤️ -> 🤔? Reuse thinking face. OK.
+            'Tiempo+Ruinas': 'Historia',
+            // Química y Ciencia Ampliada
+    'Agua+Azufre': 'Ácido', // Simplificado Ácido Sulfúrico
+    'Agua+Sal': 'Base', // Simplificado Hidróxido
+    'Ácido+Base': 'Sal Química',
+    'Aire+Aire': 'Oxígeno', // Como principal componente activo simplificado
+    'Agua+Electricidad': 'Hidrógeno', // Electrólisis simplificada
+    'Aire+Fuego': 'Nitrógeno', // Reacción que consume O2 deja N2 (Simplif.)
+    'Carbón+Vida': 'Carbono', // Carbono base de la vida
+    'Átomo+Átomo': 'Molécula',
+    'Elemento Químico+Elemento Químico': 'Molécula',
+    'Energía+Materia Oscura': 'Átomo', // Física especulativa básica
+    'Electricidad+Átomo': 'Electrón', // Electrones como corriente
+    'Átomo+Neutrón': 'Protón', // +/- simplificación núcleo
+    'Átomo+Protón': 'Neutrón', // +/- simplificación núcleo
+    'Ciencia+Laboratorio': 'Química',
+    'Química+Vidrio': 'Probeta', // O Matraz
+    'Fuego+Probeta': 'Mechero Bunsen',
+    'Vida+Molécula': 'ADN',
+    'ADN+Virus': 'ARN', // Simple relación conceptual
+    'Vida+Agua': 'Célula', // Basic life component
+    'Bacteria+Virus': 'Microbio', // Categoría general
+    'Hidrógeno+Nitrógeno': 'Amoníaco', // Síntesis Haber muy simplificada
+    'Carbono+Hidrógeno': 'Metano', // Hidrocarburo simple
+    'Carbono+Oxígeno': 'CO2',
+    'Oxígeno+Oxígeno': 'Ozono', // O3
+    'Metal+Energía': 'Radioactividad', // Metales pesados
+    'Piedra+Radioactividad': 'Uranio',
+    'Uranio+Neutrón': 'Plutonio', // Fisión->Transmutación
+    'Planta+Presión': 'Petróleo', // Origen orgánico simplificado
+    'Petróleo+Fuego': 'Gas Natural', // Fracción más ligera
+    'Petróleo+Refinería': 'Gasolina', // 'Refinería' no existe -> Fuego+Metal+Petroleo ? OK. 'Fuego+Petróleo' = 'Gasolina' (ya existe)
+    'Gasolina+Avión': 'Queroseno', // Tipo de combustible
+    'Petróleo+Química': 'Plástico',
+    'Árbol+Herramienta': 'Caucho', // Savia -> Caucho
+    'Vidrio+Luz': 'Fibra Óptica', // Transmisión de luz
+    'Luz+Energía': 'Láser',
+    'Fuego+Electricidad': 'Plasma', // Estado de la materia
+    'Chip+Ciencia': 'Nanotecnología',
+    'Música+Universo': 'Teoría de Cuerdas', // Analogía vibracional
+    'Planeta+Manzana': 'Gravedad', // Referencia a Newton
+    'Vacío+Energía': 'Antimateria', // Simplificado
+    'Vacío+Espacio': 'Materia Oscura',
+    'Protón+Neutrón': 'Quark', // Componentes
+    'Átomo+Explosión': 'Fisión Nuclear',
+    'Hidrógeno+Sol': 'Fusión Nuclear',
+    'Átomo+Protón': 'Elemento Químico', // Definido por protones
+    'Elemento Químico+Lista': 'Tabla Periódica', // 'Lista' (Papel+Lápiz?) no existe -> 'Elemento Químico+Papel' = 'Tabla Periódica'? Ok.
+    'Metal+Metal': 'Aleación',
+    'Cobre+Estaño': 'Bronce', // 'Estaño' no existe -> Metal+Fuego = Estaño? ok.
+    'Cobre+Zinc': 'Latón', // 'Zinc' no existe -> Metal+Electricidad = Zinc? ok.
+    'Acero+Cromo': 'Acero Inoxidable', // 'Cromo' no existe -> Metal+Color = Cromo? Ok.
+    'Tierra+Electricidad': 'Aluminio', // Proceso industrial simplif.
+    'Acero+Avión': 'Titanio', // Material ligero/fuerte
+    'Metal+Agua': 'Mercurio', // Metal líquido a temp. ambiente
+    'Volcán+Tierra': 'Azufre',
+    'Hueso+Fuego': 'Fósforo', // Descubrimiento histórico simplificado
+    'Sal+Electricidad': 'Cloro', // Electrólisis salmuera simplif.
+    'Sal+Agua': 'Sodio', // Componente de la sal
+    'Planta+Ceniza': 'Potasio', // Obtención de potasa
+    'Leche+Hueso': 'Calcio',
+    'Sal+Planta': 'Magnesio', // Clorofila
+    'Arena+Electricidad': 'Silicio', // Base de semiconductores
+
+    // Geografía y Geología Ampliada
+    'Continente+Movimiento': 'Placa Tectónica',
+    'Terremoto+Placa Tectónica': 'Falla Geológica',
+    'Tierra+Lava': 'Manto Terrestre',
+    'Fuego+Presión': 'Núcleo Terrestre',
+    'Agua+Polvo': 'Sedimento',
+    'Sedimento+Presión': 'Roca Sedimentaria',
+    'Roca+Calor': 'Roca Metamórfica',
+    'Lava+Frío': 'Roca Ígnea',
+    'Roca Metamórfica+Piedra Caliza': 'Mármol', // 'Piedra Caliza' no existe -> 'Piedra+Concha' = 'Piedra Caliza'? Ok.
+    'Roca Ígnea+Montaña': 'Granito',
+    'Roca Sedimentaria+Presión': 'Pizarra',
+    'Planta+Tiempo': 'Carbón',
+    'Carbón+Presión': 'Diamante',
+    'Diamante+Rojo': 'Rubí', // Necesita Color (🎨) o elemento 'Rojo' (🟥)
+    'Diamante+Azul': 'Zafiro', // Necesita Color (🎨) o elemento 'Azul' (🟦)
+    'Diamante+Verde': 'Esmeralda', // Necesita Color (🎨) o elemento 'Verde' (🟩)
+    'Diamante+Amarillo': 'Topacio', // Needs 'Amarillo' (🟡?)
+    'Diamante+Morado': 'Amatista', // Needs 'Morado' (🟣?)
+    'Arcoíris+Piedra': 'Ópalo',
+    'Piedra+Verde': 'Jade',
+    'Cobre+Agua': 'Turquesa', // Coloración
+    'Hueso+Tiempo': 'Fósil',
+    'Resina+Tiempo': 'Ámbar', // 'Resina' no existe -> Arbol+Herramienta = Resina(💧)? ok.
+    'Ostra+Arena': 'Perla', // 'Ostra' no existe -> Molusco+Agua = Ostra (🐚)? ok. ('Molusco' no existe) -> Concha+Vida=Molusco? OK.
+    'Vida+Mar': 'Coral',
+    'Coral+Pez': 'Arrecife de Coral',
+    'Glaciar+Valle': 'Fiordo',
+    'Río+Montaña': 'Cañón',
+    'Montaña+Tierra': 'Meseta',
+    'Tierra+Mar': 'Península',
+    'Isla+Isla': 'Archipiélago',
+    'Mar+Tierra': 'Estrecho', // Dos masas de tierra separadas por agua
+    'Mar+Playa': 'Bahía',
+    'Mar+Continente': 'Golfo',
+    'Península+Mar': 'Cabo',
+    'Agua+Viento': 'Corriente Marina',
+    'Terremoto+Océano': 'Tsunami',
+    'Tsunami+Mar': 'Maremoto', // Alias? OK.
+    'Agua+Roca': 'Erosión', // O Viento+Roca
+    'Espacio+Roca': 'Meteorito',
+    'Meteorito+Tierra': 'Cráter',
+    'Hielo+Espacio': 'Cometa',
+    'Agua+Cueva': 'Estalactita', // Goteo
+    'Estalactita+Gota': 'Estalagmita', // Gota ('Gota' no existe, usar 'Agua'?) -> OK: 'Estalactita+Agua' = 'Estalagmita'? O 'Cueva+Agua'? Use 'Agua+Cueva'.
+    'Estalactita+Estalagmita': 'Columna',
+
+    // Flora y Fauna Ampliada
+    'Planta+Tierra húmeda': 'Hongo', // 'Tierra húmeda' -> Lodo? OK: 'Lodo+Planta' = Hongo
+    'Hongo+Azúcar': 'Levadura',
+    'Comida+Tiempo': 'Moho',
+    'Hongo+Alga': 'Liquen',
+    'Musgo+Planta': 'Helecho',
+    'Hierba+Agua': 'Bambú',
+    'Campo+Semilla': 'Trigo',
+    'Campo+Agua': 'Arroz',
+    'Campo+Planta': 'Maíz',
+    'Tierra+Raíz': 'Patata', // 'Raíz' no existe -> 'Planta+Tierra' = 'Raíz' (🌳?) Ok.
+    'Fruta+Rojo': 'Tomate',
+    'Planta+Tierra': 'Cebolla', // Bulbo
+    'Planta+Especia': 'Ajo', // Needs 'Especia'
+    'Hierba+Hoja': 'Lechuga', // Leafy green
+    'Raíz+Naranja': 'Zanahoria', // Color Naranja? O usar Fruta 'Naranja'? -> 'Raíz+Naranja' (fruta)
+    'Planta+Picante': 'Pimiento', // Needs 'Picante' (Fuego+Planta? 🔥🌱=🌶️ ok)
+    'Campo+Naranja': 'Calabaza', // Needs Color Naranja OR assume associated w/ Halloween -> Fantasma+Campo = Calabaza? 👻🏞️=🎃. ok.
+    'Vid+Fruta': 'Uva', // Vid exists? ('Vid' = Planta+Vino -> no) -> Make 'Vid' = Planta+Madera = 🍇🌳 ok? Ok.
+    'Fruta+Agua': 'Sandía',
+    'Fruta+Semilla': 'Fresa', // Exterior seeds
+    'Árbol+Rojo': 'Cereza',
+    'Fruta+Ácido': 'Limón',
+    'Palmera+Nuez': 'Coco', // Palmera ya existe? -> Sol+Árbol=Palmera ☀️🌳🌴 Ok. Nuez (🌰)? ok.
+    'Fruta+Espinas': 'Piña', // Needs Espinas (Planta+Aire = Espinas? 🌵?). OK -> 'Fruta+Cactus'.
+    'Fruta+Verde': 'Kiwi',
+    'Árbol+Grasa': 'Aguacate', // 'Grasa' (🥓)? ok.
+    'Árbol+Semilla': 'Cacao', // Fruto del cacao
+    'Planta+Energía': 'Café', // Efecto
+    'Flor+Dulce': 'Vainilla', // 'Dulce' = Azúcar? OK -> 'Flor+Azúcar'
+    'Nube+Planta': 'Algodón',
+    'Tela+Planta': 'Lino',
+    'Cuerda+Planta': 'Cáñamo',
+    'Planta+Fuego': 'Tabaco', // Quemado
+    'Árbol+Fruta': 'Olivo', // Source of olives
+    'Olivo+Fruta': 'Aceituna',
+    'Hongo+Árbol': 'Liquen', // Ya existe? Re-recipe.
+    'Plancton+Mar': 'Medusa', // Simple sea life
+    'Flor+Mar': 'Anémona',
+    'Pez+Cielo': 'Estrella de Mar', // Forma
+    'Arena+Animal': 'Cangrejo',
+    'Cangrejo+Armadura': 'Langosta',
+    'Insecto+Agua': 'Camarón',
+    'Mar+Tinta': 'Pulpo', // Tinta? Ok.
+    'Pulpo+Cono': 'Calamar', // 'Cono' (Forma?) no existe. Usar 'Velocidad'? OK -> 'Pulpo+Velocidad' 🐙🚀🦑 Ok.
+    'Pez+Sangre': 'Tiburón', // Depredador
+    'Pez+Gigante': 'Ballena', // Gigante (🧑⬆️)? ok.
+    'Pez+Inteligencia': 'Delfín', // Inteligencia (🧠)? OK.
+    'Perro+Agua': 'Foca',
+    'Foca+Colmillo': 'Morsa', // Colmillo (Hueso+Animal?) -> OK 🦴🐘 ok 'Marfil'. Use that? OK 'Foca+Marfil'.
+    'Rata+Madera': 'Castor', // Roedor, construye presas. Rata -> Ratón exists? OK. Use 'Ratón+Madera' 🐁🪵=🦫 ok.
+    'Animal+Agua': 'Nutria', // O 'Castor+Agua'? OK -> 'Castor+Agua'.
+    'Ratón+Aire': 'Murciélago',
+    'Bosque+Ladrón': 'Mapache', // Stereotype
+    'Animal+Olor': 'Zorrillo', // Olor? (Aire+Pantano?). Use 'Química'? OK -> 'Animal+Química' 🦨 Ok.
+    'Ratón+Espinas': 'Erizo', // 'Espinas' = Cactus? ok.
+    'Animal+Tierra': 'Topo', // Tunneling animal
+    'Árbol+Ratón': 'Ardilla',
+    'Animal+Velocidad': 'Conejo', // or Liebre? Use 'Conejo' for this.
+    'Conejo+Velocidad': 'Liebre',
+    'Animal+Bosque': 'Ciervo',
+    'Ciervo+Frío': 'Alce', // O Reno? 'Alce' = Ciervo+Montaña? Ok.
+    'Ciervo+Nieve': 'Reno',
+    'Cerdo+Bosque': 'Jabalí', // 'Cerdo' (Vaca+Lodo=🐷)? OK. Added pig emoji 🐷.
+    'Mono+Fuerza': 'Gorila',
+    'Mono+Árbol': 'Orangután',
+    'Mono+Inteligencia': 'Chimpancé',
+    'Bambú+Oso': 'Panda',
+    'Árbol+Oso': 'Koala', // Eucalyptus relation simplified
+    'Animal+Salto': 'Canguro', // Salto (Movimiento+Pierna?) Pierna=Hueso+Humano? ok. OK Salto = 🏃‍♂️🦴. -> Animal+Salto 🐾🏃🦴🦘.
+    'Animal+Cuerno': 'Rinoceronte', // Cuerno (Hueso+Animal?->Marfil?). Ok Use Marfil. -> 'Animal+Marfil'.
+    'Río+Cerdo': 'Hipopótamo', // Water hog simplified
+    'Animal+Nariz grande': 'Elefante', // Nariz grande? (Nariz = Humano+Aire?) No, use 'Memoria' -> 'Animal+Memoria'? 🤔 OK Use 'Animal+Agua'+'Grande' = Hipopotamo -> Animal+Agua=Nutria/Foca. Animal+Tierra = Topo. Make Elefante -> Animal+Grande = Elefante 🐘 ('Grande' = Montaña+Humano?). OK -> 'Animal+Montaña'.
+    'Animal+Cuello largo': 'Jirafa', // Cuello Largo (Hueso+Tiempo?). OK -> Animal+Hueso+Tiempo. -> Use 'Árbol+Animal' -> 'Animal+Árbol'.
+    'Caballo+Rayas': 'Cebra', // Rayas (Color+Color? Negro+Blanco? 🖤+🤍='Rayas'🦓?) Ok -> 'Caballo+Rayas' 🐴🦓🦓.
+    'Desierto+Animal': 'Suricata',
+    'Animal+Tiempo': 'Perezoso', // Slow movement
+    'Hormiga+Nariz': 'Oso Hormiguero', // Nariz no existe -> 'Hormiga+Tubo'? OK 'Hormiga+Tubo'.
+    'Armadura+Animal': 'Armadillo',
+    'Pájaro+Frío': 'Pingüino',
+    'Pájaro+Velocidad': 'Avestruz',
+    'Pájaro+Australia': 'Emú', // Needs 'Australia' (Continente+Canguro?). OK 🗺️🦘 = Australia. OK.
+    'Pájaro+Belleza': 'Pavo Real',
+    'Pájaro+Comida': 'Pavo',
+    'Huevo+Ave': 'Gallina', // Ave = Pájaro. Ok.
+    'Gallina+Sol': 'Gallo', // Morning crow
+    'Pato+Belleza': 'Cisne', // Pato ('Agua+Pájaro'?). OK -> Agua+Pájaro = Pato.
+    'Agua+Pájaro': 'Pato', // Ok.
+    'Cisne+Gris': 'Ganso', // Ugly duckling -> Grey ('Color'+'Negro'+'Blanco' = Gris?). OK 'Cisne+Gris'🦢🔘=🦢. Ok.
+    'Pájaro+Bolsa': 'Pelícano', // Beak pouch -> Bolsa 👜. OK.
+    'Pájaro+Mar': 'Gaviota',
+    'Pájaro+Hablar': 'Loro', // Hablar (Humano+Sonido? =🗣️?). OK 'Pájaro+Voz'.
+    'Pájaro+Arcoíris': 'Tucán', // Colorful beak
+    'Flor+Pájaro': 'Colibrí', // Nectar feeding
+    'Pájaro+Rosa': 'Flamenco', // Color Rosa ('Rojo+Blanco'=Rosa?). Ok 'Pájaro+Rosa'.
+    'Montaña+Pájaro': 'Águila',
+    'Águila+Velocidad': 'Halcón',
+    'Noche+Pájaro': 'Búho',
+    'Pájaro+Muerte': 'Cuervo', // Omen association
+    'Pájaro+Paz': 'Paloma',
+    'Anfibio+Salto': 'Rana', // Anfibio = Pez+Vida? Ok. Salto = 🏃‍♂️🦴 ok.
+    'Rana+Veneno': 'Sapo',
+    'Lagarto+Fuego': 'Salamandra',
+    'Reptil+Casa': 'Tortuga', // 'Reptil' = Serpiente? OK 'Serpiente+Casa'. 🐍🏠🐢 ok.
+    'Molusco+Casa': 'Caracol', // Molusco = Concha+Vida. ok.
+    'Caracol+Sin casa': 'Babosa', // 'Sin casa' difficult. -> 'Caracol+Agua'. OK. 🐌💧=🐌💧. Ok.
+    'Tierra+Insecto': 'Lombriz',
+    'Basura+Insecto': 'Mosca', // Basura? (Comida+Tiempo?) OK.
+    'Sangre+Mosca': 'Mosquito',
+    'Caballo+Mosca': 'Tábano',
+    'Insecto+Viento': 'Libélula', // Agile flyer
+    'Hierba+Insecto': 'Saltamontes',
+    'Sonido+Insecto': 'Grillo', // or Cigarra
+    'Árbol+Sonido': 'Cigarra', // Sound from trees
+    'Armadura+Insecto': 'Escarabajo',
+    'Flor+Escarabajo': 'Mariquita',
+    'Noche+Insecto': 'Cucaracha',
+    'Hormiga+Madera': 'Termita',
+    'Mariposa+Noche': 'Polilla',
+    'Araña+Veneno': 'Escorpión', // Sting conceptually venomous
+    'Araña+Pelo': 'Tarántula', // 'Pelo'=Lana? OK 'Araña+Lana'. 🕷️🧶=🕷️. OK.
+
+    // Comida y Bebida Ampliada
+    'Trigo+Molino': 'Harina', // Ya existe? OK.
+    'Agua+Harina': 'Masa', // Ya existe? OK.
+    'Agua+Harina+Vapor': 'Fideo', // Steamed noodles / Pasta genérica
+    'Fideo+Fuego': 'Pasta', // Cocida
+    'Pan+Queso+Tomate': 'Pizza',
+    'Pan+Carne': 'Hamburguesa', // Already Sandwich? Ok, specify ingredients -> Pan+Carne picada. Need 'Carne picada' (Carne+Cuchillo?). OK 'Pan+Carne Picada' 🍞🥩🔪=🍔.
+    'Pan+Salchicha': 'Perrito Caliente', // Needs 'Salchicha' (Cerdo+Carne?). 🐷🥩=🌭? ok.
+    'Maíz+Pan plano': 'Taco', // Pan plano (Harina+Agua?). Masa? ok. 'Maíz+Masa' = Tortilla? Ok. Tortilla+Carne = Taco 🌮. Ok.
+    'Taco+Más grande': 'Burrito', // Más grande -> Use Montaña. Ok. 'Taco+Montaña'. 🌮⛰️=🌯. ok.
+    'Pescado+Arroz': 'Sushi',
+    'Arroz+Mano': 'Onigiri', // Mano = Humano? Ok. Arroz+Humano = Onigiri. 🍚🧑=🍙. OK.
+    'Masa+Relleno': 'Empanada', // Relleno (Carne+Vegetal?) Ok Carne+Planta. 'Masa'+(Carne+Planta). Use 'Masa+Carne'. OK.
+    'Masa+Mantequilla': 'Croissant',
+    'Masa+Largo': 'Baguette', // Largo -> Hueso? Tiempo? OK 'Masa+Tiempo'.
+    'Masa+Azúcar': 'Dona',
+    'Pastel+Pequeño': 'Muffin', // Pequeño = Humano? Bebé? ok 'Pastel+Bebé'.
+    'Muffin+Crema': 'Cupcake', // Crema = Leche+Azúcar? ok. 'Muffin'+(Leche+Azúcar). Use 'Muffin+Leche'. Ok.
+    'Leche+Frío': 'Helado',
+    'Fruta+Hielo': 'Sorbete',
+    'Hielo+Palo': 'Paleta Helada', // Palo (Madera?) ok 'Hielo+Madera'.
+    'Gelatina+Fruta': 'Gelatina', // Ya existe 'Pudding' ? Usar 🍮. OK 'Agua+Azúcar'+'Fruta'? Agua+Azúcar = Refresco🥤. OK Refresco+Fruta=Gelatina? ok.
+    'Azúcar+Fuego': 'Caramelo',
+    'Caramelo+Palo': 'Piruleta', // Palo = Madera? Ok.
+    'Caramelo+Gelatina': 'Gominola', // Gelatina needs fixing first -> OK. Refresco+Fruta = Gelatina 🍮. Caramelo+Gelatina 🍬🍮=🍬. Ok.
+    'Azúcar+Nube': 'Malvavisco', // Marshmallow fluffiness
+    'Maíz+Fuego': 'Palomitas',
+    'Patata+Aceite': 'Patatas Fritas (Chip)',
+    'Patata+Cuchillo+Fuego': 'Papas Fritas (Francesas)',
+    'Árbol+Semilla': 'Nueces', // General term
+    'Nuez+Blanco': 'Almendra', // Color Blanco? ⚪ OK.
+    'Nuez+Verde': 'Pistacho',
+    'Legumbre+Tierra': 'Cacahuete', // 'Legumbre' (Planta+Semilla?) ok. Peanut grows underground.
+    'Tomate+Especias': 'Salsa', // 'Especias' = Sal+Pimienta? Sal+Planta? ok 'Sal+Planta' = Especias.
+    'Salsa+Tomate': 'Ketchup',
+    'Semilla+Amarillo': 'Mostaza', // Mustard seed/color. Amarillo 🟡.
+    'Huevo+Aceite': 'Mayonesa',
+    'Leche+Batidora': 'Mantequilla', // 'Batidora' no existe. Electricidad+Herramienta? OK ⚡️🛠️= Blender? Use 'Leche+Movimiento' = Mantequilla 🥛🏃=🧈. OK.
+    'Planta+Presión': 'Aceite', // General plant oil. Ya existe -> Petróleo. Diferenciar -> 'Fruta+Presión'=Aceite. Ok.
+    'Aceituna+Presión': 'Aceite de Oliva',
+    'Vino+Tiempo': 'Vinagre',
+    'Sal+Planta seca': 'Pimienta', // 'Planta seca' (Planta+Sol?) OK 'Sal' + (Planta+Sol) = Pimienta.
+    'Hierba+Seca': 'Orégano', // 'Seca' -> +Sol. OK 'Hierba+Sol'.
+    'Árbol+Corteza': 'Canela', // Corteza = Madera? Ok. 'Madera+Árbol'. No -> 'Árbol+Cuchillo' = Corteza. OK.
+    'Agua+Sabor': 'Bebida', // Sabor = Fruta? Azúcar? ok Agua+Fruta=Bebida.
+    'Agua+Azúcar': 'Refresco', // Ya existe. Ok.
+    'Coco+Leche': 'Leche de Coco', // Reitera para asegurar alcanzable
+    'Almendra+Leche': 'Leche de Almendras',
+    'Soja+Leche': 'Leche de Soja', // Needs 'Soja' (Planta Legumbre?) -> OK Planta+Campo = Soja 🌱🏞️=🌱 ok.
+    'Leche+Fruta+Batidora': 'Batido', // Batidora = ⚡️🛠️ OK.
+    'Leche+Bacteria': 'Yogur', // Ya existe? OK.
+    'Té+Hielo': 'Té Helado',
+    'Limón+Refresco': 'Limonada',
+    'Trigo+Levadura+Agua': 'Cerveza',
+    'Uva+Tiempo': 'Vino', // Ya existe. OK.
+    'Vino+Burbujas': 'Champán', // Burbujas = Agua+Aire? OK 'Vino+(Agua+Aire)' = Champán. 🍾
+    'Alcohol+Madera': 'Whisky', // Barrel aging. Alcohol? (Fruta+Tiempo = Alcohol?) OK Fruta+Tiempo=🍷=Alcohol. -> 'Alcohol+Madera'=Whisky.
+    'Azúcar+Alcohol': 'Ron', // Sugar cane based
+    'Patata+Alcohol': 'Vodka',
+    'Planta+Alcohol': 'Ginebra', // Juniper etc.
+    'Cactus+Alcohol': 'Tequila',
+    'Fruta+Alcohol': 'Cóctel',
+    'Agua+Frío': 'Hielo', // Ya existe. Ok.
+
+    // Continuará en el siguiente bloque si es necesario... (Need more recipes)
+    // Sociedad, Cultura, Profesiones Ampliada (continuación)
+    'Humano+Aldea': 'Gobierno', // Basic leadership
+    'Voto+Humano': 'Democracia', // 'Voto' 🗳️ -> Papel+Humano? OK. 📄🧑=🗳️.
+    'Rey+País': 'Monarquía', // 'País' 🗺️ needed. 'Tierra+Nación'. Nación = Humano+Bandera? OK 🧑🏳️=Nación. Ok.
+    'Gobierno+Sin rey': 'República', // 'Sin rey' -> Fantasma+Rey? 👻👑 No. Idea+Gobierno? 🤔🏛️ OK.
+    'Líder+Militar': 'Dictadura', // 'Líder' (Humano+Poder?) 🧑💪 OK. 'Militar' (Ejército) ⚔️🛡️. OK.
+    'Nación+Conquista': 'Imperio', // Conquista = Guerra+Tierra? ⚔️🌍 OK.
+    'Castillo+Nobleza': 'Reino', // 'Nobleza' = Rey+Familia? 👑👨‍👩‍👧‍👦 OK.
+    'Humano+Bandera': 'Nación', // Bandera 🏳️ ok.
+    'Nación+Mapa': 'País',
+    'País+División': 'Estado', // División = Tijeras? Ok País+Tijeras 🗺️✂️=🇺🇳 OK.
+    'Ciudad+Estrella': 'Capital', // Estrella ⭐ ok.
+    'Ley+Hablar': 'Política', // Hablar = Voz 🗣️ OK.
+    'Humano+Política': 'Político',
+    'Democracia+Papel': 'Elecciones',
+    'Elecciones+Humano': 'Voto',
+    'Orden+Papel': 'Ley',
+    'Ley+Balanza': 'Justicia', // Balanza ⚖️ ok.
+    'Humano+Mal': 'Crimen', // Mal 😈 ok.
+    'Humano+Crimen': 'Criminal',
+    'Ley+Orden': 'Policía',
+    'Crimen+Lupa': 'Detective',
+    'Ley+Martillo': 'Juez', // Gavel 🔨 = Martillo ok.
+    'Ley+Cliente': 'Abogado', // Cliente = Humano+Dinero? 🧑💰 Ok.
+    'Criminal+Edificio': 'Prisión',
+    'Soldado+Soldado': 'Ejército',
+    'Barco+Soldado': 'Marina',
+    'Avión+Soldado': 'Fuerza Aérea',
+    'Ejército+Líder': 'General',
+    'Barco+Líder': 'Capitán', // O Avión+Líder = Capitán
+    'Secreto+Humano': 'Espía', // Secreto 🤫 ok.
+    'Espía+Traje': 'Agente Secreto', // Traje = Ropa+Dinero? 👕💰 ok.
+    'País+País': 'Diplomacia',
+    'País+Edificio': 'Embajada',
+    'Diplomacia+Papel': 'Tratado',
+    'Dinero+Flujo': 'Economía', // Flujo = Río? OK Dinero+Río = Economía 💰🏞️=📈.
+    'Tienda+Comida': 'Mercado',
+    'Dinero+Gobierno': 'Impuesto',
+    'Dinero+Negativo': 'Deuda', // Negativo = Frío? Menos? '-' symbol? OK Dinero + '-'.
+    'Precio+Sube': 'Inflación', // Precio (Dinero+Producto). Producto (Trabajo+Material). Sube (Aire?). OK ('Dinero'+(Trabajo+Metal)) + 'Aire' = Inflación. Too complex? Simpler: Dinero+Aire = Inflación? 💰💨📈 Ok.
+    'Economía+Frío': 'Recesión',
+    'Máquina+Trabajo': 'Industria',
+    'Edificio+Industria': 'Fábrica',
+    'Producto+Venta': 'Comercio', // Venta (Dinero+Tienda?). OK 'Producto' + ('Dinero'+'Tienda'). OK Producto+Dinero = Comercio.
+    'Edificio+Venta': 'Tienda',
+    'Tienda+Comida+Carro': 'Supermercado', // Carro=🛒? ok.
+    'Tienda+Tienda': 'Centro Comercial',
+    'Comida+Servicio': 'Restaurante', // Servicio (Humano+Trabajo?) Ok. 'Comida'+('Humano'+'Trabajo') = Restaurante.🍽️
+    'Café+Tienda': 'Cafetería',
+    'Alcohol+Tienda': 'Bar',
+    'Edificio+Cama': 'Hotel',
+    'Hotel+Coche': 'Motel',
+    'Hotel+Mochila': 'Hostal',
+    'Viaje+Placer': 'Turismo', // Viaje = Coche+Carretera? Ok. Placer = Alegría? 😄 ok. ('Coche'+'Carretera') + 'Alegria'. = Turismo.✈️🗺️ ok.
+    'Humano+Viaje': 'Turista',
+    'Turista+Mapa': 'Guía Turístico',
+    'Vehículo+Vehículo': 'Transporte', // Vehículo (Rueda+Metal?). ok. -> (Rueda+Metal) + (Rueda+Metal) = Transporte.
+    'Avión+Edificio': 'Aeropuerto',
+    'Tren+Edificio': 'Estación de Tren',
+    'Barco+Edificio': 'Puerto',
+    'Autobús+Señal': 'Parada de Autobús', // Autobús (Coche+Grande?) 🚗⛰️=🚌. OK. Señal = 📶? Use Poste (Madera+Tierra?). OK Autobús+Poste. 🚌🪵=🚌🛑 (need bus stop emoji).
+    'Conocimiento+Sistema': 'Educación', // Sistema ⚙️🔗 ok.
+    'Edificio+Estudiante': 'Escuela',
+    'Escuela+Adulto': 'Universidad', // Adulto = Humano+Tiempo? 🧑⏳ ok.
+    'Humano+Conocimiento': 'Profesor', // Reuse ok.
+    'Humano+Libro': 'Estudiante', // Reuse ok.
+    'Investigación+Experimento': 'Ciencia', // Research + Experiment leads to Science process.
+    'Humano+Ciencia': 'Científico', // Reuse ok.
+    'Pregunta+Experimento': 'Investigación', // Pregunta (Humano+?) = 🤔? Ok. '🤔'+'🧪'=🔬📜 ok.
+    'Laboratorio+Idea': 'Experimento',
+    'Belleza+Creación': 'Arte', // Creación = Idea+Trabajo? 🤔👷 Ok. Belleza 💅💖 ok.
+    'Humano+Arte': 'Artista',
+    'Color+Lienzo': 'Pintura', // Ya existe -> ok alternative recipe.
+    'Piedra+Herramienta': 'Escultura', // Reuse ok.
+    'Sonido+Ritmo': 'Música', // Ritmo 🎵🥁 ok.
+    'Humano+Música': 'Músico',
+    'Movimiento+Música': 'Danza',
+    'Humano+Danza': 'Bailarín',
+    'Edificio+Actor': 'Teatro', // Actor 🎭 ok.
+    'Humano+Máscara': 'Actor', // Máscara 🎭 ok.
+    'Actriz' : 'Actor+Mujer', // Simple differentiation
+    'Película+Edificio': 'Cine',
+    'Película+Líder': 'Director',
+    'Cámara+Historia': 'Película', // Historia 📜 ok.
+    'Libro+Libro': 'Literatura',
+    'Humano+Papel': 'Escritor', // Reuse ok.
+    'Sentimiento+Verso': 'Poesía', // Verso (Línea+Palabra?). Palabra (Letra+Letra?). Línea(Papel+Lápiz?). Letra ('A'?). Too deep. Use 'Sentimiento+Música' = Poesía. 💖🎶=📜❤️. OK.
+    'Humano+Poesía': 'Poeta',
+    'Papel+Palabra': 'Libro', // Already Papel+Tinta. OK.
+    'Noticias+Papel': 'Periódico',
+    'Periódico+Imagen': 'Revista', // Imagen = Foto 📸? Ok.
+    'Evento+Información': 'Noticias', // Evento = Tiempo+Lugar? OK Lugar(Mapa🗺️). ('Tiempo'+'Mapa')+ 'Información'ℹ️ = Noticias📰. OK.
+    'Humano+Noticias': 'Periodista',
+    'Luz+Papel': 'Fotografía', // Capturing light
+    'Humano+Fotografía': 'Fotógrafo',
+    'Dios+Creencia': 'Religión',
+    'Religión+Edificio': 'Iglesia', // O Templo, Mezquita etc. Default to church.
+    'Iglesia+Japón': 'Templo', // Japón = Isla+Sol? 🏝️☀️ ok.
+    'Religión+Desierto': 'Mezquita', // Geographic association simpl.
+    'Religión+Estrella de David': 'Sinagoga', // Estrella de David? (Estrella+Triángulo?) No -> Estrella+Judaismo. Need 'Judaismo'. Ok just use Sacerdote variation. Use 'Religión+Libro'=Sinagoga 🕍. OK.
+    'Iglesia+Humano': 'Sacerdote',
+    'Meditación+Religión': 'Monje', // Meditación 🧘 ok.
+    'Monje+Mujer': 'Monja',
+    'Humano+Dios': 'Rezar',
+    'Corazón+Religión': 'Fe',
+    'Pregunta+Existencia': 'Filosofía', // Existencia (Vida+Tiempo?) 🧬⏳ Ok. '🤔' + ('Vida'+'Tiempo') = 🤔 ok.
+    'Humano+Filosofía': 'Filósofo',
+    'Bien+Mal': 'Ética', // Ya existe como Conflicto -> Ok use this now.
+    'Corazón+Ley': 'Moral', // Internal 'law'
+    'Juego+Equipo': 'Deporte', // Equipo (Humano+Humano?). OK Juego+('Humano'+'Humano') = Deporte.
+    'Humano+Deporte': 'Atleta',
+    'Edificio+Deporte': 'Estadio',
+    'Edificio+Ejercicio': 'Gimnasio', // Ejercicio = Humano+Energía? 💪🏃 OK.
+    'Agua+Deporte': 'Piscina',
+    'Ganador+Metal': 'Medalla', // Ganador (Competición+Humano). OK (🏆🏁+🧑) + 'Metal'.
+    'Competición+Premio': 'Trofeo', // Premio = Medalla? Ok.
+    'Profesor+Deporte': 'Entrenador',
+    'Humano+Equipo': 'Aficionado', // Equipo ok.
+    'Salud+Ciencia': 'Medicina',
+    'Humano+Medicina': 'Médico', // Reuse ok
+    'Médico+Ayuda': 'Enfermero', // Ayuda (Mano+Corazón?) 🤝💖 OK.
+    'Médico+Cuchillo': 'Cirujano',
+    'Edificio+Salud': 'Hospital',
+    'Hospital+Pequeño': 'Clínica',
+    'Medicina+Tienda': 'Farmacia',
+    'Humano+Farmacia': 'Farmacéutico',
+    'Coche+Hospital': 'Ambulancia',
+    'Humano+Bienestar': 'Salud', // Bienestar (Paz+Salud?) Ok Paz+Salud Mental? ☮️🧠💖 OK -> Use 'Corazón+Paz' = Bienestar. OK.
+    'Humano+Malestar': 'Enfermedad', // Malestar (Estrés+Dolor?) Dolor=🤕? Ok. OK 'Estrés' + 'Dolor'.
+    'Vida+Enfermedad': 'Virus',
+    'Célula+Enfermedad': 'Bacteria',
+    'Virus+Medicina': 'Vacuna',
+    'Bacteria+Medicina': 'Antibiótico',
+    'Medicina+Planta': 'Medicina Alternativa',
+    'Aguja+Medicina Alternativa': 'Acupuntura',
+    'Ciencia+Máquina': 'Ingeniería',
+    'Humano+Ingeniería': 'Ingeniero',
+    'Edificio+Material': 'Construcción', // Material = Metal+Madera+Piedra? ok use Metal. Ok 'Edificio+Metal' = Construcción.
+    'Humano+Construcción': 'Constructor',
+    'Arte+Construcción': 'Arquitectura',
+    'Humano+Arquitectura': 'Arquitecto',
+    'Humano+Espacio': 'Astronauta',
+    'Fuego+Humano': 'Bombero', // Ya existe. ok.
+    'Comida+Humano': 'Cocinero', // Reuse ok.
+    'Pan+Cocinero': 'Panadero',
+    'Restaurante+Humano': 'Camarero',
+    'Tierra+Humano': 'Agricultor', // Reuse granjero ok.
+    'Bosque+Humano': 'Leñador', // Reuse ok.
+    'Montaña+Humano': 'Minero', // Reuse ok.
+    'Metal+Humano': 'Herrero', // Reuse ok.
+    'Madera+Humano': 'Carpintero',
+    'Electricidad+Humano': 'Electricista', // Reuse ok.
+    'Agua+Tubería+Humano': 'Fontanero', // Tubería needed -> 'Tubo+Agua'=Tubería 💧⛓️ Ok.
+    'Coche+Humano': 'Mecánico',
+    'Mar+Humano': 'Marinero', // Reuse ok.
+    'Pez+Humano': 'Pescador', // Reuse ok.
+    'Avión+Humano': 'Piloto', // Reuse ok.
+    'Vehículo+Humano': 'Conductor',
+    'Carta+Humano': 'Cartero', // Carta = Papel+Pluma? Ok.
+    'Libro+Humano': 'Bibliotecario',
+    'Lenguaje+Lenguaje+Humano': 'Traductor', // Lenguaje 🗣️ ok.
+    'Mapa+Humano': 'Guía',
+
+    // Need many more recipes, this is ~250-300 so far...
+    // Add technology recipes...
+    'Silicio+Electricidad': 'Semiconductor',
+    'Semiconductor+Metal': 'Chip',
+    'Chip+Pequeño': 'Microchip',
+    'Chip+Cerebro': 'Procesador',
+    'Chip+Memoria': 'Memoria RAM', // Memoria needed -> Humano+Pasado = Memoria? 🤔⏪ Ok.
+    'Procesador+Imagen': 'Tarjeta Gráfica',
+    'Chip+Conexión': 'Placa Base', // Conexión = Cable? Ok.
+    'Memoria+Magnético': 'Disco Duro', // Magnético = Metal+Electricidad? Ok.
+    'Disco Duro+Velocidad': 'SSD',
+    'Computadora+Instrucción': 'Software', // Instrucción = Papel+Ley? 📄📜 Ok.
+    'Software+Núcleo': 'Sistema Operativo', // Núcleo (Tierra) OK.
+    'Software+Smartphone': 'Aplicación', // Smartphone needed -> Teléfono+Computadora=📱. Ok.
+    'Matemáticas+Software': 'Algoritmo', // Matemáticas = Número+Número? (Número='1'? Text). OK. '1'+'1'=Matemáticas🔢.
+    'Humano+Computadora': 'Programación',
+    'Programación+Texto': 'Código Fuente', // Texto = Letra+Letra? Papel+Lápiz? OK Papel+Lápiz = Texto📝. Ok.
+    'Software+Error': 'Bug', // Error = 💥? ok.
+    'Computadora+Criminal': 'Hacker',
+    'Red+Red': 'Internet', // Red needed -> Hilo+Nudo? OK 🧶🪢=🕸️=Red. Ok. Red+Red=Internet🌐.
+    'Internet+Software': 'Navegador Web',
+    'Papel+Internet': 'Página Web',
+    'Carta+Internet': 'Email',
+    'Humano+Internet': 'Red Social',
+    'Radio+Internet': 'Wifi', // Radio (Electricidad+Sonido?) OK -> (⚡+🔊)=📻=Radio.
+    'Diente+Azul': 'Bluetooth', // Name origin myth :) Azul 🟦 ok.
+    'Cable+Luz': 'Fibra Óptica',
+    'Espacio+Radio': 'Satélite',
+    'Satélite+Mapa': 'GPS',
+    'Robot+Inteligencia': 'Inteligencia Artificial', // Inteligencia needed -> Cerebro+Electricidad? 🧠⚡ Ok.
+    'Inteligencia Artificial+Datos': 'Aprendizaje Automático', // Datos needed -> Información+Número? ℹ️🔢=📊=Datos. OK.
+    'Cerebro+Red': 'Red Neuronal',
+    'Gafas+Computadora': 'Realidad Virtual',
+    'Smartphone+Realidad': 'Realidad Aumentada', // Realidad = 🌍 ok.
+    'Papel+Máquina': 'Impresora',
+    'Impresora+Plástico': 'Impresora 3D',
+    'Papel+Luz+Máquina': 'Escáner',
+    'Avión+Cámara+Control Remoto': 'Dron', // Control Remoto (Radio+Botón?). OK -> (📻+⚫) = 🎮 = Control Remoto. Ok.
+    'Metal+Vida Artificial': 'Robot', // Vida Artificial (Vida+Electricidad?) 🧬⚡ ok.
+    'Robot+Humano': 'Androide',
+    'Humano+Robot': 'Cyborg',
+    'Armadura+Robot': 'Exoesqueleto',
+    'Energía+Núcleo': 'Energía Nuclear', // Núcleo = Tierra ok.
+    'Energía Nuclear+Edificio': 'Reactor Nuclear',
+    'Sol+Electricidad': 'Energía Solar',
+    'Energía Solar+Herramienta': 'Panel Solar',
+    'Viento+Electricidad': 'Energía Eólica',
+    'Energía Eólica+Máquina': 'Turbina Eólica',
+    'Agua+Electricidad': 'Energía Hidroeléctrica',
+    'Presa+Electricidad': 'Energía Hidroeléctrica', // Alt recipe. Presa needed (🧱💧).
+    'Tierra+Calor+Electricidad': 'Energía Geotérmica',
+    'Batería+Electricidad': 'Batería Recargable', // Batería already exists (🔋).
+    'Energía+Química': 'Pila', // = Batería. OK.
+    'Luz+Potencia': 'Láser', // Potencia = Energía+Energía? ⚡⚡ OK.
+    'Biología+Ingeniería': 'Biotecnología', // Biología = Ciencia+Vida 🔬🧬 ok.
+    'ADN+Tijeras': 'Ingeniería Genética',
+    'Vida+Copia': 'Clonación', // Copia = Papel+Impresora?📄🖨️ Ok.
+    'Planta+Ingeniería Genética': 'Transgénico',
+    'Frío+Vida': 'Criogenia',
+    'Tiempo+Máquina': 'Máquina del Tiempo',
+    'Espacio+Portal': 'Teletransportador', // Portal 🌀➡️ OK.
+    'Fuego+Motor': 'Motor de Combustión',
+    'Electricidad+Motor': 'Motor Eléctrico',
+    'Fuego+Aire+Motor': 'Motor a Reacción',
+    'Espacio+Vehículo': 'Cohete',
+    'Satélite+Casa': 'Estación Espacial',
+    'Cohete+Universo': 'Nave Espacial',
+
+    // ... Need maybe 100 more... focus on Objects & Tools, Abstract, Fantasy
+    // Objetos y Herramientas Ampliada
+    'Cuchillo+Cuchillo': 'Tijeras', // Dos hojas
+    'Herramienta+Multi': 'Navaja Suiza', // 'Multi' = Herramienta+Herramienta? OK.
+    'Tornillo+Herramienta': 'Destornillador', // Tornillo = Metal+Hilo? Ok.
+    'Metal+Agarrar': 'Alicates', // Agarrar = Mano? ok Metal+Humano=Alicates? No. -> Herramienta+Mano? 🛠️✋=🔧 ok.
+    'Cuchillo+Dientes': 'Sierra', // Dientes = Hueso? OK Cuchillo+Hueso.
+    'Motor+Punta': 'Taladro', // Punta = Metal+Agudo? Agudo = Cuchillo? ok. Metal+Cuchillo = Punta? OK. 'Motor+Punta'.
+    'Hilo+Hilo': 'Cuerda', // Ya existe recipe for Nudo 🪢? OK this one makes Cuerda first.
+    'Metal+Lazo': 'Cadena', // Lazo = Cuerda+Nudo? OK Metal+(Cuerda+Nudo). ⛓️ ok.
+    'Cadena+Llave': 'Candado',
+    'Puerta+Metal': 'Llave',
+    'Madera+Contenedor': 'Caja', // Contenedor = Vacío+Material? ⚫+🪵 -> 📦? Ok.
+    'Caja+Tesoro': 'Cofre',
+    'Tela+Contenedor': 'Bolsa',
+    'Bolsa+Espalda': 'Mochila', // Espalda = Humano+Hueso? Ok.
+    'Bolsa+Viaje': 'Maleta',
+    'Vidrio+Ojo': 'Gafas', // Ojo = Humano+Luz? OK 👀.
+    'Vidrio+Aumento': 'Lupa', // Aumento = Vidrio+Vidrio? OK.
+    'Lupa+Ciencia': 'Microscopio',
+    'Lupa+Espacio': 'Telescopio',
+    'Ojo+Telescopio': 'Prismáticos',
+    'Aguja Magnética+Caja': 'Brújula', // Aguja Magnética (Aguja+Electricidad?). OK.
+    'Tierra+Papel': 'Mapa',
+    'Mapa+Esfera': 'Globo Terráqueo', // Esfera = Círculo+3D? No. Esfera = Bola? Ok Balón⚽. -> 'Mapa+Balón'.
+    'Tiempo+Mecanismo': 'Reloj', // Mecanismo = Engranaje+Engranaje ok.
+    'Reloj+Muñeca': 'Reloj de Pulsera', // Muñeca = Brazo+Mano? Brazo = Hueso+Humano. Mano = Humano. Ok -> Reloj + ((Hueso+Humano)+Humano). -> 'Reloj+Humano'. Ok.
+    'Día+Mes': 'Calendario', // Mes = Luna+Tiempo? OK.
+    'Calor+Medida': 'Termómetro', // Medida = Regla? ok Calor+Regla.
+    'Presión+Medida': 'Barómetro',
+    'Peso+Medida': 'Balanza', // Peso = Piedra? ok Piedra+Regla.
+    'Línea+Medida': 'Regla', // Línea = Lápiz+Papel? ok -> (✏️+📄) + Regla(📏)? -> Regla+Medida = Regla? -> Lápiz+Número = Regla? Ok. ✏️+🔢 = 📏. OK.
+    'Círculo+Regla': 'Compás', // Círculo = Redondo? Redondo=Rueda? OK Rueda+Regla = Compás 🧭📐 ok.
+    'Triángulo+Regla': 'Escuadra', // Triángulo (Forma) OK -> Forma+Regla=Escuadra.
+    'Regla+Burbuja': 'Nivel', // Burbuja = Aire+Agua ok.
+    'Madera+Procesado': 'Papel', // Procesado = Agua+Máquina? Ok. 'Madera' + (Agua+Máquina) = Papel. -> Use 'Madera+Agua'=Papel (simple pulping).
+    'Papel+Papel': 'Cartón',
+    'Carbón+Madera': 'Lápiz',
+    'Tinta+Pluma': 'Bolígrafo', // Pluma=🪶. Tinta=🖋️.
+    'Cera+Color': 'Rotulador', // Cera (Vela?) OK. 'Vela+Color' = Crayon🖍️. Ok.
+    'Caucho+Error': 'Goma de Borrar',
+    'Lápiz+Cuchillo': 'Sacapuntas',
+    'Plástico+Líquido Pegajoso': 'Pegamento', // Líquido Pegajoso = Miel? Ok 'Plástico+Miel' = Pegamento.
+    'Pegamento+Papel': 'Cinta Adhesiva',
+    'Aguja+Cabeza': 'Chincheta', // Cabeza = Humano? OK Aguja+Humano.
+    'Metal+Papel': 'Clip',
+    'Clip+Máquina': 'Grapadora',
+    'Pelo+Palo': 'Pincel', // Pelo = Lana ok.
+    'Tela+Marco': 'Lienzo', // Marco = Madera+Madera? Ok.
+    'Pintura+Tabla': 'Paleta', // Tabla = Madera ok.
+    'Metal+Punta': 'Aguja',
+    'Algodón+Torno': 'Hilo', // Torno = Rueda+Máquina? Ok. 'Algodón' + (Rueda+Máquina). -> Use Algodón+Herramienta = Hilo? Ok.
+    'Aguja+Pequeño': 'Alfiler',
+    'Dedo+Metal': 'Dedal', // Dedo = Mano+Hueso? Ok. Dedo = Mano. Ok. -> Mano+Metal = Dedal? No. Use Ropa+Metal = Dedal? Ok.
+    'Tela+Círculo': 'Botón',
+    'Ropa+Engranaje': 'Cremallera',
+    'Pelo+Plástico': 'Peine',
+    'Pelo+Madera': 'Cepillo',
+    'Vidrio+Metal': 'Espejo', // Ya existe. OK.
+    'Flor+Alcohol': 'Perfume',
+    'Color+Cara': 'Maquillaje', // Cara = Humano ok.
+    'Grasa+Agua': 'Jabón', // Ya existe. ok.
+    'Jabón+Pelo': 'Champú',
+    'Agua+Poros': 'Esponja', // Poros? (Agujero?). OK -> 'Agua+Agujero'=Esponja? Use Queso+Agua = Esponja 🧀💧=🧽. Ok.
+    'Tela+Secar': 'Toalla', // Secar = Aire? OK Tela+Aire=Toalla.
+    'Diente+Limpiar': 'Pasta de Dientes', // Limpiar=Agua+Jabón? ok. 'Diente' + (Agua+Jabón). Diente = Hueso. OK.
+    'Cepillo+Diente': 'Cepillo de Dientes',
+    'Cera+Fuego': 'Vela',
+    'Luz+Batería': 'Linterna',
+    'Fuego+Madera pequeña': 'Cerilla', // Madera pequeña = Palo? Ok.
+    'Gasolina+Chispa': 'Mechero', // Chispa = Fuego+Piedra? Ok.
+    'Fuego+Agua+Presión': 'Extintor',
+    'Aire+Cuero': 'Balón', // Inflated leather ball
+    'Red+Madera': 'Raqueta',
+    'Madera+Deporte': 'Bate',
+    'Metal+Golf': 'Palo de Golf', // Golf = Hierba+Agujero? Ok.
+    'Nieve+Zapato': 'Esquís', // Zapato ok 👞.
+    'Nieve+Tabla': 'Tabla de Snowboard', // Tabla = Madera ok.
+    'Rueda+Tabla': 'Patinete', // Scooter
+    'Patinete+Madera': 'Monopatín', // Skateboard
+    'Hielo+Zapato': 'Patines', // Ice skates
+    'Rueda+Marco+Humano': 'Bicicleta', // Marco = Metal+Tubo? ok.
+    'Niño+Objeto': 'Juguete', // Niño = Bebé? ok. Objeto = Piedra? Ok -> 'Bebé+Piedra' = Juguete 🧸. OK.
+    'Juguete+Humanoide': 'Muñeca', // Humanoide = Humano+Pequeño? Ok.
+    'Juguete+Redondo': 'Pelota', // Redondo=Rueda.
+    'Juego+Reglas+Dado': 'Juego de Mesa', // Reglas = Ley? Ok. Dado 🎲 ok.
+    'Juego+Imagen+Número': 'Cartas', // Imagen = Foto 📸. ok.
+    'Juego de Mesa+Estrategia': 'Ajedrez', // Estrategia = Guerra+Mente? ⚔️🧠 OK.
+    'Azar+Cubo': 'Dados', // Cubo = Forma? OK Forma = 🔷.
+    'Imagen+Piezas': 'Rompecabezas', // Piezas = Roto? (Martillo+Objeto?). OK. 'Imagen' + (Martillo+Caja) = Rompecabezas 🧩. Ok.
+    'Viento+Papel+Hilo': 'Cometa',
+    'Aire+Caucho': 'Globo',
+    'Sonido+Aire+Pequeño': 'Silbato',
+    'Música+Boca': 'Armónica', // Boca = Humano? Ok.
+    'Madera+Aire+Agujero': 'Flauta',
+    'Cuerda+Arco+Madera': 'Violín', // Arco = Madera+Hilo OK.
+    'Cuerda+Madera+Caja': 'Guitarra',
+    'Tecla+Música': 'Piano', // Tecla = Blanco/Negro? Botón? OK Botón+Música=Piano.
+    'Cuero+Palo': 'Tambor',
+    'Metal+Aire+Música': 'Trompeta',
+    'Trompeta+Curva': 'Saxofón', // Curva = Río? Ok.
+    'Voz+Electricidad': 'Micrófono',
+    'Sonido+Electricidad': 'Altavoz',
+    'Altavoz+Oreja': 'Auriculares', // Oreja = Humano? Ok.
+
+
+    // Fantasy additions
+    'Humano+Pequeño+Tierra': 'Gnomo',
+    'Insecto+Humano+Magia': 'Hada',
+    'Mal+Pequeño': 'Duende',
+    'Gigante+Mal': 'Ogro',
+    'Montaña+Ogro': 'Troll',
+    'Humano+Muy Grande': 'Gigante', // Muy Grande = Montaña+Montaña? Ok.
+    'Gigante+Ojo': 'Cíclope', // Ojo = 👀 ok.
+    'Estatua+Murciélago': 'Gárgola',
+    'Águila+León': 'Grifo',
+    'Caballo+Grifo': 'Hipogrifo',
+    'León+Cabra+Serpiente': 'Quimera', // Cabra needs emoji 🐐. Ok Added. Leon🦁 Cabra🐐 Serpiente🐍 ok.
+    'León+Mujer+Pregunta': 'Esfinge', // Pregunta 🤔 ok.
+    'Toro+Hombre': 'Minotauro', // Toro = Vaca+Fuerza? 🐮💪=🐂 Ok Added. OK 🐂+👨=Minotauro.
+    'Caballo+Hombre': 'Centauro',
+    'Hombre+Cabra+Música': 'Sátiro',
+    'Pulpo+Gigante+Mar': 'Kraken',
+    'Ballena+Gigante+Mar': 'Leviatán',
+    'Serpiente+Rey+Veneno': 'Basilisco',
+    'Serpiente+Múltiple': 'Hidra', // Múltiple = Número+Número? OK. Serpiente+(1+1).
+    'Perro+Múltiple+Inframundo': 'Cerbero', // Inframundo (Muerte+Dios?) OK.
+    'Caballo+Alas': 'Pegaso', // Alas = Pájaro? Ok. Caballo+Pájaro=Pegaso.
+    'Guerrera+Alas+Cielo': 'Valquiria', // Guerrera (Mujer+Espada?). Ok.
+    'Gigante+Frío': 'Jotun',
+    'Espíritu+Naturaleza+Japón': 'Kami', // Espíritu = Fantasma? Ok. Naturaleza = Vida+Tierra? OK.
+    'Fantasma+Japón': 'Yokai',
+    'Zorro+Magia': 'Kitsune',
+    'Pájaro+Duende+Japón': 'Tengu',
+    'Demonio+Japón': 'Oni',
+    'Aire+Magia+Lámpara': 'Djinn', // Lámpara needed (Luz+Contenedor?). Ok.
+    'Mago+Elemento Químico': 'Elementalista', // Elemento ok.
+    'Mago+Muerte': 'Nigromante',
+    'Mago+Bosque': 'Druida',
+    'Guerrero+Fe': 'Paladín',
+    'Mago+Música': 'Bardo',
+    'Sacerdote+Curación': 'Clérigo', // Curación needed = Medicina+Magia? Ok.
+    'Mago+Poder Bruto': 'Hechicero', // Poder Bruto = Poder? Ok.
+    'Mujer+Magia': 'Bruja',
+    'Madera+Magia': 'Varita Mágica',
+    'Libro+Magia': 'Libro de Hechizos', // Reuse ok.
+    'Líquido+Magia': 'Poción Mágica',
+    'Contenedor+Magia+Fuego': 'Caldero',
+    'Escoba+Magia': 'Escoba Voladora', // Escoba = Hierba+Palo? Ok.
+    'Cristal+Magia': 'Bola de Cristal',
+    'Joya+Magia': 'Amuleto', // Joya 💎 ok.
+    'Amuleto+Protección': 'Talismán', // Protección = Escudo? Ok.
+    'Anillo+Magia': 'Anillo Mágico',
+    'Espada+Magia': 'Espada Mágica',
+    'Armadura+Magia': 'Armadura Mágica',
+    'Piedra+Símbolo+Magia': 'Runa', // Símbolo ('A'?) OK.
+    'Magia+Puerta dimensional': 'Portal', // Puerta dimensional (Puerta+Espacio?) Ok.
+    'Mago+Portal': 'Dimensión Mágica',
+    'Agua+Magia': 'Maná',
+    'Magia+Palabra': 'Encantamiento', // Palabra ok.
+    'Maldición+Encantamiento': 'Maldición', // Make it negative? OK Encantamiento+Mal=Maldición.✨😈=💀📜. Ok.
+    'Demonio+Portal': 'Invocación',
+    'Ángel+Invocación': 'Exorcismo',
+    'Animal+Magia': 'Metamorfosis',
+    'Aire+Magia': 'Invisibilidad',
+    'Mente+Movimiento': 'Telequinesis', // Mente = Cerebro? OK.
+    'Mente+Voz': 'Telepatía',
+    'Ojo+Futuro': 'Precognición',
+    'Ciencia+Magia': 'Alquimia', // Reuse ok.
+    'Alquimia+Piedra': 'Piedra Filosofal',
+    'Poción Mágica+Vida+Inmortalidad': 'Elixir de la Vida', // Inmortalidad (Vida+Tiempo?). Ok.
+    'Humano+Pequeño+Alquimia': 'Homúnculo',
+    'Lodo+Vida': 'Limo', // Simplest creature. Ya existe Barro? Ok.
+    'Limo+Cubo': 'Cubo Gelatinoso', // Cubo 🔷 ok.
+    'Cofre+Dientes': 'Mimic', // Dientes = Hueso? OK.
+    'Nigromante+Esqueleto': 'Liche',
+    'Fantasma+Venganza': 'Revenant', // Venganza = Ira+Muerte? 😠💀 Ok.
+    'Fantasma+Ruido': 'Poltergeist',
+    'Ángel+Fuego': 'Ángel Caído',
+    'Ángel+Humano': 'Nephilim', // Ya existe Milagro? Ok.
+    'Lobo+Humano': 'Cambiapieles', // O 'Hombre Lobo', ya existe.
+    'Dragón+Hielo': 'Dragón de Hielo',
+    'Dragón+Fuego': 'Dragón de Fuego', // Standard dragon maybe is this one
+    'Dragón+Electricidad': 'Dragón Eléctrico',
+
+
+    // Final ~50 recipes needed for the count: Abstract, Culture, Misc
+    'Papel+Plegar': 'Origami', // Plegar = Papel+Mano? OK Papel+(Papel+Mano). Ok Papel+Mano = Plegar 📄✋=Fold? OK. 📄+Fold = Origami.
+    'Origami+Tijeras': 'Kirigami',
+    'Hilo+Nudo': 'Macramé', // Ya existe -> Red? OK Macramé ok.
+    'Hilo+Aguja gancho': 'Ganchillo', // Aguja gancho = Aguja+Curva? OK.
+    'Hilo+Aguja punto': 'Tejido', // Aguja punto = Aguja? ok.
+    'Tela+Hilo+Dibujo': 'Bordado', // Dibujo = Lápiz+Papel? Ok.
+    'Vidrio+Color+Sol': 'Vidriera',
+    'Piedra+Color+Pegamento': 'Mosaico',
+    'Pintura+Pared+Noche': 'Grafiti', // Done at night? Or use Spray? OK Pintura+SprayCan (Metal+Aire?). OK -> 'Pintura' + (Metal+Aire).
+    'Tinta+Belleza+Papel': 'Caligrafía',
+    'Escritura+Velocidad': 'Taquigrafía', // Escritura = Lápiz+Papel ok.
+    'Humano+Sonido': 'Idioma', // Reuse OK? Lenguaje?
+    'Idioma+Región': 'Dialecto', // Región = Mapa? ok.
+    'Idioma+Grupo': 'Jerga', // Grupo = Humano+Humano ok.
+    'Hablar+Mentira': 'Sarcasmo', // Hablar=🗣️, Mentira=🤥. OK.
+    'Verdad+Contrario': 'Ironía', // Contrario = Espejo? Ok Verdad+Espejo. ✅🪞=🤔 OK.
+    'Símbolo+Comparación': 'Metáfora', // Comparación = Igualdad? Balanza? Ok Símbolo+Balanza ('A'+⚖️)=🍎❤️? OK.
+    'Lógica+Contradicción': 'Paradoja', // Contradicción = Verdad+Mentira? ✅🤥=💥? OK Lógica+Contradicción = Paradox. 🧠⚙️💥=Paradox.
+    'Elección+Difícil': 'Dilema', // Elección=🤔? Difícil=Piedra? Ok 🤔+🗿=Dilema⚖️. Ok.
+    'Imagen+Internet+Humor': 'Meme', // Humor = Risa 😂? Ok Imagen+Internet+Risa=Meme.
+    'Meme+Rápido': 'Viral', // Rápido=Velocidad🚀. OK Meme+Velocidad.
+    'Humano+Fama+Internet': 'Influencer',
+    'Ropa+Tiempo': 'Moda', // Reuse ok.
+    'Moda+Popularidad': 'Tendencia', // Popularidad = Fama? ok.
+    'Cultura+Oposición': 'Contracultura', // Cultura(Humano+Arte?) ok. Oposición (No? != ). OK Cultura + != = Contracultura.
+    'Grupo+Cultura': 'Subcultura',
+    'Familia+Tiempo': 'Generación',
+    'Generación+Conflicto': 'Brecha Generacional',
+    'Pasado+Tristeza': 'Nostalgia', // Or Felicidad? OK Pasado+Corazón = Nostalgia ⏪💖 ok.
+    'Idea+Repetida': 'Arquetipo', // Repetida = Eco? OK Idea+Eco.
+    'Grupo+Idea Simplista': 'Estereotipo', // Idea Simplista = Idea+Pequeño? ok.
+    'Estereotipo+Odio': 'Prejuicio', // Odio = Corazón Negro? 🖤 ok.
+    'Corazón+Comprender': 'Empatía', // Comprender = Mente+Corazón? Ok. Corazón+(Mente+Corazón) = Empatía.
+    'Tristeza+Compañía': 'Simpatía', // Compañía = Humano? ok.
+    'Empatía+Tristeza': 'Compasión',
+    'Dar+Sin recibir': 'Altruismo', // Dar = Mano+Corazón? Recibir=Mano? OK (🤝💖) + ('Sin'+🤝). Ok.
+    'Yo+Mucho': 'Egoísmo', // Yo = Humano? Mucho = Montaña? Ok. Humano+Montaña.
+    'Egoísmo+Espejo': 'Narcisismo',
+    'Conocimiento+Pequeñez': 'Humildad', // Pequeñez = Bebé? OK.
+    'Logro+Satisfacción': 'Orgullo', // Logro = Meta+Hecho? OK. Satisfacción = Alegría? OK.
+    'Querer+OtroTiene': 'Envidia', // Querer=Corazón? OtroTiene=Humano+Joya? ok. ❤️+(🧑💎)=💚😠 ok.
+    'Amor+MiedoPerder': 'Celos', // MiedoPerder = Miedo+Perder(Papelera🗑️?). ok. ❤️+(😨🗑️)=😠💔 ok.
+    'Error+Tristeza': 'Culpa',
+    'Error+Social': 'Vergüenza', // Social = Humano+Humano ok.
+    'Nada+Tiempo': 'Aburrimiento',
+    'Pregunta+Mundo': 'Curiosidad', // Mundo=🌍. Ok.
+    'Belleza+Sorpresa': 'Asombro', // Sorpresa = 😮 ok.
+    'Idea+Belleza': 'Inspiración',
+    'Meta+Energía': 'Motivación',
+    'Voluntad+Rutina': 'Disciplina', // Voluntad=Corazón+Fuerza? OK. Rutina = Tiempo+Repetición(Eco?) OK. -> (❤️💪)+(⏳+🗣️🗣️) = Disciplina 🧘⛓️ OK.
+    'Acción+Repetición': 'Hábito', // Acción = Movimiento? Ok.
+    'Hábito+Químico': 'Adicción', // Químico = Poción? Ok. Hábito+Poción = Adicción.
+    'Adicción+Voluntad': 'Recuperación',
+    'Mente+Calma': 'Meditación', // Calma = Agua Quieta? OK. Mente+Agua.
+    'Cuerpo+Mente+Estirar': 'Yoga', // Estirar=Cuerda? ok. Cuerpo(Humano)+Mente+Cuerda = Yoga.
+    'Presente+Atención': 'Mindfulness', // Atención = Ojo? OK. Presente▶️ + Ojo👀. OK.
+    'Meditación+Filosofía+Japón': 'Zen',
+
+    // Safety buffer recipes to ensure count > 500
+    'Energía+Caos': 'Explosión', // Alternative recipe
+    'Nube+Nube': 'Cielo Nublado', // Cielo Nublado needed? Use Cielo 🌌. Ok.
+    'Fruta+Vegetal': 'Ensalada', // Vegetal = Planta? OK. Fruta+Planta = Ensalada 🥗 Added.
+    'Electricidad+Agua': 'Rayos en Agua', // Placeholder for danger? Ok -> ⚡💧 = ☠️? Ok.
+    'Bosque+Oscuridad': 'Miedo', // Environmental trigger
+    'Papel+Secreto': 'Diario', // Diary 📓 Needed. OK use Libreta. OK.
+    'Mar+Basura': 'Contaminación', // Pollution Needed ->🏭💨 Added. OK Mar+Basura=Contaminación.
+    'Ciudad+Contaminación': 'Smog', // 🌫️ needed. ok.
+    'Tiempo+Montaña': 'Erosión', // Alternative recipe ok.
+    'Árbol+Fruta+Caída': 'Newton', // Reference. Caída = Gravedad? ok. -> Árbol+Fruta+Gravedad= Newton 🧑‍🔬 ok? Use Científico. Ok.
+    'Libro+Final': 'Conclusión', // Final needed = ⏹️ ok. // Learning from the past remains ⏳🧱->📜? OK.
+
+                // ... Aquí termina tu gran objeto recipes
+            };
+
+
+         // --- ESTADO DEL JUEGO ---
+        let elementBeingDragged = null;
+        let craftingSlots = [];
+        let discoveredElements = new Set(['Agua', 'Fuego', 'Tierra', 'Aire']); // Asegúrate que estos coincidan con tus datos base
+        let discoveryRecipes = {};
+        let hintGenerationInProgress = false;
+        let statusTimeoutId = null;
+
+        // --- DECLARACIÓN DE REFERENCIAS AL DOM (SOLO UNA VEZ) ---
+        let elementListDiv, craftingAreaDiv, statusMessageDiv, clearCraftingButton,
+            craftingAreaPlaceholder, statsDisplaySpan, searchBarInput, hintButton,
+            hintModal, adButton, hintDisplay, closeHintModalBtn;
+        let audioElements = {};
+
+        // --- FUNCIONES AUXILIARES ---
+        function getEmoji(elementName) {
+            if (typeof elementEmojis !== 'object' || elementEmojis === null) return '❓';
+            if (!elementEmojis.hasOwnProperty(elementName)) return '❓';
+            const emoji = elementEmojis[elementName]?.trim(); // Usa optional chaining y trim
+            return (emoji && emoji.length > 0) ? emoji : '❓';
+        }
+
+        function playSound(soundId) {
+            const audio = audioElements[soundId];
+            if (audio && audio.play) { // Verifica que sea un elemento de audio válido
+                audio.currentTime = 0;
+                audio.play().catch(error => {/* Silencia errores comunes como interacción no permitida */});
+            }
+        }
+
+        // --- GESTIÓN DE PROGRESO (LocalStorage) ---
+        function saveProgress() {
+            if (!discoveredElements || discoveredElements.size === 0) return;
+            try {
+                const progress = {
+                    discovered: Array.from(discoveredElements),
+                    crafting: craftingSlots || [],
+                    recipes: discoveryRecipes || {}
+                };
+                // Evita guardar si no hay cambios reales o significativos
+                if (progress.discovered.length > 4 || progress.crafting.length > 0 || Object.keys(progress.recipes).length > discoveredElements.size) {
+                    localStorage.setItem('craftManiaProgress_Deluxe_v2', JSON.stringify(progress)); // Nueva clave para evitar conflictos
+                }
+            } catch (e) {
+                console.error("Error guardando progreso:", e);
+                if (typeof showStatusMessage === 'function' && (e.name === 'QuotaExceededError' || String(e).includes('storage'))) {
+                     showStatusMessage("Error guardando (Almacenamiento lleno)", "error", 5000);
+                }
+            }
+        }
+
+        function loadProgress() {
+            let loadedDiscovered = ['Agua', 'Fuego', 'Tierra', 'Aire']; // Asegúrate que estos existen en tus emojis
+            let loadedCrafting = [];
+            let loadedRecipes = {};
+            loadedDiscovered.forEach(el => loadedRecipes[el] = 'Inicial');
+
+            try {
+                const savedProgress = localStorage.getItem('craftManiaProgress_Deluxe_v2'); // Usar la nueva clave
+                if (savedProgress) {
+                    const progress = JSON.parse(savedProgress);
+
+                    if (Array.isArray(progress.discovered) && progress.discovered.length > 0 && progress.discovered.every(item => typeof item === 'string')) {
+                        loadedDiscovered = progress.discovered;
+                    }
+                    if (Array.isArray(progress.crafting) && progress.crafting.every(item => typeof item === 'string')) {
+                        loadedCrafting = progress.crafting;
+                    }
+                    if (typeof progress.recipes === 'object' && progress.recipes !== null) {
+                         loadedRecipes = Object.entries(progress.recipes)
+                             .filter(([key, value]) => typeof key === 'string' && typeof value === 'string' && value.includes('+') || value === 'Inicial') // Filtrar recetas válidas
+                             .reduce((obj, [key, value]) => { obj[key] = value; return obj; }, {});
+                    }
+                }
+            } catch (e) {
+                console.error("Error cargando progreso:", e);
+                // Se usarán los defaults definidos arriba
+            }
+
+            discoveredElements = new Set(loadedDiscovered);
+            craftingSlots = loadedCrafting;
+            discoveryRecipes = loadedRecipes;
+
+            // Re-asegurar recetas iniciales si faltan después de la carga/filtrado
+            ['Agua', 'Fuego', 'Tierra', 'Aire'].forEach(el => {
+                 if (!discoveryRecipes[el]) discoveryRecipes[el] = 'Inicial';
+            });
+        }
+
+        // --- RENDERIZADO Y ACTUALIZACIONES VISUALES ---
+        function renderElementList(filter = '') {
+            if (!elementListDiv || typeof elementEmojis !== 'object' || elementEmojis === null) return;
+
+            elementListDiv.innerHTML = '';
+            const filterLower = filter.toLowerCase().trim();
+            let displayedCount = 0;
+
+            const sortedDiscovered = Array.from(discoveredElements)
+                .filter(name => typeof name === 'string' && name.trim() !== "" && elementEmojis.hasOwnProperty(name)) // Filtrar inválidos y sin emoji
+                .sort((a, b) => a.localeCompare(b));
+
+            sortedDiscovered.forEach(elementName => {
+                if (filterLower && !elementName.toLowerCase().includes(filterLower)) return;
+
+                displayedCount++;
+                const elementDiv = document.createElement('div');
+                elementDiv.className = 'element';
+                elementDiv.draggable = true;
+                elementDiv.dataset.elementName = elementName;
+
+                const emojiSpan = document.createElement('span');
+                emojiSpan.className = 'emoji';
+                emojiSpan.textContent = getEmoji(elementName);
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'element-name';
+                nameSpan.textContent = elementName;
+
+                elementDiv.appendChild(emojiSpan);
+                elementDiv.appendChild(nameSpan);
+
+                const recipe = discoveryRecipes[elementName];
+                if (recipe && recipe !== 'Inicial' && recipe.includes('+')) {
+                    const tooltipSpan = document.createElement('span');
+                    tooltipSpan.className = 'recipe-tooltip';
+                    tooltipSpan.textContent = 'ℹ️';
+                    try {
+                        const ingredients = recipe.split('+');
+                        if (ingredients.length === 2 && ingredients.every(ing => typeof ing === 'string')) {
+                           tooltipSpan.title = `Obtenido de: ${getEmoji(ingredients[0])} ${ingredients[0]} + ${getEmoji(ingredients[1])} ${ingredients[1]}`;
+                        } else { tooltipSpan.title = 'Info no disponible'; }
+                    } catch (e) { tooltipSpan.title = 'Error en info'; }
+                    elementDiv.appendChild(tooltipSpan);
+                } else if (recipe === 'Inicial') {
+                    elementDiv.title = "Elemento inicial";
+                }
+
+                elementDiv.addEventListener('dragstart', handleDragStart);
+                elementDiv.addEventListener('dragend', handleDragEnd);
+                elementDiv.addEventListener('click', handleClickElementInList);
+
+                elementListDiv.appendChild(elementDiv);
+            });
+
+            if (displayedCount === 0 && elementListDiv) { // Solo mostrar mensaje si no hay elementos *después* de filtrar
+                const message = filterLower
+                    ? 'No se encontraron elementos.'
+                    : (discoveredElements.size <= 4 ? '¡Combina para descubrir más!' : 'Lista vacía.');
+                elementListDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: #777; font-style: italic;">${message}</div>`;
+            }
+            updateStatsDisplay();
+        }
+
+        function updateCraftingAreaDisplay() {
+            if (!craftingAreaDiv || !craftingAreaPlaceholder) return;
+
+            craftingAreaDiv.querySelectorAll('.crafting-slot').forEach(slot => slot.remove());
+
+            let validSlotsRendered = 0;
+            craftingSlots.forEach(elementName => {
+                if (elementEmojis.hasOwnProperty(elementName)) { // Render only valid elements
+                    validSlotsRendered++;
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'crafting-slot';
+                    slotDiv.dataset.elementName = elementName;
+                    slotDiv.innerHTML = `<span class="emoji">${getEmoji(elementName)}</span> <span class="element-name">${elementName}</span>`;
+                    slotDiv.addEventListener('click', handleClickElementInCrafting);
+                    craftingAreaDiv.insertBefore(slotDiv, craftingAreaPlaceholder);
+                }
+            });
+            craftingAreaPlaceholder.style.opacity = validSlotsRendered === 0 ? '1' : '0';
+        }
+
+        function showStatusMessage(message, type = 'info', duration = 3500) {
+            if (!statusMessageDiv) return;
+            if (statusTimeoutId) clearTimeout(statusTimeoutId);
+            const existingHideTimeout = statusMessageDiv.dataset.hideTimeoutId;
+            if (existingHideTimeout) clearTimeout(parseInt(existingHideTimeout));
+
+            statusMessageDiv.innerHTML = message;
+            statusMessageDiv.className = `status-${type}`; // Assign class directly
+            statusMessageDiv.style.display = 'block';
+            requestAnimationFrame(() => { // Ensure display is set before changing opacity
+                 statusMessageDiv.style.opacity = '1';
+            });
+
+            if (type === 'error' && craftingAreaDiv) {
+                craftingAreaDiv.classList.remove('shake-error'); // Ensure reset before re-adding
+                void craftingAreaDiv.offsetWidth;
+                craftingAreaDiv.classList.add('shake-error');
+                setTimeout(() => craftingAreaDiv?.classList.remove('shake-error'), 400);
+            }
+
+            statusTimeoutId = setTimeout(() => {
+                if (!statusMessageDiv) return;
+                statusMessageDiv.style.opacity = '0';
+                const hideTimeout = setTimeout(() => {
+                    if (statusMessageDiv) statusMessageDiv.style.display = 'none';
+                    if (statusMessageDiv) statusMessageDiv.dataset.hideTimeoutId = '';
+                }, 400);
+                statusMessageDiv.dataset.hideTimeoutId = String(hideTimeout);
+            }, duration);
+        }
+
+        function updateStatsDisplay() {
+            if (!statsDisplaySpan || typeof elementEmojis !== 'object') return;
+            const totalElements = Object.keys(elementEmojis).length;
+            const discoveredCount = (discoveredElements instanceof Set) ? discoveredElements.size : 0;
+            statsDisplaySpan.textContent = `Descubiertos: ${discoveredCount} / Total: ${totalElements}`;
+        }
+
+        // --- LÓGICA DE INTERACCIÓN (DRAG & DROP, CLICKS) ---
+        function handleDragStart(event) {
+             const target = event.currentTarget;
+             const elementName = target?.dataset?.elementName;
+             if (!elementName || !elementEmojis.hasOwnProperty(elementName)) {
+                 event.preventDefault(); return;
+             }
+             playSound('audio-drag');
+             elementBeingDragged = elementName;
+             event.dataTransfer.setData('text/plain', elementBeingDragged);
+             event.dataTransfer.effectAllowed = 'move';
+             target.classList.add('dragging');
+             if (craftingSlots.length === 0 && craftingAreaPlaceholder) craftingAreaPlaceholder.style.opacity = '0';
+        }
+
+        function handleDragEnd(event) {
+            const target = event.currentTarget;
+             target?.classList.remove('dragging'); // Optional chaining
+             setTimeout(() => { // Delay to check conditions after potential drop
+                // Restore placeholder only if area is empty AND drag didn't successfully end on it
+                 if (craftingSlots.length === 0 && craftingAreaPlaceholder && !craftingAreaDiv?.classList.contains('drag-over')) {
+                     craftingAreaPlaceholder.style.opacity = '1';
+                 }
+                 // Ensure drag-over class is removed if drag ends elsewhere
+                  craftingAreaDiv?.classList.remove('drag-over');
+             }, 50);
+             elementBeingDragged = null;
+        }
+
+        function handleClickElementInList(event) {
+            const elementName = event.currentTarget?.dataset?.elementName;
+            if (!elementName || !elementEmojis.hasOwnProperty(elementName)) return;
+            if (craftingSlots.length < 2) {
+                playSound('audio-drop');
+                craftingSlots.push(elementName);
+                updateCraftingAreaDisplay();
+                if (craftingSlots.length === 2) setTimeout(attemptCombination, 200);
+                saveProgress();
+            } else {
+                showStatusMessage('Zona de crafteo llena.', 'info');
+            }
+        }
+
+        function handleClickElementInCrafting(event) {
+            const slotDiv = event.currentTarget;
+            const elementName = slotDiv?.dataset?.elementName;
+            if (!elementName) return;
+            const index = craftingSlots.indexOf(elementName); // Simpler than findIndex here
+            if (index > -1) {
+                playSound('audio-clear');
+                craftingSlots.splice(index, 1);
+                slotDiv.style.opacity = '0';
+                slotDiv.style.transform = 'scale(0.8) translateX(20px)';
+                setTimeout(() => {
+                    slotDiv.parentNode?.removeChild(slotDiv);
+                    updateCraftingAreaDisplay(); // Update after removal
+                    saveProgress();
+                }, 300);
+            }
+        }
+
+              // --- LÓGICA DE COMBINACIÓN ---
+        function attemptCombination() {
+            // --- Validaciones iniciales ---
+            if (craftingSlots.length !== 2) {
+                console.warn("AttemptCombination llamado con", craftingSlots.length, "elementos. Se requieren 2.");
+                return;
+            }
+            if (!elementEmojis.hasOwnProperty(craftingSlots[0]) || !elementEmojis.hasOwnProperty(craftingSlots[1])) {
+                 showStatusMessage(`Error: Elemento inválido detectado en la zona (${craftingSlots[0]} o ${craftingSlots[1]}).`, "error");
+                 playSound('audio-fail');
+                 setTimeout(() => clearCraftingArea(false), 1500);
+                 console.error("Elemento inválido en craftingSlots:", craftingSlots);
+                 return;
+            }
+            if (typeof recipes !== 'object' || recipes === null) {
+                 showStatusMessage("Error crítico: Recetas no cargadas correctamente.", "error");
+                 playSound('audio-fail');
+                 console.error("El objeto 'recipes' no es válido o está vacío.");
+                 return;
+            }
+
+            // --- Proceso de combinación ---
+            const originalElem1 = craftingSlots[0]; // Guardar el orden original
+            const originalElem2 = craftingSlots[1];
+
+            // Ordenar alfabéticamente para la búsqueda *preferida*
+            const [elem1, elem2] = [...craftingSlots].sort();
+            const sortedKey = `${elem1}+${elem2}`; // Clave ordenada alfabéticamente
+
+            let resultElement = undefined; // Variable para almacenar el resultado
+            let foundKey = ''; // Variable para saber qué clave funcionó
+
+            // --- Búsqueda Flexible de Recetas ---
+            console.log(`-----------------------------------`);
+            console.log(`[DEBUG] Intentando combinar:`);
+            console.log(`        Slots originales: ${originalElem1} + ${originalElem2}`);
+            console.log(`        Elementos ordenados: ${elem1} + ${elem2}`);
+            console.log(`        Intentando con clave ordenada: '${sortedKey}'`);
+
+            // 1. Intentar con la clave ordenada (idealmente como deberían estar las recetas)
+            resultElement = recipes[sortedKey];
+            if (resultElement) {
+                foundKey = sortedKey;
+                console.log(`[DEBUG] ¡Encontrado! con clave ordenada. Resultado: '${resultElement}'`);
+            } else {
+                 console.log(`[DEBUG] No encontrado con clave ordenada. Intentando con clave invertida (si es diferente)...`);
+                // 2. Si la clave ordenada falló Y los elementos son diferentes, intentar la clave invertida
+                if (elem1 !== elem2) { // Solo intentar la inversa si los elementos no son iguales
+                    const reversedKey = `${elem2}+${elem1}`; // Crear la clave con orden inverso alfabético
+                    console.log(`        Intentando con clave invertida: '${reversedKey}'`);
+                    resultElement = recipes[reversedKey];
+                    if (resultElement) {
+                        foundKey = reversedKey; // Registrar que la clave invertida funcionó
+                        console.log(`[DEBUG] ¡Encontrado! con clave invertida. Resultado: '${resultElement}'`);
+                    } else {
+                         console.log(`[DEBUG] No encontrado tampoco con clave invertida.`);
+                    }
+                } else {
+                     console.log(`[DEBUG] Elementos iguales, no se intenta clave invertida.`);
+                }
+            }
+            console.log(`-----------------------------------`);
+            // --- Fin Búsqueda Flexible ---
+
+
+            // --- Lógica principal (Éxito o Fracaso) ---
+            // Verificar si se encontró un resultado (con CUALQUIERA de las claves), si es string, y tiene emoji
+            if (resultElement && typeof resultElement === 'string' && elementEmojis.hasOwnProperty(resultElement)) {
+                console.log(`[DEBUG] CONDICIÓN IF DE ÉXITO PASADA (Clave usada: '${foundKey}')`);
+
+                const resultEmoji = getEmoji(resultElement);
+                const isNewDiscovery = !discoveredElements.has(resultElement);
+
+                // Usar la clave 'foundKey' (la que realmente funcionó) para guardar en discoveryRecipes
+                const actualRecipeKeyUsed = foundKey;
+
+                console.log(`Éxito: Receta '${actualRecipeKeyUsed}' -> ${resultEmoji} ${resultElement} (Nuevo: ${isNewDiscovery})`);
+
+                clearCraftingArea(false); // Limpiar visualmente
+
+                if (isNewDiscovery) {
+                    // --- Nuevo Descubrimiento ---
+                    if (discoveredElements instanceof Set) {
+                         discoveredElements.add(resultElement);
+                         // Guardar SIEMPRE la clave ORDENADA en discoveryRecipes para consistencia interna del progreso
+                         discoveryRecipes[resultElement] = sortedKey; // <<< GUARDA LA CLAVE ORDENADA
+                         console.log(`[INFO] Receta para '${resultElement}' guardada como '${sortedKey}'`);
+                         showStatusMessage(`¡Nuevo Descubrimiento! ${resultEmoji} ${resultElement}`, 'success', 4000);
+                         playSound('audio-new');
+                         renderElementList(searchBarInput?.value ?? '');
+                         if (craftingAreaDiv) {
+                             craftingAreaDiv.classList.remove('success-glow-animation');
+                             void craftingAreaDiv.offsetWidth;
+                             craftingAreaDiv.classList.add('success-glow-animation');
+                             setTimeout(() => craftingAreaDiv?.classList.remove('success-glow-animation'), 800);
+                         }
+                         saveProgress();
+                    } else { /* ... manejo error Set ... */ }
+                } else {
+                     // --- Elemento ya Descubierto ---
+                     // Usar elem1 y elem2 (ordenados) para mostrar mensaje consistente
+                     showStatusMessage(`Ya conocido: ${getEmoji(elem1)} + ${getEmoji(elem2)} = ${resultEmoji} ${resultElement}`, 'info');
+                     playSound('audio-success');
+                     // Asegurar guardar la receta (ordenada) si faltaba en save
+                     if (!discoveryRecipes[resultElement] && !['Agua', 'Fuego', 'Tierra', 'Aire'].includes(resultElement)) {
+                         console.log(`[INFO] Guardando receta '${sortedKey}' para '${resultElement}' existente (no estaba registrada).`);
+                         discoveryRecipes[resultElement] = sortedKey; // GUARDA LA CLAVE ORDENADA
+                         saveProgress();
+                     }
+                }
+            } else {
+                // --- Fallo en la combinación ---
+                console.error(`[DEBUG] CONDICIÓN IF DE ÉXITO FALLIDA.`);
+
+                if (resultElement && typeof resultElement === 'string' && !elementEmojis.hasOwnProperty(resultElement)) {
+                    console.error(`Error: El resultado '${resultElement}' de la receta usada ('${foundKey || 'ninguna'}') no tiene emoji.`);
+                    showStatusMessage(`Error de datos: Falta emoji para '${resultElement}'.`, 'error');
+                } else {
+                    // Usar elem1 y elem2 ordenados para el mensaje de error, para que sea consistente
+                    showStatusMessage(`Nada resulta de ${getEmoji(elem1)} + ${getEmoji(elem2)}...`, 'error');
+                }
+
+                playSound('audio-fail');
+                if(craftingAreaDiv){ /* ... código del shake error ... */ }
+                setTimeout(() => clearCraftingArea(false), 1500);
+            }
+        } // Fin de attemptCombination
+
+        function clearCraftingArea(manual = true) { // Renamed arg for clarity
+            if (manual && craftingSlots.length > 0) playSound('audio-clear');
+            craftingSlots = [];
+            updateCraftingAreaDisplay();
+            saveProgress(); // Always save after clearing
+        }
+
+        // ... resto de tus funciones ...
+
+         // --- LÓGICA DEL SISTEMA DE PISTAS ---
+        function generateAndShowHint() {
+            if (!hintDisplay || typeof recipes !== 'object' || !(discoveredElements instanceof Set)) {
+                if(hintDisplay) hintDisplay.textContent = "Error al generar pista.";
+                playSound('audio-fail'); if(adButton) adButton.disabled = false; hintGenerationInProgress = false;
+                return;
+            }
+
+            const potentialHints = [];
+            for (const recipeKey in recipes) {
+                 // Skip inherited properties & validate key format
+                if (!Object.hasOwnProperty.call(recipes, recipeKey) || !recipeKey.includes('+')) continue;
+
+                const resultElement = recipes[recipeKey];
+                if (typeof resultElement !== 'string' || !elementEmojis.hasOwnProperty(resultElement) || discoveredElements.has(resultElement)) continue; // Skip invalid or discovered
+
+                const ingredients = recipeKey.split('+');
+                if (ingredients.length === 2) {
+                    const [ing1, ing2] = ingredients;
+                    if (elementEmojis.hasOwnProperty(ing1) && elementEmojis.hasOwnProperty(ing2) && // Validate ingredients
+                        discoveredElements.has(ing1) && discoveredElements.has(ing2) && // Check if discovered
+                        resultElement !== ing1 && resultElement !== ing2) { // Avoid self-referential hints
+                            potentialHints.push({ ing1, ing2, result: resultElement });
+                    }
+                }
+            }
+
+            if (potentialHints.length > 0) {
+                const hint = potentialHints[Math.floor(Math.random() * potentialHints.length)];
+                hintDisplay.innerHTML = `Pista: Intenta ${getEmoji(hint.ing1)} <strong>${hint.ing1}</strong> + ${getEmoji(hint.ing2)} <strong>${hint.ing2}</strong>...`;
+                playSound('audio-hint-unlock'); console.log("Pista generada:", hint);
+            } else {
+                hintDisplay.textContent = "¡Sigue experimentando o descubre más elementos base!";
+                // Optionally play a different sound for no hints found
+            }
+
+            if (adButton) adButton.disabled = false;
+            hintGenerationInProgress = false;
+        }
+
+        function openHintModal() {
+            if (!hintModal || !adButton || !hintDisplay) return;
+            hintModal.style.display = 'flex';
+            void hintModal.offsetWidth; // Trigger reflow for animation
+            // hintModal.classList.add('show'); // CSS animation class if used
+            adButton.disabled = false;
+            hintDisplay.innerHTML = "Haz clic en <strong>ANUNCIO</strong> para obtener tu pista."; // Use innerHTML for strong tag
+            hintGenerationInProgress = false;
+        }
+
+        function closeHintModal() {
+            if (!hintModal) return;
+            // hintModal.classList.remove('show'); // For animation out
+            hintModal.style.display = 'none';
+        }
+
+        // --- INICIALIZACIÓN ---
+        function initializeGame() {
+            console.log('Inicializando CraftMania Deluxe v2...');
+
+            // Asignar referencias DOM
+            elementListDiv = document.getElementById('element-list');
+            craftingAreaDiv = document.getElementById('crafting-area');
+            statusMessageDiv = document.getElementById('status-message');
+            clearCraftingButton = document.getElementById('clear-crafting');
+            craftingAreaPlaceholder = document.getElementById('crafting-area-placeholder');
+            statsDisplaySpan = document.getElementById('stats-display');
+            searchBarInput = document.getElementById('search-bar');
+            hintButton = document.getElementById('hint-button');
+            hintModal = document.getElementById('hint-modal');
+            adButton = document.getElementById('ad-button');
+            hintDisplay = document.getElementById('hint-display');
+            closeHintModalBtn = document.getElementById('close-hint-modal');
+            const audioIds = ['audio-drag', 'audio-drop', 'audio-success', 'audio-fail', 'audio-new', 'audio-clear', 'audio-hint-unlock'];
+            audioIds.forEach(id => {
+                 const el = document.getElementById(id);
+                 if (el) audioElements[id] = el;
+                 else console.warn(`Elemento de audio no encontrado: ${id}`);
+            });
+
+            // Validaciones Críticas de DOM
+            const domElements = { elementListDiv, craftingAreaDiv, statusMessageDiv, clearCraftingButton, craftingAreaPlaceholder, statsDisplaySpan, searchBarInput, hintButton, hintModal, adButton, hintDisplay, closeHintModalBtn };
+            let missingComponent = false;
+            for (const key in domElements) {
+                 if (!domElements[key]) {
+                     console.error(`Error crítico: Falta elemento DOM #${key}`);
+                     missingComponent = true;
+                 }
+            }
+             // Validaciones de datos (dejando margen para que el usuario los pegue)
+             if (typeof elementEmojis !== 'object' || elementEmojis === null) {
+                  console.error("Error crítico: 'elementEmojis' no es un objeto válido.");
+                  missingComponent = true;
+             }
+             if (typeof recipes !== 'object' || recipes === null) {
+                 console.error("Error crítico: 'recipes' no es un objeto válido.");
+                 missingComponent = true;
+             }
+
+             if (missingComponent) {
+                  document.body.innerHTML = '<div style="padding: 50px; text-align: center; color: red; font-size: 1.5em;">Error fatal al cargar. Faltan componentes HTML o datos esenciales. Revisa la consola.</div>';
+                 return;
+             }
+
+             // Carga e Inicialización
+             loadProgress();
+             renderElementList();
+             updateCraftingAreaDisplay();
+             updateStatsDisplay();
+
+             // --- Añadir Event Listeners ---
+             // (Simplified for brevity, using functions defined above)
+             craftingAreaDiv.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if(craftingSlots.length < 2 && elementBeingDragged && elementEmojis.hasOwnProperty(elementBeingDragged)) { // Only allow drag over if space AND item is valid
+                     e.dataTransfer.dropEffect = 'move'; craftingAreaDiv.classList.add('drag-over');
+                } else {
+                     e.dataTransfer.dropEffect = 'none'; craftingAreaDiv.classList.remove('drag-over');
+                }
+             });
+             craftingAreaDiv.addEventListener('dragleave', () => craftingAreaDiv.classList.remove('drag-over'));
+             craftingAreaDiv.addEventListener('drop', (e) => {
+                 e.preventDefault(); craftingAreaDiv.classList.remove('drag-over');
+                 if (!elementBeingDragged || !elementEmojis.hasOwnProperty(elementBeingDragged) || craftingSlots.length >= 2) {
+                    if(craftingSlots.length >= 2) showStatusMessage('Zona llena.', 'error');
+                     elementBeingDragged = null; return;
+                 }
+                 const dropped = elementBeingDragged; elementBeingDragged = null; // Clear drag state AFTER copying
+                 playSound('audio-drop'); craftingSlots.push(dropped);
+                 updateCraftingAreaDisplay(); saveProgress();
+                 if (craftingSlots.length === 2) setTimeout(attemptCombination, 150);
+             });
+
+             clearCraftingButton.addEventListener('click', () => clearCraftingArea(true));
+             searchBarInput.addEventListener('input', (e) => renderElementList(e.target.value));
+             hintButton.addEventListener('click', openHintModal);
+             closeHintModalBtn.addEventListener('click', closeHintModal);
+             adButton.addEventListener('click', () => {
+                 if (hintGenerationInProgress) return;
+                 hintGenerationInProgress = true; adButton.disabled = true;
+                 hintDisplay.innerHTML = "Abriendo patrocinador... ⏳";
+                 const adWindow = window.open('https://increasingbelieveabonnement.com/pcmu77j4?key=1f38fa224b5ecf757563a32d2d8ac126', '_blank');
+                 if (!adWindow) {
+                     hintDisplay.innerHTML = "No se pudo abrir. ¿Bloqueador de pop-ups?";
+                     playSound('audio-fail'); adButton.disabled = false; hintGenerationInProgress = false; return;
+                 }
+                 hintDisplay.innerHTML = "Gracias! Pista en 6s... ⏳";
+                 setTimeout(generateAndShowHint, 6000);
+             });
+             window.addEventListener('click', (e) => { if (e.target === hintModal) closeHintModal(); });
+
+             console.log("CraftMania Deluxe inicializado. Listo para pegar datos.");
+        }
+
+        // --- Iniciar el juego cuando el DOM esté listo ---
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+
+</body>
+</html>
