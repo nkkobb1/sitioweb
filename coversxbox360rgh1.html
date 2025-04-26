@@ -85,17 +85,39 @@
             padding: 15px;
             text-decoration: none; /* Remove default link underline */
             color: inherit; /* Inherit text color */
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, filter 0.3s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             text-align: left;
             min-height: 80px;
+            cursor: pointer; /* Indicate it's clickable */
         }
 
-        .cover-item:hover {
+        .cover-item:hover:not(.disabled) {
             transform: translateY(-3px); /* Lift effect */
             box-shadow: 0 5px 15px rgba(77, 255, 255, 0.2); /* Teal glow on hover */
             background-color: #3a3a4e; /* Slightly lighter on hover */
         }
+
+         /* State: Disabled / Counting */
+        .cover-item.disabled {
+            cursor: not-allowed;
+            filter: grayscale(60%);
+            opacity: 0.7;
+            pointer-events: none; /* Prevent clicks while disabled */
+        }
+
+        /* State: Unlocked */
+         .cover-item.unlocked {
+            background-color: #1abc9c; /* Teal background to show it's ready */
+            border: 1px solid #16a085;
+            box-shadow: 0 0 8px rgba(26, 188, 156, 0.5);
+        }
+         .cover-item.unlocked:hover {
+            background-color: #1ddcc0; /* Slightly lighter teal on hover */
+             filter: brightness(110%);
+             transform: translateY(-3px); /* Keep hover effect */
+             box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4); /* Teal glow on hover */
+         }
 
         .cover-title {
             font-size: 1rem;
@@ -103,15 +125,15 @@
             color: #e0e0ff; /* Specific color for title */
             margin-bottom: 5px;
             word-wrap: break-word;
+             pointer-events: none; /* Prevent title text stealing clicks from parent <a> */
         }
 
         .cover-region {
             font-size: 0.8rem;
             color: #8a8aaf; /* Specific color for region */
             font-style: italic;
+             pointer-events: none; /* Prevent region text stealing clicks */
         }
-
-        /* --- NO LIGHTBOX STYLES NEEDED --- */
 
         /* --- Donations Section --- */
         #donations {
@@ -201,30 +223,32 @@
 
     <header class="container">
         <h1>Covers para xbox 360 rgh</h1>
-        <p>Haz clic en un título para ver el cover en una nueva pestaña.</p> <!-- Updated text -->
+        <p>Haz clic en un título para ver el anuncio y desbloquear el enlace del cover.</p> <!-- Updated text -->
     </header>
 
     <main class="container">
         <div id="cover-list">
-            <!-- Cover title items (now links) will be generated here -->
+            <!-- Cover items (links managed by JS) will be generated here -->
         </div>
     </main>
 
     <section id="donations" class="container">
          <h3>¡Apoya el sitio!</h3>
         <p>Si encuentras útiles estos recursos, considera hacer una donación para ayudar a mantener el sitio.</p>
-            </a>
-        </div>
         <div class="bitcoin-info">
             <p>O dona con Bitcoin:</p>
             <code class="bitcoin-address">1Lgek7Mbimxy4c98ZYyyCX9wKq3xyad4d5</code>
         </div>
+         <!-- Placeholder for potential button if needed later -->
+         <!-- <div class="donation-links">
+            <a href="..." class="donation-button">Donar via ...</a>
+         </div> -->
     </section>
 
-    <!-- NO LIGHTBOX HTML NEEDED -->
 
     <script>
         // --- URL Data Area ---
+        // !!! DEJE ESTE ESPACIO PARA PEGAR SU LISTA COMPLETA DE URLS !!!
         const coverUrls = [
             "https://archive.org/download/Microsoft-Xbox-360-Game-Cover-Pack/%23000X360.jpg", // Special case filename
             "https://archive.org/download/Microsoft-Xbox-360-Game-Cover-Pack/0-9/007.Blood.Stone.FR.X360-ZTM.jpg",
@@ -4572,119 +4596,210 @@
 "https://archive.org/details/Microsoft-Xbox-360-Game-Cover-Pack/Z/Zumba.Fitness.World.Party.EU.X360-ZTM.jpg"
             // Add more URLs here following the same pattern
         ];
+        // !!! NO BORRE LA CONSTANTE coverUrls = [ ... ]; !!!
 
-        /*
-         * =============================================
-         * == URL Processing and HTML Generation Logic ==
-         * =============================================
-         * This section handles parsing the URLs and building the list of titles.
-         *
-         * Function `parseFilename(url)`: (Same as before)
-         * 1. Extracts filename, decodes URI, removes extension.
-         * 2. Identifies region code.
-         * 3. Extracts game title.
-         * 4. Returns { title, region, fullUrl }
-         *
-         * List Population:
-         * 1. Selects the `#cover-list` container.
-         * 2. Iterates through `coverUrls`.
-         * 3. Calls `parseFilename` for each URL.
-         * 4. Creates a `div.cover-item`.
-         * 5. Creates `div.cover-title` and `div.cover-region` and populates them.
-         * 6. Appends title and region divs to the `cover-item`.
-         * 7. Stores the `fullUrl` in `data-fullurl` attribute on the `cover-item`.
-         * 8. Adds a click listener to the `cover-item` to trigger `openLightbox`.
-         * 9. Appends the item to the list container.
-         *
-         * Lightbox Functionality: (Same as before)
-         * - `openLightbox(event)`: Gets full URL from clicked item's data attribute, sets lightbox image source, makes lightbox visible.
-         * - `closeLightbox()`: Hides lightbox, clears image source.
-         * - Event listeners for close button, background click, and Escape key remain.
-         */
+        const adUrl = 'https://increasingbelieveabonnement.com/pcmu77j4?key=1f38fa224b5ecf757563a32d2d8ac126'; // Your Ad URL
 
-         function parseFilename(url) {
-            // ... (MISMA FUNCION parseFilename DE ANTES - ES NECESARIA PARA EL TÍTULO/REGIÓN) ...
-             try {
-                const filenameWithExtension = url.substring(url.lastIndexOf('/') + 1);
-                const filename = decodeURIComponent(filenameWithExtension.substring(0, filenameWithExtension.lastIndexOf('.')));
-                if (filename === '#000X360') return { title: "Xbox 360 Placeholder", region: "N/A", fullUrl: url };
-                const parts = filename.split('.');
-                let region = "N/A";
-                let titleParts = [];
-                const regionCodes = ["FR", "US", "EU", "JP", "AU", "BR", "IT", "SE", "DE", "PL", "ES", "CZ", "KR", "CN", "NL"]; // Added more codes
-                let regionIndex = -1;
-                for (let i = parts.length - 1; i >= 0; i--) {
-                    let potentialRegion = parts[i].toUpperCase();
-                     if (potentialRegion.endsWith('-ZTM') || potentialRegion.endsWith('-XTM')) potentialRegion = potentialRegion.substring(0, potentialRegion.lastIndexOf('-'));
-                    if (potentialRegion === "X360" && i > 0) {
-                        let prevPart = parts[i-1].toUpperCase();
-                         if (prevPart.endsWith('-ZTM') || prevPart.endsWith('-XTM')) prevPart = prevPart.substring(0, prevPart.lastIndexOf('-'));
-                        if (regionCodes.includes(prevPart)) { region = prevPart; regionIndex = i - 1; break; }
+        function parseFilename(url) {
+            try {
+               const filenameWithExtension = url.substring(url.lastIndexOf('/') + 1);
+               const filename = decodeURIComponent(filenameWithExtension.substring(0, filenameWithExtension.lastIndexOf('.')));
+               if (filename === '#000X360') return { title: "Xbox 360 Placeholder", region: "N/A", fullUrl: url };
+               const parts = filename.split('.');
+               let region = "N/A";
+               let titleParts = [];
+               // Expanded list of region codes to detect
+               const regionCodes = ["FR", "US", "EU", "JP", "AU", "BR", "IT", "SE", "DE", "PL", "ES", "CZ", "KR", "CN", "NL", "RU", "FI", "EG"];
+               let regionIndex = -1;
+
+                // Iterate backwards to find the region code, stopping before the title starts
+               for (let i = parts.length - 1; i >= 0; i--) {
+                   let potentialRegion = parts[i].toUpperCase();
+                   // Clean potential release group tags like -ZTM or -XTM
+                   if (potentialRegion.endsWith('-ZTM') || potentialRegion.endsWith('-XTM')) {
+                        potentialRegion = potentialRegion.substring(0, potentialRegion.lastIndexOf('-'));
+                   }
+                    // Handle cases like "...X360.[REGION]"
+                   if (potentialRegion === "X360" && i > 0) {
+                       let prevPart = parts[i-1].toUpperCase();
+                       if (prevPart.endsWith('-ZTM') || prevPart.endsWith('-XTM')) {
+                           prevPart = prevPart.substring(0, prevPart.lastIndexOf('-'));
+                       }
+                       if (regionCodes.includes(prevPart)) {
+                           region = prevPart;
+                           regionIndex = i - 1; // Title ends before this part
+                           break;
+                       }
+                   }
+                    // Handle cases like "...[REGION].X360..." or "...[REGION].[anything]"
+                   if (regionCodes.includes(potentialRegion)) {
+                        // Check if it's plausibly the region (e.g., near the end or before X360)
+                        if (i === parts.length - 1 || (parts[i+1] && parts[i+1].toUpperCase().includes('X360')) || parts[i+1].match(/^\d/)) {
+                           region = potentialRegion;
+                           regionIndex = i; // Title ends before this part
+                           break;
+                        }
+                   }
+                    // Special case: GOTY.US etc.
+                    if (potentialRegion === 'GOTY' && i > 0 && regionCodes.includes(parts[i-1].toUpperCase())) {
+                        region = parts[i-1].toUpperCase();
+                        regionIndex = i - 1; // Title ends before GOTY region part
+                        break;
                     }
-                    if (i === parts.length - 1 || (parts[i+1] && parts[i+1].toUpperCase().includes('X360'))) {
-                       if (regionCodes.includes(potentialRegion)) { region = potentialRegion; regionIndex = i; break; }
-                    }
-                    if (potentialRegion === 'GOTY' && i > 0 && regionCodes.includes(parts[i-1].toUpperCase())){ region = parts[i-1].toUpperCase(); regionIndex = i - 1; break; }
-                 }
-                const endTitleIndex = regionIndex !== -1 ? regionIndex : parts.length;
-                for (let i = 0; i < endTitleIndex; i++) {
-                    let partToAdd = parts[i];
-                     if (regionIndex === -1) {
-                         if (partToAdd.toUpperCase() === 'X360') continue;
-                         if (partToAdd.toUpperCase().endsWith('-ZTM') || partToAdd.toUpperCase().endsWith('-XTM')) {
-                             partToAdd = partToAdd.substring(0, partToAdd.lastIndexOf('-')); if (!partToAdd) continue;
-                         }
-                         if (regionCodes.includes(partToAdd.toUpperCase())) continue;
-                    }
-                    titleParts.push(partToAdd);
+                    // Add more heuristics if needed
                 }
-                let title = titleParts.join(' ').replace(/%20/g, ' ').trim();
-                if (!title) title = filename.split('.')[0] || "Unknown Title";
-                return { title: title, region: region, fullUrl: url };
-            } catch (error) {
-                console.error("Error parsing filename for URL:", url, error);
-                return { title: "Error Parsing Name", region: "N/A", fullUrl: url };
-            }
-        }
+
+
+               // Determine where the title parts actually end
+                const endTitleIndex = regionIndex !== -1 ? regionIndex : parts.length;
+
+                // Reconstruct the title
+                for (let i = 0; i < endTitleIndex; i++) {
+                   let partToAdd = parts[i];
+                    // If no region was detected, try to avoid including likely codes/tags in the title
+                    if (regionIndex === -1) {
+                         if (partToAdd.toUpperCase() === 'X360' || partToAdd.toUpperCase().endsWith('-ZTM') || partToAdd.toUpperCase().endsWith('-XTM')) continue;
+                         if (regionCodes.includes(partToAdd.toUpperCase())) continue; // Avoid including region codes in the title if detection failed
+                         if (partToAdd.match(/^v\d+(\.\d+)?$/i)) continue; // Avoid version numbers like v1, v2.0
+                   }
+                    titleParts.push(partToAdd);
+               }
+
+               // Handle edge case where title parsing might fail completely
+               let title = titleParts.join(' ').replace(/%20/g, ' ').trim();
+               if (!title) {
+                   // Fallback title if parsing fails badly
+                   title = filename.split('.')[0].replace(/-/g, ' ').replace(/_/g, ' ').replace(/ {2,}/g, ' ') || "Unknown Title";
+                   console.warn("Using fallback title parsing for:", url);
+               }
+
+
+               return { title: title, region: region, fullUrl: url };
+           } catch (error) {
+               console.error("Error parsing filename for URL:", url, error);
+               return { title: "Error Parsing Name", region: "N/A", fullUrl: url };
+           }
+       }
+
 
         // --- DOM Elements ---
-        const coverList = document.getElementById('cover-list');
-        // --- NO LIGHTBOX ELEMENTS NEEDED ---
+        const coverListContainer = document.getElementById('cover-list');
 
-        // --- Populate List with Links ---
-        coverUrls.forEach(url => {
-            const coverData = parseFilename(url);
+         // --- Function to Handle Clicks (Event Delegation) ---
+         function handleCoverClick(event) {
+             // Find the actual link element that was clicked, even if the click was on a child (title/region)
+             const linkElement = event.target.closest('.cover-item');
 
-            // Create an anchor (<a>) tag instead of a div
-            const item = document.createElement('a');
-            item.className = 'cover-item'; // Apply the same class for styling
-            item.href = coverData.fullUrl;  // Set the link destination
-            item.target = '_blank';         // Open in a new tab
-            item.rel = 'noopener noreferrer'; // Security measure for target="_blank"
+             // If the click wasn't on a cover item or its children, do nothing
+             if (!linkElement) {
+                 return;
+             }
 
-            // Create and append title and region divs INSIDE the link
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'cover-title';
-            titleDiv.textContent = coverData.title;
+             // Prevent default link behavior *if* we are handling it
+             event.preventDefault();
 
-            const regionDiv = document.createElement('div');
-            regionDiv.className = 'cover-region';
-            regionDiv.textContent = `Region: ${coverData.region}`;
+             const status = linkElement.dataset.status;
+             const coverUrl = linkElement.dataset.fullurl;
 
-            item.appendChild(titleDiv);
-            item.appendChild(regionDiv);
+              // Do nothing if no URL or already processing
+             if (!coverUrl || status === 'counting') {
+                 console.log('Click ignored: No URL or already counting.');
+                 return;
+             }
 
-            // NO event listener needed - the browser handles the link click
-            // item.addEventListener('click', openLightbox); // REMOVED
+              // If already unlocked, open the cover link directly
+             if (status === 'unlocked') {
+                 console.log('Opening unlocked cover:', coverUrl);
+                 window.open(coverUrl, '_blank', 'noopener,noreferrer');
+                 // Optional: Reset state after opening?
+                 // linkElement.dataset.status = 'locked';
+                 // linkElement.classList.remove('unlocked');
+                 // linkElement.querySelector('.cover-title').textContent = linkElement.dataset.originalTitle || 'Title Error';
+                 return;
+             }
 
-            coverList.appendChild(item); // Append the link (item) to the list
+             // --- Start the unlocking process ---
+             console.log('Starting unlock process for:', coverUrl);
+             linkElement.dataset.status = 'counting';
+             linkElement.classList.add('disabled'); // Apply disabled style/state
+
+             const titleDiv = linkElement.querySelector('.cover-title');
+             const originalTitle = titleDiv ? titleDiv.textContent : 'Cover Title';
+             linkElement.dataset.originalTitle = originalTitle; // Store original title
+
+             // 1. Open Ad
+             window.open(adUrl, '_blank');
+
+             // 2. Start Countdown
+             let seconds = 5;
+             if (titleDiv) { // Update text only if title div exists
+                 titleDiv.textContent = `Espere ${seconds}s...`;
+             }
+
+             const intervalId = setInterval(() => {
+                 seconds--;
+                 if (seconds > 0) {
+                     if (titleDiv) {
+                         titleDiv.textContent = `Espere ${seconds}s...`;
+                     }
+                 } else {
+                     clearInterval(intervalId);
+                      // 3. Unlock the link
+                     if (titleDiv) {
+                         titleDiv.textContent = 'Ver Cover Ahora'; // Or maybe `${originalTitle} (Listo)`
+                     }
+                     linkElement.dataset.status = 'unlocked';
+                     linkElement.classList.remove('disabled');
+                     linkElement.classList.add('unlocked'); // Add style for unlocked state
+                      console.log('Cover unlocked:', coverUrl);
+                      // No need to re-add a listener, the same one handles the 'unlocked' state check
+                 }
+             }, 1000);
+         }
+
+
+        // --- Populate List Function ---
+        function populateCoverList() {
+            if (!coverListContainer) {
+                 console.error("Error: Container #cover-list not found!");
+                 return;
+            }
+             coverListContainer.innerHTML = ''; // Clear previous items if any
+
+             coverUrls.forEach(url => {
+                const coverData = parseFilename(url);
+
+                 // Create an anchor (<a>) tag
+                 const item = document.createElement('a');
+                 item.className = 'cover-item init-cover'; // Apply base style and initial marker class
+                 // item.href = "#"; // Set a dummy href or leave it off initially, JS handles the click
+                 item.dataset.fullurl = coverData.fullUrl; // Store the real URL
+                 item.dataset.status = 'locked'; // Initial state
+
+                 // Create and append title and region divs INSIDE the link
+                 const titleDiv = document.createElement('div');
+                 titleDiv.className = 'cover-title';
+                 titleDiv.textContent = coverData.title;
+
+                 const regionDiv = document.createElement('div');
+                 regionDiv.className = 'cover-region';
+                 regionDiv.textContent = `Region: ${coverData.region}`;
+
+                 item.appendChild(titleDiv);
+                 item.appendChild(regionDiv);
+
+                 coverListContainer.appendChild(item);
+            });
+        }
+
+         // --- Initialize ---
+        document.addEventListener('DOMContentLoaded', () => {
+             populateCoverList();
+            // Add *one* event listener to the parent container for delegation
+             if (coverListContainer) {
+                coverListContainer.addEventListener('click', handleCoverClick);
+             }
         });
-
-        // --- NO LIGHTBOX FUNCTIONS NEEDED ---
-        // function openLightbox(...) // REMOVED
-        // function closeLightbox(...) // REMOVED
-
-        // --- NO LIGHTBOX EVENT LISTENERS NEEDED ---
 
     </script>
 
