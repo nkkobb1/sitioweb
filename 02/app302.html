@@ -1,0 +1,3446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Clicker V3.1 - Evolución Corregida</title> <!-- V3.1 -->
+    <!-- Decimal.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.4.3/decimal.min.js"></script>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #1e2127;
+            --bg-medium: #282c34;
+            --bg-light: #3b4048;
+            --bg-lighter: #4f5660; /* For hover/active states */
+            --text-primary: #abb2bf;
+            --text-secondary: #8c92a0;
+            --accent-blue: #61afef;
+            --accent-green: #98c379;
+            --accent-yellow: #e5c07b;
+            --accent-red: #e06c75;
+            --accent-purple: #c678dd;
+            --accent-cyan: #56b6c2; /* New accent for research/challenges */
+            --border-color: #4f5660;
+            --disabled-bg: #353940;
+            --disabled-text: #6a717c;
+            --tooltip-bg: #1a1d23;
+            --tooltip-text: #c8ccd4;
+        }
+
+        /* --- General Styles --- */
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            user-select: none;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        h1 {
+             color: var(--accent-blue);
+             margin-bottom: 20px;
+             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+             text-align: center;
+             font-size: 1.8em;
+        }
+
+        #game-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 1300px; /* Slightly wider */
+        }
+
+        .column {
+            background-color: var(--bg-medium);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            min-width: 300px; /* Slightly wider */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h2, h3 {
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-weight: 700;
+             display: flex;
+             align-items: center;
+             gap: 8px;
+        }
+
+        h3 { color: var(--accent-green); font-size: 1.1em; }
+        h2 i, h3 i { min-width: 20px; text-align: center;}
+
+        /* --- Tooltips --- */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 110%; /* Position above the element */
+            left: 50%;
+            transform: translateX(-50%) scale(0.95); /* Start slightly smaller */
+            background-color: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            white-space: pre-wrap; /* Allow line breaks */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease; /* Add transform */
+            z-index: 10;
+            min-width: 150px;
+            text-align: center;
+            pointer-events: none; /* Prevent tooltip from blocking hover */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transform-origin: bottom center;
+        }
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1); /* Scale to full size */
+        }
+
+
+        /* --- Main Clicker Section --- */
+        #main-clicker-area { text-align: center; }
+        #robot-button {
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, var(--accent-blue) 0%, var(--accent-green) 100%);
+            border: 4px solid var(--accent-yellow); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 64px; cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+            margin: 15px auto; /* Reduced margin */
+            color: var(--bg-dark);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+            position: relative; /* For floating text */
+        }
+        #robot-button:hover { box-shadow: 0 0 15px var(--accent-yellow); }
+        #robot-button:active { transform: scale(0.95); box-shadow: 0 0 8px var(--accent-yellow); }
+
+        /* Floating Text */
+        .floating-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--accent-yellow);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
+            opacity: 1;
+            animation: floatUp 1s ease-out forwards;
+            pointer-events: none; /* Prevent interaction */
+            white-space: nowrap; /* Prevent wrapping */
+        }
+        .floating-text.crit {
+            color: var(--accent-red);
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        @keyframes floatUp {
+            to {
+                transform: translate(-50%, -180%); /* Move further up */
+                opacity: 0;
+            }
+        }
+        #floating-text-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; /* Contain floating text */
+            pointer-events: none;
+        }
+
+
+         .stats-display div {
+             font-size: 1.0em; /* Slightly smaller */
+             margin-bottom: 6px;
+             display: flex; align-items: center; gap: 6px;
+             justify-content: center; /* Center stats text */
+         }
+         .stats-display i { color: var(--accent-yellow); width: 16px; text-align: center; }
+         .stat-value { font-weight: bold; color: var(--accent-green); }
+         #crit-chance-display, #crit-multi-display { color: var(--accent-red); } /* Style crit stats */
+
+        /* --- Upgrades Section --- */
+        .upgrade-list {
+            max-height: 400px; overflow-y: auto;
+            padding-right: 5px; margin: -5px; padding: 5px;
+             scrollbar-width: thin; scrollbar-color: var(--accent-blue) var(--bg-light);
+         }
+         .upgrade-list::-webkit-scrollbar { width: 8px; }
+         .upgrade-list::-webkit-scrollbar-track { background: var(--bg-light); border-radius: 4px;}
+         .upgrade-list::-webkit-scrollbar-thumb { background-color: var(--accent-blue); border-radius: 4px; border: 2px solid var(--bg-light);}
+
+        .upgrade-item, .research-item, .challenge-item {
+            background-color: var(--bg-light); padding: 10px; margin-bottom: 10px;
+            border-radius: 6px; border: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: 5px;
+            transition: border-color 0.2s ease;
+        }
+        .upgrade-item:hover, .research-item:hover, .challenge-item:hover { border-color: var(--accent-blue); }
+        .upgrade-header, .item-header { display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .upgrade-header i, .item-header i { width: 20px; text-align: center; color: var(--accent-yellow); }
+        .description { font-size: 0.9em; color: var(--text-secondary); margin-top: 3px; }
+        .upgrade-details span, .item-details span { margin-right: 10px; font-size: 0.9em; } /* Smaller details */
+        .level, .effect-value { color: var(--accent-green); font-weight: bold;}
+        .cost, .requirement { color: var(--accent-yellow); font-weight: bold;}
+         .currency-symbol { font-size: 0.8em; color: var(--text-secondary); margin-left: 2px;}
+         .currency-symbol i { margin-right: 3px; }
+
+        /* Milestone Indicator */
+        .milestone-indicator {
+            font-size: 0.8em; color: var(--accent-cyan); margin-left: 5px;
+            font-weight: bold;
+        }
+        .milestone-indicator:not(:empty)::before { /* Add star if not empty */
+           content: '★'; margin-right: 2px;
+        }
+
+        /* Buy Multi Buttons */
+        .buy-controls {
+            display: flex; gap: 5px; margin-top: 8px;
+        }
+        .buy-controls button {
+             flex: 1; padding: 8px 5px; /* Smaller padding */
+             font-size: 0.85em; min-width: 50px;
+        }
+        .buy-controls button.buy-single { flex-grow: 2; } /* Main button slightly larger */
+
+        /* Permanent Upgrade Tree Indication */
+        .permanent-upgrade-item.req-met { border-left: 5px solid var(--accent-purple); background-color: #3c3140;}
+        .permanent-upgrade-item.req-not-met { border-left: 5px solid var(--accent-red); background-color: #403131; opacity: 0.7; }
+        .requirement-text { font-size: 0.8em; color: var(--accent-red); font-style: italic; margin-top: 3px; }
+
+
+        /* --- Buttons --- */
+        button {
+            background-color: var(--accent-blue); color: var(--bg-dark);
+            border: none; padding: 10px 15px; border-radius: 5px;
+            cursor: pointer; font-family: inherit; font-weight: bold;
+            transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; width: 100%; box-sizing: border-box;
+            margin-top: 5px; text-align: center;
+        }
+        button:hover:not(:disabled) { background-color: var(--accent-green); }
+        button:active:not(:disabled) { transform: scale(0.98); }
+        button:disabled {
+            background-color: var(--disabled-bg); color: var(--disabled-text);
+            cursor: not-allowed; border: 1px solid var(--border-color);
+             opacity: 0.7;
+        }
+        /* Specific Button Styles */
+        #ad-reward-button { background-color: var(--accent-red); }
+        #ad-reward-button:hover:not(:disabled) { background-color: #f08080; }
+        #prestige-button { background-color: var(--accent-purple); }
+        #prestige-button:hover:not(:disabled) { background-color: #e0a0f0; }
+        #settings-tab button, #extra-info-tab button { margin-bottom: 8px;} /* Apply to new tab too */
+        #hard-reset-button { background-color: var(--accent-red);}
+        #hard-reset-button:hover { background-color: #f08080;}
+        .buy-multi-button { background-color: var(--accent-cyan); font-size: 0.8em; padding: 6px 4px;} /* Slightly smaller multi buttons */
+        .buy-multi-button:hover:not(:disabled) { background-color: #7cd0d9; }
+        .action-button { background-color: var(--accent-yellow); } /* For research/challenge start */
+        .action-button:hover:not(:disabled) { background-color: #f5d08b; }
+
+        /* --- Tabs Section --- */
+        #tabs { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px; }
+        #tabs button {
+            width: auto; display: inline-flex; /* Use inline-flex */
+            padding: 8px 12px; background-color: var(--bg-light); color: var(--text-primary);
+            flex-grow: 1; /* Allow buttons to grow */
+            font-size: 0.9em; /* Slightly smaller tab text */
+        }
+        #tabs button.active { background-color: var(--accent-green); color: var(--bg-dark); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* --- Stats / Achievements / Settings / Research / Challenges --- */
+        .stats-list div, .achievement-item, .research-item, .challenge-item {
+             background-color: var(--bg-light); padding: 8px 12px; margin-bottom: 8px;
+             border-radius: 4px; border-left: 3px solid var(--border-color);
+             display: flex; /* For alignment */
+             align-items: center; gap: 8px; flex-wrap: wrap; /* Allow wrapping */
+        }
+         .stats-list div i { color: var(--text-secondary); }
+        .achievement-item, .research-item, .challenge-item { transition: border-color 0.3s ease, background-color 0.3s ease;}
+        .achievement-item strong, .item-header strong { flex-grow: 1; margin-right: 10px; }
+        .achievement-item .description, .item-details .description { font-size: 0.85em; color: var(--text-secondary); flex-basis: 100%; margin-top: 0; } /* Description below title */
+
+        /* Achievement Styling */
+        .achievement-item.unlocked {
+            border-left-color: var(--accent-green);
+            background-color: #3a4b41;
+        }
+        .achievement-item.unlocked strong::after {
+             content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+             color: var(--accent-green); margin-left: 8px;
+        }
+        .achievement-reward { font-size: 0.8em; color: var(--accent-cyan); font-style: italic; margin-left: auto; padding-left: 10px; display: none; /* Hidden by default */ }
+        .achievement-item.unlocked .achievement-reward { display: inline; } /* Show when unlocked */
+
+        /* Research Styling */
+        #research-tab h3 { color: var(--accent-cyan); }
+        .research-item { border-left-color: var(--accent-cyan); }
+        .research-item .item-header i { color: var(--accent-cyan); }
+        .research-progress-bar {
+            width: 100%; background-color: var(--bg-dark); border-radius: 3px;
+            height: 8px; margin-top: 5px; overflow: hidden;
+        }
+        .research-progress-bar div {
+            height: 100%; background-color: var(--accent-cyan); width: 0%;
+            transition: width 0.2s linear;
+        }
+        .research-item.completed { background-color: #313e40; border-left-color: var(--accent-green); }
+        .research-item.in-progress { border-left-color: var(--accent-yellow); } /* Indicate progress */
+        .research-item.completed .action-button { display: none; } /* Hide button when done */
+        .research-item .completion-info { font-size: 0.85em; color: var(--accent-green); margin-left: auto; }
+        .research-item .max-level-text { font-size: 0.85em; color: var(--accent-yellow); margin-left: auto; font-weight: bold; text-align: center; flex-basis: 100%;}
+
+
+        /* Challenge Styling */
+        #challenges-tab h3 { color: var(--accent-red); }
+        .challenge-item { border-left-color: var(--accent-red); }
+        .challenge-item .item-header i { color: var(--accent-red); }
+        .challenge-item.completed { background-color: #403131; border-left-color: var(--accent-green); }
+        .challenge-item.active { background-color: #424230; border-left-color: var(--accent-yellow); } /* Active style */
+        .challenge-reward { font-size: 0.9em; color: var(--accent-purple); font-weight: bold; margin-left: auto; }
+        .challenge-status { font-size: 0.85em; margin-left: auto; font-weight: bold; padding: 2px 6px; border-radius: 4px;}
+        .challenge-status.completed { color: var(--accent-green); background-color: var(--bg-dark); }
+        .challenge-status.active { color: var(--accent-yellow); background-color: var(--bg-dark); }
+        .challenge-status.pending { color: var(--text-secondary); background-color: transparent;}
+
+
+        /* --- Prestige Section --- */
+        #prestige-section { border: 1px solid var(--accent-purple); display: none; /* Initially hidden */}
+        #prestige-section h2 { color: var(--accent-purple); border-color: var(--accent-purple);}
+        #prestige-section .stat-value { color: var(--accent-purple); }
+        #prestige-upgrades h3 { color: var(--accent-purple); border-color: var(--accent-purple);}
+         #prestige-section div p { margin: 5px 0; }
+         #prestige-info p { margin: 5px 0;}
+
+         /* --- Toast Notification --- */
+        #toast-container {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); background-color: rgba(40, 44, 52, 0.9);
+            color: var(--accent-green); padding: 12px 25px; border-radius: 5px;
+            border: 1px solid var(--accent-green); z-index: 1000;
+            display: none; text-align: center; font-size: 1.1em;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease;
+            max-width: 90%;
+        }
+         #toast-container.show {
+            display: block;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0); /* Slide in */
+        }
+         #toast-container.hide {
+             opacity: 0;
+             transform: translateX(-50%) translateY(20px); /* Slide out */
+             pointer-events: none; /* Ignore clicks while hiding */
+         }
+
+        /* --- Extra Info Section --- */
+        .notation-options button, .export-import button { width: auto; margin-right: 5px; margin-bottom: 10px;}
+        #export-import-area { width: 100%; height: 80px; background-color: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border-color); font-family: inherit; font-size: 0.9em; margin-top: 5px; resize: vertical;}
+
+        /* --- Sticky Click Area --- */
+        #column-1 {
+            position: -webkit-sticky; /* Safari */
+            position: sticky;
+            top: 15px; /* Distancia desde la parte superior donde se pegará (ajusta si es necesario) */
+            align-self: flex-start; /* Importante para sticky en contenedores flex */
+            z-index: 1; /* Asegura que esté por encima de otras columnas si hay solapamiento al hacer scroll */
+            /* Opcional: Puedes añadir una altura máxima si quieres que la columna 1 también haga scroll internamente si es muy alta */
+            /* max-height: calc(100vh - 30px); */ /* Ejemplo: altura máxima menos el padding superior/inferior */
+            /* overflow-y: auto; */ /* Habilitar scroll interno si max-height está activo */
+        }
+                /* Estilos para Selección de Visuales */
+                .visual-item {
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: var(--bg-medium);
+             flex-basis: 80px; /* Tamaño base */
+             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+             min-height: 90px; /* Altura mínima para consistencia */
+        }
+        .visual-item .emoji { font-size: 2.5em; line-height: 1; }
+        .visual-item .desc { font-size: 0.8em; color: var(--text-secondary); }
+        .visual-item:hover:not(.locked):not(.selected) { border-color: var(--accent-yellow); background-color: var(--bg-lighter);}
+        .visual-item.selected { border-color: var(--accent-green); background-color: #3a4b41; cursor: default; }
+        .visual-item.selected .desc::before { content: 'Seleccionado '; font-weight: bold; color: var(--accent-green); }
+        .visual-item.locked { cursor: help; opacity: 0.5; background-color: var(--disabled-bg); border-style: dashed; }
+        .visual-item.locked .emoji { filter: grayscale(1); }
+        #clicker-visuals-container { /* Añadido scrollbar styling para el contenedor */
+             scrollbar-width: thin; scrollbar-color: var(--accent-yellow) var(--bg-dark);
+        }
+        #clicker-visuals-container::-webkit-scrollbar { width: 6px; }
+        #clicker-visuals-container::-webkit-scrollbar-track { background: var(--bg-dark); border-radius: 3px;}
+        #clicker-visuals-container::-webkit-scrollbar-thumb { background-color: var(--accent-yellow); border-radius: 3px;}
+    </style>
+</head>
+<body>
+
+    <h1><i class="fas fa-robot"></i> Robot Clicker V3.1 - Evolución Corregida</h1>
+
+    <!-- Audio Elements (Keep placeholders, sound logic remains) -->
+    <audio id="click-sound" preload="auto"></audio>
+    <audio id="upgrade-sound" preload="auto"></audio>
+    <audio id="achievement-sound" preload="auto"></audio>
+    <audio id="prestige-sound" preload="auto"></audio>
+    <audio id="reward-sound" preload="auto"></audio>
+    <audio id="crit-click-sound" preload="auto"></audio> <!-- New sound idea -->
+
+    <div id="game-container">
+
+        <!-- Column 1: Main Clicker & Core Stats -->
+        <div class="column" id="column-1">
+            <h2><i class="fas fa-industry"></i> Producción Central</h2>
+            <div id="main-clicker-area">
+                <div class="stats-display">
+                     <div data-tooltip="Chatarra acumulada. ¡Gástala!"><i class="fas fa-coins"></i>Chatarra: <span id="currency-display" class="stat-value">0</span></div>
+                     <div data-tooltip="Chatarra por segundo generada automáticamente."><i class="fas fa-bolt"></i>CpS: <span id="cps-display" class="stat-value">0</span></div>
+                     <div data-tooltip="Chatarra generada por cada clic manual."><i class="fas fa-hand-pointer"></i>CpC: <span id="cpc-display" class="stat-value">1</span></div>
+                     <div data-tooltip="Probabilidad de que un clic sea crítico."><i class="fas fa-star"></i>Crit %: <span id="crit-chance-display" class="stat-value">0</span>%</div>
+                     <div data-tooltip="Multiplicador de Chatarra en un clic crítico."><i class="fas fa-meteor"></i>Crit x: <span id="crit-multi-display" class="stat-value">10</span>x</div>
+                </div>
+                <div id="robot-button" title="¡Haz clic para ensamblar!">
+                    🤖
+                    <div id="floating-text-container"></div> <!-- Container for floating numbers -->
+                </div>
+                <button id="ad-reward-button" onclick="triggerAdReward()">
+                    <i class="fas fa-gift"></i> Ver Anuncio (Recompensa CpS)
+                </button>
+            </div>
+            <!-- Prestige Section -->
+            <div id="prestige-section">
+                <h2><i class="fas fa-infinity"></i> Overclock</h2>
+                <div id="prestige-info">
+                    <p data-tooltip="Moneda permanente para mejoras poderosas."><i class="fas fa-brain"></i> Núcleos IA: <span class="stat-value" id="prestige-currency-display">0</span></p>
+                    <p><i class="fas fa-bullseye"></i> Requiere: <span class="stat-value" id="prestige-requirement-display">???</span> Chatarra</p>
+                    <p><i class="fas fa-plus-circle"></i> Ganarás: <span class="stat-value" id="prestige-gain-display">0</span> <i class="fas fa-brain"></i></p>
+                </div>
+                 <button id="prestige-button" onclick="confirmPrestige()" disabled>
+                     <i class="fas fa-arrow-up-right-dots"></i> ¡Realizar Overclock!
+                 </button>
+            </div>
+        </div>
+
+        <!-- Column 2: Click & Global Upgrades -->
+        <div class="column" id="column-2">
+             <h2><i class="fas fa-mouse-pointer"></i> Mejoras Manuales</h2>
+             <div id="click-upgrades-list" class="upgrade-list"> <!-- CONTENT GENERATED BY JS --> </div>
+
+             <h2><i class="fas fa-cogs"></i> Módulos Globales</h2>
+             <div id="global-upgrades-list" class="upgrade-list"> <!-- CONTENT GENERATED BY JS --> </div>
+
+             <div id="prestige-upgrades">
+                 <h3><i class="fas fa-star"></i> Mejoras Permanentes (Overclock)</h3>
+                 <div id="permanent-upgrades-list" class="upgrade-list"> <!-- CONTENT GENERATED BY JS --> </div>
+             </div>
+        </div>
+
+        <!-- Column 3: Auto Production & Info Tabs -->
+        <div class="column" id="column-3">
+             <h2><i class="fas fa-robot"></i> Fábrica Automática</h2>
+             <div id="auto-upgrades-list" class="upgrade-list"> <!-- CONTENT GENERATED BY JS --> </div>
+
+             <h2><i class="fas fa-info-circle"></i> Información y Avance</h2>
+              <div id="tabs">
+                    <button onclick="showTab('extra-info')" class="active"><i class="fas fa-chart-bar"></i> Estadísticas</button>
+                    <button onclick="showTab('achievements')"><i class="fas fa-trophy"></i> Logros</button>
+                    <button onclick="showTab('research')"><i class="fas fa-flask"></i> Investigación</button>
+                    <button onclick="showTab('challenges')"><i class="fas fa-crosshairs"></i> Desafíos</button>
+                    <button onclick="showTab('settings')"><i class="fas fa-cog"></i> Opciones</button>
+              </div>
+
+              <!-- Tab: Extra Info (Stats) -->
+              <div id="extra-info-tab" class="tab-content active stats-list">
+                   <h3><i class="fas fa-chart-line"></i> Estadísticas Generales</h3>
+                   <div><i class="fas fa-hand-pointer"></i> Clics totales: <span class="stat-value" id="total-clicks-stat">0</span></div>
+                   <div><i class="fas fa-star"></i> Clics Críticos: <span class="stat-value" id="crit-clicks-stat">0</span></div>
+                   <div><i class="fas fa-coins"></i> Chatarra total (general): <span class="stat-value" id="total-currency-stat">0</span></div>
+                   <div><i class="fas fa-history"></i> Chatarra (esta run): <span class="stat-value" id="session-currency-stat">0</span></div>
+                   <div><i class="fas fa-clock"></i> Tiempo jugado (total): <span class="stat-value" id="play-time-stat">0s</span></div>
+                   <div><i class="fas fa-clock"></i> Tiempo jugado (run): <span class="stat-value" id="session-play-time-stat">0s</span></div>
+                   <div><i class="fas fa-infinity"></i> Overclocks realizados: <span class="stat-value" id="prestige-count-stat">0</span></div>
+                   <!-- Detailed CpS Stats Removed for Simplicity - add back if breakdown is implemented
+                   <h3 style="margin-top: 15px;"><i class="fas fa-robot"></i> Producción Detallada (CpS)</h3>
+                   <div id="cps-details-list">
+
+                   </div>
+                    -->
+              </div>
+
+              <!-- Tab: Achievements -->
+               <div id="achievements-tab" class="tab-content">
+                   <h3><i class="fas fa-trophy"></i> Logros Desbloqueados</h3>
+                   <div id="achievements-list" class="upgrade-list"> <!-- CONTENT GENERATED BY JS --> </div>
+               </div>
+
+               <!-- Tab: Research -->
+               <div id="research-tab" class="tab-content">
+                    <h3><i class="fas fa-flask"></i> Proyectos de Investigación</h3>
+                    <p style="font-size: 0.9em; color: var(--text-secondary);">Invierte Chatarra para obtener bonus pasivos permanentes (en esta run).</p>
+                    <div id="research-list" class="upgrade-list"> <!-- CONTENT GENERATED BY JS --> </div>
+               </div>
+
+               <!-- Tab: Challenges -->
+                <div id="challenges-tab" class="tab-content">
+                    <h3><i class="fas fa-crosshairs"></i> Desafíos de Overclock</h3>
+                    <p style="font-size: 0.9em; color: var(--text-secondary);">Completa objetivos difíciles durante una run para ganar Núcleos IA extra al hacer Overclock.</p>
+                    <div id="challenges-list" class="upgrade-list"> <!-- CONTENT GENERATED BY JS --> </div>
+               </div>
+
+
+               <!-- Tab: Settings -->
+               <div id="settings-tab" class="tab-content">
+                   <h3><i class="fas fa-sliders-h"></i> Opciones Generales</h3>
+                   <button onclick="toggleSound()"><i class="fas fa-volume-up"></i> Sonido: <span id="sound-status">Activado</span></button>
+                   <button onclick="manualSave()"><i class="fas fa-save"></i> Guardar Manualmente</button>
+
+                   <h4 style="margin-top: 15px; margin-bottom: 5px; color: var(--accent-cyan);">Notación Numérica</h4>
+                   <div class="notation-options">
+                       <button id="notation-short" onclick="setNumberNotation('short')"><i class="fas fa-text-width"></i> Corta (K, M, B)</button>
+                       <button id="notation-scientific" onclick="setNumberNotation('scientific')"><i class="fas fa-superscript"></i> Científica (eX)</button>
+                       <button id="notation-long" onclick="setNumberNotation('long')"><i class="fas fa-font"></i> Larga (Millón)</button>
+                   </div>
+
+                   <h4 style="margin-top: 15px; margin-bottom: 5px; color: var(--accent-yellow);">Gestión de Guardado</h4>
+                   <div class="export-import">
+                       <button onclick="exportSave()"><i class="fas fa-file-export"></i> Exportar Guardado</button>
+                       <button onclick="importSave()"><i class="fas fa-file-import"></i> Importar Guardado</button>
+                       <textarea id="export-import-area" placeholder="Pega aquí tu código de guardado para importar..."></textarea>
+                   </div>
+
+                   <!-- JUSTO ANTES DE ZONA PELIGROSA -->
+                   <h4 style="margin-top: 15px; margin-bottom: 5px; color: var(--accent-cyan);">Apariencia del Clicker</h4>
+                   <div id="clicker-visuals-container" style="display: flex; flex-wrap: wrap; gap: 10px; max-height: 200px; overflow-y: auto; background-color: var(--bg-light); padding: 10px; border-radius: 5px;">
+                       <!-- Los visuales se generarán aquí por JS -->
+                       <p>Cargando aspectos...</p>
+                   </div>
+                   <!-- FIN DE LA SECCIÓN DE VISUALES -->
+
+                   <h4 style="margin-top: 15px; margin-bottom: 5px; color: var(--accent-red);">Zona Peligrosa</h4>
+                   <button onclick="confirmReset()" id="hard-reset-button"><i class="fas fa-trash-alt"></i> BORRAR TODO EL PROGRESO</button>
+                </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container">Mensaje</div>
+
+<script>
+    // --- GAME CONFIGURATION ---
+    const TICK_RATE = 100; // ms (10 updates/sec)
+    const SAVE_INTERVAL = 30000; // ms (30 seconds)
+    const AD_REWARD_SECONDS = 300; // Reward = 5 minutes (300s) of current CpS
+    const PRESTIGE_BASE_REQUIREMENT = new Decimal("1e9");
+    const PRESTIGE_REQUIREMENT_SCALE = new Decimal("1e3"); // Scale cost faster initially
+    const AD_URL = 'https://increasingbelieveabonnement.com/pcmu77j4?key=1f38fa224b5ecf757563a32d2d8ac126'; // Nueva URL
+    const SAVE_KEY = 'robotClickerSave_v3.1'; // <<-- Updated Key
+    const CRIT_BASE_CHANCE = 0.01; // 1% base chance
+    const CRIT_BASE_MULTIPLIER = 10; // x10 base multiplier
+    const MILESTONE_LEVELS = [25, 50, 100, 200, 500, 1000]; // Levels for robot milestones
+    const MILESTONE_CPS_MULTIPLIER = 1.1; // 10% CpS bonus per milestone for that robot
+
+    Decimal.set({ precision: 60, rounding: Decimal.ROUND_DOWN }); // Increased precision slightly
+
+    // --- GAME STATE ---
+    let gameState = {};
+    let gameLoopInterval = null;
+    let saveInterval = null;
+    let statInterval = null;
+    let toastTimeout = null; // For managing toast queue
+
+    // --- UPGRADE DEFINITIONS (Added Crit Upgrades, Permanent Requirements) ---
+    const upgrades = {
+        // --- Click Upgrades ---
+        click_power_1: { name: "Dedos Biónicos", desc: "Mejora potencia de clic base.", type: 'click', baseCost: new Decimal(10), costScale: 1.15, baseEffect: new Decimal(1), currency: 'currency', icon: 'fa-hand-pointer' },
+        click_power_2: { name: "Multi-Herramienta", desc: "+Potencia de clic.", type: 'click', baseCost: new Decimal(500), costScale: 1.2, baseEffect: new Decimal(10), currency: 'currency', icon: 'fa-toolbox' },
+        click_power_3: { name: "Puntero Láser", desc: "Gran aumento a potencia de clic.", type: 'click', baseCost: new Decimal(25000), costScale: 1.25, baseEffect: new Decimal(100), currency: 'currency', icon: 'fa-lightbulb' }, // Changed icon
+        click_synergy_1: { name: "Sinergia Manual I", desc: "Clics ganan +0.1% de CpS.", type: 'click_synergy', baseCost: new Decimal(10000), costScale: 2, baseEffect: new Decimal(0.001), currency: 'currency', icon: 'fa-link' },
+        click_synergy_2: { name: "Sinergia Manual II", desc: "Clics ganan +0.2% de CpS.", type: 'click_synergy', baseCost: new Decimal('1e6'), costScale: 2.5, baseEffect: new Decimal(0.002), currency: 'currency', icon: 'fa-link' },
+        autoclicker_1: { name: "Ratón Automático", desc: "Hace 1 clic por segundo.", type: 'autoclick', baseCost: new Decimal('5e6'), costScale: 3, baseEffect: new Decimal(1), currency: 'currency', icon: 'fa-computer-mouse' },
+        crit_chance_1: { name: "Precisión Quirúrgica", desc: "+0.25% Probabilidad de Clic Crítico.", type: 'crit_chance', baseCost: new Decimal('1e4'), costScale: 1.8, baseEffect: new Decimal(0.0025), currency: 'currency', icon: 'fa-star-half-alt' },
+        crit_power_1: { name: "Puntos Débiles", desc: "+10x Multiplicador de Clic Crítico.", type: 'crit_power', baseCost: new Decimal('5e5'), costScale: 2.2, baseEffect: new Decimal(10), currency: 'currency', icon: 'fa-meteor' },
+
+        // --- Auto Upgrades (Robots) ---
+        robot_1: { name: "Ensamblador", desc: "+0.5 CpS", type: 'auto', baseCost: new Decimal(25), costScale: 1.15, baseEffect: new Decimal(0.5), currency: 'currency', icon: 'fa-gear' },
+        robot_2: { name: "Fab. Nanites", desc: "+5 CpS", type: 'auto', baseCost: new Decimal(1000), costScale: 1.15, baseEffect: new Decimal(5), currency: 'currency', icon: 'fa-microchip' },
+        robot_3: { name: "Soldador Fusión", desc: "+50 CpS", type: 'auto', baseCost: new Decimal(25000), costScale: 1.15, baseEffect: new Decimal(50), currency: 'currency', icon: 'fa-bolt' },
+        robot_4: { name: "Forjador Cuántico", desc: "+750 CpS", type: 'auto', baseCost: new Decimal(500000), costScale: 1.15, baseEffect: new Decimal(750), currency: 'currency', icon: 'fa-atom' },
+        robot_5: { name: "Recolector Asteroides", desc: "+10k CpS", type: 'auto', baseCost: new Decimal('1e7'), costScale: 1.15, baseEffect: new Decimal('1e4'), currency: 'currency', icon: 'fa-space-shuttle' }, // Changed icon
+        robot_6: { name: "Unidad Terraformación", desc: "+150k CpS", type: 'auto', baseCost: new Decimal('2.5e8'), costScale: 1.15, baseEffect: new Decimal('1.5e5'), currency: 'currency', icon: 'fa-globe-americas' },
+        robot_7: { name: "Sintetizador Materia", desc: "+2M CpS", type: 'auto', baseCost: new Decimal('5e9'), costScale: 1.15, baseEffect: new Decimal('2e6'), currency: 'currency', icon: 'fa-flask-vial' }, // Changed icon
+        robot_8: { name: "Colector Energía Oscura", desc: "+30M CpS", type: 'auto', baseCost: new Decimal('1e11'), costScale: 1.15, baseEffect: new Decimal('3e7'), currency: 'currency', icon: 'fa-satellite-dish' }, // Changed icon
+        robot_9: { name: "Constructor Dyson", desc: "+500M CpS", type: 'auto', baseCost: new Decimal('2.5e12'), costScale: 1.15, baseEffect: new Decimal('5e8'), currency: 'currency', icon: 'fa-solar-panel' }, // Changed icon
+        robot_10: { name: "Mente Colmena IA", desc: "+10B CpS", type: 'auto', baseCost: new Decimal('5e14'), costScale: 1.15, baseEffect: new Decimal('1e10'), currency: 'currency', icon: 'fa-brain' },
+
+        // --- Global / Module Upgrades ---
+        global_cps_mult_1: { name: "Optimizador Global I", desc: "+10% a todo el CpS.", type: 'global_mult', baseCost: new Decimal('1e5'), costScale: 3, baseEffect: new Decimal(0.10), currency: 'currency', icon: 'fa-cogs' },
+        global_cps_mult_2: { name: "Red Neuronal Maestra", desc: "+15% a todo el CpS.", type: 'global_mult', baseCost: new Decimal('1e8'), costScale: 4, baseEffect: new Decimal(0.15), currency: 'currency', icon: 'fa-project-diagram' },
+        robot_1_mult: { name: "Línea Ensamblaje+", desc: "+25% prod. Ensambladores.", type: 'specific_mult', target: 'robot_1', baseCost: new Decimal(5000), costScale: 1.8, baseEffect: new Decimal(0.25), currency: 'currency', icon: 'fa-wrench' },
+        robot_2_mult: { name: "Flujo Nanites+", desc: "+25% prod. Nanites.", type: 'specific_mult', target: 'robot_2', baseCost: new Decimal(75000), costScale: 1.9, baseEffect: new Decimal(0.25), currency: 'currency', icon: 'fa-sitemap' },
+        robot_5_mult: { name: "Radar Asteroides+", desc: "+20% prod. Recolectores.", type: 'specific_mult', target: 'robot_5', baseCost: new Decimal('5e7'), costScale: 2.0, baseEffect: new Decimal(0.20), currency: 'currency', icon: 'fa-binoculars' },
+        robot_8_mult: { name: "Contención Energía+", desc: "+15% prod. Colectores EO.", type: 'specific_mult', target: 'robot_8', baseCost: new Decimal('5e11'), costScale: 2.2, baseEffect: new Decimal(0.15), currency: 'currency', icon: 'fa-shield-alt' },
+        cheaper_robots: { name: "Descuento Volumen", desc: "Robots 1% más baratos (Max 50%).", type: 'cost_reduct', targetType: 'auto', baseCost: new Decimal('1e6'), costScale: 1.7, baseEffect: new Decimal(0.01), maxLevel: 50, currency: 'currency', icon: 'fa-tags' },
+        cheaper_clicks: { name: "Ergonomía Avanzada", desc: "Mejoras de clic 1% más baratas (Max 50%).", type: 'cost_reduct', targetType: 'click', baseCost: new Decimal('1e5'), costScale: 1.8, baseEffect: new Decimal(0.01), maxLevel: 50, currency: 'currency', icon: 'fa-mouse-pointer' },
+
+        // --- Permanent (Prestige) Upgrades ---
+        perm_all_cps_boost: { name: "Eficiencia Absoluta", desc: "+5% CpS global por nivel.", type: 'permanent', target: 'all_cps', baseCost: new Decimal(1), costScale: 1.5, baseEffect: new Decimal(0.05), currency: 'prestigeCurrency', icon: 'fa-forward' },
+        perm_all_cpc_boost: { name: "Potencia Manual Suprema", desc: "+10% CpC global por nivel.", type: 'permanent', target: 'all_cpc', baseCost: new Decimal(2), costScale: 1.7, baseEffect: new Decimal(0.10), currency: 'prestigeCurrency', icon: 'fa-hand-rock' }, // Changed icon
+        perm_prestige_gain: { name: "Algoritmo Overclock+", desc: "+5% ganancia Núcleos IA.", type: 'permanent', target: 'prestige_gain', baseCost: new Decimal(10), costScale: 2.5, baseEffect: new Decimal(0.05), currency: 'prestigeCurrency', icon: 'fa-recycle' },
+        perm_crit_chance: { name: "Análisis Predictivo", desc: "+0.1% Prob. Crítica base.", type: 'permanent', target: 'crit_chance', baseCost: new Decimal(8), costScale: 2.0, baseEffect: new Decimal(0.001), currency: 'prestigeCurrency', icon: 'fa-crosshairs' },
+        perm_crit_power: { name: "Fuerza Bruta", desc: "+5x Multiplicador Crítico base.", type: 'permanent', target: 'crit_power', baseCost: new Decimal(12), costScale: 2.3, baseEffect: new Decimal(5), currency: 'prestigeCurrency', icon: 'fa-bomb' },
+        perm_start_chatarra: { name: "Inversión Inicial", desc: "Empiezas con 1000 Chatarra x Nivel.", type: 'permanent', target: 'start_currency', baseCost: new Decimal(5), costScale: 2, baseEffect: new Decimal(1000), currency: 'prestigeCurrency', icon: 'fa-piggy-bank', requires: { perm_all_cps_boost: 1 } }, // Requirement Example
+        perm_start_bots: { name: "Protocolo Arranque", desc: "Empiezas con +1 Ensamblador x Nivel.", type: 'permanent', target: 'start_bots', botId: 'robot_1', baseCost: new Decimal(3), costScale: 1.8, baseEffect: new Decimal(1), currency: 'prestigeCurrency', icon: 'fa-play', requires: { perm_all_cps_boost: 1 } }, // Requirement Example
+        perm_cheaper_all: { name: "Logística Maestra", desc: "Reduce coste Chatarra 0.5% (Max 25%).", type: 'permanent', target: 'cost_reduct', baseCost: new Decimal(15), costScale: 1.6, baseEffect: new Decimal(0.005), maxLevel: 50, currency: 'prestigeCurrency', icon: 'fa-truck-loading', requires: { perm_prestige_gain: 3 } }, // Requirement Example
+        perm_keep_research: { name: "Memoria Persistente", desc: "Mantén X% de Progreso Investigación tras Overclock.", type: 'permanent', target: 'keep_research', baseCost: new Decimal(25), costScale: 3, baseEffect: new Decimal(0.05), maxLevel: 10, currency: 'prestigeCurrency', icon: 'fa-database', requires: { perm_cheaper_all: 5 } }, // Requirement Example
+
+    };
+
+     // --- RESEARCH DEFINITIONS ---
+     const researchItems = {
+         res_cps_1: { name: "Optimización Cinética", desc: "+1% CpS por nivel completado.", icon: 'fa-tachometer-alt', baseCost: new Decimal('1e6'), costScale: 5, duration: 60, // seconds
+             effectType: 'mult', target: 'all_cps', effectPerLevel: new Decimal(0.01), isResearch: true },
+         res_cpc_1: { name: "Calibración Manual", desc: "+2% CpC por nivel completado.", icon: 'fa-hand-sparkles', baseCost: new Decimal('5e5'), costScale: 6, duration: 45,
+             effectType: 'mult', target: 'all_cpc', effectPerLevel: new Decimal(0.02), isResearch: true },
+         res_crit_chance_1: { name: "Análisis de Fractura", desc: "+0.05% Prob. Crítica por nivel.", icon: 'fa-search', baseCost: new Decimal('1e7'), costScale: 10, duration: 120,
+             effectType: 'add', target: 'crit_chance', effectPerLevel: new Decimal(0.0005), isResearch: true },
+         res_robot_1_speed: { name: "Ensambladores Rápidos", desc: "+5% producción Ensambladores por nivel.", icon: 'fa-shipping-fast', baseCost: new Decimal('2e6'), costScale: 4, duration: 90,
+              effectType: 'mult', target: 'robot_1', effectPerLevel: new Decimal(0.05), isResearch: true },
+         res_cheaper_research: { name: "Eficiencia Académica", desc: "Investigación 1% más barata por nivel (Max 30%).", icon: 'fa-graduation-cap', baseCost: new Decimal('1e8'), costScale: 8, duration: 180, maxLevel: 30,
+              effectType: 'cost_reduct', target: 'research', effectPerLevel: new Decimal(0.01), isResearch: true },
+     };
+
+     // --- CHALLENGE DEFINITIONS ---
+     const challenges = {
+         chal_no_click: { name: "Manos Libres", desc: "Alcanza 1 Billón (1e9) de Chatarra sin hacer clic manualmente.", icon: 'fa-ban', goalCurrency: new Decimal('1e9'), restriction: 'noManualClicks', rewardNIA: new Decimal(5) },
+         chal_robot_1_only: { name: "Ejército de Uno", desc: "Alcanza 1 Trillón (1e12) de Chatarra usando SÓLO Ensambladores (Robot 1).", icon: 'fa-user-gear', goalCurrency: new Decimal('1e12'), restriction: 'robot1Only', rewardNIA: new Decimal(15) },
+         chal_fast_prestige: { name: "Velocidad Luz", desc: "Realiza un Overclock en menos de 1 hora.", icon: 'fa-bolt', goalTime: 3600, // seconds
+              restriction: 'timeLimit', rewardNIA: new Decimal(10) },
+        chal_no_crit: { name: "Precisión Absoluta", desc: "Alcanza 1 Cuatrillón (1e15) Chatarra sin mejoras de Crítico (chance/poder).", icon: 'fa-bullseye', goalCurrency: new Decimal('1e15'), restriction: 'noCritUpgrades', rewardNIA: new Decimal(20) },
+     };
+
+
+    // --- ACHIEVEMENT DEFINITIONS (Added rewards) ---
+    const achievements = {
+        // Clicks
+         click1: { name: "Primer Contacto", desc: "Realiza tu primer clic.", condition: (s) => s.stats.totalClicks >= 1, rewardDesc: "+0.1% CpS", reward: { type: 'cps', value: 0.001 } },
+         click1k: { name: "Dedos Ágiles", desc: "Realiza 1,000 clics.", condition: (s) => s.stats.totalClicks >= 1000, rewardDesc: "+0.2% CpC", reward: { type: 'cpc', value: 0.002 } },
+         click1M: { name: "Clickeador Compulsivo", desc: "Realiza 1 Millón de clics.", condition: (s) => s.stats.totalClicks >= 1000000, rewardDesc: "+0.5% CpS", reward: { type: 'cps', value: 0.005 } },
+         critClick100: { name: "¡Golpe de Suerte!", desc: "Realiza 100 clics críticos.", condition: (s) => s.stats.totalCritClicks >= 100, rewardDesc: "+1% Prob. Crítica", reward: { type: 'crit_chance_mult', value: 0.01 } },
+         // Earning
+         earn100: { name: "Chatarrero Inicial", desc: "Gana 100 Chatarra.", condition: (s) => s.currency.gte(100), rewardDesc: "+0.1% CpS", reward: { type: 'cps', value: 0.001 } },
+         earn1M: { name: "Millonario Robótico", desc: "Gana 1 Millón Chatarra.", condition: (s) => s.currency.gte("1e6"), rewardDesc: "+0.2% CpS", reward: { type: 'cps', value: 0.002 } },
+         earn1B: { name: "Billón de Bits", desc: "Gana 1 Billón Chatarra.", condition: (s) => s.currency.gte("1e9"), rewardDesc: "+0.3% CpS", reward: { type: 'cps', value: 0.003 } },
+         earn1T: { name: "Magnate Trillonario", desc: "Gana 1 Trillón Chatarra.", condition: (s) => s.currency.gte("1e12"), rewardDesc: "+0.5% CpS", reward: { type: 'cps', value: 0.005 } },
+         // Robots / Upgrades
+         buyBot1: { name: "¡Está vivo!", desc: "Compra 1 Robot Ensamblador.", condition: (s) => s.upgrades.robot_1 >= 1, rewardDesc: "+1% Prod. Ensamblador", reward: { type: 'specific_cps', target: 'robot_1', value: 0.01 } },
+         buyBot50: { name: "Pequeño Ejército", desc: "Compra 50 Robots Ensamblador.", condition: (s) => s.upgrades.robot_1 >= 50, rewardDesc: "+2% Prod. Ensamblador", reward: { type: 'specific_cps', target: 'robot_1', value: 0.02 } },
+         buyAllBots: { name: "Diversidad Robótica", desc: "Posee al menos uno de cada tipo de robot.", condition: (s) => ['robot_1', 'robot_2', 'robot_3', 'robot_4', 'robot_5', 'robot_6', 'robot_7', 'robot_8', 'robot_9', 'robot_10'].every(id => upgrades[id] && s.upgrades[id] >= 1), rewardDesc: "+1% CpS Global", reward: { type: 'cps', value: 0.01 } },
+         reachBotMilestone: { name: "Maestría Robótica", desc: "Alcanza un milestone (Nvl 25) en cualquier robot.", condition: (s) => Object.keys(s.robotMilestones).length > 0 && Object.values(s.robotMilestones).some(m => m >= 1), rewardDesc: "+1% CpS Global", reward: { type: 'cps', value: 0.01 } },
+         // CpS
+         reach1kCPS: { name: "Factoría Imparable", desc: "Alcanza 1,000 CpS.", condition: (s) => s.currencyPerSecond.gte(1000), rewardDesc: "+0.2% CpS", reward: { type: 'cps', value: 0.002 } },
+         reach1MCPS: { name: "Metrópolis Mecanizada", desc: "Alcanza 1 Millón CpS.", condition: (s) => s.currencyPerSecond.gte("1e6"), rewardDesc: "+0.5% CpS", reward: { type: 'cps', value: 0.005 } },
+         reach1BCPS: { name: "Imperio Galáctico", desc: "Alcanza 1 Billón CpS.", condition: (s) => s.currencyPerSecond.gte("1e9"), rewardDesc: "+1% CpS", reward: { type: 'cps', value: 0.01 } },
+         // Prestige
+         firstPrestige: { name: "Bucle Temporal", desc: "Realiza tu primer Overclock.", condition: (s) => s.prestigeCount >= 1, rewardDesc: "+1 Núcleo IA inicial", reward: { type: 'nia', value: 1 } },
+         tenPrestige: { name: "Maestro del Ciclo", desc: "Realiza 10 Overclocks.", condition: (s) => s.prestigeCount >= 10, rewardDesc: "+5% Ganancia Núcleos IA", reward: { type: 'prestige_gain', value: 0.05 } },
+         fiftyPrestige: { name: "Singularidad Cercana", desc: "Realiza 50 Overclocks.", condition: (s) => s.prestigeCount >= 50, rewardDesc: "+10% Ganancia Núcleos IA", reward: { type: 'prestige_gain', value: 0.10 } },
+         // Research / Challenges
+         completeResearch: { name: "¡Eureka!", desc: "Completa tu primera investigación.", condition: (s) => Object.values(s.research).some(r => r.level > 0), rewardDesc: "+1% Coste Investigación", reward: { type: 'research_cost', value: 0.01 } },
+         completeChallenge: { name: "Reto Superado", desc: "Completa tu primer desafío.", condition: (s) => Object.keys(s.completedChallenges).length > 0, rewardDesc: "+1 Núcleo IA extra", reward: { type: 'nia', value: 1 } },
+     };
+
+    // --- CLICKER VISUAL DEFINITIONS ---
+    const clickerVisuals = {
+        'default': { emoji: '🤖', unlocked: true, desc: 'Robot Estándar', tooltip: 'El confiable modelo inicial.' },
+        'gear':    { emoji: '⚙️', unlocked: false, requiredClicks: 10000, desc: 'Engranaje Preciso', tooltip: 'Desbloqueado con 10k Clics Totales.' },
+        'rocket':  { emoji: '🚀', unlocked: false, requiredAchievement: 'reach1MCPS', desc: 'Cohete Sónico', tooltip: 'Desbloqueado al alcanzar 1M CpS (Logro Metrópolis Mecanizada).' },
+        'atom':    { emoji: '⚛️', unlocked: false, requiredRobotLevel: { id: 'robot_4', level: 50 }, desc: 'Núcleo Cuántico', tooltip: 'Desbloqueado al Nivel 50 del Forjador Cuántico.' },
+        'brain':   { emoji: '🧠', unlocked: false, requiredPrestige: 5, desc: 'Mente Maestra', tooltip: 'Desbloqueado con 5 Overclocks.' },
+        'alien':   { emoji: '👽', unlocked: false, requiredPrestigeUpgrade: 'perm_prestige_gain', level: 5, desc: 'Visitante', tooltip: 'Desbloqueado al Nivel 5 de Algoritmo Overclock+.' }
+        // Añade más aquí si quieres!
+    };
+
+    function getDefaultGameState() {
+         let defaultState = {
+            // Core Currency
+            currency: new Decimal(0),
+            prestigeCurrency: new Decimal(0),
+            prestigeCount: 0,
+            // Calculated Values (will be recalculated on load/update)
+            currencyPerClick: new Decimal(1),
+            currencyPerSecond: new Decimal(0),
+            // Upgrades
+            upgrades: {}, // Levels of each upgrade item
+            robotMilestones: {}, // { robot_id: count }
+            achievementBonuses: { // Bonuses accumulated from achievements this run
+                cpsMultiplier: new Decimal(1),
+                cpcMultiplier: new Decimal(1),
+                critChanceMultiplier: new Decimal(1),
+                prestigeGainMultiplier: new Decimal(1),
+                researchCostMultiplier: new Decimal(1),
+                specificCpsMultipliers: {}, // { robot_id: multiplier }
+            },
+            // Critical Clicks
+            critChance: new Decimal(CRIT_BASE_CHANCE),
+            critMultiplier: new Decimal(CRIT_BASE_MULTIPLIER),
+            // Research
+            research: {}, // { research_id: { level: 0, progress: 0 } }
+            activeResearchId: null,
+            researchCostReduction: new Decimal(0), // From research itself
+            // Challenges
+            activeChallengeId: null,
+            completedChallenges: {}, // { challenge_id: true }
+            challengeProgress: {}, // { time: 0, manualClicks: 0, ... }
+            // Achievements
+            achievements: {}, // { achievement_id: unlocked_boolean }
+            // Stats
+            stats: {
+                totalClicks: 0,
+                totalCritClicks: 0,
+                totalCurrencyEarned: new Decimal(0),
+                sessionCurrencyEarned: new Decimal(0), // Reset on prestige
+                startTime: Date.now(), // Persists across resets
+                sessionStartTime: Date.now(), // Reset on prestige
+                totalPlayTime: 0, // seconds, persists
+                sessionPlayTime: 0, // seconds, reset on prestige
+                lastUpdate: Date.now(),
+                prestigeTimes: [], // Store last N prestige times
+            },
+            // Settings
+            soundMuted: false,
+            numberNotation: 'short', // 'short', 'scientific', 'long'
+            // Misc
+            adButtonBusy: false,
+            lastClickTimestamp: 0, // For combo maybe later?
+            buyMultiplier: 1, // 1, 10, 100, -1 (max)
+
+            clickerVisualsState: {}, // Almacenará { 'visualId': { unlocked: true/false }, ... }
+             selectedClickerVisualId: 'default', // ID del visual actualmente seleccionado
+        };
+        // Initialize upgrade levels to 0
+        for (const id in upgrades) {
+            defaultState.upgrades[id] = 0;
+        }
+         // Initialize research state
+        for (const id in researchItems) {
+             defaultState.research[id] = { level: 0, progress: 0 };
+         }
+        // Initialize achievements to false
+        for (const id in achievements) {
+            defaultState.achievements[id] = false;
+        }
+        // *** NUEVO: INICIALIZAR ESTADO DE VISUALES ***
+        for (const id in clickerVisuals) {
+             // El visual 'default' siempre empieza desbloqueado
+             defaultState.clickerVisualsState[id] = { unlocked: id === 'default' };
+         }
+        return defaultState;
+    }
+
+
+    // --- UTILITY FUNCTIONS ---
+    function formatNumber(num, notation = gameState?.numberNotation || 'short') {
+        num = new Decimal(num);
+        if (num.isNaN()) return "Error";
+        if (num.lt(1000)) return num.toFixed(0);
+
+        const suffixesShort = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc", "UDc", "DDc", "TDc", "QaDc", "QiDc", "SxDc", "SpDc", "OcDc", "NoDc", "Vg", "UVg", "DVg", "TVg", "QaVg", "QiVg", "SxVg", "SpVg", "OcVg", "NoVg", "Tg", "UTg", "DTg", "TTg", "QaTg", "QiTg", "SxTg", "SpTg", "OcTg", "NoTg", "Ag", "UA", "DA", "TA"]; // Added more
+        const suffixesLong = ["", " Mil", " Millón", " Billón", " Trillón", " Cuatrillón", " Quintillón", " Sextillón", " Septillón", " Octillón", " Nonillón", " Decillón", " Undecillón", " Duodecillón", " Tredecillón", " Cuatordecillón", " Quindecillón", " Sexdecillón", " Septendecillón", " Octodecillón", " Novendecillón", " Vigintillón"]; // Extend as needed
+
+        if (notation === 'scientific') {
+            return num.toExponential(2).replace('e+', 'e');
+        }
+
+        const isShort = notation === 'short';
+        const suffixes = isShort ? suffixesShort : suffixesLong;
+        const base = isShort ? 1000 : 1000000; // Long scale uses millions base after thousand
+        let exponent = 0;
+
+        if (isShort) {
+            if (num.gte(1)) exponent = num.logarithm(1000).floor().toNumber(); // Only if >= 1
+            else exponent = 0; // Handle numbers between 0 and 1000 correctly
+        } else {
+            if (num.lt(1e6)) { // Below 1 Million
+                 if (num.gte(1000)) exponent = 1; // Use K
+                 else exponent = 0;
+            } else { // 1 Million and above
+                exponent = num.logarithm(1000000).floor().toNumber() + 1; // +1 because index 2 is Million
+            }
+        }
+
+
+        if (exponent > 0 && exponent < suffixes.length) {
+             let mantissa;
+             if (isShort) {
+                mantissa = num.dividedBy(Decimal.pow(1000, exponent));
+            } else {
+                 if(exponent === 1) { // K suffix for long scale
+                    mantissa = num.dividedBy(1000);
+                 } else { // Million onwards
+                    mantissa = num.dividedBy(Decimal.pow(1000000, exponent-1));
+                 }
+            }
+             // Adjust precision for better readability
+            const precision = exponent === 0 ? 0 : (mantissa.lt(10) ? 2 : (mantissa.lt(100) ? 1 : 0));
+            return mantissa.toFixed(precision) + suffixes[exponent];
+        } else if (exponent >= suffixes.length) {
+            // Fallback to scientific if suffixes run out
+            return num.toExponential(2).replace('e+', 'e');
+        } else {
+             // Numbers less than 1000 or when exponent is 0
+             return num.toFixed(0);
+        }
+    }
+    function formatTime(seconds) {
+        seconds = Math.floor(seconds);
+        if (seconds < 0) seconds = 0; // Ensure non-negative
+        const d = Math.floor(seconds / (3600*24));
+        const h = Math.floor(seconds % (3600*24) / 3600);
+        const m = Math.floor(seconds % 3600 / 60);
+        const s = Math.floor(seconds % 60);
+        let str = "";
+        if (d > 0) str += d + "d ";
+        if (h > 0 || d > 0) str += h + "h ";
+        if (m > 0 || h > 0 || d > 0) str += m + "m ";
+        str += s + "s";
+        return str || "0s";
+     }
+    function playSound(soundId) {
+        if (!gameState || gameState.soundMuted) return;
+        const sound = document.getElementById(soundId);
+        // Placeholder: In a real scenario, you'd have src attributes on the audio tags
+        // if (sound && sound.src) {
+        //     sound.currentTime = 0;
+        //     sound.play().catch(e => console.warn("Audio play failed (likely no src):", e));
+        // }
+    }
+     function showToast(message) {
+         const toast = document.getElementById('toast-container');
+         if (!toast) return;
+
+         // Clear existing timeout if one is running
+         if (toastTimeout) {
+             clearTimeout(toastTimeout);
+             toast.classList.remove('show', 'hide');
+             void toast.offsetWidth; // Trigger reflow
+         }
+
+         toast.textContent = message;
+         toast.classList.remove('hide'); // Ensure hide class is removed
+         toast.classList.add('show');
+
+         toastTimeout = setTimeout(() => {
+             toast.classList.add('hide');
+             toast.classList.remove('show');
+             // Use transitionend event listener for cleaner removal? Maybe overkill here.
+             setTimeout(() => {
+                 if (toast.classList.contains('hide')) { // Check if it's still meant to be hidden
+                     toast.classList.remove('hide');
+                 }
+                 toastTimeout = null; // Clear the reference
+             }, 500); // Match CSS transition duration
+         }, 3000); // Duration visible
+     }
+
+     // Show floating text on click
+    function showFloatingText(text, isCrit = false) {
+         const container = document.getElementById('floating-text-container');
+         if (!container) return;
+         const textElement = document.createElement('div');
+         textElement.className = `floating-text ${isCrit ? 'crit' : ''}`;
+         textElement.textContent = "+" + text; // Add '+' sign
+         container.appendChild(textElement);
+
+         // Remove the element after the animation finishes
+         textElement.addEventListener('animationend', () => {
+            if (textElement.parentNode === container) {
+                container.removeChild(textElement);
+            }
+         });
+         // Fallback removal just in case animationend doesn't fire reliably
+          setTimeout(() => {
+             if (textElement.parentNode === container) { // Check if still attached
+                 container.removeChild(textElement);
+             }
+         }, 1100); // Slightly longer than animation
+     }
+
+
+     // --- CORE GAME LOGIC (Recalculations) ---
+
+     // Get achievement bonus multiplier for a specific type
+     function getAchievementBonus(type, targetId = null) {
+        if (!gameState || !gameState.achievementBonuses) return new Decimal(1);
+        const bonuses = gameState.achievementBonuses;
+        let multiplier = new Decimal(1); // Default multiplier
+        let reductionFactor = new Decimal(1); // For costs
+
+        switch (type) {
+            case 'cps': multiplier = bonuses.cpsMultiplier || new Decimal(1); break;
+            case 'cpc': multiplier = bonuses.cpcMultiplier || new Decimal(1); break;
+            case 'crit_chance_mult': multiplier = bonuses.critChanceMultiplier || new Decimal(1); break; // This is a multiplier *on top* of base+additive
+            case 'prestige_gain': multiplier = bonuses.prestigeGainMultiplier || new Decimal(1); break;
+            case 'research_cost': reductionFactor = bonuses.researchCostMultiplier || new Decimal(1); break;
+            case 'specific_cps':
+                multiplier = bonuses.specificCpsMultipliers[targetId] || new Decimal(1);
+                break;
+        }
+
+        if (type.endsWith('_cost')) {
+             return Decimal.max(0.01, reductionFactor); // Return reduction factor for costs
+         } else {
+             return Decimal.max(1, multiplier); // Return boost multiplier for gains
+         }
+    }
+
+     // Get research bonus multiplier/reduction
+    function getResearchBonus(type, targetId = null) {
+         if (!gameState || !gameState.research) return new Decimal(type.includes('cost') ? 1 : 0); // Return 1 for cost, 0 for additive/mult bonus if no research
+         let totalMultiplierBonus = new Decimal(0); // Accumulate the % bonus (e.g., 0.01 for +1%)
+         let totalAdditive = new Decimal(0);
+         let costReduction = new Decimal(0);
+
+         for (const resId in gameState.research) {
+             const resData = gameState.research[resId];
+             const definition = researchItems[resId];
+             if (resData.level > 0 && definition) {
+                 const totalEffect = definition.effectPerLevel.times(resData.level);
+                 if (definition.effectType === 'mult' && definition.target === type) {
+                      if (!targetId || definition.target === targetId || definition.target === 'all_cps' || definition.target === 'all_cpc') {
+                         totalMultiplierBonus = totalMultiplierBonus.plus(totalEffect); // Add the % bonus
+                     }
+                 } else if (definition.effectType === 'add' && definition.target === type) {
+                    totalAdditive = totalAdditive.plus(totalEffect);
+                } else if (definition.effectType === 'cost_reduct' && definition.target === type) {
+                     costReduction = costReduction.plus(totalEffect);
+                 }
+             }
+         }
+
+        if (type === 'research_cost' || type === 'upgrade_cost') {
+            // Return the reduction factor (e.g., 0.9 for 10% reduction)
+             // Combine research's own reduction with the global one from state
+            const totalCostReduction = costReduction.plus(gameState.researchCostReduction || 0);
+            return Decimal.max(0.01, new Decimal(1).minus(totalCostReduction));
+        } else if (type === 'crit_chance') {
+            // Return additive bonus for crit chance
+             return totalAdditive;
+         } else {
+             // Return the total *multiplier* (1 + bonus) for CpS/CpC
+             return new Decimal(1).plus(totalMultiplierBonus);
+         }
+     }
+
+
+    // --- Get Multipliers (Permanent, Research, Achievements) ---
+    function getCombinedMultiplier(targetStat, specificTargetId = null) {
+        let multiplier = new Decimal(1);
+        if (!gameState || !gameState.upgrades) return multiplier;
+
+        // 1. Permanent Upgrades (Overclock) - Base Multiplier Increase
+        if (targetStat === 'all_cps' || targetStat === 'all') {
+             const permBoostLevel = gameState.upgrades.perm_all_cps_boost || 0;
+             if (permBoostLevel > 0 && upgrades.perm_all_cps_boost) {
+                 multiplier = multiplier.times(new Decimal(1).plus(upgrades.perm_all_cps_boost.baseEffect.times(permBoostLevel)));
+             }
+         }
+         if (targetStat === 'all_cpc' || targetStat === 'all') {
+              const permBoostLevel = gameState.upgrades.perm_all_cpc_boost || 0;
+              if (permBoostLevel > 0 && upgrades.perm_all_cpc_boost) {
+                 multiplier = multiplier.times(new Decimal(1).plus(upgrades.perm_all_cpc_boost.baseEffect.times(permBoostLevel)));
+             }
+         }
+          // Add other permanent *multiplicative* boosts here
+
+         // 2. Research Bonuses (Multiplicative part)
+         multiplier = multiplier.times(getResearchBonus(targetStat, specificTargetId));
+
+         // 3. Achievement Bonuses (Multiplicative part)
+         multiplier = multiplier.times(getAchievementBonus(targetStat, specificTargetId));
+
+        return multiplier; // This is the combined multiplier from these sources
+    }
+
+    // Cost Reduction applies to Chatarra upgrades/research
+    function getCostReductionMultiplier(definition) {
+        if (!gameState || !gameState.upgrades || !definition) return new Decimal(1);
+
+        let multiplierFactor = new Decimal(1); // Start with factor 1 (100%)
+
+        // 1. Permanent Global Reduction (Overclock)
+        const permReduceLevel = gameState.upgrades.perm_cheaper_all || 0;
+        if (permReduceLevel > 0 && upgrades.perm_cheaper_all) {
+            // Calculate total reduction percentage (e.g., 0.1 for 10%)
+            const reductionPercent = upgrades.perm_cheaper_all.baseEffect.times(permReduceLevel);
+            // Apply as factor: 1 - reductionPercent
+             multiplierFactor = multiplierFactor.times(new Decimal(1).minus(reductionPercent));
+        }
+
+        // 2. Specific Type Reduction (Normal Upgrades)
+        let typeReductionPercent = new Decimal(0);
+        if (definition.type === 'auto' || definition.type === 'specific_mult') {
+             const reducLevel = gameState.upgrades.cheaper_robots || 0;
+              if (reducLevel > 0 && upgrades.cheaper_robots) {
+                 typeReductionPercent = upgrades.cheaper_robots.baseEffect.times(reducLevel);
+             }
+         } else if (definition.type === 'click' || definition.type === 'click_synergy' || definition.type === 'autoclick' || definition.type === 'crit_chance' || definition.type === 'crit_power') {
+            const reducLevel = gameState.upgrades.cheaper_clicks || 0;
+             if (reducLevel > 0 && upgrades.cheaper_clicks) {
+                typeReductionPercent = upgrades.cheaper_clicks.baseEffect.times(reducLevel);
+             }
+         }
+         multiplierFactor = multiplierFactor.times(new Decimal(1).minus(typeReductionPercent));
+
+
+         // 3. Research Cost Reduction (From Research) - Applies only to research items
+          if (definition.isResearch) {
+             multiplierFactor = multiplierFactor.times(getResearchBonus('research_cost'));
+             // Also apply achievement bonus for research cost reduction
+             multiplierFactor = multiplierFactor.times(getAchievementBonus('research_cost'));
+          }
+
+        // Clamp reduction factor, minimum 1% cost (factor cannot go below 0.01)
+        // CORRECTED: Use Decimal.max static method
+        return Decimal.max(0.01, multiplierFactor);
+    }
+
+
+     function calculateUpgradeCost(upgradeId) {
+         const definition = upgrades[upgradeId];
+         if (!definition) return new Decimal(Infinity);
+         if (!gameState || !gameState.upgrades) return definition.baseCost || new Decimal(Infinity);
+
+         const level = gameState.upgrades[upgradeId] || 0;
+
+         // Check for challenge restrictions first
+         if (gameState.activeChallengeId) {
+            const chalDef = challenges[gameState.activeChallengeId];
+            if (chalDef) {
+                if (chalDef.restriction === 'chal_no_crit' && (definition.type === 'crit_chance' || definition.type === 'crit_power')) return new Decimal(Infinity);
+                if (chalDef.restriction === 'chal_robot_1_only' && definition.type === 'auto' && upgradeId !== 'robot_1') return new Decimal(Infinity);
+                // Add other restrictions checks here
+            }
+         }
+
+         let cost = definition.baseCost.times(Decimal.pow(definition.costScale, level));
+         cost = cost.times(getCostReductionMultiplier(definition)); // Apply reductions
+
+         return cost.floor();
+     }
+
+     // Calculate Research Cost
+      function calculateResearchCost(researchId) {
+         const definition = researchItems[researchId];
+          if (!definition) return new Decimal(Infinity);
+         if (!gameState || !gameState.research) return definition.baseCost || new Decimal(Infinity);
+
+          const level = gameState.research[researchId]?.level || 0;
+
+          let cost = definition.baseCost.times(Decimal.pow(definition.costScale, level));
+
+          // Apply combined cost reduction (from research AND achievements)
+          cost = cost.times(getCostReductionMultiplier(definition)); // Pass the research definition
+
+          return cost.floor();
+      }
+
+     // Calculate total CpS from all sources
+     function calculateCpS() {
+         if (!gameState || !gameState.upgrades) return new Decimal(0);
+
+         let totalCpS = new Decimal(0);
+         let robotBaseProduction = {};
+         let robotMultipliers = {}; // Specific upgrade multipliers
+
+         // Initialize multipliers and base production storage
+         for (const id in upgrades) {
+            if (upgrades[id].type === 'auto') {
+                robotMultipliers[id] = new Decimal(1); // Start specific mult at 1
+                robotBaseProduction[id] = new Decimal(0);
+            }
+         }
+
+         // Pass 1: Calculate Specific multipliers from normal upgrades
+         for (const id in upgrades) {
+             const definition = upgrades[id];
+             const level = gameState.upgrades[id] || 0;
+             if (level > 0 && definition.type === 'specific_mult' && robotMultipliers[definition.target]) {
+                 // Add the bonus % to the multiplier (e.g., 1 + 0.25) -> times doesn't work here, needs additive % logic
+                 // Let's store total % bonus and apply later:
+                 // RETHINK: Simpler to multiply factors: (1 + bonus1) * (1 + bonus2)
+                 // Let's stick to that. Initialize mult to 1, then multiply by (1 + effect*level) ? No, base effect isn't per level.
+                 // Correct approach: Multiplier = 1 + sum_of_bonuses. Base Effect is the % per level.
+                  let currentMultBonus = robotMultipliers[definition.target].minus(1); // Get existing bonus %
+                  currentMultBonus = currentMultBonus.plus(definition.baseEffect.times(level));
+                  robotMultipliers[definition.target] = new Decimal(1).plus(currentMultBonus); // Update multiplier factor
+             }
+         }
+
+         // Pass 2: Calculate Base Auto Production per robot (level * base effect)
+         for (const id in upgrades) {
+             const definition = upgrades[id];
+             const level = gameState.upgrades[id] || 0;
+             if (level > 0 && definition.type === 'auto') {
+                robotBaseProduction[id] = definition.baseEffect.times(level);
+             }
+         }
+
+        // Pass 3: Apply multipliers (Specific Upgrades, Milestones, Specific Achievements) and sum up
+         for (const id in robotBaseProduction) {
+             if (robotBaseProduction[id].gt(0)) {
+                let production = robotBaseProduction[id];
+
+                // Apply Specific Upgrade Multiplier
+                 if (robotMultipliers[id]) {
+                     production = production.times(robotMultipliers[id]);
+                 }
+
+                // Apply Milestones Multiplier
+                 const milestoneCount = gameState.robotMilestones[id] || 0;
+                 if (milestoneCount > 0) {
+                     production = production.times(Decimal.pow(MILESTONE_CPS_MULTIPLIER, milestoneCount));
+                 }
+
+                 // Apply Specific Robot Achievement Bonus Multiplier
+                 const achBonusMult = getAchievementBonus('specific_cps', id); // Gets the factor (e.g., 1.01)
+                 production = production.times(achBonusMult);
+
+                 totalCpS = totalCpS.plus(production);
+             }
+         }
+
+
+         // Pass 4: Apply Global Multipliers (Normal upgrades, Research, Achievements, Permanent)
+         let globalMultiplier = new Decimal(1);
+         // Normal Global Upgrades
+         const globalUpg1Level = gameState.upgrades.global_cps_mult_1 || 0;
+         if(globalUpg1Level > 0) globalMultiplier = globalMultiplier.times(new Decimal(1).plus(upgrades.global_cps_mult_1.baseEffect.times(globalUpg1Level)));
+         const globalUpg2Level = gameState.upgrades.global_cps_mult_2 || 0;
+         if(globalUpg2Level > 0) globalMultiplier = globalMultiplier.times(new Decimal(1).plus(upgrades.global_cps_mult_2.baseEffect.times(globalUpg2Level)));
+
+         // Combined Research, Achievement, Permanent multiplier factor
+          globalMultiplier = globalMultiplier.times(getCombinedMultiplier('all_cps'));
+
+         return totalCpS.times(globalMultiplier);
+     }
+
+    // Calculate total CpC from all sources
+    function calculateCpC() {
+        if (!gameState || !gameState.upgrades || !gameState.currencyPerSecond) return new Decimal(1);
+
+        // Base CpC from direct click power upgrades
+         let baseCpc = new Decimal(1);
+         baseCpc = baseCpc.plus(upgrades.click_power_1.baseEffect.times(gameState.upgrades.click_power_1 || 0));
+         baseCpc = baseCpc.plus(upgrades.click_power_2.baseEffect.times(gameState.upgrades.click_power_2 || 0));
+         baseCpc = baseCpc.plus(upgrades.click_power_3.baseEffect.times(gameState.upgrades.click_power_3 || 0));
+
+        // Synergy bonus from CpS
+        let synergyBonus = new Decimal(0);
+        const synergy1Level = gameState.upgrades.click_synergy_1 || 0;
+        if(synergy1Level > 0) synergyBonus = synergyBonus.plus(gameState.currencyPerSecond.times(upgrades.click_synergy_1.baseEffect.times(synergy1Level)));
+        const synergy2Level = gameState.upgrades.click_synergy_2 || 0;
+        if(synergy2Level > 0) synergyBonus = synergyBonus.plus(gameState.currencyPerSecond.times(upgrades.click_synergy_2.baseEffect.times(synergy2Level)));
+        baseCpc = baseCpc.plus(synergyBonus);
+
+        // Apply Global Multipliers (Permanent, Research, Achievements)
+        baseCpc = baseCpc.times(getCombinedMultiplier('all_cpc'));
+
+        // CORRECTED: Use Decimal.max static method
+        return Decimal.max(1, baseCpc); // Ensure CpC is at least 1
+    }
+
+    // Calculate Autoclicks per Second
+     function calculateAutoclicksPerSecond() {
+        if (!gameState || !gameState.upgrades || !upgrades.autoclicker_1) return 0;
+        const level = gameState.upgrades.autoclicker_1 || 0;
+        return (upgrades.autoclicker_1.baseEffect || 0) * level;
+     }
+
+    // Calculate Critical Click Chance and Multiplier
+    function calculateCritStats() {
+         if (!gameState) return; // Should not happen after init
+
+         // --- Chance ---
+          let critChance = new Decimal(CRIT_BASE_CHANCE); // Start with base
+          // Additive from normal upgrades
+          critChance = critChance.plus(upgrades.crit_chance_1.baseEffect.times(gameState.upgrades.crit_chance_1 || 0));
+          // Additive from permanent upgrades
+          const permChanceLevel = gameState.upgrades.perm_crit_chance || 0;
+          if (permChanceLevel > 0) critChance = critChance.plus(upgrades.perm_crit_chance.baseEffect.times(permChanceLevel));
+          // Additive from research
+          critChance = critChance.plus(getResearchBonus('crit_chance')); // This function returns the additive bonus now
+          // Multiplicative from achievements
+          critChance = critChance.times(getAchievementBonus('crit_chance_mult')); // Multiplies the accumulated chance
+
+          // --- Multiplier ---
+          let critMultiplier = new Decimal(CRIT_BASE_MULTIPLIER); // Start with base
+          // Additive from normal upgrades
+          critMultiplier = critMultiplier.plus(upgrades.crit_power_1.baseEffect.times(gameState.upgrades.crit_power_1 || 0));
+          // Additive from permanent upgrades
+          const permPowerLevel = gameState.upgrades.perm_crit_power || 0;
+          if (permPowerLevel > 0) critMultiplier = critMultiplier.plus(upgrades.perm_crit_power.baseEffect.times(permPowerLevel));
+          // Research/Achievements could add multiplier bonuses too if defined (currently don't)
+
+         // Update game state, clamping values
+         gameState.critChance = Decimal.min(1, Decimal.max(0, critChance)); // Clamp chance 0-1
+         gameState.critMultiplier = Decimal.max(1, critMultiplier); // Min multiplier is 1
+      }
+
+    // --- Actions ---
+    function clickRobot() {
+        if (!gameState) return;
+
+        // Challenge Restriction
+         if (gameState.activeChallengeId === 'chal_no_click') {
+             showToast("Desafío activo: No se permiten clics manuales.");
+             return;
+         }
+
+         gameState.stats.totalClicks++;
+         if (gameState.activeChallengeId) { // Track clicks for challenges if needed
+             gameState.challengeProgress.manualClicks = (gameState.challengeProgress.manualClicks || 0) + 1;
+         }
+         updateSingleStat('total-clicks-stat', Math.floor(gameState.stats.totalClicks).toLocaleString());
+
+
+        // Base Click Value
+         let clickValue = gameState.currencyPerClick;
+         let isCrit = false;
+
+        // Check for Critical Click
+         if (Math.random() < gameState.critChance.toNumber()) {
+            clickValue = clickValue.times(gameState.critMultiplier);
+            isCrit = true;
+            gameState.stats.totalCritClicks++;
+            playSound('crit-click-sound'); // Play a different sound for crits
+             updateSingleStat('crit-clicks-stat', Math.floor(gameState.stats.totalCritClicks).toLocaleString());
+         } else {
+            playSound('click-sound');
+        }
+
+         earnCurrency(clickValue);
+         showFloatingText(formatNumber(clickValue), isCrit); // Show floating number
+
+        // Visual feedback for button press
+        const robotButton = document.getElementById('robot-button');
+         if(robotButton){
+             // Clear any previous transform timeouts
+             // if(robotButton.transformTimeout) clearTimeout(robotButton.transformTimeout);
+             robotButton.style.transform = 'scale(0.9)';
+             robotButton.transformTimeout = setTimeout(() => { robotButton.style.transform = 'scale(1)'; }, 80);
+         }
+    }
+// --- Funciones relacionadas con los Visuales del Clicker ---
+
+function checkVisualUnlocks() {
+    if (!gameState || !gameState.clickerVisualsState) return false;
+
+    let newlyUnlocked = false;
+
+    for (const visualId in clickerVisuals) {
+        // Si ya está desbloqueado en gameState, saltar
+        if (gameState.clickerVisualsState[visualId]?.unlocked) continue;
+
+        const definition = clickerVisuals[visualId];
+        let canUnlock = true; // Asumir que se puede hasta que una condición falle
+
+        // Comprobar condiciones
+        if (definition.requiredClicks && gameState.stats.totalClicks < definition.requiredClicks) {
+            canUnlock = false;
+        }
+        if (canUnlock && definition.requiredAchievement && !gameState.achievements[definition.requiredAchievement]) {
+            canUnlock = false;
+        }
+        if (canUnlock && definition.requiredRobotLevel) {
+            const robotLevel = gameState.upgrades[definition.requiredRobotLevel.id] || 0;
+            if (robotLevel < definition.requiredRobotLevel.level) {
+                canUnlock = false;
+            }
+        }
+        if (canUnlock && definition.requiredPrestige && gameState.prestigeCount < definition.requiredPrestige) {
+            canUnlock = false;
+        }
+         if (canUnlock && definition.requiredPrestigeUpgrade) {
+             // Corrección: Acceder al nivel de requisito definido en clickerVisuals
+             const requiredLevel = definition.requiredPrestigeUpgrade.level || 1; // Asumir nivel 1 si no se especifica
+             const upgradeLevel = gameState.upgrades[definition.requiredPrestigeUpgrade.id] || 0; // Usar .id para obtener el ID
+            if (upgradeLevel < requiredLevel) {
+                canUnlock = false;
+            }
+        }
+
+        // Si todas las condiciones se cumplen y no estaba desbloqueado antes
+        if (canUnlock) {
+             console.log(`Visual Desbloqueado: ${definition.desc} (${visualId})`);
+             showToast(`¡Nuevo visual desbloqueado: ${definition.emoji}!`);
+             if (!gameState.clickerVisualsState[visualId]) { // Crear si no existe
+                gameState.clickerVisualsState[visualId] = {};
+             }
+             gameState.clickerVisualsState[visualId].unlocked = true;
+             newlyUnlocked = true;
+             // Actualizar UI de la pestaña de Opciones (si está abierta)
+             updateClickerVisualsUI(); // Creamos esta función más abajo
+         }
+    }
+    return newlyUnlocked; // Devuelve true si algo se desbloqueó
+}
+    // --- Funciones para la UI de Visuales del Clicker ---
+
+    function generateVisualItemHTML(visualId, definition, state) {
+        const isUnlocked = state?.unlocked || false;
+        const isSelected = gameState.selectedClickerVisualId === visualId;
+        const classes = `visual-item ${isSelected ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}`;
+        const clickAction = isUnlocked && !isSelected ? `onclick="selectClickerVisual('${visualId}')"` : '';
+        const tooltip = definition.tooltip || definition.desc; // Usar tooltip si existe
+
+        return `
+            <div class="${classes}" id="visual-${visualId}" data-tooltip="${isUnlocked ? tooltip : definition.tooltip || 'Bloqueado'}" ${clickAction}>
+                <span class="emoji">${definition.emoji}</span>
+                <span class="desc">${definition.desc}</span>
+            </div>
+        `;
+    }
+
+    function updateClickerVisualsUI() {
+        const container = document.getElementById('clicker-visuals-container');
+        if (!container || !gameState || !gameState.clickerVisualsState) return;
+
+        let html = '';
+        for (const visualId in clickerVisuals) {
+             // Asegúrate de que el estado existe, incluso si es solo el predeterminado
+             const state = gameState.clickerVisualsState[visualId] || { unlocked: (visualId === 'default') };
+            html += generateVisualItemHTML(visualId, clickerVisuals[visualId], state);
+        }
+        container.innerHTML = html || '<p>No hay aspectos disponibles.</p>'; // Fallback
+    }
+
+    function selectClickerVisual(visualId) {
+        // Verificar que el gameState y los visuales existan, y que el visual esté desbloqueado
+        if (!gameState || !clickerVisuals[visualId] || !gameState.clickerVisualsState?.[visualId]?.unlocked) {
+             console.warn("Intento de seleccionar visual no válido o bloqueado:", visualId);
+             return;
+         }
+
+        gameState.selectedClickerVisualId = visualId; // Actualiza el ID seleccionado en el estado
+        updateClickerButtonVisual(); // Actualiza el emoji del botón principal
+        updateClickerVisualsUI(); // Refresca la lista en Opciones (para mostrar el estado 'selected')
+        showToast(`Aspecto ${clickerVisuals[visualId].emoji} seleccionado!`);
+        saveGame(); // Guarda el cambio de selección
+    }
+
+    function updateClickerButtonVisual() {
+        const button = document.getElementById('robot-button');
+        const floatingContainer = document.getElementById('floating-text-container'); // Referencia necesaria
+        if (!button || !floatingContainer) {
+             console.error("Error: robot-button o floating-text-container no encontrado para actualizar visual.");
+             return; // Salir si los elementos esenciales no existen
+        };
+
+        // Obtener el ID del visual seleccionado o usar 'default' si no hay ninguno/es inválido
+        const visualId = gameState.selectedClickerVisualId && clickerVisuals[gameState.selectedClickerVisualId]
+                         ? gameState.selectedClickerVisualId
+                         : 'default';
+        // Obtener el emoji correspondiente o usar '?' como fallback
+        const emoji = clickerVisuals[visualId]?.emoji || '?';
+
+        // Reconstruir el contenido interno para asegurar que solo esté el emoji y el contenedor flotante
+        button.innerHTML = ''; // Limpia TODO el contenido interno primero
+        button.appendChild(document.createTextNode(emoji)); // Añade SOLO el nodo de texto del emoji
+        button.appendChild(floatingContainer); // Vuelve a añadir el contenedor de texto flotante PRESERVADO
+        // console.log("Updated clicker button visual to:", emoji);
+    }
+    function earnCurrency(amount) {
+         if (!gameState) return;
+        amount = new Decimal(amount);
+        if (amount.lte(0) || amount.isNaN()) return;
+
+         gameState.currency = gameState.currency.plus(amount);
+         gameState.stats.totalCurrencyEarned = gameState.stats.totalCurrencyEarned.plus(amount);
+         gameState.stats.sessionCurrencyEarned = gameState.stats.sessionCurrencyEarned.plus(amount);
+
+        // Minimal UI update, full update handled by loop/intervals
+        updateCurrencyDisplay(); // Just update the main numbers quickly
+     }
+
+    // --- Buy Logic (Upgrades, Research) ---
+
+    // Set the multiplier for buying (1, 10, 100, Max)
+    function setBuyMultiplier(multiplier) {
+         gameState.buyMultiplier = parseInt(multiplier);
+         // Update UI to show active multiplier? (Optional)
+         // console.log("Buy Multiplier set to:", gameState.buyMultiplier);
+         // Instantly update button states as affordability might change with 'max'
+         updateAllButtonStates();
+     }
+
+     // Calculate how many levels can be bought with current currency
+     function calculateMaxBuyCount(itemId, itemType) {
+         if (!gameState) return 0;
+
+         let definition, costFunc, currencyType, stateObject, levelKey;
+         let currentAmount;
+
+         if (itemType === 'upgrade') {
+             definition = upgrades[itemId];
+             if (!definition) return 0;
+             costFunc = calculateUpgradeCost;
+             currencyType = definition.currency;
+             currentAmount = gameState[currencyType];
+             stateObject = gameState.upgrades;
+             levelKey = itemId;
+         } else if (itemType === 'research') {
+             definition = researchItems[itemId];
+              if (!definition || gameState.activeResearchId) return 0; // Can't buy max research / only one at a time
+             costFunc = calculateResearchCost;
+             currencyType = 'currency';
+             currentAmount = gameState[currencyType];
+             stateObject = gameState.research;
+             levelKey = `${itemId}.level`; // Need to access nested property
+             return currentAmount.gte(costFunc(itemId)) ? 1 : 0; // Only allow buying 1 research at a time
+         } else {
+             return 0;
+         }
+
+         if (!currentAmount || !definition) return 0;
+
+         const maxLevel = definition.maxLevel;
+         let canBuyCount = 0;
+         let currentLevel = stateObject[itemId] || 0;
+         if (itemType === 'research') currentLevel = stateObject[itemId]?.level || 0; // Access research level
+
+         let tempAmount = new Decimal(currentAmount); // Work with a copy
+
+         // Loop while affordable and below max level
+         while (true) {
+              if (maxLevel && currentLevel >= maxLevel) break; // Stop if max level reached
+
+              const cost = costFunc(itemId, currentLevel); // Pass current temp level to cost func if needed (needed for upgrades)
+
+              if (tempAmount.gte(cost)) {
+                   tempAmount = tempAmount.minus(cost);
+                   currentLevel++;
+                   canBuyCount++;
+               } else {
+                   break; // Cannot afford the next one
+               }
+
+             // Safety break for potential infinite loops (e.g., free upgrades)
+             if (canBuyCount > 10000) {
+                console.warn("MaxBuy calculation exceeded 10k iterations for", itemId, "Breaking loop.");
+                break;
+             }
+         }
+         return canBuyCount;
+     }
+
+
+     function buyItem(itemId, itemType) {
+    if (!gameState) return;
+
+    let definition, costFunc, currencyType, stateObject, levelKey, maxLevel;
+    let buyCountGoal; // How many we *try* to buy
+
+    // Determinar tipo de item y obtener definición, coste, etc.
+    if (itemType === 'upgrade') {
+         definition = upgrades[itemId];
+         if (!definition) { console.error("Upgrade def not found:", itemId); return; }
+         costFunc = calculateUpgradeCost;
+         currencyType = definition.currency;
+         stateObject = gameState.upgrades;
+         levelKey = itemId;
+         maxLevel = definition.maxLevel;
+         // Calcular cuántos comprar (1, 10, 100 o Max)
+         buyCountGoal = gameState.buyMultiplier === -1 ? calculateMaxBuyCount(itemId, itemType) : gameState.buyMultiplier;
+    } else if (itemType === 'research') {
+         definition = researchItems[itemId];
+         if (!definition) { console.error("Research def not found:", itemId); return; }
+         // Validaciones específicas para investigación
+         if (gameState.activeResearchId) { showToast("Ya hay una investigación en curso."); return; }
+         const currentLevel = gameState.research[itemId]?.level || 0;
+         if (definition.maxLevel && currentLevel >= definition.maxLevel) { showToast("Nivel máximo de investigación alcanzado."); return; }
+         costFunc = calculateResearchCost;
+         currencyType = 'currency';
+         stateObject = gameState.research;
+         levelKey = `${itemId}.level`; // Para la clave de estado interna
+         maxLevel = definition.maxLevel;
+         buyCountGoal = 1; // Siempre se inicia 1 investigación a la vez
+    } else {
+        console.error("Unknown item type:", itemType);
+        return;
+    }
+
+    // Si no hay nada que intentar comprar, salir
+    if (buyCountGoal <= 0) {
+         // Podrías añadir un feedback si buyCountGoal fue 0 al usar 'Max'
+         return;
+    }
+
+    // Obtener la cantidad de moneda actual
+    let currentAmount = gameState[currencyType];
+    if (!currentAmount) { console.error("Currency type not found:", currencyType); return; }
+
+    let purchasedCount = 0; // Contador de cuántos se compraron realmente
+    let totalCost = new Decimal(0); // Coste total acumulado de la compra
+
+    // Bucle para intentar comprar la cantidad deseada (buyCountGoal)
+    for (let i = 0; i < buyCountGoal; i++) {
+        let currentLevel; // Nivel actual *antes* de esta compra específica
+        if (itemType === 'upgrade') {
+            currentLevel = stateObject[itemId] || 0;
+        } else { // research
+            currentLevel = stateObject[itemId]?.level || 0;
+        }
+
+        // Comprobar si ya se alcanzó el nivel máximo
+         if (maxLevel && currentLevel >= maxLevel) {
+            if (i === 0) { // Si es el primer intento de compra
+                 if (gameState.buyMultiplier !== -1 || (itemType === 'upgrade' && buyCountGoal === 1) ) { // Muestra solo si no es "Comprar Max" o si es "Comprar 1"
+                    showToast("Nivel máximo alcanzado.");
+                }
+             }
+             break; // Detener el bucle si se alcanza el máximo
+         }
+
+        // Calcular el coste para el *siguiente* nivel
+        // Para 'upgrade', costFunc usa el nivel actual. Para 'research', costFunc ignora nivel implícitamente.
+         const cost = costFunc(itemId); // Se asume que costFunc usa gameState.upgrades[itemId] para el nivel
+
+        // Comprobar si se puede pagar *este* nivel
+         if (currentAmount.gte(cost)) {
+             // Si se puede, restar coste de la copia temporal de moneda
+             currentAmount = currentAmount.minus(cost);
+             // Añadir coste al total
+             totalCost = totalCost.plus(cost);
+
+            // Incrementar el nivel o iniciar la investigación en el estado del juego
+             if (itemType === 'upgrade') {
+                // Importante: Incrementar el nivel en el estado REAL aquí afecta
+                // el cálculo del coste para la *siguiente* iteración si costFunc depende del nivel en gameState.
+                // Esto está BIEN si costFunc está diseñado así (como calculateUpgradeCost).
+                stateObject[itemId] = (stateObject[itemId] || 0) + 1;
+            } else { // research
+                gameState.activeResearchId = itemId;
+                // Resetear progreso al iniciar investigación
+                 if (!gameState.research[itemId]) gameState.research[itemId] = { level: 0, progress: 0 }; // Asegura que existe
+                 gameState.research[itemId].progress = 0;
+             }
+             purchasedCount++; // Incrementar contador de comprados con éxito
+
+         } else {
+             // Si no se puede pagar, detener el bucle
+             if (i === 0 && gameState.buyMultiplier !== -1) { // Solo mostrar si no se pudo comprar el primero y no es "Comprar Max"
+                 // Efecto visual de "no puedes pagar"
+                 const costEl = document.querySelector(`#${itemType === 'upgrade' ? 'upgrade' : 'research'}-${itemId} .cost`);
+                  if (costEl) {
+                      costEl.style.color = 'var(--accent-red)';
+                      setTimeout(() => { costEl.style.color = 'var(--accent-yellow)'; }, 300);
+                  }
+             }
+             break;
+         }
+     } // Fin del bucle for de compra
+
+
+    // Después del bucle, si se compró al menos uno...
+    if (purchasedCount > 0) {
+        // Aplicar la deducción total del coste a la moneda REAL del gameState
+        gameState[currencyType] = gameState[currencyType].minus(totalCost);
+        playSound('upgrade-sound'); // Sonido de compra
+
+        // Acciones específicas post-compra
+         if (itemType === 'upgrade') {
+            // Volver a comprobar el nivel final (podría haber cambiado en el bucle)
+            const finalLevel = stateObject[itemId];
+             checkRobotMilestone(itemId, finalLevel); // Comprobar milestones con el nivel final
+             updateSingleUpgradeUI(itemId); // Actualizar solo esta mejora visualmente
+         } else { // research
+             updateSingleResearchUI(itemId); // Actualizar visual de la investigación
+             // Ocultar el botón de iniciar si existe
+             const resButton = document.getElementById(`research-${itemId}-button`);
+             if (resButton) resButton.style.display = 'none';
+         }
+
+         // === Actualizaciones globales después de la compra ===
+        recalculateAll();         // Recalcular CpS, CpC, etc. que podrían haber cambiado
+        updateCurrencyDisplay(); // Actualizar rápidamente Chatarra/CpS/CpC visibles
+        updateAllButtonStates(); // Muy importante: Actualizar habilitación/coste de TODOS los botones
+        checkAchievements();      // Comprobar si la compra desbloqueó algún logro
+
+        // --- LLAMADA A checkVisualUnlocks ---
+        checkVisualUnlocks(); // Comprobar si la compra desbloqueó algún visual
+
+    } // Fin de if (purchasedCount > 0)
+}
+
+    // Wrapper functions for buttons
+    function buyUpgrade(upgradeId) {
+         buyItem(upgradeId, 'upgrade');
+     }
+    function startResearch(researchId) {
+        buyItem(researchId, 'research');
+     }
+
+        // Check and update robot milestones
+        function checkRobotMilestone(upgradeId, level) {
+         const definition = upgrades[upgradeId];
+         // Salir si la definición no existe o la mejora no es de tipo 'auto' (robot)
+         if (!definition || definition.type !== 'auto') return;
+
+         // Obtener cuántos hitos ya tiene registrados este robot
+         const currentMilestoneCount = gameState.robotMilestones[upgradeId] || 0;
+         let achievedMilestoneCount = 0; // Contar cuántos hitos ha alcanzado AHORA
+
+         // Iterar sobre los niveles definidos para hitos
+         for (const milestoneLevel of MILESTONE_LEVELS) {
+             if (level >= milestoneLevel) {
+                 achievedMilestoneCount++; // Incrementa si el nivel actual es suficiente
+             } else {
+                 break; // Los hitos deben alcanzarse secuencialmente, no seguir comprobando
+             }
+         }
+
+         // Si ha alcanzado más hitos que los que tenía registrados
+         if (achievedMilestoneCount > currentMilestoneCount) {
+             // Actualiza el estado del juego con el nuevo número de hitos
+             gameState.robotMilestones[upgradeId] = achievedMilestoneCount;
+             console.log(`Milestone ${achievedMilestoneCount} reached for ${definition.name} at level ${level}!`);
+
+             // Mostrar un mensaje (Toast) al jugador si el elemento de UI existe
+             const uiElement = document.getElementById(`upgrade-${upgradeId}`);
+             if(uiElement) { // Comprobar si el elemento de UI existe antes de mostrar toast
+                 // Calcular el multiplicador del hito *actual* para el mensaje
+                const milestoneMultiplierPercent = ((MILESTONE_CPS_MULTIPLIER - 1) * 100).toFixed(0);
+                // Mostrar el nivel del *último* hito alcanzado en el mensaje
+                const achievedMilestoneLevel = MILESTONE_LEVELS[achievedMilestoneCount-1];
+                showToast(`¡Milestone! ${definition.name} Nvl ${achievedMilestoneLevel} (+${milestoneMultiplierPercent}% CpS)`);
+             }
+
+             // Recalcular CpS inmediatamente ya que el multiplicador de hito lo afecta
+             recalculateAll();
+             // Actualizar la interfaz específica de esta mejora (para mostrar indicador de hito)
+             updateSingleUpgradeUI(upgradeId);
+             // Comprobar si se ha desbloqueado algún logro (ej: primer hito alcanzado)
+             checkAchievements();
+             // **LLAMADA AÑADIDA AQUÍ:** Comprobar si se desbloquea algún visual por este hito/nivel
+             checkVisualUnlocks();
+         }
+     }
+
+    // --- Research Progress ---
+    function updateResearchProgress(delta) {
+         if (!gameState.activeResearchId) return;
+
+         const resId = gameState.activeResearchId;
+         const definition = researchItems[resId];
+         const resData = gameState.research[resId];
+
+         if (!definition || !resData) {
+             console.error("Active research mismatch:", resId);
+             gameState.activeResearchId = null;
+             return;
+         }
+
+         resData.progress += delta;
+         updateSingleResearchUI(resId); // Update progress bar visually
+
+         if (resData.progress >= definition.duration) {
+             completeResearch(resId);
+         }
+     }
+
+    function completeResearch(resId) {
+         const definition = researchItems[resId];
+         const resData = gameState.research[resId];
+         if (!definition || !resData) return;
+
+         resData.level++;
+         resData.progress = 0;
+         const wasActiveId = gameState.activeResearchId; // Store before clearing
+         gameState.activeResearchId = null; // Clear active research
+
+         console.log(`Research complete: ${definition.name} (Level ${resData.level})`);
+         showToast(`Investigación Completa: ${definition.name} Nvl ${resData.level}`);
+         playSound('achievement-sound'); // Reuse sound
+
+         // Apply immediate effect if necessary (like cost reduction for future research)
+          if (definition.effectType === 'cost_reduct' && definition.target === 'research') {
+               gameState.researchCostReduction = (gameState.researchCostReduction || new Decimal(0)).plus(definition.effectPerLevel);
+           }
+
+         recalculateAll(); // Recalculate stats affected by research
+         updateSingleResearchUI(resId); // Update UI to show new level/button
+         updateAllButtonStates(); // Check button states again
+         checkAchievements(); // Check for research achievement
+     }
+
+
+    // --- Challenges ---
+    function startChallenge(challengeId) {
+        if (!gameState || !challenges[challengeId]) return;
+        if (gameState.activeChallengeId && gameState.activeChallengeId !== challengeId) {
+            showToast("Ya estás en un desafío. Realiza Overclock para salir.");
+            return;
+        }
+         if (gameState.completedChallenges[challengeId]) {
+             showToast("Ya has completado este desafío.");
+             return;
+         }
+        if (gameState.prestigeCount === 0) {
+             showToast("Debes hacer Overclock al menos una vez antes de intentar desafíos.");
+             return;
+         }
+
+        const confirmed = confirm(`¿Empezar el desafío "${challenges[challengeId].name}"?\n\n"${challenges[challengeId].desc}"\n\nEsto forzará un Overclock (sin ganar Núcleos IA ahora) y aplicará las restricciones del desafío. Ganarás la recompensa al hacer Overclock *después* de completar el objetivo.`);
+        if (confirmed) {
+            prestige(true, challengeId); // Force prestige, flag as challenge start
+         }
+     }
+
+    function checkChallengeCompletion() {
+         // This is the real-time check used right before prestiging
+         if (!gameState || !gameState.activeChallengeId) return false;
+         const chalId = gameState.activeChallengeId;
+         const definition = challenges[chalId];
+         if (!definition) return false;
+
+          // Check currency goal first if it exists
+          if (definition.goalCurrency && gameState.currency.lt(definition.goalCurrency)) {
+             return false; // Haven't met currency goal yet
+         }
+         // Check time limit if it exists
+          if (definition.restriction === 'timeLimit' && gameState.stats.sessionPlayTime > definition.goalTime) {
+             return false; // Exceeded time limit
+         }
+
+         // Check specific restrictions fulfillment
+         switch (definition.restriction) {
+             case 'noManualClicks':
+                 return (gameState.challengeProgress.manualClicks || 0) === 0;
+             case 'robot1Only':
+                 const boughtOtherRobot = Object.keys(gameState.upgrades).some(id => {
+                     const upgDef = upgrades[id];
+                     return upgDef?.type === 'auto' && id !== 'robot_1' && gameState.upgrades[id] > 0;
+                 });
+                 return !boughtOtherRobot;
+             case 'noCritUpgrades':
+                 const boughtCritUpgrade = (gameState.upgrades.crit_chance_1 > 0 || gameState.upgrades.crit_power_1 > 0);
+                 return !boughtCritUpgrade;
+             default:
+                 return true; // No specific restriction to fail, currency/time already checked
+         }
+     }
+
+    function abandonChallenge() {
+         if (!gameState.activeChallengeId) return;
+          const confirmed = confirm("¿Estás seguro de que quieres abandonar el desafío actual? Tendrás que hacer Overclock para salir, y no recibirás la recompensa.");
+          if (confirmed) {
+               prestige(true, null); // Prestige to exit, don't start a new challenge
+               showToast("Desafío abandonado.");
+           }
+      }
+
+     // --- Game Loop ---
+    function gameLoop() {
+        if (!gameState) return;
+        const now = Date.now();
+        // Ensure lastUpdate is valid before calculating delta
+        const lastUpdate = gameState.stats.lastUpdate || now;
+        const delta = Math.max(0, Math.min(3600, (now - lastUpdate) / 1000)); // seconds, max 1hr delta to prevent huge jumps
+        gameState.stats.lastUpdate = now; // Update time *before* calculations using delta
+
+        // Update time stats
+        gameState.stats.totalPlayTime += delta;
+        gameState.stats.sessionPlayTime += delta; // Time since last prestige
+
+        // Passive CpS Gain
+        const passiveGain = gameState.currencyPerSecond.times(delta);
+        if (passiveGain.gt(0)) {
+             earnCurrency(passiveGain);
+        }
+
+        // Autoclicker Gain
+        const autoclicks = calculateAutoclicksPerSecond() * delta;
+         if (autoclicks > 0) {
+             // Autoclicks can crit too!
+             let autoclickTotalValue = new Decimal(0);
+             let effectiveClicks = Math.floor(autoclicks);
+             let remainder = autoclicks - effectiveClicks; // Fractional part
+             if (Math.random() < remainder) effectiveClicks++; // Probabilistic fractional click
+
+             for (let i = 0; i < effectiveClicks; i++) {
+                  let clickValue = gameState.currencyPerClick; // Use current CpC
+                  if (Math.random() < gameState.critChance.toNumber()) {
+                      clickValue = clickValue.times(gameState.critMultiplier);
+                      // Don't increment crit click stat here to avoid stat inflation? Or do? Let's increment.
+                      gameState.stats.totalCritClicks++;
+                  }
+                  autoclickTotalValue = autoclickTotalValue.plus(clickValue);
+              }
+
+             if(autoclickTotalValue.gt(0)) earnCurrency(autoclickTotalValue);
+             gameState.stats.totalClicks += autoclicks; // Add raw autoclick count (can be fractional)
+             // Update stats display less frequently (handled by statInterval)
+         }
+
+         // Research Progress
+         updateResearchProgress(delta);
+
+        // Challenge Progress (Time based tracking)
+         if (gameState.activeChallengeId) {
+             gameState.challengeProgress.time = (gameState.challengeProgress.time || 0) + delta;
+         }
+
+        // Check for challenge failure conditions (like time limit exceeded)
+        if (gameState.activeChallengeId && challenges[gameState.activeChallengeId]?.restriction === 'timeLimit') {
+            if (gameState.challengeProgress.time > challenges[gameState.activeChallengeId].goalTime) {
+                showToast(`Desafío "${challenges[gameState.activeChallengeId].name}" fallido (tiempo excedido). Haz Overclock para salir.`);
+                // Visually disable prestige button? Or let them prestige out normally? Let them prestige out.
+                // We check completion status accurately during confirmPrestige.
+            }
+        }
+
+    }
+
+
+    // --- PRESTIGE ---
+     function getPrestigeRequirement() {
+         if (!gameState) return new Decimal(Infinity);
+         // Scale requirement based on prestige count
+         return PRESTIGE_BASE_REQUIREMENT.times(Decimal.pow(PRESTIGE_REQUIREMENT_SCALE, gameState.prestigeCount || 0));
+     }
+
+     function calculatePrestigeGain() {
+         if (!gameState || !gameState.currency) return new Decimal(0);
+         const requirement = getPrestigeRequirement();
+         if (gameState.currency.lt(requirement)) { return new Decimal(0); }
+
+         // Base gain formula (adjust as needed for balance)
+         let baseGain = Decimal.sqrt(gameState.currency.dividedBy(requirement)).times(5);
+
+         // Apply prestige gain multipliers (Permanent upgrades, Achievements)
+         let prestigeMultiplier = new Decimal(1);
+         // Permanent Upgrade Bonus
+         const permGainLevel = gameState.upgrades.perm_prestige_gain || 0;
+         if (permGainLevel > 0 && upgrades.perm_prestige_gain) {
+              // Multiplier = 1 + bonus%
+              prestigeMultiplier = prestigeMultiplier.times(new Decimal(1).plus(upgrades.perm_prestige_gain.baseEffect.times(permGainLevel)));
+         }
+         // Achievement Bonus
+         prestigeMultiplier = prestigeMultiplier.times(getAchievementBonus('prestige_gain'));
+
+
+         let gain = baseGain.times(prestigeMultiplier);
+         // CORRECTED: Use Decimal.max static method
+         return Decimal.max(0, gain.floor()); // Ensure positive integer gain
+      }
+
+     function confirmPrestige() {
+        if (!gameState) return;
+
+         let challengeRewardInfo = "";
+         let challengeCompleted = false;
+         let canPrestigeNormally = false;
+
+         const gain = calculatePrestigeGain();
+         const requirement = getPrestigeRequirement();
+         canPrestigeNormally = gameState.currency.gte(requirement) && gain.gt(0);
+
+         // Check challenge status if active
+         if (gameState.activeChallengeId) {
+             const chalId = gameState.activeChallengeId;
+             const definition = challenges[chalId];
+             challengeCompleted = checkChallengeCompletion(); // Check right before prestige confirm
+
+             if (challengeCompleted) {
+                 challengeRewardInfo = `\n\n¡Desafío "${definition.name}" completado! Ganarás +${formatNumber(definition.rewardNIA)} Núcleos IA extra.`;
+             } else {
+                 // Check if challenge failed due to time limit explicitly
+                 let failureReason = "";
+                 if (definition.restriction === 'timeLimit' && gameState.challengeProgress.time > definition.goalTime) {
+                     failureReason = " (tiempo excedido)";
+                 }
+                 challengeRewardInfo = `\n\nADVERTENCIA: No has completado el desafío "${definition.name}"${failureReason}. No recibirás la recompensa extra si haces Overclock ahora. ¿Continuar igualmente?`;
+             }
+         }
+
+          // Prevent normal prestige if conditions not met AND not exiting a challenge
+          if (!canPrestigeNormally && !gameState.activeChallengeId) {
+              showToast("Aún no puedes hacer Overclock (necesitas más Chatarra para ganar NIA).");
+              return;
+          }
+
+         let confirmMessage = `¿Realizar Overclock?\n`;
+         if(gain.gt(0)) {
+            confirmMessage += `Ganarás ${formatNumber(gain)} Núcleos IA base.`;
+         } else if (gameState.activeChallengeId) {
+             confirmMessage += "Saldrás del desafío actual.";
+         } else {
+             // This case should be blocked above, but safety first
+             confirmMessage += "No ganarás Núcleos IA base.";
+         }
+         confirmMessage += challengeRewardInfo;
+
+         const confirmed = confirm(confirmMessage);
+         if (confirmed) {
+             prestige(false, null, challengeCompleted); // Not forced, not starting new challenge, pass completion status
+         }
+      }
+
+          // Main Prestige Function
+          function prestige(isForced = false, startChallengeId = null, challengeJustCompleted = false) {
+          if (!gameState) return;
+
+          let gain = calculatePrestigeGain();
+          let challengeReward = new Decimal(0);
+          let completedChallengeId = null;
+
+          // Grant challenge completion reward ONLY if challenge was active AND completed flag is true
+          if (!isForced && gameState.activeChallengeId && challengeJustCompleted) {
+               const chalId = gameState.activeChallengeId;
+               const definition = challenges[chalId];
+               if (definition && !gameState.completedChallenges[chalId]) { // Ensure not already completed
+                   challengeReward = definition.rewardNIA || new Decimal(0);
+                   gameState.completedChallenges[chalId] = true; // Mark as completed permanently
+                   completedChallengeId = chalId;
+                   console.log(`Challenge ${chalId} completed! Reward: ${challengeReward} NIA`);
+               } else if (definition && gameState.completedChallenges[chalId]) {
+                   console.log(`Challenge ${chalId} was already completed.`);
+               }
+           }
+
+          // Can't normally prestige with 0 gain unless forced or exiting challenge
+           if (!isForced && gain.lte(0) && !gameState.activeChallengeId) {
+                console.warn("Prestige attempted with 0 gain and not forced/in challenge. Aborting.");
+                return; // Evitar prestige sin ganancia (a menos que sea para salir de desafío o forzado)
+            }
+
+          // --- Preserve state ---
+           const oldPrestigeCurrency = gameState.prestigeCurrency || new Decimal(0);
+           const oldPrestigeCount = gameState.prestigeCount || 0;
+           let permanentUpgradesState = {};
+           for (const id in upgrades) {
+               if (upgrades[id].currency === 'prestigeCurrency') {
+                   permanentUpgradesState[id] = gameState.upgrades[id] || 0;
+               }
+           }
+           const oldAchievements = { ...gameState.achievements }; // Shallow copy is fine
+           const oldCompletedChallenges = { ...gameState.completedChallenges }; // Persist completed challenges (updated above if needed)
+           const oldTotalClicks = gameState.stats.totalClicks || 0;
+           const oldTotalCritClicks = gameState.stats.totalCritClicks || 0;
+           const oldTotalCurrency = gameState.stats.totalCurrencyEarned || new Decimal(0);
+           const oldPlayTime = gameState.stats.totalPlayTime || 0;
+           const oldStartTime = gameState.stats.startTime; // Keep original start time
+           const oldSoundMuted = gameState.soundMuted || false;
+           const oldNotation = gameState.numberNotation || 'short';
+           const oldPrestigeTimes = gameState.stats.prestigeTimes || [];
+           const currentSessionTime = gameState.stats.sessionPlayTime || 0;
+
+           // Research Preservation
+           let preservedResearch = {};
+           const keepResearchLevel = gameState.upgrades.perm_keep_research || 0;
+            if (keepResearchLevel > 0 && upgrades.perm_keep_research) {
+                 const keepPercent = upgrades.perm_keep_research.baseEffect.times(keepResearchLevel);
+                 for (const resId in gameState.research) {
+                    const resData = gameState.research[resId];
+                    const definition = researchItems[resId];
+                     if (resData && resData.level > 0 && definition) { // Check resData exists
+                         // Preserve level and % of progress for the *next* level
+                         const progressToKeep = gameState.activeResearchId === resId ? new Decimal(resData.progress).times(keepPercent).toNumber() : 0;
+                         preservedResearch[resId] = {
+                             level: resData.level,
+                             progress: progressToKeep
+                         };
+                     }
+                 }
+             }
+
+
+           // --- Stop Intervals ---
+           stopIntervals();
+
+           // --- Create new default state ---
+           const initialStartTime = gameState.stats.startTime; // Store original start time
+           gameState = getDefaultGameState();
+           gameState.stats.startTime = initialStartTime; // Restore original start time
+
+
+           // --- Restore preserved state ---
+           gameState.prestigeCurrency = oldPrestigeCurrency.plus(gain).plus(challengeReward);
+           // **LLAMADA AÑADIDA DESPUÉS DE INCREMENTAR EL CONTADOR:**
+           gameState.prestigeCount = oldPrestigeCount + 1; // Incrementar contador
+           checkVisualUnlocks();                            // Comprobar visuales por número de prestige
+           // --- FIN DE LLAMADA AÑADIDA ---
+
+           gameState.achievements = oldAchievements; // Restore unlocked status
+           gameState.completedChallenges = oldCompletedChallenges; // Restore completed challenges
+           gameState.soundMuted = oldSoundMuted;
+           gameState.numberNotation = oldNotation;
+           // Stats
+           gameState.stats.totalClicks = oldTotalClicks;
+           gameState.stats.totalCritClicks = oldTotalCritClicks;
+           gameState.stats.totalCurrencyEarned = oldTotalCurrency; // Keep lifetime total
+           gameState.stats.totalPlayTime = oldPlayTime; // Keep lifetime total
+           gameState.stats.lastUpdate = Date.now(); // Reset lastUpdate for new session
+           gameState.stats.sessionStartTime = Date.now(); // Reset session start
+           gameState.stats.sessionPlayTime = 0; // Reset session timer
+           gameState.stats.sessionCurrencyEarned = new Decimal(0); // Reset session currency
+            // Store prestige time
+           gameState.stats.prestigeTimes = oldPrestigeTimes;
+           if (!isForced && currentSessionTime > 0) gameState.stats.prestigeTimes.push(currentSessionTime); // Only record time for non-forced prestiges
+           if (gameState.stats.prestigeTimes.length > 10) gameState.stats.prestigeTimes.shift(); // Keep last 10
+
+            // Restore permanent upgrades
+           for (const id in permanentUpgradesState) {
+               gameState.upgrades[id] = permanentUpgradesState[id];
+           }
+           // Restore preserved research (ensure base research object exists)
+           if (!gameState.research) gameState.research = {};
+           for (const resId in preservedResearch) {
+                if (!gameState.research[resId]) gameState.research[resId] = { level: 0, progress: 0 }; // Ensure object exists
+                gameState.research[resId].level = preservedResearch[resId].level;
+                gameState.research[resId].progress = preservedResearch[resId].progress;
+                // If progress was preserved, restart the research
+                if (preservedResearch[resId].progress > 0) {
+                    gameState.activeResearchId = resId;
+                }
+            }
+             // Initialize researchCostReduction based on newly restored research
+             gameState.researchCostReduction = calculateTotalResearchCostReduction();
+
+
+           // --- Apply permanent starting bonuses ---
+           applyPermanentStartingBonuses();
+
+           // --- Apply achievement bonuses for the new run ---
+           applyAllAchievementBonuses(); // Recalculate based on restored achievements
+
+           // --- Set new active challenge ---
+           gameState.activeChallengeId = startChallengeId;
+           gameState.challengeProgress = {}; // Reset challenge progress tracking
+
+
+           // --- Recalculate, Rebuild UI, Restart ---
+           recalculateAll(); // Recalculate everything based on restored state
+           initUI(); // Rebuild HTML lists
+           updateUI(); // Update all values & states
+           checkAchievements(); // Unlock achievements based on new state (e.g., prestige count)
+
+           playSound('prestige-sound');
+           let toastMsg = `¡Overclock ${gameState.prestigeCount}!`;
+           if (gain.gt(0)) toastMsg += ` Ganaste ${formatNumber(gain)} NIA.`;
+           if (challengeReward.gt(0)) toastMsg += ` (+${formatNumber(challengeReward)} NIA de desafío)`;
+            if (startChallengeId) toastMsg += `\nDesafío "${challenges[startChallengeId].name}" iniciado.`;
+            showToast(toastMsg);
+
+           saveGame(); // Save immediately
+           startIntervals(); // Restart loops
+      }
+
+      // Helper to calculate total research cost reduction from completed research
+      function calculateTotalResearchCostReduction() {
+        let reduction = new Decimal(0);
+        if (gameState && gameState.research) {
+            for (const resId in gameState.research) {
+                const resData = gameState.research[resId];
+                const definition = researchItems[resId];
+                if (resData && resData.level > 0 && definition && definition.effectType === 'cost_reduct' && definition.target === 'research') {
+                    reduction = reduction.plus(definition.effectPerLevel.times(resData.level));
+                }
+            }
+        }
+        return reduction;
+      }
+
+     function applyPermanentStartingBonuses() {
+         if (!gameState || !gameState.upgrades) return;
+         // Starting Chatarra
+         const startChatarraLevel = gameState.upgrades.perm_start_chatarra || 0;
+         if (startChatarraLevel > 0 && upgrades.perm_start_chatarra) {
+              const startAmount = upgrades.perm_start_chatarra.baseEffect.times(startChatarraLevel);
+              earnCurrency(startAmount); // Use earnCurrency to update stats too
+          }
+         // Starting Bots
+         const startBotsLevel = gameState.upgrades.perm_start_bots || 0;
+         if (startBotsLevel > 0 && upgrades.perm_start_bots) {
+             const botId = upgrades.perm_start_bots.botId;
+             if (botId && gameState.upgrades[botId] !== undefined) {
+                  const botsToAdd = upgrades.perm_start_bots.baseEffect.times(startBotsLevel).floor().toNumber();
+                 gameState.upgrades[botId] += botsToAdd;
+                 if (botsToAdd > 0) { // Only check milestone if bots were actually added
+                    checkRobotMilestone(botId, gameState.upgrades[botId]);
+                 }
+             }
+         }
+         // Add other starting bonuses here if needed
+     }
+
+        // --- ACHIEVEMENT LOGIC ---
+        function checkAchievements() {
+        if (!gameState || !gameState.achievements) return;
+        let newAchievementUnlocked = false; // Flag if *any* achievement was unlocked in this check
+        let needsRecalc = false;          // Flag if an unlocked achievement gave a bonus requiring stat recalculation
+
+        // 1. Loop through all defined achievements
+        for (const id in achievements) {
+             // Check if the achievement is NOT already unlocked AND its condition is now met
+             if (!gameState.achievements[id] && achievements[id].condition(gameState)) {
+                 gameState.achievements[id] = true; // Mark as unlocked in game state
+                 newAchievementUnlocked = true;     // Set flag
+                 updateAchievementDisplay(id);    // Update visual style of this specific achievement in the list
+                 playSound('achievement-sound');
+                 const achName = achievements[id]?.name || 'Desconocido';
+                 let toastMsg = `Logro: ${achName}`;
+
+                 // Apply reward immediately if defined
+                 const reward = achievements[id].reward;
+                 if (reward) {
+                      // Apply the reward and check if it necessitates recalculating stats
+                      const appliedRequiresRecalc = applyAchievementReward(reward);
+                      if (appliedRequiresRecalc) {
+                           needsRecalc = true; // Set recalc flag if the reward affects CpS, CpC, etc.
+                      }
+                      // Add reward description to the toast message if it exists
+                      toastMsg += ` (${achievements[id].rewardDesc || ''})`;
+                 }
+                 showToast(toastMsg); // Show notification for the unlocked achievement
+             }
+        }
+
+        // 2. After checking all achievements, check if any new visuals were unlocked
+        const visualUnlocked = checkVisualUnlocks(); // Returns true if any visual got unlocked
+
+        // 3. Recalculate and Update UI conditionally
+        if (needsRecalc || visualUnlocked) {
+             // If an achievement gave a stat bonus OR a new visual was unlocked
+             if(needsRecalc){ // Only recalculate if a stat bonus was applied
+                recalculateAll(); // Recalculate CpS, CpC, etc.
+             }
+             updateUI(); // Always update the entire UI if anything changed (bonus applied or visual unlocked)
+         } else if (newAchievementUnlocked) {
+             // If only an achievement without a stat-changing bonus was unlocked,
+             // still update the UI to show the achievement as unlocked visually
+             updateUI();
+         }
+         // If nothing changed (no new achievements, no new visuals), do nothing more.
+     }
+     
+    function applyAchievementReward(reward) {
+         if (!reward || !gameState.achievementBonuses) return false; // Return status
+         const bonuses = gameState.achievementBonuses;
+         const value = new Decimal(reward.value || 0);
+         let changed = false;
+
+         switch (reward.type) {
+             case 'cps': bonuses.cpsMultiplier = (bonuses.cpsMultiplier || new Decimal(1)).plus(value); changed = true; break;
+             case 'cpc': bonuses.cpcMultiplier = (bonuses.cpcMultiplier || new Decimal(1)).plus(value); changed = true; break;
+             case 'crit_chance_mult': bonuses.critChanceMultiplier = (bonuses.critChanceMultiplier || new Decimal(1)).plus(value); changed = true; break;
+             case 'prestige_gain': bonuses.prestigeGainMultiplier = (bonuses.prestigeGainMultiplier || new Decimal(1)).plus(value); changed = true; break;
+             case 'research_cost':
+                 // CORRECTED: Use Decimal.max static method
+                 bonuses.researchCostMultiplier = Decimal.max(0.01, (bonuses.researchCostMultiplier || new Decimal(1)).minus(value)); // Cost reduction factor
+                 changed = true;
+                 break;
+             case 'specific_cps':
+                 if (reward.target) {
+                     bonuses.specificCpsMultipliers[reward.target] = (bonuses.specificCpsMultipliers[reward.target] || new Decimal(1)).plus(value);
+                     changed = true;
+                 }
+                 break;
+             case 'nia': // Grant prestige currency directly (only relevant for first prestige/challenge achievements probably)
+                gameState.prestigeCurrency = gameState.prestigeCurrency.plus(value);
+                 updatePrestigeDisplay(); // Update NIA display immediately
+                 // Doesn't require recalculation of CpS/CpC etc.
+                 break;
+         }
+         if (changed) console.log("Applied achievement reward:", reward);
+         return changed; // Indicate if a recalculation might be needed
+     }
+
+     // Apply ALL achievement bonuses on load / prestige
+     function applyAllAchievementBonuses() {
+         if (!gameState || !gameState.achievements) return;
+         // Reset bonuses first
+         gameState.achievementBonuses = {
+             cpsMultiplier: new Decimal(1), cpcMultiplier: new Decimal(1),
+             critChanceMultiplier: new Decimal(1), prestigeGainMultiplier: new Decimal(1),
+             researchCostMultiplier: new Decimal(1), specificCpsMultipliers: {},
+         };
+         // Re-apply bonuses for all unlocked achievements
+         for (const id in achievements) {
+             if (gameState.achievements[id] && achievements[id].reward) {
+                 applyAchievementReward(achievements[id].reward); // Apply bonus logic
+             }
+         }
+         console.log("Applied all achievement bonuses.");
+     }
+
+    function updateAchievementDisplay(achievementId) {
+          const element = document.getElementById(`achievement-${achievementId}`);
+          if (element && !element.classList.contains('unlocked')) {
+              element.classList.add('unlocked');
+              // Update reward text visibility/style
+              const rewardEl = element.querySelector('.achievement-reward');
+              if (rewardEl) {
+                   // Reward text is now controlled by CSS based on the 'unlocked' class
+                   // rewardEl.style.display = 'inline';
+                   const reward = achievements[achievementId]?.reward;
+                   if (reward) rewardEl.textContent = `(${achievements[achievementId].rewardDesc || ''})`;
+              }
+          }
+      }
+
+    function updateAchievementsVisuals() {
+         if (!gameState || !gameState.achievements) return;
+          for (const id in gameState.achievements) {
+              if (gameState.achievements[id]) {
+                  updateAchievementDisplay(id);
+              }
+          }
+      }
+
+    // --- AD REWARD ---
+        // --- AD REWARD ---
+        function triggerAdReward() {
+        if (!gameState || gameState.adButtonBusy) return; // Solo comprueba si está ocupado
+
+        const adButton = document.getElementById('ad-reward-button');
+        if(!adButton) return;
+
+        adButton.disabled = true;
+        adButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Procesando...`;
+        gameState.adButtonBusy = true;
+
+        // 1. INTENTA ABRIR LA PESTAÑA PRIMERO
+        try {
+            console.log("Attempting to open ad window:", AD_URL);
+            const adWindow = window.open(AD_URL, '_blank');
+            if (!adWindow || adWindow.closed || typeof adWindow.closed === 'undefined') {
+                // Si window.open falla (bloqueador de pop-ups), avisa al usuario y detiene.
+                showToast("Desactiva el bloqueador de pop-ups para ver el anuncio.");
+                console.warn("Popup blocker likely prevented ad window opening.");
+                adButton.disabled = false; // Rehabilita el botón
+                adButton.innerHTML = `<i class="fas fa-gift"></i> Ver Anuncio (Recompensa CpS)`;
+                gameState.adButtonBusy = false;
+                return; // No continúa con la recompensa si la ventana no se abre
+            }
+        } catch (e) {
+            console.error("Error opening ad window:", e);
+            showToast("Error al abrir la ventana del anuncio.");
+            adButton.disabled = false; // Rehabilita el botón
+            adButton.innerHTML = `<i class="fas fa-gift"></i> Ver Anuncio (Recompensa CpS)`;
+            gameState.adButtonBusy = false;
+            return; // No continúa
+        }
+
+
+        // 2. SI LA VENTANA SE ABRIÓ, SIMULA EL TIEMPO Y DA LA RECOMPENSA
+        console.log("Simulating ad duration...");
+        setTimeout(() => {
+            const currentCpS = gameState.currencyPerSecond;
+            // Asegura una recompensa mínima basada en 1 CpS si el CpS actual es 0
+            // Puedes cambiar este '1' por una cantidad fija si prefieres una recompensa base diferente
+            const baseForReward = currentCpS.gt(0) ? currentCpS : new Decimal(1);
+            const rewardAmount = baseForReward.times(AD_REWARD_SECONDS);
+
+            // Siempre da la recompensa calculada (puede ser basada en 0 CpS o el mínimo)
+            earnCurrency(rewardAmount);
+            playSound('reward-sound');
+            // Modifica el mensaje para que no parezca un error si CpS era 0
+            let timeUnit = formatTime(AD_REWARD_SECONDS);
+            let rewardBasis = currentCpS.gt(0) ? `${timeUnit} de CpS` : `Recompensa base`;
+            showToast(`¡Recompensa! +${formatNumber(rewardAmount)} Chatarra (${rewardBasis})`);
+            console.log("Ad reward granted:", formatNumber(rewardAmount));
+
+
+            // 3. Rehabilita el botón
+            adButton.disabled = false;
+            adButton.innerHTML = `<i class="fas fa-gift"></i> Ver Anuncio (Recompensa CpS)`;
+            gameState.adButtonBusy = false;
+            updateAllButtonStates(); // Revisa estados por si algo cambió mientras tanto
+
+        }, 2000); // Retraso de 2 segundos (puedes ajustarlo)
+    }
+
+
+    // --- UI UPDATE FUNCTIONS ---
+    function initUI() {
+        console.log("Building UI lists...");
+        const listsContent = {
+            'click-upgrades-list': '', 'auto-upgrades-list': '',
+            'global-upgrades-list': '', 'permanent-upgrades-list': '',
+            'achievements-list': '', 'research-list': '', 'challenges-list': ''
+        };
+
+        // Generate Upgrade HTML
+         for (const id in upgrades) {
+             const definition = upgrades[id];
+             const html = generateUpgradeHTML(id, definition);
+             const listKey = getUpgradeListKey(definition);
+             if (listKey && listsContent.hasOwnProperty(listKey)) {
+                 listsContent[listKey] += html;
+             }
+         }
+         // Generate Achievement HTML
+         for (const id in achievements) {
+             listsContent['achievements-list'] += generateAchievementHTML(id, achievements[id]);
+         }
+          // Generate Research HTML
+          for (const id in researchItems) {
+             listsContent['research-list'] += generateResearchHTML(id, researchItems[id]);
+         }
+          // Generate Challenge HTML
+          for (const id in challenges) {
+             listsContent['challenges-list'] += generateChallengeHTML(id, challenges[id]);
+          }
+
+
+         // Populate the DOM
+         for (const listId in listsContent) {
+             const element = document.getElementById(listId);
+             if (element) {
+                 element.innerHTML = listsContent[listId];
+             } else {
+                 console.warn(`Element with ID '${listId}' not found for UI init.`);
+             }
+         }
+        console.log("UI lists built.");
+         // Initial update of values/states after building HTML
+         // updateUI(); // Called by init function after offline progress
+     }
+
+    function getUpgradeListKey(definition) {
+           if(!definition) return null;
+           if (definition.currency === 'prestigeCurrency') return 'permanent-upgrades-list';
+           if (['click', 'click_synergy', 'autoclick', 'crit_chance', 'crit_power'].includes(definition.type)) return 'click-upgrades-list';
+           if (definition.type === 'auto') return 'auto-upgrades-list';
+           if (['global_mult', 'specific_mult', 'cost_reduct'].includes(definition.type)) return 'global-upgrades-list';
+           console.warn("Could not determine list key for upgrade:", definition.name);
+           return null;
+     }
+
+    // Main UI update function - Refreshes dynamic values
+    function updateUI() {
+         if (!gameState) return;
+        updateCurrencyDisplay();
+        updateCritDisplay();
+        updateDisplayStats(); // Updates non-critical stats (in stats tab)
+        updateAllButtonStates(); // Updates cost and disabled state for ALL buttons
+        updateAllUpgradeUI(); // Updates level/cost/effect for ALL upgrades
+        updateAllResearchUI(); // Update all research items visuals
+        updateAllChallengeUI(); // Update challenge statuses
+        updatePrestigeDisplay();
+        updateAchievementsVisuals(); // Updates the 'unlocked' class and reward text
+        updateSoundButton();
+        updateNotationButtons();
+        updateActiveChallengeIndicator(); // Show if a challenge is active somewhere prominent
+        document.title = formatNumber(gameState.currency) + " CHT - Robot Clicker";
+    }
+
+    // Recalculate everything + update UI
+    function recalculateAndUI() {
+        recalculateAll();
+        updateUI();
+    }
+
+    // --- Specific UI Update Functions ---
+
+    function updateCurrencyDisplay() {
+        if (!gameState) return;
+         const currencyEl = document.getElementById('currency-display');
+         const cpsEl = document.getElementById('cps-display');
+         const cpcEl = document.getElementById('cpc-display');
+         if(currencyEl) currencyEl.textContent = formatNumber(gameState.currency);
+         if(cpsEl) cpsEl.textContent = formatNumber(gameState.currencyPerSecond);
+         if(cpcEl) cpcEl.textContent = formatNumber(gameState.currencyPerClick);
+     }
+
+     function updateCritDisplay() {
+         if (!gameState) return;
+         const chanceEl = document.getElementById('crit-chance-display');
+         const multiEl = document.getElementById('crit-multi-display');
+         if(chanceEl) chanceEl.textContent = (gameState.critChance.times(100)).toFixed(2); // Show percentage with 2 decimals
+         if(multiEl) multiEl.textContent = formatNumber(gameState.critMultiplier);
+     }
+
+    function updateDisplayStats() {
+         if (!gameState || !gameState.stats) return;
+         updateSingleStat('total-clicks-stat', Math.floor(gameState.stats.totalClicks).toLocaleString());
+         updateSingleStat('crit-clicks-stat', Math.floor(gameState.stats.totalCritClicks).toLocaleString());
+         updateSingleStat('total-currency-stat', formatNumber(gameState.stats.totalCurrencyEarned));
+         updateSingleStat('session-currency-stat', formatNumber(gameState.stats.sessionCurrencyEarned));
+         updateSingleStat('play-time-stat', formatTime(gameState.stats.totalPlayTime));
+         updateSingleStat('session-play-time-stat', formatTime(gameState.stats.sessionPlayTime)); // Added session time
+         updateSingleStat('prestige-count-stat', gameState.prestigeCount);
+     }
+
+    function updateSingleStat(elementId, value) {
+          const elem = document.getElementById(elementId);
+          if (elem && elem.textContent !== String(value)) { // Compare as strings
+               elem.textContent = value;
+          }
+      }
+
+     // Generate HTML for one upgrade item
+     function generateUpgradeHTML(id, definition) {
+         const level = gameState?.upgrades?.[id] || 0;
+         const cost = calculateUpgradeCost(id); // Calculate initial cost
+         const currencyType = definition.currency;
+         const currencyIcon = currencyType === 'prestigeCurrency' ? 'fa-brain' : 'fa-coins';
+         const currencyText = currencyType === 'prestigeCurrency' ? 'NIA' : 'CHT';
+         const maxLevelReached = definition.maxLevel && level >= definition.maxLevel;
+         const iconClass = definition.icon || 'fa-question-circle'; // Fallback icon
+
+         let requirementText = '';
+         let reqMet = true;
+          if (definition.requires) {
+              let reqList = [];
+              for (const reqId in definition.requires) {
+                   const reqLevel = definition.requires[reqId];
+                   const currentReqLevel = gameState?.upgrades?.[reqId] || 0;
+                   if (currentReqLevel < reqLevel) {
+                       reqMet = false;
+                       reqList.push(`${upgrades[reqId]?.name || reqId} (Nvl ${reqLevel})`);
+                   }
+               }
+               if (!reqMet) {
+                    requirementText = `<div class="requirement-text">Requiere: ${reqList.join(', ')}</div>`;
+                }
+           }
+
+          const upgradeClass = currencyType === 'prestigeCurrency'
+             ? `permanent-upgrade-item ${reqMet ? 'req-met' : 'req-not-met'}`
+             : '';
+
+          // Tooltip generation
+          let tooltip = `${definition.name}\n${definition.desc}`;
+          tooltip += `\nNivel: ${level}`;
+          if(definition.maxLevel) tooltip += ` / ${definition.maxLevel}`;
+          tooltip += `\n${calculateEffectDescription(id, definition, level)}`;
+          if (!maxLevelReached) tooltip += `\nCoste: ${formatNumber(cost)} ${currencyText}`;
+
+
+          return `
+             <div class="upgrade-item ${upgradeClass}" id="upgrade-${id}" data-tooltip="${tooltip}">
+                 <div class="upgrade-header">
+                     <i class="fas ${iconClass}"></i>
+                     <strong>${definition.name}</strong>
+                     <span class="milestone-indicator" id="milestone-${id}"></span> <!-- Placeholder for milestones -->
+                 </div>
+                 ${requirementText || `<div class="description">${definition.desc}</div>`} <!-- Show desc only if no requirement shown -->
+                 <div class="upgrade-details">
+                     <span>Nvl: <span class="level">${level}</span></span>
+                     <span class="effect-description" id="effect-${id}">${calculateEffectDescription(id, definition, level)}</span>
+                      ${definition.maxLevel ? `<span class="max-level-text">(Max: ${definition.maxLevel})</span>` : ''}
+                 </div>
+                 <div class="buy-controls">
+                      <button class="buy-single" onclick="setBuyMultiplier(1); buyUpgrade('${id}');" title="Comprar 1">
+                           ${maxLevelReached ? 'MAX' : `Coste: <span class="cost">${formatNumber(cost)}</span><span class="currency-symbol"><i class="fas ${currencyIcon}"></i> ${currencyText}</span>`}
+                      </button>
+                      ${(!maxLevelReached && definition.maxLevel !== 1) || (definition.maxLevel && level < definition.maxLevel) ? `
+                          <button class="buy-multi-button" onclick="setBuyMultiplier(10); buyUpgrade('${id}');" title="Comprar 10"><i class="fas fa-layer-group"></i> x10</button>
+                          <button class="buy-multi-button" onclick="setBuyMultiplier(100); buyUpgrade('${id}');" title="Comprar 100"><i class="fas fa-cubes"></i> x100</button>
+                          <button class="buy-multi-button" onclick="setBuyMultiplier(-1); buyUpgrade('${id}');" title="Comprar Max"><i class="fas fa-infinity"></i> Max</button>
+                      ` : '<span style="flex: 3;"></span>' /* Placeholder to keep layout */}
+                 </div>
+             </div>
+          `;
+     }
+
+    // Calculate the effect description text
+     function calculateEffectDescription(id, definition, level) {
+         if (!definition) return '';
+         const effectValue = definition.baseEffect;
+         let currentEffectTotal = new Decimal(0);
+         let desc = '';
+
+         try {
+            const currentLevel = level || (gameState?.upgrades?.[id] || 0);
+
+            switch (definition.type) {
+                 case 'click': currentEffectTotal = effectValue.times(currentLevel); desc = `+${formatNumber(currentEffectTotal)} CpC Base`; break;
+                 case 'crit_power': currentEffectTotal = effectValue.times(currentLevel); desc = `+${formatNumber(currentEffectTotal)} Multi. Crítico`; break;
+                 case 'crit_chance': currentEffectTotal = effectValue.times(currentLevel).times(100); desc = `+${currentEffectTotal.toFixed(2)}% Prob. Crítica`; break;
+                 case 'auto': currentEffectTotal = effectValue.times(currentLevel); desc = `+${formatNumber(currentEffectTotal)} CpS Base`; break; // Show base total for this robot type
+                 case 'click_synergy': currentEffectTotal = effectValue.times(currentLevel).times(100); desc = `+${currentEffectTotal.toFixed(1)}% CpS a CpC`; break;
+                 case 'global_mult': currentEffectTotal = effectValue.times(currentLevel).times(100); desc = `+${currentEffectTotal.toFixed(0)}% CpS Global`; break;
+                 case 'specific_mult': currentEffectTotal = effectValue.times(currentLevel).times(100); desc = `+${currentEffectTotal.toFixed(0)}% a ${upgrades[definition.target]?.name || '???'}`; break;
+                 case 'cost_reduct': currentEffectTotal = effectValue.times(currentLevel).times(100); currentEffectTotal = Decimal.min(currentEffectTotal, definition.maxLevel * effectValue.times(100)); desc = `-${currentEffectTotal.toFixed(1)}% Coste (${definition.targetType === 'auto' ? 'Robots' : 'Clics'})`; break;
+                 case 'autoclick': currentEffectTotal = effectValue.times(currentLevel); desc = `+${formatNumber(currentEffectTotal)} Clics/s`; break;
+                 case 'permanent':
+                      currentEffectTotal = effectValue.times(currentLevel);
+                      if (definition.target === 'all_cps') desc = `+${currentEffectTotal.times(100).toFixed(1)}% CpS Global`;
+                      else if (definition.target === 'all_cpc') desc = `+${currentEffectTotal.times(100).toFixed(1)}% CpC Global`;
+                      else if (definition.target === 'prestige_gain') desc = `+${currentEffectTotal.times(100).toFixed(1)}% Ganancia NIA`;
+                      else if (definition.target === 'keep_research') desc = `+${currentEffectTotal.times(100).toFixed(0)}% Progreso Investigación`;
+                      else if (definition.target === 'start_currency') desc = `+${formatNumber(currentEffectTotal)} CHT inicial`;
+                      else if (definition.target === 'start_bots') desc = `+${formatNumber(currentEffectTotal)} ${(upgrades[definition.botId]?.name) || '?'} inicial`;
+                      else if (definition.target === 'crit_chance') desc = `+${currentEffectTotal.times(100).toFixed(2)}% Prob. Crítica Base`;
+                      else if (definition.target === 'crit_power') desc = `+${formatNumber(currentEffectTotal)} Multiplicador Crítico Base`;
+                      else if (definition.target === 'cost_reduct') desc = `-${currentEffectTotal.times(100).toFixed(1)}% Coste Global (Max ${definition.maxLevel * 0.5}%)`;
+                      break;
+                 default: desc = `Efecto Base: ${formatNumber(effectValue)}`;
+             }
+         } catch (e) {
+             console.error(`Error calculating effect desc for ${id}:`, e);
+             desc = 'Error calculando efecto';
+         }
+         return desc || ''; // Return empty string if no description generated
+     }
+
+    // Generate HTML for one research item
+    function generateResearchHTML(id, definition) {
+         const resData = gameState?.research?.[id] || { level: 0, progress: 0 };
+         const cost = calculateResearchCost(id);
+         const maxLevelReached = definition.maxLevel && resData.level >= definition.maxLevel;
+         const isCompleted = resData.level > 0;
+         const isInProgress = gameState?.activeResearchId === id;
+         const iconClass = definition.icon || 'fa-flask';
+
+         let tooltip = `${definition.name}\n${definition.desc}`;
+         tooltip += `\nDuración: ${formatTime(definition.duration)}`;
+         if(definition.maxLevel) tooltip += `\nNivel Actual: ${resData.level} / ${definition.maxLevel}`;
+         else tooltip += `\nNivel Actual: ${resData.level}`;
+          if (!maxLevelReached && !isInProgress) tooltip += `\nCoste Siguiente: ${formatNumber(cost)} CHT`;
+
+
+         return `
+             <div class="research-item ${isCompleted ? 'completed' : ''} ${isInProgress ? 'in-progress' : ''} ${maxLevelReached ? 'max-level' : ''}" id="research-${id}" data-tooltip="${tooltip}">
+                 <div class="item-header">
+                     <i class="fas ${iconClass}"></i>
+                     <strong>${definition.name}</strong>
+                     ${isCompleted ? `<span class="completion-info">Nvl ${resData.level}</span>` : ''}
+                 </div>
+                 <div class="description">${definition.desc}</div>
+                 <div class="item-details">
+                     ${!maxLevelReached && !isInProgress ? `<span class="cost-wrapper">Coste: <span class="cost">${formatNumber(cost)}</span><span class="currency-symbol"><i class="fas fa-coins"></i> CHT</span></span>` : ''}
+                     <span>Duración: ${formatTime(definition.duration)}</span>
+                     ${definition.maxLevel ? `<span>(Max: ${definition.maxLevel})</span>` : ''}
+                 </div>
+                 ${isInProgress || (!maxLevelReached && !isCompleted && definition.maxLevel !== 1) ? ` <!-- Show bar if in progress OR can be started -->
+                     <div class="research-progress-bar" id="research-progress-${id}">
+                         <div style="width: ${isInProgress ? Decimal.min(100, new Decimal(resData.progress || 0).div(definition.duration).times(100)).toFixed(2) : 0}%;"></div>
+                     </div>
+                 ` : ''}
+                  ${!maxLevelReached && !isInProgress ? `
+                     <button class="action-button" id="research-${id}-button" onclick="startResearch('${id}')">
+                         <i class="fas fa-play"></i> Iniciar Investigación
+                     </button>
+                 ` : ''}
+                 ${maxLevelReached ? `<div class="max-level-text">NIVEL MÁXIMO ALCANZADO</div>` : ''}
+             </div>
+         `;
+     }
+// Generate HTML for one achievement item
+function generateAchievementHTML(id, definition) {
+        const unlocked = gameState?.achievements?.[id] || false;
+        const rewardText = definition.rewardDesc || ''; // Get reward description
+
+        let tooltip = `${definition.name}\n${definition.desc}`;
+        if (rewardText) tooltip += `\nRecompensa: ${rewardText}`;
+
+        return `
+            <div class="achievement-item ${unlocked ? 'unlocked' : ''}" id="achievement-${id}" data-tooltip="${tooltip}">
+                <strong>${definition.name}</strong>
+                 <span class="achievement-reward">${rewardText ? `(${rewardText})` : ''}</span>
+                 <div class="description">${definition.desc}</div>
+            </div>
+        `;
+    }
+
+      // Generate HTML for one challenge item
+      function generateChallengeHTML(id, definition) {
+           const isCompleted = gameState?.completedChallenges?.[id] || false;
+           const isActive = gameState?.activeChallengeId === id;
+           const iconClass = definition.icon || 'fa-crosshairs';
+           let statusText = isCompleted ? 'COMPLETADO' : isActive ? 'ACTIVO' : 'PENDIENTE';
+           let statusClass = isCompleted ? 'completed' : isActive ? 'active' : 'pending';
+
+          let tooltip = `${definition.name}\n${definition.desc}`;
+          tooltip += `\nRecompensa: ${formatNumber(definition.rewardNIA)} Núcleos IA`;
+          if (isCompleted) tooltip += "\n¡Ya completado!";
+          else if (isActive) tooltip += "\n¡Actualmente en este desafío!";
+          else if (gameState.activeChallengeId) tooltip += "\n(Debes salir del desafío actual primero)";
+          else if (gameState.prestigeCount === 0) tooltip += "\n(Requiere Overclock primero)";
+
+
+          return `
+               <div class="challenge-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}" id="challenge-${id}" data-tooltip="${tooltip}">
+                   <div class="item-header">
+                       <i class="fas ${iconClass}"></i>
+                       <strong>${definition.name}</strong>
+                       <span class="challenge-status ${statusClass}">${statusText}</span>
+                   </div>
+                   <div class="description">${definition.desc}</div>
+                   <div class="item-details">
+                        <span class="challenge-reward"><i class="fas fa-brain"></i> +${formatNumber(definition.rewardNIA)}</span>
+                   </div>
+                   ${!isCompleted && !isActive ? `
+                       <button class="action-button" id="challenge-start-${id}" onclick="startChallenge('${id}')">
+                           <i class="fas fa-play"></i> Iniciar Desafío
+                       </button>
+                   ` : ''}
+                   ${isActive ? `
+                        <button class="action-button" style="background-color: var(--accent-red);" onclick="abandonChallenge()">
+                            <i class="fas fa-times"></i> Abandonar Desafío
+                        </button>
+                   ` : ''}
+               </div>
+           `;
+       }
+
+
+     // Updates dynamic content for a single upgrade
+     function updateSingleUpgradeUI(upgradeId) {
+         if (!gameState) return;
+         const definition = upgrades[upgradeId];
+          const element = document.getElementById(`upgrade-${upgradeId}`);
+          if (!element || !definition) return;
+
+         const level = gameState.upgrades[upgradeId] || 0;
+         const cost = calculateUpgradeCost(upgradeId);
+         const maxLevelReached = definition.maxLevel && level >= definition.maxLevel;
+         const currencyType = definition.currency;
+         const currencyIcon = currencyType === 'prestigeCurrency' ? 'fa-brain' : 'fa-coins';
+         const currencyText = currencyType === 'prestigeCurrency' ? 'NIA' : 'CHT';
+
+          // Update Level
+          const levelSpan = element.querySelector('.level');
+          if (levelSpan) levelSpan.textContent = level;
+
+          // Update Effect Description
+           const effectDescSpan = element.querySelector('.effect-description');
+           if(effectDescSpan) effectDescSpan.textContent = calculateEffectDescription(upgradeId, definition, level);
+
+           // Update Milestone Indicator
+           const milestoneIndicator = element.querySelector(`#milestone-${upgradeId}`); // Corrected ID reference
+           if (milestoneIndicator) {
+               const milestoneCount = gameState.robotMilestones[upgradeId] || 0;
+               milestoneIndicator.textContent = milestoneCount > 0 ? `x${milestoneCount}` : ''; // Show only count if > 0
+               milestoneIndicator.title = milestoneCount > 0 ? `${milestoneCount} milestones alcanzados (+${((Decimal.pow(MILESTONE_CPS_MULTIPLIER, milestoneCount).minus(1)).times(100)).toFixed(0)}% CpS)` : '';
+           }
+
+
+         // Update Button (Cost & Visibility)
+         const buyControls = element.querySelector('.buy-controls');
+          const buySingleButton = element.querySelector('.buy-single');
+          if (buySingleButton) {
+               if (maxLevelReached) {
+                   buySingleButton.innerHTML = 'MAX';
+                   // Hide multi-buy buttons if max level is reached
+                    buyControls.querySelectorAll('.buy-multi-button').forEach(btn => btn.style.display = 'none');
+               } else {
+                  // Ensure multi-buy buttons are visible if not maxed (and not level 1 max)
+                  if (definition.maxLevel !== 1) {
+                    buyControls.querySelectorAll('.buy-multi-button').forEach(btn => btn.style.display = 'flex');
+                  } else {
+                     buyControls.querySelectorAll('.buy-multi-button').forEach(btn => btn.style.display = 'none');
+                  }
+
+                  // Update cost display
+                  const costSpan = buySingleButton.querySelector('.cost');
+                  if (costSpan) {
+                      costSpan.textContent = formatNumber(cost);
+                  } else {
+                       // Rebuild if somehow missing
+                       buySingleButton.innerHTML = `Coste: <span class="cost">${formatNumber(cost)}</span><span class="currency-symbol"><i class="fas ${currencyIcon}"></i> ${currencyText}</span>`;
+                  }
+               }
+           }
+
+           // Update Permanent Upgrade requirement status class
+           if (currencyType === 'prestigeCurrency') {
+                let reqMet = true;
+                if (definition.requires) {
+                    for (const reqId in definition.requires) {
+                         if ((gameState?.upgrades?.[reqId] || 0) < definition.requires[reqId]) {
+                             reqMet = false; break;
+                         }
+                     }
+                 }
+                 element.classList.toggle('req-met', reqMet);
+                 element.classList.toggle('req-not-met', !reqMet);
+                 // Update description visibility based on requirement
+                 const descElement = element.querySelector('.description');
+                 const reqTextElement = element.querySelector('.requirement-text');
+                 if(descElement) descElement.style.display = reqMet ? 'block' : 'none';
+                 if(reqTextElement) reqTextElement.style.display = reqMet ? 'none' : 'block';
+
+           }
+
+          // Disabled state handled by updateAllButtonStates
+     }
+     // Update all upgrade UI elements
+     function updateAllUpgradeUI(){
+        for (const id in upgrades) {
+            updateSingleUpgradeUI(id);
+        }
+     }
+
+     // Update single research item UI
+     function updateSingleResearchUI(researchId) {
+         const element = document.getElementById(`research-${researchId}`);
+         const definition = researchItems[researchId];
+         if (!element || !definition) return;
+
+         const resData = gameState.research[researchId] || { level: 0, progress: 0 };
+         const cost = calculateResearchCost(researchId);
+         const maxLevelReached = definition.maxLevel && resData.level >= definition.maxLevel;
+         const isInProgress = gameState.activeResearchId === researchId;
+         const isCompleted = resData.level > 0;
+
+         element.classList.toggle('completed', isCompleted && !isInProgress);
+         element.classList.toggle('in-progress', isInProgress);
+         element.classList.toggle('max-level', maxLevelReached);
+
+         // Update level display
+         const completionInfo = element.querySelector('.completion-info');
+         if(completionInfo) {
+            completionInfo.textContent = isCompleted ? `Nvl ${resData.level}` : '';
+             completionInfo.style.display = isCompleted ? 'inline' : 'none';
+         }
+
+         // Update cost display
+         const costWrapper = element.querySelector('.cost-wrapper');
+         if (costWrapper) {
+              const costSpan = costWrapper.querySelector('.cost');
+              if(costSpan) costSpan.textContent = formatNumber(cost);
+              costWrapper.style.display = (!maxLevelReached && !isInProgress) ? 'inline-flex' : 'none'; // Use inline-flex for span
+          }
+
+          // Update progress bar
+         const progressBarContainer = element.querySelector('.research-progress-bar');
+         if (progressBarContainer) {
+             const progressBarDiv = progressBarContainer.querySelector('div');
+             if (progressBarDiv) {
+                 const progressPercent = isInProgress ? Decimal.min(100, new Decimal(resData.progress || 0).div(definition.duration).times(100)).toNumber() : 0;
+                 progressBarDiv.style.width = `${progressPercent}%`;
+             }
+             // Show bar only if in progress or can be started (and isn't max level 1)
+             progressBarContainer.style.display = (isInProgress || (!maxLevelReached && definition.maxLevel !== 1 && !isCompleted)) ? 'block' : 'none';
+
+         }
+
+
+         // Update button visibility / state
+         const button = element.querySelector(`#research-${researchId}-button`);
+         if (button) {
+             button.style.display = (!maxLevelReached && !isInProgress) ? 'flex' : 'none';
+             // Disabled state handled by updateAllButtonStates
+         }
+
+         // Show max level text
+          const maxLevelTextEl = element.querySelector('.max-level-text');
+          if (maxLevelTextEl) {
+             maxLevelTextEl.style.display = maxLevelReached ? 'block' : 'none';
+          }
+
+     }
+     // Update all research UI
+     function updateAllResearchUI(){
+         for(const id in researchItems){
+             updateSingleResearchUI(id);
+         }
+     }
+
+     // Update single challenge UI
+     function updateSingleChallengeUI(challengeId) {
+         const element = document.getElementById(`challenge-${challengeId}`);
+         const definition = challenges[challengeId];
+         if (!element || !definition) return;
+
+         const isCompleted = gameState.completedChallenges[challengeId] || false;
+         const isActive = gameState.activeChallengeId === challengeId;
+
+         element.classList.toggle('completed', isCompleted);
+         element.classList.toggle('active', isActive);
+
+         const statusEl = element.querySelector('.challenge-status');
+         if (statusEl) {
+             let statusText = 'PENDIENTE';
+             let statusClass = 'pending';
+             if (isCompleted) { statusText = 'COMPLETADO'; statusClass = 'completed'; }
+             else if (isActive) { statusText = 'ACTIVO'; statusClass = 'active'; }
+             statusEl.textContent = statusText;
+             statusEl.className = `challenge-status ${statusClass}`;
+         }
+
+          const startButton = element.querySelector(`#challenge-start-${challengeId}`);
+          const abandonButton = element.querySelector(`button[onclick="abandonChallenge()"]`);
+
+          if (startButton) startButton.style.display = (!isCompleted && !isActive) ? 'flex' : 'none';
+          if (abandonButton) abandonButton.style.display = isActive ? 'flex' : 'none';
+
+          // Disable start button if already in another challenge or haven't prestiged or challenge completed
+         if (startButton) {
+              startButton.disabled = (!!gameState.activeChallengeId && !isActive) || gameState.prestigeCount === 0 || isCompleted;
+              startButton.title = isCompleted ? "Desafío ya completado" : isActive ? "" : gameState.activeChallengeId ? "Termina el desafío actual primero" : gameState.prestigeCount === 0 ? "Haz Overclock primero" : "Iniciar desafío";
+          }
+     }
+      // Update all challenge UI
+      function updateAllChallengeUI(){
+          for(const id in challenges){
+              updateSingleChallengeUI(id);
+          }
+      }
+
+
+    // Updates the disabled status of ALL purchase buttons
+    function updateAllButtonStates() {
+        if (!gameState) return;
+
+        // Upgrades
+        for (const id in upgrades) {
+             if (!upgrades.hasOwnProperty(id)) continue;
+            const definition = upgrades[id];
+            const element = document.getElementById(`upgrade-${id}`);
+             if (!element) continue;
+            const buttons = element.querySelectorAll('.buy-controls button'); // Get all buttons in controls
+
+             const level = gameState.upgrades[id] || 0;
+            const maxLevelReached = definition.maxLevel && level >= definition.maxLevel;
+             let reqMet = true;
+             // Check requirements for permanent upgrades
+             if (definition.currency === 'prestigeCurrency' && definition.requires) {
+                 for (const reqId in definition.requires) {
+                      if ((gameState?.upgrades?.[reqId] || 0) < definition.requires[reqId]) {
+                          reqMet = false; break;
+                      }
+                  }
+              }
+
+
+             if (maxLevelReached || !reqMet) {
+                buttons.forEach(button => button.disabled = true);
+                continue; // Skip cost check if maxed or req not met
+             }
+             const currentChatarraValue = gameState.currency;       // Obtiene el valor FRESCO
+             const currentPrestigeValue = gameState.prestigeCurrency; // Obtiene el valor FRESCO
+
+            const cost = calculateUpgradeCost(id);
+            const currencyType = definition.currency;
+            const canAfford = (currencyType === 'currency' && currentChatarraValue.gte(cost)) ||
+            (currencyType === 'prestigeCurrency' && currentPrestigeValue.gte(cost));
+
+            // Disable buttons based on affordability
+            buttons.forEach(button => {
+                button.disabled = !canAfford;
+                // Advanced: Check affordability for multi-buy amounts
+                // This requires calculating the cost of multiple levels, which can be slow.
+                // A simpler check: button.disabled = !canAfford; suffices for now.
+             });
+        }
+
+        // Research
+        for (const id in researchItems) {
+             const button = document.getElementById(`research-${id}-button`);
+             if (!button) continue;
+             const cost = calculateResearchCost(id);
+             const resData = gameState.research[id];
+             const definition = researchItems[id];
+             const maxLevelReached = definition.maxLevel && resData?.level >= definition.maxLevel;
+             button.disabled = gameState.currency.lt(cost) || !!gameState.activeResearchId || maxLevelReached;
+         }
+
+        // Challenges (Start buttons)
+         updateAllChallengeUI(); // Handles enabling/disabling internally
+
+        // Prestige Button
+        updatePrestigeButtonState();
+
+        // Ad Button
+        const adButton = document.getElementById('ad-reward-button');
+        if (adButton) adButton.disabled = gameState.adButtonBusy; // <-- DEBE ESTAR ASÍ
+    }
+
+
+     // --- Prestige UI ---
+    function updatePrestigeDisplay() {
+        if (!gameState) return;
+         const prestigeSection = document.getElementById('prestige-section');
+         if (!prestigeSection) return;
+
+        const requirement = getPrestigeRequirement();
+        const gain = calculatePrestigeGain();
+         // Show prestige section if requirement met OR already prestiged OR in a challenge
+         const shouldShow = gameState.currency.gte(requirement) || gameState.prestigeCount > 0 || !!gameState.activeChallengeId;
+
+         prestigeSection.style.display = shouldShow ? 'block' : 'none';
+
+         updateSingleStat('prestige-requirement-display', formatNumber(requirement));
+         updateSingleStat('prestige-gain-display', formatNumber(gain));
+         updateSingleStat('prestige-currency-display', formatNumber(gameState.prestigeCurrency));
+         updatePrestigeButtonState(); // Update button state along with display
+     }
+
+     function updatePrestigeButtonState() {
+         if (!gameState) return;
+         const button = document.getElementById('prestige-button');
+         if (!button) return;
+         const requirement = getPrestigeRequirement();
+         const gain = calculatePrestigeGain();
+         // Enable if:
+         // 1. Not in challenge AND can afford requirement AND gain > 0
+         // 2. In challenge (can always prestige out)
+         const canAfford = gameState.currency.gte(requirement);
+         const canGain = gain.gt(0);
+
+         button.disabled = !( (canAfford && canGain && !gameState.activeChallengeId) || !!gameState.activeChallengeId );
+
+         // Change text if in challenge
+          if (gameState.activeChallengeId) {
+              button.innerHTML = `<i class="fas fa-sign-out-alt"></i> Salir del Desafío (Overclock)`;
+          } else {
+              button.innerHTML = `<i class="fas fa-arrow-up-right-dots"></i> ¡Realizar Overclock!`;
+          }
+     }
+
+     // Show challenge indicator
+     function updateActiveChallengeIndicator() {
+         const h1Element = document.querySelector('h1');
+         let indicator = document.getElementById('challenge-indicator');
+         if (!indicator && h1Element) {
+             indicator = document.createElement('span');
+             indicator.id = 'challenge-indicator';
+             indicator.style.fontSize = '0.6em';
+             indicator.style.color = 'var(--accent-yellow)';
+             indicator.style.marginLeft = '10px';
+             indicator.style.fontWeight = 'normal';
+             indicator.style.verticalAlign = 'middle';
+             h1Element.appendChild(indicator);
+         }
+
+         if (indicator) {
+             if (gameState.activeChallengeId) {
+                  const chalName = challenges[gameState.activeChallengeId]?.name || '???';
+                  indicator.innerHTML = ` <i class="fas fa-crosshairs"></i> [Desafío: ${chalName}]`;
+                  indicator.style.display = 'inline';
+              } else {
+                  indicator.style.display = 'none';
+              }
+         }
+     }
+
+    // --- TAB HANDLING ---
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.querySelectorAll('#tabs button').forEach(btn => btn.classList.remove('active'));
+      const tabContent = document.getElementById(tabId + '-tab');
+      const tabButton = document.querySelector(`#tabs button[onclick="showTab('${tabId}')"]`)
+      if(tabContent) tabContent.classList.add('active');
+      if(tabButton) tabButton.classList.add('active');
+      // Ensure stats are up-to-date when switching to stats tab
+      if(tabId === 'extra-info') updateDisplayStats();
+
+      // **AÑADIR/VERIFICAR ESTE BLOQUE IF**
+      if (tabId === 'settings') {
+          updateClickerVisualsUI(); // <-- Actualiza la lista SÓLO al abrir la pestaña
+      }
+  }
+
+    // --- SETTINGS ---
+    function toggleSound() {
+        if(!gameState) return;
+        gameState.soundMuted = !gameState.soundMuted;
+        updateSoundButton();
+      }
+    function updateSoundButton(){
+         if(!gameState) return;
+         const soundStatus = document.getElementById('sound-status');
+         const icon = document.querySelector('#settings-tab button[onclick="toggleSound()"] i');
+         if(soundStatus) soundStatus.textContent = gameState.soundMuted ? "Desactivado" : "Activado";
+         if (icon) {
+             icon.className = gameState.soundMuted ? "fas fa-volume-mute" : "fas fa-volume-up";
+          }
+      }
+      function setNumberNotation(notation) {
+         if (['short', 'scientific', 'long'].includes(notation)) {
+            gameState.numberNotation = notation;
+            showToast(`Notación cambiada a: ${notation}`);
+            updateNotationButtons();
+            recalculateAndUI(); // Update UI immediately with new notation
+         }
+      }
+      function updateNotationButtons(){
+          document.querySelectorAll('.notation-options button').forEach(btn => btn.style.backgroundColor = 'var(--accent-blue)');
+          const activeBtn = document.getElementById(`notation-${gameState.numberNotation}`);
+          if(activeBtn) activeBtn.style.backgroundColor = 'var(--accent-green)';
+      }
+
+      function exportSave() {
+          try {
+              const savableState = JSON.stringify(gameState, (key, value) => {
+                   if (value instanceof Decimal) { return value.toString(); }
+                   // Convert Set/Map to Array if needed
+                   return value;
+               });
+              const encodedSave = btoa(unescape(encodeURIComponent(savableState))); // Base64 encode with UTF-8 support
+              const exportArea = document.getElementById('export-import-area');
+              exportArea.value = encodedSave;
+              exportArea.select();
+               try {
+                  navigator.clipboard.writeText(encodedSave).then(() => {
+                      showToast("Guardado copiado al portapapeles.");
+                  }, (err) => {
+                      // Fallback for older browsers or if clipboard permission denied
+                      document.execCommand('copy');
+                      showToast("Guardado copiado (Fallback).");
+                       console.warn('Async clipboard write failed, used fallback execCommand:', err);
+                  });
+              } catch (e) {
+                  document.execCommand('copy'); // Older fallback
+                  showToast("Guardado copiado (Fallback).");
+                   console.warn('navigator.clipboard failed, used fallback execCommand:', e);
+              }
+          } catch (e) {
+               console.error("Error exporting save:", e);
+               showToast("Error al exportar guardado.");
+               document.getElementById('export-import-area').value = "Error al exportar.";
+          }
+      }
+
+      function importSave() {
+          const encodedSave = document.getElementById('export-import-area').value.trim();
+          if (!encodedSave) {
+              showToast("Pega el código de guardado en el área de texto primero.");
+              return;
+          }
+          const confirmed = confirm("¿Importar guardado? Esto SOBREESCRIBIRÁ tu progreso actual.");
+          if (confirmed) {
+              try {
+                   const jsonString = decodeURIComponent(escape(atob(encodedSave))); // Decode Base64 with UTF-8 support
+                   const parsedData = JSON.parse(jsonString);
+
+                  stopIntervals(); // Stop loops before loading
+
+                  // Attempt to load the parsed data safely
+                  loadGameState(parsedData); // This now sets gameState
+
+                   // Restart everything after load
+                   recalculateAll();
+                   initUI(); // Rebuild UI from loaded state
+                   updateUI();
+                   startIntervals();
+
+                   document.getElementById('export-import-area').value = ""; // Clear area
+                   showToast("Partida importada correctamente.");
+                   saveGame(); // Save immediately after successful import
+
+               } catch (e) {
+                   console.error("Error importing save:", e);
+                   showToast("Error al importar guardado. ¿Código inválido o corrupto?");
+               }
+          }
+      }
+
+
+    // --- SAVE/LOAD and RESET ---
+     function saveGame() {
+         if (!gameState) return;
+         try {
+             // Clean up state before saving if needed (e.g., remove temporary UI state)
+             const savableState = JSON.stringify(gameState, (key, value) => {
+                  if (value instanceof Decimal) { return value.toString(); }
+                   // Add handling for Set/Map if used later
+                  return value;
+              });
+             localStorage.setItem(SAVE_KEY, savableState);
+             // console.log("Game saved at", new Date().toLocaleTimeString());
+         } catch (e) {
+              console.error("Error saving game:", e); showToast("Error al guardar.");
+         }
+     }
+
+     // Main load function called by init() and importSave()
+      function loadGameState(savedData = null) {
+          let parsedData = null;
+          let loadedSuccessfully = false;
+
+          if (!savedData) { // Try loading from localStorage if no data provided
+              const localSave = localStorage.getItem(SAVE_KEY);
+              if (localSave) {
+                  try {
+                       parsedData = JSON.parse(localSave);
+                       console.log("Save data found in localStorage.");
+                  } catch (e) {
+                      console.error("Error parsing local save:", e);
+                       localStorage.removeItem(SAVE_KEY); // Remove corrupted save
+                  }
+              } else {
+                  console.log("No save data found in localStorage.");
+              }
+          } else { // Use provided data (from import)
+              parsedData = savedData;
+              console.log("Using provided save data for import.");
+          }
+
+          // START WITH DEFAULTS, then overwrite with loaded data
+          gameState = getDefaultGameState();
+
+           if (parsedData) {
+              console.log("Attempting to parse loaded data...");
+              try {
+                  // Restore core values
+                  gameState.currency = new Decimal(parsedData.currency || 0);
+                  gameState.prestigeCurrency = new Decimal(parsedData.prestigeCurrency || 0);
+                  gameState.prestigeCount = parseInt(parsedData.prestigeCount || 0);
+
+                  // Restore upgrades safely
+                   if (parsedData.upgrades && typeof parsedData.upgrades === 'object') {
+                      for (const key in upgrades) { // Iterate over DEFINED upgrades
+                          if (parsedData.upgrades.hasOwnProperty(key) && typeof parsedData.upgrades[key] === 'number') {
+                              gameState.upgrades[key] = parsedData.upgrades[key];
+                          }
+                      }
+                  }
+                  // Restore Robot Milestones
+                  if (parsedData.robotMilestones && typeof parsedData.robotMilestones === 'object') {
+                     for(const robotId in parsedData.robotMilestones) {
+                        if(upgrades[robotId]?.type === 'auto' && typeof parsedData.robotMilestones[robotId] === 'number') {
+                            gameState.robotMilestones[robotId] = parsedData.robotMilestones[robotId];
+                        }
+                     }
+                 }
+
+                   // Restore achievements
+                   if (parsedData.achievements && typeof parsedData.achievements === 'object') {
+                      for (const key in achievements) { // Iterate over DEFINED achievements
+                           if (parsedData.achievements.hasOwnProperty(key) && typeof parsedData.achievements[key] === 'boolean') {
+                               gameState.achievements[key] = parsedData.achievements[key];
+                           }
+                       }
+                  }
+                  // Restore Research
+                  if (parsedData.research && typeof parsedData.research === 'object') {
+                       for (const key in researchItems) { // Iterate over DEFINED research
+                            if (parsedData.research.hasOwnProperty(key) && parsedData.research[key]) {
+                                // Ensure the research item still exists in definitions
+                                if (!gameState.research[key]) gameState.research[key] = { level: 0, progress: 0 }; // Init if needed
+                                gameState.research[key].level = parseInt(parsedData.research[key].level || 0);
+                                gameState.research[key].progress = Math.max(0, parseFloat(parsedData.research[key].progress || 0)) || 0;
+                            }
+                       }
+                  }
+                  gameState.activeResearchId = parsedData.activeResearchId && researchItems[parsedData.activeResearchId] ? parsedData.activeResearchId : null; // Validate ID
+                 gameState.researchCostReduction = new Decimal(parsedData.researchCostReduction || 0); // Load saved reduction
+
+
+                 // Restore Challenges
+                 gameState.activeChallengeId = parsedData.activeChallengeId && challenges[parsedData.activeChallengeId] ? parsedData.activeChallengeId : null; // Validate ID
+                 if (parsedData.completedChallenges && typeof parsedData.completedChallenges === 'object') {
+                      for (const key in challenges) { // Iterate over DEFINED challenges
+                           if (parsedData.completedChallenges.hasOwnProperty(key) && parsedData.completedChallenges[key] === true) {
+                               gameState.completedChallenges[key] = true;
+                           }
+                       }
+                  }
+                 gameState.challengeProgress = parsedData.challengeProgress && typeof parsedData.challengeProgress === 'object' ? parsedData.challengeProgress : {};
+
+
+                 // Restore Crit Stats (will be recalculated anyway, but load for consistency)
+                 gameState.critChance = new Decimal(parsedData.critChance || CRIT_BASE_CHANCE);
+                 gameState.critMultiplier = new Decimal(parsedData.critMultiplier || CRIT_BASE_MULTIPLIER);
+
+
+                   // Restore stats safely
+                   if (parsedData.stats && typeof parsedData.stats === 'object'){
+                       gameState.stats.totalClicks = parseFloat(parsedData.stats.totalClicks || 0) || 0;
+                       gameState.stats.totalCritClicks = parseFloat(parsedData.stats.totalCritClicks || 0) || 0;
+                       gameState.stats.totalCurrencyEarned = new Decimal(parsedData.stats.totalCurrencyEarned || 0);
+                       gameState.stats.sessionCurrencyEarned = new Decimal(parsedData.stats.sessionCurrencyEarned || 0);
+                       gameState.stats.startTime = parseInt(parsedData.stats.startTime || Date.now()); // Keep original start
+                       gameState.stats.sessionStartTime = parseInt(parsedData.stats.sessionStartTime || Date.now());
+                       gameState.stats.totalPlayTime = parseFloat(parsedData.stats.totalPlayTime || 0) || 0;
+                       gameState.stats.sessionPlayTime = parseFloat(parsedData.stats.sessionPlayTime || 0) || 0;
+                       // Correct lastUpdate carefully
+                       gameState.stats.lastUpdate = Math.min(Date.now(), Math.max(gameState.stats.startTime, parseInt(parsedData.stats.lastUpdate || Date.now()))); // Ensure lastUpdate is between startTime and now
+                       gameState.stats.prestigeTimes = Array.isArray(parsedData.stats.prestigeTimes) ? parsedData.stats.prestigeTimes.map(t => parseFloat(t || 0)) : []; // Sanitize array
+
+                   }
+
+                           // En loadGameState, dentro del bloque if(parsedData) try { ... } después de cargar Settings
+                      // Restore Settings
+                      gameState.soundMuted = typeof parsedData.soundMuted === 'boolean' ? parsedData.soundMuted : false;
+                       gameState.numberNotation = ['short', 'scientific', 'long'].includes(parsedData.numberNotation) ? parsedData.numberNotation : 'short';
+
+                       // *** AÑADIR/VERIFICAR ESTE BLOQUE COMPLETO ***
+                       gameState.selectedClickerVisualId = clickerVisuals[parsedData.selectedClickerVisualId] ? parsedData.selectedClickerVisualId : 'default'; // Valida el ID seleccionado
+
+                       // Cargar estados desbloqueados (iterando sobre clickerVisuals definidos)
+                       if (parsedData.clickerVisualsState && typeof parsedData.clickerVisualsState === 'object') {
+                            for (const visualId in clickerVisuals) {
+                                 // Si el estado guardado para este visual existe y está marcado como desbloqueado
+                                 if (parsedData.clickerVisualsState[visualId] && parsedData.clickerVisualsState[visualId].unlocked === true) {
+                                      // Marca como desbloqueado en el gameState actual (ya inicializado por defecto)
+                                     gameState.clickerVisualsState[visualId].unlocked = true;
+                                 }
+                                 // Nota: No necesitamos un 'else' aquí porque getDefaultGameState ya los puso a false (excepto 'default')
+                             }
+                        }
+                       // Verifica desbloqueos basados en el estado cargado *después* de cargar todo lo demás
+                        // Esto es importante si las condiciones de desbloqueo dependen de otras cosas cargadas (nivel de robot, logros, etc.)
+                       // ¡Importante mover checkVisualUnlocks DESPUÉS de applyAllAchievementBonuses!
+                       // checkVisualUnlocks(); // <- NO LLAMAR AQUÍ DIRECTAMENTE AÚN
+                       // *** FIN DEL BLOQUE A VERIFICAR/AÑADIR ***
+
+
+                      // Don't load buyMultiplier, reset it
+                      gameState.adButtonBusy = false; // Always reset on load
+
+                     // After loading all levels/achievements, apply relevant bonuses
+                     applyAllAchievementBonuses(); // <- Primero aplicar bonus de logros
+
+                     // **LLAMAR checkVisualUnlocks DESPUÉS de aplicar bonus de logros**
+                     // ya que algunos visuales dependen de logros específicos.
+                      checkVisualUnlocks(); // <--- LLAMAR AQUÍ
+
+                     // Apply research cost reduction from loaded research levels
+                      gameState.researchCostReduction = calculateTotalResearchCostReduction();
+
+
+                     loadedSuccessfully = true;
+                     console.log("Game state loaded/parsed successfully.");
+
+              } catch (e) {
+                  console.error("Error applying loaded data:", e);
+                   // gameState is already reset to default, just show error
+                  showToast("Error al procesar datos guardados. Empezando de nuevo.");
+                   loadedSuccessfully = false; // Ensure flag is false
+                   // Optionally clear the bad save data from localStorage
+                   localStorage.removeItem(SAVE_KEY);
+               }
+          }
+
+         if (!loadedSuccessfully) {
+              // If loading failed or no save existed, gameState is already default
+              console.log("No save file found or load failed, starting new game.");
+              applyAllAchievementBonuses(); // Ensure base bonuses are applied
+              applyPermanentStartingBonuses(); // Apply starting bonuses for a fresh game
+          } else {
+              console.log("Loaded Game State:", JSON.parse(JSON.stringify(gameState))); // Deep copy for logging
+          }
+     }
+
+    function manualSave() { saveGame(); showToast("Partida guardada."); }
+
+    function confirmReset() {
+        // 1. Pide confirmación al usuario
+        const confirmed = confirm("¡ADVERTENCIA GRAVE!\nBorrará TODO tu progreso guardado (localmente).\n¿Estás seguro?");
+
+        // 2. Si el usuario confirma...
+        if (confirmed) {
+             // 3. Detiene los bucles del juego (gameLoop, saveInterval, statInterval)
+             stopIntervals();
+             // 4. Elimina el archivo de guardado del almacenamiento local del navegador
+             localStorage.removeItem(SAVE_KEY);
+             // 5. Muestra un mensaje (opcional, pero útil para feedback inmediato)
+             alert("Progreso borrado. La página se recargará para empezar de nuevo."); // Puedes quitar este alert si no te gusta
+             // 6. Recarga la página por completo
+             window.location.reload();
+             // -> Al recargar, init() se ejecuta, loadGameState() no encuentra SAVE_KEY,
+             // -> y se usa getDefaultGameState(), logrando el reinicio.
+         }
+         // 7. Si el usuario cancela, no hace nada.
+    }
+
+    // --- Interval Management ---
+     function startIntervals() {
+         stopIntervals(); // Ensure no duplicates
+
+         gameLoopInterval = setInterval(gameLoop, TICK_RATE);
+         saveInterval = setInterval(saveGame, SAVE_INTERVAL);
+         statInterval = setInterval(() => {
+             if(gameState && gameState.stats){
+                updateDisplayStats(); // Update stats tab info
+                updateAllButtonStates(); // Update button affordability less frequently
+                 checkAchievements(); // Check achievements periodically
+                 updateCritDisplay(); // Keep crit display updated
+                 updatePrestigeDisplay(); // Keep prestige info updated
+                 updateActiveChallengeIndicator(); // Keep indicator updated
+                 updateAllResearchUI(); // Update research progress bars/buttons
+                 updateAllChallengeUI(); // Update challenge status/buttons
+             }
+         }, 1000); // Update less critical things every second
+
+         console.log("Intervals started.");
+      }
+
+     function stopIntervals() {
+         clearInterval(gameLoopInterval);
+         clearInterval(saveInterval);
+         clearInterval(statInterval);
+         gameLoopInterval = null;
+         saveInterval = null;
+         statInterval = null;
+          // console.log("Intervals stopped.");
+      }
+
+     // --- Recalculate all derived stats ---
+     function recalculateAll() {
+         if (!gameState) return;
+         // console.log("Recalculating all game states...");
+         // Order matters: Bonuses -> CpS -> CpC -> Crits
+          applyAllAchievementBonuses(); // Ensure bonuses are current
+          gameState.researchCostReduction = calculateTotalResearchCostReduction(); // Recalc this too
+          gameState.currencyPerSecond = calculateCpS();
+          gameState.currencyPerClick = calculateCpC();
+          calculateCritStats(); // Calculate crit chance/multiplier
+          // console.log("Recalculation complete.");
+      }
+
+    // --- INITIALIZATION ---
+     function init() {
+         console.log("Initializing Game V3.1...");
+         document.getElementById('robot-button').addEventListener('click', clickRobot);
+
+         loadGameState(); // Load saved data or get default state
+
+         recalculateAll(); // Calculate initial stats based on loaded/default state
+
+         // --- Offline Progress ---
+          const now = Date.now();
+          // Ensure lastUpdate is valid and not in the future
+          const lastUpdate = Math.min(now, gameState.stats.lastUpdate || now);
+          let offlineTime = Math.max(0, (now - lastUpdate) / 1000); // seconds
+
+          if (offlineTime > 5) { // Threshold for showing offline progress
+               console.log(`Calculating offline progress for ${formatTime(offlineTime)}...`);
+               // Use the *already calculated* initial CpS/CpC/Crit for offline calc
+               const offlineCpS = gameState.currencyPerSecond;
+               const offlineCpC = gameState.currencyPerClick;
+               const offlineCritChance = gameState.critChance;
+               const offlineCritMulti = gameState.critMultiplier;
+               const offlineAutoclicks = calculateAutoclicksPerSecond() * offlineTime;
+
+               let totalOfflineGain = new Decimal(0);
+                // Passive gain
+                if (offlineCpS.gt(0)) {
+                   totalOfflineGain = totalOfflineGain.plus(offlineCpS.times(offlineTime));
+                }
+                // Autoclick gain (including crits)
+                if (offlineAutoclicks > 0 && offlineCpC.gt(0)) {
+                     let autoClickValue = new Decimal(0);
+                     let effectiveClicks = Math.floor(offlineAutoclicks);
+                     if (Math.random() < (offlineAutoclicks - effectiveClicks)) effectiveClicks++;
+
+                     for (let i = 0; i < effectiveClicks; i++) {
+                         let clickVal = offlineCpC;
+                         if (Math.random() < offlineCritChance.toNumber()) {
+                             clickVal = clickVal.times(offlineCritMulti);
+                             gameState.stats.totalCritClicks++; // Add offline crit clicks
+                         }
+                         autoClickValue = autoClickValue.plus(clickVal);
+                     }
+                     totalOfflineGain = totalOfflineGain.plus(autoClickValue);
+                     // Add offline autoclicks (integer part for simplicity in stats)
+                     gameState.stats.totalClicks += Math.floor(offlineAutoclicks);
+                 }
+
+                 // Offline Research Progress
+                 if (gameState.activeResearchId) {
+                      const resId = gameState.activeResearchId;
+                      const definition = researchItems[resId];
+                      const resData = gameState.research[resId];
+                      if (definition && resData) {
+                           const remainingTime = Math.max(0, definition.duration - (resData.progress || 0));
+                           if (offlineTime >= remainingTime) {
+                               // Complete research instantly if enough time passed
+                               // Important: Need to fully recalculate state *after* potential completion
+                               resData.progress = definition.duration; // Mark as ready to complete
+                               console.log(`Research ${resId} marked for offline completion.`);
+                               // completeResearch(resId); // Don't call directly, handle after applying offline gain
+                               offlineTime -= remainingTime; // Reduce remaining offline time
+                           } else {
+                               // Just add progress
+                               resData.progress = (resData.progress || 0) + offlineTime;
+                               offlineTime = 0; // All offline time used for research
+                           }
+                       }
+                   }
+
+
+                if (totalOfflineGain.gt(0)) {
+                    // Apply gain directly BEFORE the main loop starts
+                   gameState.currency = gameState.currency.plus(totalOfflineGain);
+                   gameState.stats.totalCurrencyEarned = gameState.stats.totalCurrencyEarned.plus(totalOfflineGain);
+                   gameState.stats.sessionCurrencyEarned = gameState.stats.sessionCurrencyEarned.plus(totalOfflineGain);
+
+                    showToast(`Ganaste ${formatNumber(totalOfflineGain)} Chatarra y ${formatTime(offlineTime + (gameState.activeResearchId ? remainingTime : 0))} de progreso offline.`); // Show original offline time
+                    console.log(`Offline Gain: ${formatNumber(totalOfflineGain)} CHT over ${formatTime(offlineTime)}`);
+                } else if (offlineTime > 60) { // Show message even if no gain, if offline long enough
+                    showToast(`Bienvenido de vuelta tras ${formatTime(offlineTime)}.`);
+                }
+
+                 // Complete any research that finished offline AFTER applying currency gain
+                if (gameState.activeResearchId && gameState.research[gameState.activeResearchId]?.progress >= researchItems[gameState.activeResearchId]?.duration) {
+                     completeResearch(gameState.activeResearchId); // This recalculates state again
+                 }
+
+           }
+          gameState.stats.lastUpdate = now; // Set lastUpdate AFTER calculations
+          gameState.stats.sessionPlayTime = Math.max(0, gameState.stats.sessionPlayTime || 0); // Ensure session time not negative
+
+         // --- Final Steps ---
+         // --- Final Steps ---
+ initUI(); // Build HTML lists based on loaded state
+ recalculateAll(); // Ensure all values are correct after potential offline completion/bonus application
+
+ // **AÑADIR/VERIFICAR ESTAS DOS LÍNEAS**
+ updateClickerButtonVisual(); // <--- Establece el emoji inicial al cargar
+ updateClickerVisualsUI(); // <--- Construye la lista en Opciones al cargar
+
+ updateUI(); // Populate with values and set button states
+ showTab('extra-info'); // Show default tab
+ updateSoundButton(); // Set initial sound button state
+ updateNotationButtons(); // Highlight correct notation button
+
+ startIntervals(); // Start game loops
+ console.log("Initialization Complete.");
+     }
+
+     // Clean up intervals on unload
+    window.addEventListener('beforeunload', () => {
+         stopIntervals(); // Stop loops first
+         saveGame(); // Then save
+    });
+
+     // Start on DOM ready
+    document.addEventListener('DOMContentLoaded', init);
+
+</script>
+
+</body>
+</html>
