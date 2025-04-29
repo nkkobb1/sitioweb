@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Super Biblioteca de Emojis Universal 🌍</title>
+    <style>
+        /* --- Estilos CSS (Igual que la última versión estética) --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --container-bg: #ffffff;
+            --primary-accent: #5e5ee2;
+            --secondary-accent: #7f8c8d;
+            --text-color: #34495e;
+            --border-color: #e4e6e8;
+            --hover-light: #f2f3ff;
+            --hover-darker: #eaeaee;
+            --shadow-color: rgba(94, 94, 226, 0.15);
+            --success-color: #2ecc71;
+            --error-color: #e74c3c; /* Color para errores */
+            --warning-color: #f39c12; /* Color para carga */
+            --input-bg: #f7f7f8;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            --transition-fast: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --transition-medium: all 0.3s ease-in-out;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-main); background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; font-size: 16px; }
+        #emoji-library { max-width: 1000px; margin: 40px auto; background-color: var(--container-bg); padding: 35px 45px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); position: relative; /* Para estado de carga */ min-height: 300px; /* Altura mínima para ver estado inicial */ }
+        h1 { text-align: center; color: var(--text-color); margin-bottom: 35px; font-weight: 700; font-size: 2.2em; letter-spacing: -0.5px; }
+        #search-input { width: 100%; padding: 15px 20px; margin-bottom: 40px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 1.1rem; background-color: var(--input-bg); transition: var(--transition-fast); color: var(--text-color); }
+        #search-input::placeholder { color: var(--secondary-accent); opacity: 0.8; }
+        #search-input:focus { outline: none; border-color: var(--primary-accent); background-color: var(--container-bg); box-shadow: 0 0 0 4px var(--shadow-color); }
+        .emoji-category { margin-bottom: 40px; }
+        .emoji-category:last-child { margin-bottom: 0; }
+        .emoji-category h2 { margin-bottom: 20px; color: var(--primary-accent); border-left: 4px solid var(--primary-accent); padding-left: 15px; font-size: 1.6em; font-weight: 600; border-bottom: none; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 15px; }
+        .emoji-item { font-size: 2.5em; padding: 8px; background-color: var(--hover-light); border: none; border-radius: 12px; cursor: pointer; text-align: center; transition: var(--transition-fast); user-select: none; display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; color: var(--text-color); }
+        .emoji-item:hover { background-color: var(--hover-darker); transform: scale(1.12) translateY(-3px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); }
+        .emoji-item:active { background-color: var(--primary-accent); color: white; transform: scale(0.98); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .status-message { /* Estilo para mensajes de Carga/Error/Sin resultados */
+             grid-column: 1 / -1; /* Ocupa toda la grid si está dentro */
+             text-align: center;
+             padding: 40px 20px;
+             font-size: 1.2em;
+             font-weight: 500;
+             border-radius: 12px;
+             margin-top: 20px;
+        }
+        .status-message.loading { color: var(--secondary-accent); background-color: var(--input-bg);}
+        .status-message.error { color: #fff; background-color: var(--error-color); }
+        .status-message.no-results { color: var(--secondary-accent); background-color: transparent; font-style: italic; font-weight: normal; }
+
+        #copy-status { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--success-color), #27ae60); color: white; padding: 14px 28px; border-radius: 50px; font-size: 1em; font-weight: 500; z-index: 1000; opacity: 0; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); transition: opacity 0.4s ease-out, bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; white-space: nowrap; }
+        #copy-status.visible { opacity: 1; bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div id="emoji-library">
+        <h1>📚 Super Biblioteca de Emojis Universal 🌍</h1>
+
+        <input type="text" id="search-input" placeholder="Busca emojis por nombre o palabra clave..." disabled> <!-- Deshabilitado hasta cargar -->
+
+        <div id="emoji-container">
+            <!-- Estado inicial: Carga -->
+            <div id="initial-status" class="status-message loading">⏳ Cargando emojis...</div>
+        </div>
+    </div>
+
+    <!-- Mensaje de confirmación de copia (fuera del contenedor principal) -->
+    <div id="copy-status">¡Copiado!</div>
+
+    <script>
+        // --- Lógica JavaScript para Carga Dinámica ---
+
+        const emojiContainer = document.getElementById('emoji-container');
+        const searchInput = document.getElementById('search-input');
+        const copyStatus = document.getElementById('copy-status');
+        const initialStatus = document.getElementById('initial-status');
+
+        // Almacenará todos los emojis una vez cargados
+        let ALL_EMOJI_DATA = {};
+
+        // 1. Función para Obtener los Emojis desde JSON
+        async function fetchEmojiData() {
+            const url = 'https://papitasfritas.com/emojisdata.json'; // ¡Tu URL remota!
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    // Error si el archivo no existe (404) o hay problemas de servidor
+                    throw new Error(`Error al cargar ${url}: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+                console.log("Datos de emojis cargados exitosamente.");
+                ALL_EMOJI_DATA = data; // Guardar los datos globalmente
+                searchInput.disabled = false; // Habilitar búsqueda
+                 searchInput.placeholder = "Busca entre " + countEmojis(ALL_EMOJI_DATA) + " emojis..."; // Actualizar placeholder
+                renderEmojis(ALL_EMOJI_DATA); // Renderizar todos los emojis inicialmente
+            } catch (error) {
+                console.error("Fallo al obtener o procesar los emojis:", error);
+                displayStatusMessage(`❌ Error: ${error.message}. Asegúrate de que el archivo 'emojis.json' exista en la misma carpeta y sea válido.`, 'error');
+                searchInput.disabled = true; // Mantener búsqueda deshabilitada
+            }
+        }
+
+         // Función auxiliar para contar emojis
+         function countEmojis(data) {
+            let count = 0;
+            for (const category in data) {
+                if (data.hasOwnProperty(category)) {
+                    count += data[category].length;
+                }
+            }
+            return count;
+        }
+
+
+        // 2. Función para Renderizar Emojis (adaptada para recibir la data)
+        function renderEmojis(dataToRender) {
+            emojiContainer.innerHTML = ''; // Limpiar contenedor (incluido mensaje de carga/error)
+            let resultsFound = false;
+            let visibleEmojiCount = 0;
+
+            for (const categoryName in dataToRender) {
+                if (dataToRender.hasOwnProperty(categoryName)) {
+                    const emojisInCategory = dataToRender[categoryName];
+                    if (emojisInCategory.length > 0) {
+                        resultsFound = true;
+                        visibleEmojiCount += emojisInCategory.length;
+
+                        const categorySection = document.createElement('section');
+                        categorySection.className = 'emoji-category';
+                        const categoryTitle = document.createElement('h2');
+                        // Convertir nombres de categoría como 'Smileys & Emotion' a algo más legible si es necesario
+                        categoryTitle.textContent = categoryName.replace(/ & /g, ' y ');
+                        const emojiGrid = document.createElement('div');
+                        emojiGrid.className = 'emoji-grid';
+
+                        emojisInCategory.forEach(emojiObj => {
+                            const emojiButton = document.createElement('button');
+                            emojiButton.className = 'emoji-item';
+                            emojiButton.textContent = emojiObj.char; // El emoji
+
+                            // Tooltip mejorado - puede incluir keywords si existen
+                            let tooltip = `${emojiObj.name}`;
+                            if (emojiObj.keywords && emojiObj.keywords.length > 0) {
+                               tooltip += `\nKeywords: ${emojiObj.keywords.join(', ')}`;
+                            }
+                             tooltip += `\n(Clic para copiar ${emojiObj.char})`;
+                             emojiButton.title = tooltip;
+
+
+                            emojiButton.setAttribute('aria-label', `${emojiObj.name}, Copiar emoji ${emojiObj.char}`);
+                            emojiButton.addEventListener('click', () => handleEmojiClick(emojiObj));
+                            emojiGrid.appendChild(emojiButton);
+                        });
+
+                        categorySection.appendChild(categoryTitle);
+                        categorySection.appendChild(emojiGrid);
+                        emojiContainer.appendChild(categorySection);
+                    }
+                }
+            }
+
+            // Manejar caso sin resultados de búsqueda
+            if (!resultsFound && searchInput.value.trim() !== '') {
+                displayStatusMessage('🤷‍♀️ No se encontraron emojis que coincidan.', 'no-results');
+            } else if (Object.keys(ALL_EMOJI_DATA).length > 0 && visibleEmojiCount === 0 && searchInput.value.trim() === '') {
+                 // Caso raro: Datos cargados pero ninguno visible (¿filtro inicial imposible?)
+                 displayStatusMessage('🧐 No hay emojis para mostrar con los filtros actuales.', 'no-results');
+             } else if (Object.keys(ALL_EMOJI_DATA).length === 0 && !document.querySelector('.status-message.error')) {
+                  // Si AUN no se cargaron los datos y no hubo error, mantener "Cargando" (no debería pasar si fetch ya terminó)
+                   // O mostrar mensaje por defecto si algo falló silenciosamente antes
+                    if (!initialStatus) { // Si el initialStatus ya fue borrado
+                       displayStatusMessage('⏳ Preparando emojis...', 'loading');
+                   }
+             }
+
+
+            // Si había mensaje de carga inicial y ya renderizamos contenido, quitarlo
+            const currentInitialStatus = document.getElementById('initial-status');
+            if (currentInitialStatus && (resultsFound || document.querySelector('.status-message.error') || document.querySelector('.status-message.no-results'))) {
+                currentInitialStatus.remove();
+            }
+        }
+
+        // Función para mostrar mensajes de estado genéricos
+        function displayStatusMessage(message, type = 'loading') {
+             // Limpiar mensajes anteriores si los hubiera
+             const existingStatus = emojiContainer.querySelector('.status-message');
+             if(existingStatus) existingStatus.remove();
+
+             const statusDiv = document.createElement('div');
+             statusDiv.className = `status-message ${type}`; // 'loading', 'error', 'no-results'
+             statusDiv.textContent = message;
+             emojiContainer.appendChild(statusDiv);
+         }
+
+        // 3. Función de Búsqueda (Ahora busca en nombres y keywords si existen)
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const filteredData = {};
+
+            if (!ALL_EMOJI_DATA || Object.keys(ALL_EMOJI_DATA).length === 0) {
+                console.warn("Intento de búsqueda antes de cargar los datos.");
+                return; // No buscar si no hay datos
+            }
+
+            if (searchTerm === "") {
+                renderEmojis(ALL_EMOJI_DATA); // Mostrar todo si la búsqueda está vacía
+                return;
+            }
+
+            for (const categoryName in ALL_EMOJI_DATA) {
+                 if (ALL_EMOJI_DATA.hasOwnProperty(categoryName)) {
+                    const matchingEmojis = ALL_EMOJI_DATA[categoryName].filter(emojiObj => {
+                        const nameMatch = emojiObj.name.toLowerCase().includes(searchTerm);
+                        const keywordMatch = emojiObj.keywords && Array.isArray(emojiObj.keywords)
+                            ? emojiObj.keywords.some(kw => kw.toLowerCase().includes(searchTerm))
+                            : false;
+                        return nameMatch || keywordMatch; // Coincidencia en nombre O keywords
+                    });
+
+                    if (matchingEmojis.length > 0) {
+                        filteredData[categoryName] = matchingEmojis;
+                    }
+                 }
+            }
+            renderEmojis(filteredData); // Renderizar solo los filtrados
+        }
+
+        // 4. Función para manejar clic y copia (sin cambios necesarios aquí)
+        let statusTimeout = null;
+        function handleEmojiClick(emojiObj) {
+            navigator.clipboard.writeText(emojiObj.char)
+                .then(() => {
+                    console.log(`Emoji ${emojiObj.char} (${emojiObj.name}) copiado.`);
+                    showCopyStatus(`¡ ${emojiObj.char} copiado !`);
+                })
+                .catch(err => {
+                    console.error('Error al intentar copiar el emoji: ', err);
+                    showCopyStatus('Error al copiar');
+                });
+        }
+
+        // 5. Función para mostrar mensaje de estado copia (sin cambios necesarios aquí)
+        function showCopyStatus(message) {
+             if (statusTimeout) { clearTimeout(statusTimeout); copyStatus.classList.remove('visible'); }
+             requestAnimationFrame(() => {
+                 requestAnimationFrame(() => {
+                    copyStatus.textContent = message;
+                    copyStatus.classList.add('visible');
+                 });
+             });
+             statusTimeout = setTimeout(() => {
+                 copyStatus.classList.remove('visible');
+                 statusTimeout = null;
+             }, 2000);
+         }
+
+
+        // --- Ejecución inicial ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Añadir listener de búsqueda DE INMEDIATO (pero está deshabilitado al inicio)
+             searchInput.addEventListener('input', handleSearch);
+
+             // Iniciar la carga de datos
+            fetchEmojiData();
+        });
+
+    </script>
+
+</body>
+</html>
