@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paleta Temporal - Movimientos Artísticos Clave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f8f8f8; /* Blanco galería */
+      --panel-bg: #ffffff; /* Blanco puro para paneles/tarjetas */
+      --container-bg: #e9e9e9; /* Gris muy claro / Sombra sutil */
+      --preview-bg: #f0f0f0; /* Gris aún más claro */
+      --text-color-dark: #333333; /* Gris oscuro casi negro */
+      --text-color-medium: #555555; /* Gris medio */
+      --text-color-light: #f0f0f0; /* Texto claro para botones oscuros */
+      --accent-ochre: #e0a800; /* Ocre / Amarillo dorado */
+      --accent-sienna: #a0522d; /* Siena / Marrón rojizo */
+      --accent-blue: #4682b4; /* Azul acero / Ultramar apagado */
+      --border-color: #dcdcdc; /* Borde gris claro */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Merriweather', serif; /* Serif clásico/elegante */
+      --shadow-soft: rgba(0, 0, 0, 0.08);
+      --shadow-medium: rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      gap: 20px;
+    }
+
+    /* Panel del Índice de Títulos (Estilo Galería) */
+    .title-index-panel {
+        background-color: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 20px;
+        width: 280px;
+        flex-shrink: 0;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        box-shadow: 0 3px 10px var(--shadow-soft);
+    }
+    .title-index-panel h2 {
+        font-family: var(--font-display);
+        color: var(--accent-sienna);
+        margin: 0 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 1.4em;
+        text-align: center;
+        font-weight: 700;
+    }
+    #titleList { list-style: none; padding: 0; margin: 0; }
+    #titleList li {
+        padding: 10px 12px; margin-bottom: 6px; border-radius: 4px;
+        cursor: pointer; transition: background-color 0.3s, color 0.3s;
+        font-size: 0.95em; border: 1px solid transparent;
+        color: var(--text-color-medium);
+    }
+    #titleList li:hover {
+        background-color: #f0f0f0; /* Hover sutil */
+        color: var(--text-color-dark);
+    }
+    #titleList li.active {
+        background-color: var(--accent-blue);
+        color: var(--text-color-light);
+        font-weight: 700;
+        border-color: var(--accent-blue);
+    }
+    /* Scrollbar sutil para el índice */
+    .title-index-panel::-webkit-scrollbar { width: 6px; }
+    .title-index-panel::-webkit-scrollbar-track { background: transparent; }
+    .title-index-panel::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 3px; }
+
+
+    /* Contenedor Principal de la Línea de Tiempo (Estilo Galería) */
+    .timeline-container {
+      background: var(--panel-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 5px 20px var(--shadow-medium);
+      padding: 30px;
+      flex-grow: 1;
+      max-width: 1150px;
+      position: relative;
+      overflow: hidden; /* Para posibles decoraciones futuras */
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin: 0 0 35px 0;
+      color: var(--text-color-dark);
+      font-size: 2.6em;
+      font-weight: 700;
+      border-bottom: 2px solid var(--accent-ochre); /* Línea ocre */
+      padding-bottom: 15px;
+    }
+
+    /* Estructura Flex interna (sin cambios) */
+    .main-content-area { display: flex; gap: 25px; align-items: stretch; margin-top: 20px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 400px; }
+
+    /* Vistas Previas (Estilo Galería) */
+    .event-preview {
+        flex: 1; min-width: 180px; max-width: 260px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 18px;
+        color: var(--text-color-medium);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        border-color: var(--accent-ochre);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 3px 8px var(--shadow-medium);
+        transform: translateY(-3px); color: var(--text-color-dark);
+    }
+    .event-preview.empty-preview {
+        background: transparent; border: 2px dashed var(--border-color);
+        opacity: 0.7; cursor: default; align-items: center; justify-content: center;
+        text-align: center; color: var(--text-color-medium); box-shadow: none;
+    }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.15em; margin: 0 0 10px 0; color: var(--accent-sienna); border-bottom: 1px solid var(--border-color); padding-bottom: 6px; font-weight: 700; }
+    .event-preview .preview-year { font-family: var(--font-body); font-weight: 700; color: var(--accent-blue); margin-bottom: 10px; font-size: 1.1em; text-align: center; }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container (Estilo Clásico) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; padding: 12px; background: #f9f9f9; border-radius: 6px; border: 1px solid var(--border-color); }
+
+    /* Slider (Estilo Clásico) */
+    input[type="range"] { flex: 1; height: 7px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-ochre), var(--accent-sienna)); border-radius: 4px; outline: none; border: 1px solid #ccc; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--panel-bg); box-shadow: 0 1px 4px var(--shadow-medium); transition: transform 0.2s ease; margin-top: -7px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--accent-blue); border-radius: 50%; border: 2px solid var(--panel-bg); box-shadow: 0 1px 4px var(--shadow-medium); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); background: var(--accent-ochre); }
+
+    /* Year Display (Estilo Clásico) */
+    #yearDisplay { min-width: 75px; text-align: center; font-weight: 700; font-family: var(--font-body); background: var(--text-color-dark); color: var(--accent-ochre); padding: 9px 16px; border-radius: 4px; border: 1px solid #222; box-shadow: inset 0 0 5px rgba(0,0,0,0.3); font-size: 1.1em; }
+
+    /* Event Card (Estilo Papel/Lienzo) */
+    #eventCard {
+      background-color: var(--panel-bg);
+      color: var(--text-color-dark);
+      padding: 35px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      min-height: 580px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px var(--shadow-soft);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: var(--preview-bg); color: var(--text-color-medium); }
+    #eventCard.loading { opacity: 0.95; }
+    #eventCard.error { border: 2px solid var(--accent-sienna); color: var(--accent-sienna); } /* Error usa siena */
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link { /* Botones de sugerencia */
+        display: inline-block; padding: 10px 20px;
+        background-color: var(--accent-blue);
+        color: var(--text-color-light);
+        border: 1px solid #3b6a94; border-radius: 5px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700; font-size: 0.95em;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: var(--accent-ochre); color: var(--text-color-dark); border-color: #c89400; transform: scale(1.03); }
+
+    /* Estilos Tarjeta Principal (Galería/Limpio) */
+    #eventCard h2 { margin: 0 0 25px 0; text-align: center; color: var(--accent-sienna); font-family: var(--font-display); font-size: 2em; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+    #eventCard img {
+        max-width: 50%; /* Permitir imágenes un poco más grandes */
+        height: auto; max-height: 260px; /* Un poco más de altura */
+        object-fit: contain; border-radius: 4px;
+        margin: 0 auto 30px auto; display: block;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 12px var(--shadow-medium);
+        background-color: #fff; /* Fondo blanco */
+    }
+    #eventCard .content-extract {
+        line-height: 1.8; margin-bottom: 30px; font-size: 1.05em; /* Texto ligeramente más grande */
+        text-align: left; /* Alineación izquierda para textos */
+        max-height: 400px; overflow-y: auto;
+        padding: 0 10px; /* Padding lateral ligero */
+    }
+     /* Scrollbar estándar */
+     #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+     #eventCard .content-extract::-webkit-scrollbar-track { background: #f1f1f1; }
+     #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: #bbb; border-radius: 4px; }
+     #eventCard .content-extract::-webkit-scrollbar-thumb:hover { background-color: #999; }
+
+
+     /* Link Externo (Clásico/Discreto) */
+    #eventCard a.external-link {
+        display: block; margin: 20px auto 0 auto; padding: 12px 28px;
+        background: var(--text-color-dark);
+        color: var(--text-color-light); text-decoration: none; font-weight: 700;
+        font-family: var(--font-body); border-radius: 5px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid #111;
+        box-shadow: 0 2px 5px var(--shadow-medium);
+        width: fit-content;
+    }
+    #eventCard a.external-link:hover { background: var(--text-color-medium); color: var(--panel-bg); box-shadow: 0 3px 7px var(--shadow-medium); transform: translateY(-2px); }
+
+    /* Spinner (Simple) */
+    .spinner { width: 45px; height: 45px; border: 4px solid var(--border-color); border-top-color: var(--accent-blue); border-radius: 50%; animation: spin 1s ease-in-out infinite; margin: 30px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos (similares a los anteriores) */
+     @media (max-width: 1000px) { /* ... (igual que Fisica) ... */ }
+     @media (max-width: 768px) { /* ... (igual que Fisica) ... */ }
+     @media (max-width: 480px) { /* ... (igual que Fisica, ajustar padding/fonts si es necesario) ... */ }
+
+  </style>
+</head>
+<body>
+
+  <!-- Panel de Índice Lateral -->
+  <div class="title-index-panel">
+    <h2>Índice de Movimientos</h2>
+    <ul id="titleList">
+      <!-- Llenado por JS -->
+    </ul>
+  </div>
+
+  <!-- Contenedor Principal de la Línea de Tiempo -->
+  <div class="timeline-container">
+    <h1>Paleta Temporal - Movimientos Artísticos Clave</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Realismo y Academicismo</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Deslice el pincel temporal para explorar las revoluciones del arte moderno.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Arte Contemporáneo</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de Movimientos Artísticos ---
+    const events = [
+        { year: 1874, title: "Primera Exposición Impresionista", wikiTitle: "Impresionismo" },
+        { year: "c. 1886", title: "Postimpresionismo (Van Gogh, Gauguin, Cézanne)", wikiTitle: "Postimpresionismo" },
+        { year: "c. 1905", title: "Fauvismo (Matisse)", wikiTitle: "Fauvismo" },
+        { year: 1907, title: "'Les Demoiselles d'Avignon' (Inicio del Cubismo)", wikiTitle: "Les Demoiselles d'Avignon" },
+        { year: "c. 1909", title: "Futurismo (Manifiesto Futurista)", wikiTitle: "Futurismo" },
+        { year: "c. 1910", title: "Expresionismo Alemán (Die Brücke, Der Blaue Reiter)", wikiTitle: "Expresionismo alemán" },
+        { year: "c. 1913", title: "Suprematismo (Malévich)", wikiTitle: "Suprematismo" },
+        { year: "c. 1916", title: "Dadaísmo (Zúrich)", wikiTitle: "Dadaísmo" },
+        { year: "c. 1917", title: "Constructivismo Ruso", wikiTitle: "Constructivismo (arte)" },
+        { year: "c. 1920", title: "Neoplasticismo (De Stijl - Mondrian)", wikiTitle: "Neoplasticismo" },
+        { year: 1924, title: "Manifiesto Surrealista (Breton)", wikiTitle: "Surrealismo" },
+        { year: "c. 1930s", title: "Realismo Mágico (América Latina)", wikiTitle: "Realismo mágico" }, // Aunque literario, influencia visual
+        { year: "c. 1940s", title: "Expresionismo Abstracto (Pollock, Rothko, de Kooning)", wikiTitle: "Expresionismo abstracto" },
+        { year: "c. 1950s", title: "Art Informel (Europa)", wikiTitle: "Informalismo" },
+        { year: "c. 1955", title: "Pop Art (Hamilton, Warhol, Lichtenstein)", wikiTitle: "Pop Art" },
+        { year: "c. 1960s", title: "Op Art (Vasarely, Riley)", wikiTitle: "Op art" },
+        { year: "c. 1960s", title: "Minimalismo", wikiTitle: "Minimalismo" },
+        { year: "c. 1960s", title: "Arte Conceptual", wikiTitle: "Arte conceptual" },
+        { year: "c. 1970s", title: "Hiperrealismo", wikiTitle: "Hiperrealismo" },
+        { year: "c. 1970s", title: "Performance Art", wikiTitle: "Arte de performance" },
+        { year: "c. 1980s", title: "Neoexpresionismo", wikiTitle: "Neoexpresionismo" },
+        { year: "c. 1980s", title: "Graffiti / Arte Urbano", wikiTitle: "Grafiti" }
+    ];
+
+
+    // --- Elementos del DOM (Igual que Fisica) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.querySelector('.timeline-container');
+    const titleList = document.getElementById('titleList');
+
+    // --- Estado y Caché (igual) ---
+    const summaryCache = {};
+
+    // --- Fetch Detallado (action=query - sin cambios) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código idéntico al de Fisica) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info", titles: title,
+            format: "json", origin: "*", explaintext: "true", exchars: "2400", // Algo más de texto para arte
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`; console.log("Fetching URL:", url);
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { /* ... error handling ... */ throw new Error(`HTTP ${response.status}`); }
+                const data = await response.json();
+                if (!data.query?.pages) { throw new Error("Respuesta API inválida"); }
+                const pageId = Object.keys(data.query.pages)[0];
+                if (pageId === "-1" || data.query.pages[pageId].missing !== undefined) { throw new Error(`Not Found: "${title}"`); }
+                const pageData = data.query.pages[pageId];
+                if (!pageData.title || !pageData.extract) { throw new Error(`Respuesta incompleta "${title}"`); }
+                return pageData;
+            } catch (error) {
+                lastKnownError = error; console.warn(`Intento ${i + 1} (${title}) fallido: ${error.message}`);
+                if (error.message.startsWith('Not Found:')) { throw error; }
+                if (i < retries - 1) { await new Promise(r => setTimeout(r, RETRY_DELAY_MS * (i + 1))); }
+                else { console.error(`Fallo total fetch ${title}`); throw lastKnownError; }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado fetch ${title}.`);
+    }
+
+
+    // --- Funciones de Renderizado (Adaptadas + Limpieza Citas) ---
+
+    function renderEventCardLoading(message = "Preparando los lienzos...") { // Mensaje temático
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.95';
+    }
+
+     // Mantenida por si falla búsqueda de sugerencias/inicialización
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes Arte
+        if (cleanMessage.includes('Imposible recuperar') || cleanMessage.includes('HTTP')) { cleanMessage = 'Error de conexión con el archivo de la galería.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Obra o movimiento no encontrado en nuestra colección.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Problema al solicitar la información de la obra.';}
+        else if (cleanMessage.includes('incompleta')) { cleanMessage = 'La información de la obra parece estar dañada.';}
+        else if (cleanMessage.includes('alternativas')) { cleanMessage = cleanMessage; }
+
+        eventCard.innerHTML = `<p><strong>¡Error en la Curaduría!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        let extract = pageData.extract || "Descripción no disponible para esta obra o movimiento.";
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim().replace(/\s{2,}/g, ' ');
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Ver Ficha Completa (Wikipedia)</a>` : ''}
+        `;
+        // Post-procesamiento para párrafos (si hay dobles saltos de línea en el extracto)
+        let finalHtml = eventCard.innerHTML;
+        finalHtml = finalHtml.replace(/<p><\/p>/g, ''); // Eliminar párrafos vacíos
+        eventCard.innerHTML = finalHtml;
+
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar mensajes)
+    function renderPreview(eventData, targetElement) {
+         if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Explorar este movimiento.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Realismo y Academicismo' : 'Arte Contemporáneo';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar mensajes)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrado, buscando en catálogos...`);
+        renderEventCardLoading("Registro no encontrado. Buscando en catálogos...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} buscando en catálogos.`);
+            const searchData = await response.json();
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>La obra o movimiento "<strong>${failedTitle}</strong>" no se encontró.</p>
+                                       <p>Quizás te interesen estas entradas relacionadas:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona una entrada para intentar cargarla)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron sugerencias para "${searchTerm}".`);
+                renderEventCardError(`Obra/movimiento "${failedTitle}" no encontrado y sin sugerencias en el catálogo.`);
+                eventCard.className = 'error';
+            }
+        } catch (searchErr) {
+            console.error("Error buscando sugerencias:", searchErr);
+            renderEventCardError(`Obra/movimiento "${failedTitle}" no encontrado. La búsqueda de sugerencias también falló.`);
+            eventCard.className = 'error';
+        }
+    }
+
+    // --- Función para actualizar el estado activo en la lista de títulos (sin cambios) ---
+    function updateActiveTitleInList(activeIndex) { /* ... (código idéntico al de Fisica) ... */
+        const listItems = titleList.querySelectorAll('li');
+        listItems.forEach((li, index) => {
+            if (index === activeIndex) {
+                li.classList.add('active');
+                li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else { li.classList.remove('active'); }
+        });
+    }
+
+    // --- Función Principal de Actualización (sin cambios lógicos) ---
+    async function updateEvent(options) { /* ... (código idéntico al de Fisica, llama a updateActiveTitleInList) ... */
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { return; }
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+        updateActiveTitleInList(index); // Actualizar highlight en la lista
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            console.log(`Datos para "${titleToFetch}" desde caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Mostrando sugerencias.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Accediendo a archivos para: ${titleToFetch}`);
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                console.error(`Error cargando "${titleToFetch}":`, err.message);
+                summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'LOAD_ERROR';
+                findAndDisplaySuggestions(titleToFetch); // Siempre fallback a sugerencias
+            }
+        }
+    }
+
+    // --- Manejador de Clics (Unificado - sin cambios) ---
+    function handleInteraction(event) { /* ... (código idéntico al de Fisica) ... */
+         if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Cargando sugerencia: ${suggestedTitle}`);
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando a índice ${targetIndex} desde preview.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+    }
+
+    // --- Inicialización (Modificada para poblar lista - sin cambios lógicos) ---
+    function initializeTimeline() { /* ... (código idéntico al de Fisica, adaptando mensajes temáticos si es necesario) ... */
+         if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Galería Temporal Vacía";
+            eventCard.innerHTML = "<p>Aún no se han colgado obras en esta sección de la galería.</p>";
+            eventCard.className = 'error'; slider.disabled = true; yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview); renderPreview(null, nextPreview);
+            titleList.innerHTML = '<li>Índice no disponible</li>';
+            return;
+        }
+        // Poblar la lista de títulos
+        events.forEach((event, index) => {
+            const listItem = document.createElement('li');
+            // Mostrar solo el título principal en la lista para claridad
+            listItem.textContent = `${event.title}`; // Opcional: `${event.year} - ${event.title}`
+            listItem.dataset.index = index;
+            listItem.title = `${event.year} - ${event.title}`; // Año en tooltip
+            listItem.addEventListener('click', () => {
+                updateEvent({ index: index });
+            });
+            titleList.appendChild(listItem);
+        });
+        // Configuración del slider
+        slider.max = events.length - 1; slider.value = 0;
+        slider.disabled = events.length <= 1;
+        // Carga inicial
+        updateEvent({ index: 0 });
+        // Listeners principales
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleInteraction); // Delegación en container principal
+        console.log("Paleta Temporal lista. El arte espera ser descubierto.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

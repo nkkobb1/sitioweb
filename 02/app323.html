@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cronos Estelar - La Odisea Espacial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #1a1f2b; /* Azul muy oscuro casi negro */
+      --container-bg: #2c3340; /* Azul grisáceo oscuro */
+      --card-bg: #212630; /* Fondo tarjeta ligeramente diferente */
+      --preview-bg: #353c4a; /* Azul grisáceo medio */
+      --text-color-light: #e0e5f0; /* Blanco azulado claro */
+      --text-color-medium: #a0a8b8; /* Gris azulado medio */
+      --text-color-dark: #1a1f2b; /* Para usar sobre fondos claros si fuera necesario */
+      --accent-blue: #4fc3f7; /* Azul claro brillante (tipo neón) */
+      --accent-orange: #ff8a65; /* Naranja encendido */
+      --accent-silver: #bdbdbd; /* Plata / Gris claro */
+      --border-color: #4a5263; /* Borde gris azulado */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Exo 2', sans-serif; /* Fuente con toque futurista */
+      --shadow-glow: rgba(79, 195, 247, 0.3); /* Sombra/Glow azul */
+      --shadow-dark: rgba(0, 0, 0, 0.4);
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0),
+        radial-gradient(circle at 15px 15px, rgba(255,255,255,0.03) 1px, transparent 0);
+      background-size: 30px 30px; /* Patrón de estrellas sutil */
+      color: var(--text-color-light);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 15px rgba(0,0,0,0.3), 0 0 5px var(--shadow-glow); /* Sutil glow */
+      padding: 30px 35px;
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+      overflow: hidden;
+    }
+
+     /* Líneas decorativas tipo HUD */
+    .timeline-container::before, .timeline-container::after {
+      content: ''; position: absolute; background-color: var(--border-color); opacity: 0.5; z-index: 0;
+    }
+    .timeline-container::before { width: 1px; top: 20px; bottom: 20px; left: 15px; }
+    .timeline-container::after { width: 1px; top: 20px; bottom: 20px; right: 15px; }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-blue);
+      font-size: 2.8em; /* Más prominente */
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+      letter-spacing: 2px; /* Más espaciado */
+      text-shadow: 0 0 8px var(--shadow-glow);
+      position: relative; z-index: 1;
+    }
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 20px; position: relative; z-index: 1;}
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo "Panel de Control") */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 2px 5px var(--shadow-dark);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        border-color: var(--accent-blue);
+        background-color: #3c4555; /* Ligeramente más claro */
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.1), 0 4px 8px var(--shadow-dark), 0 0 10px var(--shadow-glow);
+        transform: translateY(-3px);
+        color: var(--text-color-light);
+    }
+    .event-preview.empty-preview {
+      background-color: transparent;
+      border: 2px dashed var(--border-color);
+      opacity: 0.6; cursor: default; align-items: center;
+      justify-content: center; text-align: center;
+      color: var(--text-color-medium); box-shadow: none;
+    }
+
+    .event-preview h3 {
+        font-family: var(--font-display); font-size: 1.25em;
+        margin: 0 0 10px 0; color: var(--text-color-light); /* Texto claro en preview */
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px;
+        font-weight: 700; transition: color 0.3s ease;
+    }
+    .event-preview:hover:not(.empty-preview) h3 { color: var(--accent-blue); }
+
+    .event-preview .preview-year {
+        font-family: var(--font-body); font-weight: 700;
+        color: var(--accent-orange); margin-bottom: 12px;
+        font-size: 1.15em; text-align: center;
+    }
+    .event-preview p { font-size: 0.95em; line-height: 1.6; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container (Integrado) */
+    .slider-container {
+      display: flex; align-items: center; gap: 15px;
+      margin-bottom: 20px; padding: 15px 10px;
+      background: rgba(10, 15, 25, 0.3); /* Fondo translúcido oscuro */
+      border-radius: 4px; border: 1px solid var(--border-color);
+    }
+
+    /* Slider (Estilo Hi-Tech) */
+    input[type="range"] {
+      flex: 1; height: 8px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-blue), var(--accent-orange)); /* Gradiente temático */
+      border-radius: 4px; outline: none; border: 1px solid #111;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 18px; height: 24px; /* Rectangular */
+      background: var(--accent-silver);
+      border-radius: 3px; border: 1px solid #444;
+      box-shadow: 0 0 5px rgba(200,200,200,0.5);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -8px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 22px; background: var(--accent-silver);
+      border-radius: 3px; border: 1px solid #444;
+      box-shadow: 0 0 5px rgba(200,200,200,0.5); cursor: pointer;
+    }
+     input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.1); box-shadow: 0 0 8px var(--accent-silver); }
+     input[type="range"]:active::-moz-range-thumb { transform: scale(1.1); box-shadow: 0 0 8px var(--accent-silver); }
+
+
+    /* Year Display (Digital Readout) */
+    #yearDisplay {
+      min-width: 90px; text-align: center; font-weight: 700;
+      font-family: 'Roboto Mono', monospace; /* Fuente monoespaciada */
+      background: #111; color: var(--accent-orange);
+      padding: 8px 12px; border-radius: 4px;
+      border: 1px solid var(--border-color);
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.7);
+      font-size: 1.2em; letter-spacing: 1px;
+    }
+
+    /* Event Card (Estilo "Terminal de Datos") */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-light);
+      padding: 35px 40px; border-radius: 6px;
+      border: 1px solid var(--border-color);
+      min-height: 600px; display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 8px 25px var(--shadow-dark);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1; overflow: hidden;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      justify-content: center; align-items: center; text-align: center;
+      background-color: rgba(33, 38, 48, 0.9); /* Fondo oscuro translúcido */
+    }
+    #eventCard.loading { opacity: 0.9; }
+    #eventCard.error { border-color: var(--accent-orange); }
+    #eventCard.error p { font-weight: 600; font-size: 1.1em; color: var(--accent-orange); }
+
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 10px 18px;
+        background-color: var(--accent-blue); color: var(--text-color-dark);
+        border: 1px solid transparent; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700;
+    }
+    #eventCard.suggestions a.suggestion-link:hover {
+        background-color: var(--accent-silver); color: var(--text-color-dark);
+        box-shadow: 0 0 10px var(--shadow-glow);
+    }
+
+    /* Estilos Tarjeta Principal (Refinados) */
+    #eventCard h2 {
+      margin: 0 0 20px 0; text-align: center;
+      color: var(--accent-blue); font-family: var(--font-display);
+      font-size: 2.1em; font-weight: 700; border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px; text-shadow: 0 0 5px var(--shadow-glow);
+    }
+    #eventCard img {
+      max-width: 60%; height: auto; max-height: 280px; /* Más altura para imágenes espaciales */
+      object-fit: contain; border-radius: 4px; margin: 0 auto 25px auto; display: block;
+      border: 1px solid var(--border-color); background-color: #111; /* Fondo negro para imágenes */
+      padding: 4px; box-shadow: 0 5px 15px var(--shadow-dark);
+    }
+    #eventCard .content-extract {
+        line-height: 1.7; margin-bottom: 25px; font-size: 1.05em; text-align: justify;
+        max-height: 400px; overflow-y: auto; padding-right: 15px;
+        /* Scrollbar oscuro (Webkit) */
+        scrollbar-width: thin; scrollbar-color: var(--border-color) var(--card-bg);
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 10px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: var(--card-bg); border-radius: 5px;}
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 5px; border: 2px solid var(--card-bg); }
+    #eventCard .content-extract::-webkit-scrollbar-thumb:hover { background-color: var(--accent-silver); }
+
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 25px;
+        background: transparent; color: var(--accent-blue);
+        text-decoration: none; font-weight: 700; font-family: var(--font-display);
+        border-radius: 4px; text-align: center; transition: all 0.3s ease;
+        border: 1px solid var(--accent-blue); box-shadow: 0 0 8px var(--shadow-glow);
+        width: fit-content;
+    }
+    #eventCard a.external-link:hover {
+        background-color: var(--accent-blue); color: var(--text-color-dark);
+        box-shadow: 0 0 15px var(--shadow-glow); transform: translateY(-2px);
+    }
+
+    /* Spinner (Radar/Órbita) */
+    .spinner {
+      width: 60px; height: 60px; margin: 30px auto; position: relative;
+      border: 4px solid var(--border-color); border-radius: 50%;
+      border-top-color: var(--accent-blue); /* Color diferente en el top */
+      animation: spin 1.2s linear infinite;
+    }
+    .spinner::after { /* Punto orbitando */
+      content: ''; position: absolute; width: 8px; height: 8px;
+      top: 5px; left: 50%; transform: translateX(-50%);
+      background-color: var(--accent-orange); border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent-orange);
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos (revisar y ajustar si es necesario) */
+    @media (max-width: 1300px) { /* ... */ }
+    @media (max-width: 1100px) { /* ... */ }
+    @media (max-width: 900px) { .main-content-area { flex-direction: column; } /* ... */ }
+    @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Cronos Estelar - La Odisea Espacial</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Atmósfera Terrestre</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Inicia la secuencia de exploración... Ajusta el control temporal.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Espacio Profundo</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Carrera Espacial ---
+    const events = [
+      { year: "1957", title: "Lanzamiento del Sputnik 1", wikiTitle: "Sputnik 1" },
+      { year: "1957", title: "Sputnik 2 (Laika)", wikiTitle: "Sputnik 2" },
+      { year: "1958", title: "Lanzamiento del Explorer 1 (EEUU)", wikiTitle: "Explorer 1" },
+      { year: "1959", title: "Luna 2 impacta la Luna", wikiTitle: "Luna 2" },
+      { year: "1959", title: "Luna 3 fotografía cara oculta de la Luna", wikiTitle: "Luna 3" },
+      { year: "1961", title: "Yuri Gagarin, primer humano en el espacio (Vostok 1)", wikiTitle: "Yuri Gagarin" },
+      { year: "1961", title: "Alan Shepard, primer estadounidense en el espacio", wikiTitle: "Alan Shepard" },
+      { year: "1962", title: "John Glenn orbita la Tierra (Friendship 7)", wikiTitle: "John Glenn" },
+      { year: "1963", title: "Valentina Tereshkova, primera mujer en el espacio", wikiTitle: "Valentina Tereshkova" },
+      { year: "1965", title: "Alexei Leonov realiza la primera caminata espacial", wikiTitle: "Alexéi Leónov" },
+      { year: "1966", title: "Luna 9 realiza el primer alunizaje suave", wikiTitle: "Luna 9" },
+      { year: "1967", title: "Tragedia del Apollo 1", wikiTitle: "Apolo 1" },
+      { year: "1968", title: "Apollo 8 orbita la Luna", wikiTitle: "Apolo 8" },
+      { year: "1969", title: "Apollo 11 - Primer alunizaje humano", wikiTitle: "Apolo 11" },
+      { year: "1970", title: "Incidente del Apollo 13", wikiTitle: "Apolo 13" },
+      { year: "1971", title: "Lanzamiento Salyut 1, primera estación espacial", wikiTitle: "Salyut 1" },
+      { year: "1971", title: "Primer rover lunar (Lunokhod 1 / Apollo 15)", wikiTitle: "Lunojod 1" }, // Apollo 15 también tuvo rover
+      { year: "1973", title: "Lanzamiento Skylab, estación espacial de EEUU", wikiTitle: "Skylab" },
+      { year: "1975", title: "Proyecto de prueba Apolo-Soyuz (Cooperación)", wikiTitle: "Proyecto de prueba Apolo-Soyuz" },
+      { year: "1976", title: "Viking 1 aterriza en Marte", wikiTitle: "Programa Viking" }, // O Viking 1 lander
+      { year: "1977", title: "Lanzamiento de las sondas Voyager", wikiTitle: "Programa Voyager" },
+      { year: "1981", title: "Primer vuelo del Transbordador Espacial (Columbia)", wikiTitle: "Transbordador espacial Columbia" }, // O Programa del transbordador espacial
+      { year: "1983", title: "Sally Ride, primera mujer estadounidense en el espacio", wikiTitle: "Sally Ride"},
+      { year: "1986", title: "Accidente del Transbordador Challenger", wikiTitle: "Accidente del transbordador espacial Challenger" },
+      { year: "1986", title: "Lanzamiento del módulo base de la Estación Espacial Mir", wikiTitle: "Mir (estación espacial)" },
+      { year: "1990", title: "Lanzamiento del Telescopio Espacial Hubble", wikiTitle: "Telescopio espacial Hubble" },
+      { year: "1997", title: "Mars Pathfinder y rover Sojourner en Marte", wikiTitle: "Mars Pathfinder" },
+      { year: "1998", title: "Lanzamiento Zarya, primer módulo de la ISS", wikiTitle: "Zaryá (módulo ISS)" },
+      { year: "2000", title: "Inicio de presencia humana continua en la ISS", wikiTitle: "Estación Espacial Internacional" },
+      { year: "2001", title: "Dennis Tito, primer turista espacial (ISS)", wikiTitle: "Dennis Tito"},
+      { year: "2003", title: "Accidente del Transbordador Columbia", wikiTitle: "Accidente del transbordador espacial Columbia" },
+      { year: "2004", title: "Rovers Spirit y Opportunity aterrizan en Marte", wikiTitle: "Mars Exploration Rover" },
+      { year: "2011", title: "Último vuelo del Transbordador Espacial (Atlantis)", wikiTitle: "Programa del transbordador espacial"},
+      { year: "2012", title: "Rover Curiosity aterriza en Marte", wikiTitle: "Curiosity" },
+      { year: "2015", title: "Sonda New Horizons sobrevuela Plutón", wikiTitle: "New Horizons" },
+      { year: "2020", title: "SpaceX Demo-2 (Primer vuelo tripulado comercial a ISS)", wikiTitle: "Crew Dragon Demo-2"},
+      { year: "2021", title: "Rover Perseverance e helicóptero Ingenuity en Marte", wikiTitle: "Mars 2020" }
+    ];
+
+    // --- Elementos del DOM (sin cambios) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+
+    // --- Estado y Caché (sin cambios) ---
+    const summaryCache = {};
+
+    // --- Función Fetch Detallada (sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que antes) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info", titles: title,
+            format: "json", origin: "*", explaintext: "true", exchars: "2000",
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`; console.log("Fetching URL:", url);
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                    if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                    else { if (response.status === 404) throw new Error(`Not Found: HTTP 404`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                const pages = data.query.pages; const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) { throw new Error(`Not Found: API reportó que "${title}" no existe.`); }
+                const pageData = pages[pageId];
+                if (!pageData.extract || pageData.extract.trim() === '') { throw new Error(`Incomplete Data: No extract found for "${title}"`); }
+                console.log("Datos recibidos de API:", pageData); return pageData;
+            } catch (error) {
+                 lastKnownError = error; console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                 if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) { throw error; }
+                 if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                 else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    // --- Función Limpiar Texto (sin cambios) ---
+    function cleanWikipediaText(text) { /* ... (código igual que antes) ... */
+        if (!text) return "";
+        let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, '');
+        cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ',');
+        return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Adaptar textos) ---
+    function renderEventCardLoading(message = "Accediendo a registros de misión...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.9';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Pérdida de señal con la base de datos central. Reintentando enlace...'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Registro de misión no encontrado en los archivos.'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('sin extracto')) { cleanMessage = 'Los datos recibidos están corruptos o incompletos.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error de protocolo al solicitar datos de misión.';}
+
+        eventCard.innerHTML = `<p><strong>¡Alerta de Sistema!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    // Renderizar Tarjeta (Usa limpieza, adapta textos)
+    function renderEventCard(pageData, originalEventTitle) { /* ... (código igual que antes, usando cleanWikipediaText) ... */
+        const title = pageData.title || originalEventTitle;
+        const extract = cleanWikipediaText(pageData.extract);
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+        const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract">${contentHtml}</div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Ver Informe Completo (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = ''; eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar textos)
+    function renderPreview(eventData, targetElement) {
+         if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para acceder a este registro.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Atmósfera Terrestre' : 'Espacio Profundo';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar Sugerencias (Adaptar textos)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`Registro "${failedTitle}" no hallado, calculando trayectorias alternativas...`);
+        renderEventCardLoading("Registro no hallado. Calculando alternativas...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al consultar base de datos estelar.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro de misión "<strong>${failedTitle}</strong>" no se localizó.</p>
+                                       <p>Posibles misiones o temas relacionados:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = cleanWikipediaText(item.snippet);
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un registro para intentar acceder)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions'; eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron alternativas para "${searchTerm}".`);
+                renderEventCardError(`Registro "${failedTitle}" no hallado y no hay trayectorias alternativas disponibles.`);
+            }
+        } catch (searchErr) {
+            console.error("Error buscando alternativas:", searchErr);
+            renderEventCardError(`Registro "${failedTitle}" no hallado. La búsqueda de alternativas falló.`);
+        }
+    }
+
+    // --- Función Principal de Actualización (sin cambios lógicos) ---
+    async function updateEvent(options) { /* ... (código igual que antes, llama a las funciones adaptadas) ... */
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { console.error("Índice temporal fuera de secuencia:", index); renderEventCardError("Referencia temporal inválida."); yearDisplay.textContent = "ERROR"; renderPreview(null, prevPreview); renderPreview(null, nextPreview); return; }
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+        renderPreview(events[index - 1], prevPreview); renderPreview(events[index + 1], nextPreview);
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') {
+            console.log(`Registro para "${titleToFetch}" recuperado de caché local.`); renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Mostrando alternativas.`); findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Accediendo a archivos centrales para: ${titleToFetch}`); renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch); summaryCache[cacheKey] = pageData; renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) {
+                    console.warn(`Capturado error "${err.message}" para "${titleToFetch}". Iniciando búsqueda de alternativas.`);
+                    summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE'; findAndDisplaySuggestions(titleToFetch);
+                } else {
+                    console.error(`Error final al acceder a registro "${titleToFetch}":`, err); renderEventCardError(err.toString());
+                }
+            }
+        }
+     }
+
+    // --- Manejador de Clics (sin cambios lógicos) ---
+    function handleClick(event) { /* ... (código igual que antes, adapta console.log si quieres) ... */
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault(); const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) { console.log(`Estableciendo nuevo curso hacia: ${suggestedTitle}`); updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle }); }
+        } else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview'); const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) { console.log(`Accediendo a registro ${targetIndex} desde panel lateral.`); updateEvent({ index: targetIndex }); }
+        }
+     }
+
+    // --- Inicialización (Adaptar mensajes) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Archivo Corrupto";
+            eventCard.innerHTML = "<p>No hay registros de misión disponibles.</p>";
+             /* ... (resto del manejo de error inicial igual) ... */ return;
+        }
+        // ... (resto de la inicialización igual) ...
+        slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Cronos Estelar iniciado. Sistemas listos.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

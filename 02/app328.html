@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archivo Atómico - Crónicas de la Energía Nuclear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #1a1d21; /* Gris azulado muy oscuro */
+      --container-bg: #2c3e50; /* Azul pizarra / Acero oscuro */
+      --card-bg: #e8f1f2; /* Blanco azulado muy pálido */
+      --preview-bg: #bdc3c7; /* Gris metalizado claro */
+      --text-color-dark: #212f3c; /* Azul marino oscuro */
+      --text-color-light: #ecf0f1; /* Gris muy claro / Blanco apagado */
+      --accent-green: #2ecc71; /* Verde neón / Esmeralda (Radiación/Ok) */
+      --accent-blue: #3498db; /* Azul ciencia / Cerenkov */
+      --accent-yellow: #f1c40f; /* Amarillo advertencia */
+      --accent-red: #e74c3c; /* Rojo peligro */
+      --border-color: #4e5d6c; /* Gris azulado intermedio */
+      --font-body: 'Roboto', sans-serif; /* Fuente limpia y técnica */
+      --font-display: 'Orbitron', sans-serif; /* Fuente "atómica"/futurista */
+      --shadow-glow: rgba(52, 152, 219, 0.3); /* Resplandor azul */
+      --shadow-dark: rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+      background-size: 15px 15px; /* Patrón de puntos sutil */
+      color: var(--text-color-light);
+      margin: 0;
+      padding: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: linear-gradient(145deg, #34495e, #2c3e50); /* Gradiente sutil */
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 15px var(--shadow-glow), 0 5px 20px var(--shadow-dark), inset 0 0 8px rgba(0,0,0,0.3);
+      padding: 30px;
+      max-width: 90vw;
+      width: 1450px;
+      position: relative;
+      overflow: hidden;
+    }
+
+     /* Decoración tipo circuito/esquema */
+    .timeline-container::before {
+        content: ''; position: absolute; top: 10px; left: 10px; width: calc(100% - 20px); height: calc(100% - 20px);
+        border: 1px dashed rgba(52, 152, 219, 0.2); border-radius: 5px; pointer-events: none;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-green);
+      text-shadow: 0 0 8px var(--accent-green), 0 0 15px rgba(46, 204, 113, 0.5);
+      font-size: 2.5em;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 20px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo Atómico/Técnico) */
+    .event-preview {
+        flex: 1; min-width: 210px; max-width: 290px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 20px;
+        color: var(--text-color-dark);
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.1), 0 2px 5px var(--shadow-dark);
+        display: flex; flex-direction: column;
+        opacity: 0.9; transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1; box-shadow: inset 0 0 5px rgba(0,0,0,0.1), 0 4px 10px var(--shadow-dark), 0 0 8px var(--shadow-glow);
+        transform: translateY(-3px); border-color: var(--accent-blue);
+    }
+    .event-preview.empty-preview {
+        background-color: rgba(0,0,0,0.1);
+        border: 2px dashed var(--border-color);
+        opacity: 0.6; cursor: default; align-items: center; justify-content: center;
+        text-align: center; color: var(--text-color-light); box-shadow: none;
+    }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.15em; margin: 0 0 10px 0; color: #34495e; /* Azul pizarra oscuro */ border-bottom: 1px solid var(--accent-blue); padding-bottom: 6px; font-weight: 700; }
+    .event-preview .preview-year { font-family: var(--font-display); font-weight: 400; color: var(--accent-red); /* Rojo para fechas */ margin-bottom: 12px; font-size: 1.2em; text-align: center; letter-spacing: 1px; }
+    .event-preview p { font-size: 0.95em; line-height: 1.6; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container (Estilo Técnico) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: rgba(0,0,0,0.25); border-radius: 6px; border: 1px solid var(--border-color); box-shadow: inset 0 1px 4px rgba(0,0,0,0.4); }
+
+    /* Slider (Estilo Técnico/Neón) */
+    input[type="range"] { flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-blue), var(--border-color)); border-radius: 3px; outline: none; border: 1px solid #111; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; background: var(--accent-green); border-radius: 50%; border: 2px solid var(--bg-color); box-shadow: 0 0 8px var(--accent-green), 0 0 12px rgba(46, 204, 113, 0.6); transition: transform 0.2s ease; margin-top: -8px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--accent-green); border-radius: 50%; border: 2px solid var(--bg-color); box-shadow: 0 0 8px var(--accent-green); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); background: var(--accent-yellow); box-shadow: 0 0 8px var(--accent-yellow); }
+
+    /* Year Display (Estilo Digital) */
+    #yearDisplay { min-width: 75px; text-align: center; font-weight: 700; font-family: var(--font-display); background: #000; color: var(--accent-green); padding: 9px 16px; border-radius: 4px; border: 1px solid var(--border-color); box-shadow: inset 0 0 6px rgba(46, 204, 113, 0.5), 0 0 3px rgba(46, 204, 113, 0.7); font-size: 1.1em; letter-spacing: 1px; }
+
+    /* Event Card (Estilo Técnico) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 35px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      min-height: 600px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px var(--shadow-dark);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: #bdc3c7; /* Gris preview */ } /* Fondo unificado para estados especiales */
+    #eventCard.loading { opacity: 0.9; }
+    #eventCard.error { border: 2px solid var(--accent-red); color: var(--accent-red); } /* Rojo peligro para error */
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link { /* Botón técnico */
+        display: inline-block; padding: 10px 20px;
+        background-color: var(--accent-blue);
+        color: var(--text-color-light);
+        border: 1px solid #2980b9; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700; font-size: 0.95em;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #2980b9; color: #fff; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+
+    /* Estilos Tarjeta Principal (Técnico) */
+    #eventCard h2 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--accent-blue); font-family: var(--font-display); font-size: 1.9em; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: 1px; }
+    #eventCard img {
+        max-width: 45%; height: auto; max-height: 250px; object-fit: contain; border-radius: 4px;
+        margin: 0 auto 25px auto; display: block; border: 1px solid var(--border-color);
+        box-shadow: 0 3px 10px var(--shadow-dark); background-color: #fff;
+        filter: contrast(1.1) brightness(1.0); /* Aumentar ligeramente contraste */
+    }
+    #eventCard .content-extract {
+        line-height: 1.75; margin-bottom: 25px; font-size: 1.0em; text-align: justify;
+        max-height: 400px; overflow-y: auto; padding-right: 15px; padding-left: 15px;
+        border-left: 3px solid var(--accent-blue); background-color: rgba(52, 152, 219, 0.03); /* Fondo muy sutil */
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid var(--card-bg); }
+
+     /* Link Externo (Botón técnico) */
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 28px;
+        background: linear-gradient(to bottom, var(--accent-yellow), #d4ac0d);
+        color: var(--text-color-dark); text-decoration: none; font-weight: 700;
+        font-family: var(--font-body); border-radius: 4px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid #b8860b; /* Oro oscuro */
+        box-shadow: 0 2px 4px var(--shadow-dark), inset 0 1px 0 rgba(255,255,255,0.2);
+        width: fit-content; text-shadow: 1px 1px 0 rgba(255,255,255,0.1);
+    }
+    #eventCard a.external-link:hover { background: linear-gradient(to bottom, #f3c91f, #e4b81a); box-shadow: 0 3px 6px var(--shadow-dark), inset 0 1px 0 rgba(255,255,255,0.3); transform: translateY(-1px); color: #000; }
+
+    /* Spinner (Técnico) */
+    .spinner {
+        width: 50px; height: 50px; margin: 30px auto;
+        border: 4px solid rgba(52, 152, 219, 0.2); /* Azul claro transparente */
+        border-left-color: var(--accent-blue);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+    /* Ajustes responsivos (mantener estructura general) */
+     @media (max-width: 1200px) { /* ... */ }
+     @media (max-width: 900px) { /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Archivo Atómico - Crónicas Nucleares</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Física Clásica</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajuste el cronómetro para explorar los hitos de la era atómica.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Futuro Energético</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Energía Nuclear ---
+    const events = [
+      { year: "1896", title: "Descubrimiento de la Radiactividad (Becquerel)", wikiTitle: "Henri Becquerel" },
+      { year: "1898", title: "Aislamiento del Polonio y Radio (Curie)", wikiTitle: "Marie Curie" }, // O "Pierre Curie" o "Polonio" / "Radio (elemento)"
+      { year: "1905", title: "Teoría de la Relatividad Especial (E=mc²)", wikiTitle: "Albert Einstein" }, // O "Annus mirabilis"
+      { year: "1911", title: "Modelo Atómico Nuclear (Rutherford)", wikiTitle: "Modelo atómico de Rutherford" },
+      { year: "1932", title: "Descubrimiento del Neutrón (Chadwick)", wikiTitle: "James Chadwick" },
+      { year: "1938", title: "Descubrimiento de la Fisión Nuclear (Hahn, Strassmann, Meitner, Frisch)", wikiTitle: "Fisión nuclear" }, // Podría usarse Otto Hahn, Lise Meitner también
+      { year: "1939", title: "Carta Einstein–Szilárd a Roosevelt", wikiTitle: "Carta Einstein-Szilárd" },
+      { year: "1942", title: "Inicio del Proyecto Manhattan", wikiTitle: "Proyecto Manhattan" },
+      { year: "1942", title: "Primera Reacción Nuclear en Cadena Controlada (Chicago Pile-1, Fermi)", wikiTitle: "Chicago Pile-1" },
+      { year: "1945", title: "Prueba Trinity (Primera bomba atómica)", wikiTitle: "Prueba Trinity" },
+      { year: "1945", title: "Bombardeos de Hiroshima y Nagasaki", wikiTitle: "Bombardeos atómicos de Hiroshima y Nagasaki" },
+      { year: "1946", title: "Creación de la Comisión de Energía Atómica (EE.UU.)", wikiTitle: "Comisión de Energía Atómica de Estados Unidos" },
+      { year: "1951", title: "Primera Electricidad Generada por Fisión (EBR-I)", wikiTitle: "Experimental Breeder Reactor I" },
+      { year: "1953", title: "Discurso 'Átomos para la Paz' (Eisenhower)", wikiTitle: "Átomos para la Paz" },
+      { year: "1954", title: "Primera Central Nuclear Conectada a Red (Obninsk, URSS)", wikiTitle: "Central nuclear de Óbninsk" },
+      { year: "1957", title: "Creación del Organismo Internacional de Energía Atómica (OIEA)", wikiTitle: "Organismo Internacional de Energía Atómica" },
+      { year: "1957", title: "Primera Central Nuclear Comercial a Gran Escala (Shippingport, EE.UU.)", wikiTitle: "Central nuclear de Shippingport" },
+      { year: "1957", title: "Accidente Nuclear de Kyshtym (URSS)", wikiTitle: "Accidente de Kyshtym" },
+      { year: "1960s", title: "Desarrollo de Reactores PWR y BWR", wikiTitle: "Reactor de agua a presión"}, // O "Reactor de agua en ebullición"
+      { year: "1979", title: "Accidente de Three Mile Island (EE.UU.)", wikiTitle: "Accidente de Three Mile Island" },
+      { year: "1986", title: "Accidente de Chernóbil (URSS/Ucrania)", wikiTitle: "Accidente de Chernóbil" },
+      { year: "c. 1990s", title: "Desarrollo de Reactores de Generación III/III+", wikiTitle: "Reactor nuclear de tercera generación"}, // Título aproximado
+      { year: "2007", title: "Inicio de la Construcción de ITER (Fusión)", wikiTitle: "ITER" },
+      { year: "2011", title: "Accidente Nuclear de Fukushima Daiichi (Japón)", wikiTitle: "Accidente nuclear de Fukushima I" },
+      { year: "Presente", title: "Desarrollo de Reactores Modulares Pequeños (SMR)", wikiTitle: "Reactor modular pequeño" }
+    ];
+
+
+    // --- Elementos del DOM (igual) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+
+    // --- Estado y Caché (igual) ---
+    const summaryCache = {};
+
+    // --- Función Fetch Detallada (action=query - sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que la versión Renacimiento) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info", titles: title,
+            format: "json", origin: "*", explaintext: "true",
+            exchars: "2000", exintro: "false", piprop: "thumbnail",
+            pithumbsize: "600", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log("Fetching URL:", url);
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                     if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                     else { throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) { throw new Error("Respuesta inesperada API: falta query.pages"); }
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) { throw new Error(`Not Found: API reportó que "${title}" no existe.`); }
+                const pageData = pages[pageId];
+                if (!pageData.title || !pageData.extract) { throw new Error(`Respuesta incompleta para "${title}"`); }
+                 return pageData;
+            } catch (error) {
+                 lastKnownError = error;
+                 console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                 if (error.message.startsWith('Not Found:')) { throw error; }
+                 if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                 else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado recuperando datos para ${title}.`);
+    }
+
+
+    // --- Funciones de Renderizado (Adaptadas + Limpieza Citas) ---
+
+    function renderEventCardLoading(message = "Accediendo a Archivos Clasificados...") { // Mensaje temático
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.9';
+    }
+
+    // (Mantenida por si acaso, aunque el flujo principal intenta evitarla)
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos Nucleares
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Pérdida de conexión con el Archivo Central. Reintentando protocolo...'; }
+        else if (cleanMessage.includes('Client error 404') || cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Registro no encontrado en la base de datos clasificada.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error de autenticación o solicitud inválida al Archivo Central.';}
+        else if (cleanMessage.includes('Respuesta incompleta')) { cleanMessage = 'Los datos del reactor recuperados están corruptos o incompletos.';}
+
+        eventCard.innerHTML = `<p><strong>¡ALERTA! Fallo en Recuperación de Datos</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    // MODIFICADO: Limpia citas [ ] del extracto (igual que antes)
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        let extract = pageData.extract || "Datos del evento no disponibles o clasificados.";
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim();
+        extract = extract.replace(/\s{2,}/g, ' ');
+
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Informe Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar mensajes)
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Clic para desclasificar este evento.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Física Clásica' : 'Futuro Energético'; // Mensajes adaptados
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar mensajes)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" ilegible/no hallado, buscando protocolos alternativos...`);
+        renderEventCardLoading("Registro no hallado/corrupto. Buscando alternativas..."); // Mensaje actualizado
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} consultando índice de protocolos.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro "<strong>${failedTitle}</strong>" no pudo ser accedido.</p>
+                                       <p>Posibles protocolos o registros relacionados:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un protocolo para intentar cargarlo)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron alternativas para "${searchTerm}".`);
+                renderEventCardError(`Registro "${failedTitle}" inaccesible y no se hallaron protocolos alternativos.`);
+                 eventCard.className = 'error';
+            }
+        } catch (searchErr) {
+            console.error("Error buscando alternativas:", searchErr);
+            renderEventCardError(`Registro "${failedTitle}" inaccesible. La búsqueda de alternativas falló.`);
+             eventCard.className = 'error';
+        }
+    }
+
+    // --- Función Principal de Actualización (Lógica de error igual) ---
+    async function updateEvent(options) {
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { /* ... */ return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            console.log(`Datos para "${titleToFetch}" recuperados de caché local.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Iniciando búsqueda de alternativas.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Accediendo a Archivo Central para: ${titleToFetch}`);
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                console.error(`Error al acceder a datos de "${titleToFetch}":`, err.message);
+                if (err.message.startsWith('Not Found:')) { summaryCache[cacheKey] = 'NOT_FOUND'; }
+                else { summaryCache[cacheKey] = 'LOAD_ERROR'; }
+                // Siempre buscar alternativas como fallback
+                findAndDisplaySuggestions(titleToFetch);
+            }
+        }
+    }
+
+    // --- Manejador de Clics (lógica igual) ---
+    function handleClick(event) { /* ... (código igual que antes) ... */
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Cargando protocolo sugerido: ${suggestedTitle}`);
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Accediendo a registro temporal ${targetIndex} desde preview.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+    }
+
+
+    // --- Inicialización (adaptar mensajes) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Archivo Vacío";
+            eventCard.innerHTML = "<p>No hay datos nucleares registrados en esta línea temporal.</p>";
+            eventCard.className = 'error';
+            slider.disabled = true; yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview); renderPreview(null, nextPreview);
+            return;
+        }
+        // Resto igual...
+        slider.max = events.length - 1; slider.value = 0;
+        slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Sistema de Archivo Atómico online. Cronología nuclear lista.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

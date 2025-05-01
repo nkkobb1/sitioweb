@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmos Cronológico - Hitos de la Física</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #1a1a2e; /* Azul noche muy oscuro */
+      --panel-bg: #162447; /* Azul más oscuro para paneles */
+      --container-bg: #1f4068; /* Azul acero */
+      --card-bg: #e4e4e4; /* Gris muy claro / Blanco técnico */
+      --preview-bg: #b8c0d0; /* Gris azulado claro */
+      --text-color-dark: #222; /* Casi negro para texto en tarjetas claras */
+      --text-color-light: #e0fbfc; /* Cian muy pálido para texto en fondos oscuros */
+      --accent-cyan: #00ffff; /* Cian brillante */
+      --accent-magenta: #ff00ff; /* Magenta brillante */
+      --accent-gold: #f4d35e; /* Dorado cálido */
+      --border-color: #3a506b; /* Borde azul grisáceo */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Exo 2', sans-serif; /* Fuente moderna/técnica */
+      --shadow-glow: rgba(0, 255, 255, 0.3); /* Sombra/brillo cian */
+      --shadow-dark: rgba(0, 0, 0, 0.6);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: radial-gradient(circle at top left, rgba(255,255,255,0.03), transparent 40%),
+                        radial-gradient(circle at bottom right, rgba(0, 255, 255, 0.05), transparent 50%);
+      color: var(--text-color-light);
+      margin: 0;
+      padding: 20px;
+      display: flex; /* Cambiado para acomodar el índice lateral */
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      gap: 20px; /* Espacio entre índice y timeline */
+    }
+
+    /* Panel del Índice de Títulos */
+    .title-index-panel {
+        background-color: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        width: 280px; /* Ancho fijo para el índice */
+        flex-shrink: 0; /* Evita que se encoja */
+        max-height: calc(100vh - 40px); /* Altura máxima con padding del body */
+        overflow-y: auto;
+        box-shadow: 0 4px 15px var(--shadow-dark);
+    }
+    .title-index-panel h2 {
+        font-family: var(--font-display);
+        color: var(--accent-cyan);
+        margin: 0 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 1.4em;
+        text-align: center;
+        text-shadow: 0 0 5px var(--accent-cyan);
+    }
+    #titleList {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    #titleList li {
+        padding: 10px 8px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+        font-size: 0.9em;
+        border: 1px solid transparent;
+    }
+    #titleList li:hover {
+        background-color: rgba(0, 255, 255, 0.1);
+        border-color: rgba(0, 255, 255, 0.3);
+    }
+    #titleList li.active {
+        background-color: var(--accent-cyan);
+        color: var(--panel-bg);
+        font-weight: 700;
+        border-color: var(--accent-cyan);
+    }
+    /* Scrollbar sutil para el índice (Webkit) */
+    .title-index-panel::-webkit-scrollbar { width: 6px; }
+    .title-index-panel::-webkit-scrollbar-track { background: transparent; }
+    .title-index-panel::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 3px; }
+
+
+    /* Contenedor Principal de la Línea de Tiempo */
+    .timeline-container {
+      background: linear-gradient(145deg, var(--container-bg), var(--panel-bg));
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 6px 25px var(--shadow-dark), 0 0 10px var(--shadow-glow);
+      padding: 25px;
+      /* Se ajusta al espacio restante */
+      flex-grow: 1;
+      max-width: 1150px; /* Ancho máximo para el timeline en sí */
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin: 0 0 30px 0;
+      color: var(--accent-cyan);
+      text-shadow: 0 0 8px var(--accent-cyan), 0 0 15px rgba(0, 255, 255, 0.5);
+      font-size: 2.5em;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    /* Estructura Flex interna (sin cambios) */
+    .main-content-area { display: flex; gap: 25px; align-items: stretch; margin-top: 20px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 400px; }
+
+    /* Vistas Previas (Estilo Ciencia Ficción/Moderno) */
+    .event-preview {
+        flex: 1; min-width: 180px; max-width: 260px;
+        background-color: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 18px;
+        color: var(--text-color-light);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.4), 0 2px 5px var(--shadow-dark);
+        display: flex; flex-direction: column;
+        opacity: 0.9; transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1; border-color: var(--accent-cyan);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.4), 0 4px 10px var(--shadow-dark), 0 0 8px var(--shadow-glow);
+        transform: translateY(-3px);
+    }
+    .event-preview.empty-preview {
+        background: transparent; border: 2px dashed var(--border-color);
+        opacity: 0.6; cursor: default; align-items: center; justify-content: center;
+        text-align: center; color: var(--text-color-light); box-shadow: none;
+    }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.1em; margin: 0 0 10px 0; color: var(--accent-cyan); border-bottom: 1px solid var(--border-color); padding-bottom: 6px; font-weight: 700; }
+    .event-preview .preview-year { font-family: var(--font-body); font-weight: 700; color: var(--accent-gold); margin-bottom: 10px; font-size: 1.1em; text-align: center; }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; opacity: 0.8; }
+
+    /* Slider Container (Estilo Moderno) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid var(--border-color); }
+
+    /* Slider (Estilo Moderno) */
+    input[type="range"] { flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-cyan), var(--accent-magenta)); border-radius: 3px; outline: none; border: 1px solid #000; box-shadow: 0 0 5px rgba(0, 255, 255, 0.5); }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; background: var(--text-color-light); border-radius: 50%; border: 2px solid var(--panel-bg); box-shadow: 0 0 8px var(--accent-cyan); transition: transform 0.2s ease; margin-top: -7px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--text-color-light); border-radius: 50%; border: 2px solid var(--panel-bg); box-shadow: 0 0 8px var(--accent-cyan); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); box-shadow: 0 0 12px var(--accent-magenta); background: var(--accent-magenta);}
+
+    /* Year Display (Estilo Moderno) */
+    #yearDisplay { min-width: 70px; text-align: center; font-weight: 700; font-family: var(--font-display); background: var(--panel-bg); color: var(--accent-gold); padding: 8px 15px; border-radius: 4px; border: 1px solid var(--border-color); box-shadow: inset 0 0 6px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3); font-size: 1.1em; }
+
+    /* Event Card (Estilo Técnico/Claro) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 30px;
+      border-radius: 8px;
+      border: 1px solid #ccc; /* Borde claro */
+      min-height: 580px; /* Altura consistente */
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: var(--preview-bg); color: var(--text-color-dark); }
+    #eventCard.loading { opacity: 0.9; }
+    #eventCard.error { border: 2px solid var(--accent-magenta); color: var(--accent-magenta); } /* Error usa magenta */
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link { /* Botones de sugerencia */
+        display: inline-block; padding: 9px 18px;
+        background-color: var(--container-bg);
+        color: var(--text-color-light);
+        border: 1px solid var(--border-color); border-radius: 6px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700; font-size: 0.95em;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: var(--accent-cyan); color: var(--panel-bg); border-color: var(--accent-cyan); transform: scale(1.03); }
+
+    /* Estilos Tarjeta Principal (Técnico/Claro) */
+    #eventCard h2 { margin: 0 0 20px 0; text-align: center; color: var(--container-bg); font-family: var(--font-display); font-size: 1.9em; font-weight: 700; border-bottom: 1px solid #ccc; padding-bottom: 12px; }
+    #eventCard img {
+        max-width: 45%; height: auto; max-height: 230px;
+        object-fit: contain; border-radius: 4px;
+        margin: 0 auto 25px auto; display: block;
+        border: 1px solid #ddd;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        background-color: #fff;
+    }
+    #eventCard .content-extract {
+        line-height: 1.7; margin-bottom: 25px; font-size: 1.0em;
+        text-align: justify; max-height: 380px; overflow-y: auto;
+        padding-right: 15px; padding-left: 5px;
+    }
+    /* Scrollbar estándar para contenido principal */
+     #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+     #eventCard .content-extract::-webkit-scrollbar-track { background: #f1f1f1; }
+     #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: #aaa; border-radius: 4px; }
+     #eventCard .content-extract::-webkit-scrollbar-thumb:hover { background-color: #888; }
+
+
+     /* Link Externo (Técnico) */
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 11px 25px;
+        background: linear-gradient(to bottom, #687a8f, var(--container-bg)); /* Tonos azules/grises */
+        color: var(--text-color-light); text-decoration: none; font-weight: 700;
+        font-family: var(--font-body); border-radius: 6px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid var(--border-color);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+        width: fit-content; text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    }
+    #eventCard a.external-link:hover { background: linear-gradient(to bottom, #788aa3, #506883); box-shadow: 0 3px 7px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); color: #fff; }
+
+    /* Spinner (Moderno) */
+    .spinner { width: 50px; height: 50px; border: 4px solid var(--border-color); border-left-color: var(--accent-cyan); border-right-color: var(--accent-magenta); border-radius: 50%; animation: spin 1s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos */
+     @media (max-width: 1000px) {
+        body { flex-direction: column; align-items: center; }
+        .title-index-panel { width: 90%; max-height: 250px; /* Menos altura en móvil */ margin-bottom: 20px; }
+        .timeline-container { max-width: 90%; }
+     }
+      @media (max-width: 768px) {
+        .main-content-area { flex-direction: column; }
+        .event-preview { max-width: 100%; min-height: 100px; }
+        h1 { font-size: 2em; }
+        #eventCard h2 { font-size: 1.6em;}
+      }
+     @media (max-width: 480px) {
+        body { padding: 10px; gap: 15px; }
+        .title-index-panel { padding: 15px; width: calc(100% - 20px); max-height: 200px;}
+        .title-index-panel h2 { font-size: 1.2em; }
+        #titleList li { font-size: 0.85em; padding: 8px 6px;}
+        .timeline-container { padding: 15px; max-width: calc(100% - 20px); }
+         h1 { font-size: 1.8em; margin-bottom: 20px;}
+         .slider-container { flex-direction: column; gap: 10px;}
+        #eventCard { padding: 20px; min-height: 450px; }
+        #eventCard h2 { font-size: 1.5em;}
+        #eventCard img { max-width: 60%; max-height: 180px; }
+        #eventCard .content-extract { font-size: 0.95em; max-height: 300px;}
+     }
+
+  </style>
+</head>
+<body>
+
+  <!-- Panel de Índice Lateral -->
+  <div class="title-index-panel">
+    <h2>Índice Cronológico</h2>
+    <ul id="titleList">
+      <!-- Los títulos se llenarán aquí con JS -->
+    </ul>
+  </div>
+
+  <!-- Contenedor Principal de la Línea de Tiempo -->
+  <div class="timeline-container">
+    <h1>Cosmos Cronológico - Hitos de la Física</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Física Antigua y Clásica</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajuste el continuo temporal para explorar los descubrimientos que definen el universo.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Física Contemporánea y Futura</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Física ---
+    const events = [
+        { year: 1687, title: "Principia Mathematica de Newton", wikiTitle: "Philosophiæ naturalis principia mathematica" },
+        { year: "c. 1824", title: "Carnot y el Ciclo Termodinámico", wikiTitle: "Nicolas Léonard Sadi Carnot" },
+        { year: "c. 1850", title: "Leyes de la Termodinámica (Clausius, Kelvin)", wikiTitle: "Leyes de la termodinámica" },
+        { year: 1865, title: "Ecuaciones de Maxwell (Electromagnetismo)", wikiTitle: "Ecuaciones de Maxwell" },
+        { year: 1887, title: "Experimento de Michelson-Morley", wikiTitle: "Experimento de Michelson y Morley" },
+        { year: 1900, title: "Hipótesis Cuántica de Planck", wikiTitle: "Constante de Planck" },
+        { year: 1905, title: "Annus Mirabilis de Einstein (Relatividad Especial, Efecto Fotoeléctrico)", wikiTitle: "Annus mirabilis" },
+        { year: 1911, title: "Descubrimiento del Núcleo Atómico (Rutherford)", wikiTitle: "Modelo atómico de Rutherford" },
+        { year: 1913, title: "Modelo Atómico de Bohr", wikiTitle: "Modelo atómico de Bohr" },
+        { year: 1915, title: "Teoría General de la Relatividad (Einstein)", wikiTitle: "Relatividad general" },
+        { year: 1924, title: "Dualidad Onda-Partícula (De Broglie)", wikiTitle: "Hipótesis de De Broglie" },
+        { year: 1926, title: "Ecuación de Schrödinger", wikiTitle: "Ecuación de Schrödinger" },
+        { year: 1927, title: "Principio de Incertidumbre (Heisenberg)", wikiTitle: "Principio de incertidumbre de Heisenberg" },
+        { year: 1928, title: "Ecuación de Dirac (Antimateria)", wikiTitle: "Ecuación de Dirac" },
+        { year: 1932, title: "Descubrimiento del Neutrón (Chadwick)", wikiTitle: "James Chadwick" },
+        { year: 1932, title: "Descubrimiento del Positrón (Anderson)", wikiTitle: "Carl David Anderson" },
+        { year: "c. 1940s", title: "Desarrollo de la Electrodinámica Cuántica (QED)", wikiTitle: "Electrodinámica cuántica" },
+        { year: "c. 1960s", title: "Modelo de Quarks (Gell-Mann, Zweig)", wikiTitle: "Quark" },
+        { year: 1964, title: "Descubrimiento de la Radiación de Fondo de Microondas (CMB)", wikiTitle: "Radiación de fondo de microondas" },
+        { year: "c. 1970s", title: "Desarrollo del Modelo Estándar de Partículas", wikiTitle: "Modelo estándar" },
+        { year: 1974, title: "Descubrimiento del Encanto (Partícula J/ψ)", wikiTitle: "Partícula J/ψ" },
+        { year: 1995, title: "Descubrimiento del Quark Top", wikiTitle: "Quark cima"},
+        { year: 1998, title: "Evidencia de la Aceleración de la Expansión del Universo", wikiTitle: "Expansión acelerada del universo" },
+        { year: 2012, title: "Descubrimiento del Bosón de Higgs (CERN)", wikiTitle: "Bosón de Higgs" },
+        { year: 2015, title: "Detección Directa de Ondas Gravitacionales (LIGO/Virgo)", wikiTitle: "Onda gravitacional" }
+    ];
+
+    // --- Elementos del DOM (Añadir titleList) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.querySelector('.timeline-container'); // Usar querySelector por si acaso
+    const titleList = document.getElementById('titleList'); // El nuevo UL
+
+    // --- Estado y Caché (igual) ---
+    const summaryCache = {};
+
+    // --- Fetch Detallado (action=query - sin cambios) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que antes) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info", titles: title,
+            format: "json", origin: "*", explaintext: "true", exchars: "2200", // Un poco más
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`; console.log("Fetching URL:", url);
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { /* ... error handling 5xx, 429 ... */ throw new Error(`HTTP ${response.status}`); }
+                const data = await response.json();
+                if (!data.query?.pages) { throw new Error("Respuesta API inválida"); }
+                const pageId = Object.keys(data.query.pages)[0];
+                if (pageId === "-1" || data.query.pages[pageId].missing !== undefined) { throw new Error(`Not Found: "${title}"`); }
+                const pageData = data.query.pages[pageId];
+                if (!pageData.title || !pageData.extract) { throw new Error(`Respuesta incompleta "${title}"`); }
+                return pageData;
+            } catch (error) {
+                lastKnownError = error; console.warn(`Intento ${i + 1} (${title}) fallido: ${error.message}`);
+                if (error.message.startsWith('Not Found:')) { throw error; }
+                if (i < retries - 1) { await new Promise(r => setTimeout(r, RETRY_DELAY_MS * (i + 1))); }
+                else { console.error(`Fallo total fetch ${title}`); throw lastKnownError; }
+            }
+        }
+         throw lastKnownError || new Error(`Fallo inesperado fetch ${title}.`);
+     }
+
+
+    // --- Funciones de Renderizado (Adaptadas + Limpieza Citas) ---
+
+    function renderEventCardLoading(message = "Calculando trayectoria temporal...") { // Mensaje temático
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.9';
+    }
+
+     // Se mantiene por si falla la búsqueda de sugerencias o la inicialización
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes Física
+        if (cleanMessage.includes('Imposible recuperar') || cleanMessage.includes('HTTP')) { cleanMessage = 'Anomalía detectada en el flujo de datos. Imposible conectar con los archivos.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Coordenada temporal no encontrada en los registros conocidos.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error en los parámetros de la solicitud de datos.';}
+        else if (cleanMessage.includes('incompleta')) { cleanMessage = 'Datos recuperados corruptos o parciales.';}
+        else if (cleanMessage.includes('alternativas')) { cleanMessage = cleanMessage; } // Mantener mensaje de sugerencias
+
+        eventCard.innerHTML = `<p><strong>¡Fallo Crítico en la Matriz de Datos!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        let extract = pageData.extract || "Información no disponible en esta coordenada.";
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim().replace(/\s{2,}/g, ' ');
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Registro Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar mensajes)
+    function renderPreview(eventData, targetElement) {
+         if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Explorar este descubrimiento.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Física Antigua y Clásica' : 'Física Contemporánea y Futura';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar mensajes)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" inaccesible, buscando referencias cruzadas...`);
+        renderEventCardLoading("Registro inaccesible. Buscando referencias cruzadas...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} buscando referencias.`);
+            const searchData = await response.json();
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro "<strong>${failedTitle}</strong>" es inaccesible o no se encuentra.</p>
+                                       <p>Posibles referencias relacionadas:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona una referencia para intentar cargarla)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron referencias para "${searchTerm}".`);
+                renderEventCardError(`Registro para "${failedTitle}" inaccesible y no se hallaron referencias cruzadas.`);
+                eventCard.className = 'error';
+            }
+        } catch (searchErr) {
+            console.error("Error buscando referencias:", searchErr);
+            renderEventCardError(`Registro para "${failedTitle}" inaccesible. La búsqueda de referencias también falló.`);
+            eventCard.className = 'error';
+        }
+    }
+
+    // --- Función para actualizar el estado activo en la lista de títulos ---
+    function updateActiveTitleInList(activeIndex) {
+        const listItems = titleList.querySelectorAll('li');
+        listItems.forEach((li, index) => {
+            if (index === activeIndex) {
+                li.classList.add('active');
+                // Opcional: Hacer scroll para que el item activo sea visible
+                li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                li.classList.remove('active');
+            }
+        });
+    }
+
+    // --- MODIFICADO: Función Principal de Actualización (Actualiza lista de títulos) ---
+    async function updateEvent(options) {
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        // Sincronizar slider y lista de títulos
+        if (slider.value !== index.toString()) { slider.value = index; }
+        updateActiveTitleInList(index); // Actualizar highlight en la lista
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        // Lógica de caché y fetch (igual, con fallback a sugerencias)
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            console.log(`Datos para "${titleToFetch}" desde caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Mostrando sugerencias.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Accediendo a archivos para: ${titleToFetch}`);
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                console.error(`Error cargando "${titleToFetch}":`, err.message);
+                summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'LOAD_ERROR';
+                findAndDisplaySuggestions(titleToFetch); // Siempre fallback a sugerencias
+            }
+        }
+    }
+
+    // --- Manejador de Clics (Unificado para previews y sugerencias) ---
+    function handleInteraction(event) {
+        // Click en un link de sugerencia
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Cargando sugerencia: ${suggestedTitle}`);
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        // Click en una vista previa
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando a índice ${targetIndex} desde preview.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+        // No necesitamos manejar clicks en la lista de títulos aquí, se hace en su propio listener.
+    }
+
+    // --- Inicialización (Modificada para poblar lista de títulos) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Registros Cósmicos Vacíos";
+            eventCard.innerHTML = "<p>No hay datos registrados para esta línea temporal del universo.</p>";
+            eventCard.className = 'error'; slider.disabled = true; yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview); renderPreview(null, nextPreview);
+            titleList.innerHTML = '<li>Índice no disponible</li>';
+            return;
+        }
+
+        // Poblar la lista de títulos
+        events.forEach((event, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${event.year} - ${event.title}`;
+            listItem.dataset.index = index;
+            listItem.addEventListener('click', () => {
+                updateEvent({ index: index });
+            });
+            titleList.appendChild(listItem);
+        });
+
+        // Configuración del slider
+        slider.max = events.length - 1; slider.value = 0;
+        slider.disabled = events.length <= 1;
+
+        // Carga inicial
+        updateEvent({ index: 0 });
+
+        // Listeners principales
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        // Usar delegación en timelineContainer para clicks en previews y sugerencias
+        timelineContainer.addEventListener('click', handleInteraction);
+
+        console.log("Cosmos Cronológico inicializado y listo para explorar.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

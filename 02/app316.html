@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Hilo Dorado - Crónicas de la Ruta de la Seda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f4f0e8; /* Pergamino claro */
+      --container-bg: #ffffff; /* Blanco puro para el contenedor principal */
+      --card-bg: #fffaf0; /* Blanco floral, casi blanco */
+      --preview-bg: #f8f4e
+      d; /* Ligeramente más oscuro que el fondo */
+      --text-color-dark: #4a4a4a; /* Gris oscuro principal */
+      --text-color-medium: #7a7a7a; /* Gris medio */
+      --text-color-light: #f0e8d9; /* Crema claro (para elementos oscuros) */
+      --accent-silk-red: #a0522d; /* Siena / Rojo seda apagado */
+      --accent-lapis-blue: #2f557f; /* Azul lapislázuli/mar profundo */
+      --accent-gold: #b8860b; /* Oro oscuro */
+      --border-color: #dcdcdc; /* Gris claro para bordes sutiles */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Merriweather', serif;
+      --shadow-soft: rgba(0, 0, 0, 0.1);
+      --shadow-medium: rgba(0, 0, 0, 0.15);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+      background-size: 20px 20px; /* Patrón de puntos sutil */
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 30px 20px; /* Más padding vertical */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .timeline-container {
+      background-color: var(--container-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 30px var(--shadow-medium);
+      padding: 30px 35px;
+      max-width: 95vw; /* Permitir que sea un poco más ancho */
+      width: 1500px; /* Ancho máximo generoso */
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-lapis-blue);
+      /* text-shadow: 1px 1px 2px var(--shadow-soft); */
+      font-size: 2.5em;
+      font-weight: 700;
+      border-bottom: 2px solid var(--accent-gold);
+      padding-bottom: 15px;
+    }
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 25px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo refinado) */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: 0 3px 8px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        opacity: 0.95;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1;
+        box-shadow: 0 6px 15px var(--shadow-medium);
+        transform: translateY(-4px);
+        border-color: var(--accent-lapis-blue);
+        background-color: #fff; /* Iluminar al hacer hover */
+    }
+    .event-preview.empty-preview {
+        background-color: transparent;
+        border: 2px dashed var(--border-color);
+        opacity: 0.7; cursor: default;
+        align-items: center; justify-content: center; text-align: center;
+        color: var(--text-color-medium);
+        box-shadow: none;
+    }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.15em; margin: 0 0 10px 0; color: var(--accent-lapis-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-weight: 700; }
+    .event-preview .preview-year { font-family: var(--font-display); font-weight: 700; color: var(--accent-silk-red); margin-bottom: 12px; font-size: 1.3em; text-align: center; }
+    .event-preview p { font-size: 0.95em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container (Estilo refinado) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: #f8f8f8; border-radius: 8px; border: 1px solid var(--border-color); }
+
+    /* Slider (Estilo refinado) */
+    input[type="range"] { flex: 1; height: 8px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-lapis-blue), var(--border-color)); border-radius: 4px; outline: none; border: none; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; background: var(--accent-gold); border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); transition: transform 0.2s ease; margin-top: -7px; /* Centrar verticalmente */ }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--accent-gold); border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.2); }
+
+    /* Year Display (Estilo refinado) */
+    #yearDisplay { min-width: 90px; text-align: center; font-weight: 700; font-family: var(--font-body); background: var(--accent-silk-red); color: #fff; padding: 8px 14px; border-radius: 6px; /* border: 1px solid darken(var(--accent-silk-red), 10%); */ box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); font-size: 1.1em; }
+
+    /* Event Card (Estilo refinado) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 30px 35px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      min-height: 600px; /* Aumentar altura mínima */
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 5px 20px var(--shadow-soft);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow: hidden; /* Ocultar overflow general, scroll interno */
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: #f8f8f8; }
+    #eventCard.loading { opacity: 0.85; }
+    #eventCard.error { border: 1px solid var(--accent-silk-red); color: var(--accent-silk-red); }
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+
+    /* Estilos Tarjeta Principal (Refinados) */
+    #eventCard h2 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--accent-silk-red); font-family: var(--font-display); font-size: 1.9em; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+    #eventCard img {
+        max-width: 40%; /* Limitar ancho */
+        height: auto;
+        max-height: 250px; /* Aumentar altura máx imagen */
+        object-fit: cover; /* Cambiar a cover para llenar espacio */
+        border-radius: 6px;
+        margin: 0 auto 25px auto;
+        display: block;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 12px var(--shadow-soft);
+        /* filter: grayscale(0.1) sepia(0.1); Sutil filtro opcional */
+    }
+    #eventCard .content-extract {
+        line-height: 1.7;
+        margin-bottom: 25px;
+        font-size: 1.0em; /* Mantener tamaño base */
+        text-align: justify;
+        max-height: 400px; /* Incrementar altura máxima extracto */
+        overflow-y: auto; /* Scroll interno */
+        padding-right: 15px; /* Espacio para scrollbar */
+        border-left: 4px solid var(--accent-lapis-blue); /* Línea lateral más gruesa */
+        padding-left: 20px;
+        color: var(--text-color-dark);
+    }
+     /* Scrollbar sutil (WebKit) */
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px;}
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px;}
+    #eventCard .content-extract::-webkit-scrollbar-thumb:hover { background: #bbb; }
+
+    /* Estilo específico para el link a Wikipedia */
+    #eventCard a.external-link {
+        display: inline-block; /* Cambiar a inline-block */
+        margin: 15px 0 0 0; /* Ajustar margen */
+        padding: 10px 20px;
+        background-color: var(--accent-lapis-blue);
+        color: #fff;
+        text-decoration: none; font-weight: 700;
+        font-family: var(--font-body); border-radius: 6px; text-align: center;
+        transition: all 0.3s ease; border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    #eventCard a.external-link:hover { background-color: #3a6699; /* Azul más oscuro */ box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: translateY(-1px); }
+
+    /* Sugerencias */
+     #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+     #eventCard.suggestions li { margin-bottom: 12px; }
+     #eventCard.suggestions a.suggestion-link {
+         display: inline-block; padding: 10px 18px;
+         background-color: #fff;
+         color: var(--accent-lapis-blue);
+         border: 1px solid var(--accent-lapis-blue); border-radius: 6px;
+         text-decoration: none; transition: all 0.3s; cursor: pointer;
+         font-family: var(--font-body); font-weight: 700;
+     }
+     #eventCard.suggestions a.suggestion-link:hover { background-color: var(--accent-lapis-blue); color: #fff; border-color: var(--accent-lapis-blue); }
+
+
+    /* Spinner (Adaptado) */
+    .spinner { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top: 4px solid var(--accent-lapis-blue); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos */
+     @media (max-width: 1300px) {
+        .main-content-area { gap: 20px; }
+        .event-preview { min-width: 200px; max-width: 260px; padding: 15px;}
+        .center-column { min-width: 400px; }
+     }
+      @media (max-width: 1000px) {
+        .main-content-area { flex-direction: column; }
+        .event-preview { max-width: 100%; min-height: 100px; }
+        #eventCard { min-height: 500px; }
+      }
+     @media (max-width: 600px) {
+        body { padding: 20px 10px; }
+        .timeline-container { padding: 20px 15px; }
+        h1 { font-size: 1.8em; }
+        .slider-container { flex-direction: column; gap: 10px; padding: 8px;}
+        #yearDisplay { min-width: 80px; padding: 6px 10px; font-size: 1em;}
+        #eventCard { padding: 20px; min-height: 450px;}
+        #eventCard h2 { font-size: 1.5em; }
+        #eventCard img { max-width: 60%; max-height: 180px; }
+        #eventCard .content-extract { font-size: 0.95em; line-height: 1.6; max-height: 300px; padding-right: 10px; padding-left: 15px;}
+        #eventCard a.external-link { padding: 8px 15px; font-size: 0.9em;}
+        .event-preview { min-height: 80px; padding: 12px;}
+     }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>El Hilo Dorado: Crónicas de la Ruta de la Seda</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Orígenes del Intercambio</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Mueve el marcador para seguir las caravanas a través de continentes y siglos.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Nuevas Rutas Marítimas</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Ruta de la Seda ---
+    const events = [
+      { year: "c. 138 a.C.", title: "Misión de Zhang Qian al Oeste", wikiTitle: "Zhang Qian" },
+      { year: "c. 114 a.C.", title: "Expansión Han y apertura formal", wikiTitle: "Dinastía Han" },
+      { year: "c. 50 a.C.", title: "Roma conoce la seda (Guerras Párticas)", wikiTitle: "Guerras párticas" },
+      { year: "c. 100 d.C.", title: "Auge del Imperio Kushán (Intermediario)", wikiTitle: "Imperio kushán" },
+      { year: "c. 150 d.C.", title: "Llegada del Budismo a China", wikiTitle: "Budismo en China" },
+      { year: "c. 220 d.C.", title: "Fragmentación de China (Tres Reinos)", wikiTitle: "Tres Reinos" },
+      { year: "c. 300 d.C.", title: "Primeros documentos Sogdianos (Comerciantes)", wikiTitle: "Sogdiana" },
+      { year: "c. 552 d.C.", title: "Secreto de la seda llega a Bizancio", wikiTitle: "Sericicultura" },
+      { year: "c. 618 d.C.", title: "Dinastía Tang: Nueva era dorada", wikiTitle: "Dinastía Tang" },
+      { year: "c. 629 d.C.", title: "Viaje de Xuanzang a la India", wikiTitle: "Xuanzang" },
+      { year: "c. 751 d.C.", title: "Batalla del Talas (Papel hacia el Oeste)", wikiTitle: "Batalla del Talas" },
+      { year: "c. 760 d.C.", title: "Rebelión de An Lushan (Declive Tang)", wikiTitle: "Rebelión de An Lushan" },
+      { year: "c. 1000 d.C.", title: "Auge de ciudades como Samarcanda y Bujará", wikiTitle: "Samarcanda" }, // Podría ser Bujará también
+      { year: "c. 1206 d.C.", title: "Establecimiento del Imperio Mongol", wikiTitle: "Imperio mongol" },
+      { year: "c. 1260 d.C.", title: "Pax Mongolica: Seguridad en las rutas", wikiTitle: "Pax Mongolica" },
+      { year: "c. 1271 d.C.", title: "Viajes de Marco Polo", wikiTitle: "Marco Polo" },
+      { year: "c. 1340 d.C.", title: "Propagación de la Peste Negra", wikiTitle: "Peste negra" },
+      { year: "c. 1368 d.C.", title: "Caída de la Dinastía Yuan (Mongol) en China", wikiTitle: "Dinastía Yuan" },
+      { year: "c. 1405 d.C.", title: "Viajes del Almirante Zheng He (Rutas Marítimas)", wikiTitle: "Zheng He" },
+      { year: "c. 1453 d.C.", title: "Caída de Constantinopla (Impacto en rutas terrestres)", wikiTitle: "Caída de Constantinopla" },
+      { year: "c. 1498 d.C.", title: "Vasco da Gama llega a la India por mar", wikiTitle: "Vasco da Gama" },
+      { year: "c. 1600 d.C.", title: "Dominio de las rutas marítimas europeas", wikiTitle: "Era de los Descubrimientos" } // Evento de cierre conceptual
+    ];
+
+
+    // --- Elementos del DOM, Caché, Funciones de Fetch, Renderizado y Manejo de Clics ---
+    // (El código JavaScript de las funciones:
+    //  - fetchDetailedData
+    //  - renderEventCardLoading
+    //  - renderEventCardError
+    //  - renderEventCard
+    //  - renderPreview
+    //  - findAndDisplaySuggestions
+    //  - updateEvent
+    //  - handleClick
+    //  - initializeTimeline
+    //  ES IDÉNTICO al de la respuesta del Antiguo Egipto,
+    //  solo cambian los mensajes de texto dentro de algunas
+    //  funciones para adaptarse al tema de la Ruta de la Seda)
+
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const summaryCache = {};
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+
+    async function fetchDetailedData(title, retries = MAX_RETRIES) {
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info", titles: title,
+            format: "json", origin: "*", explaintext: "true", exchars: "2000", // Un poco más de caracteres
+            exintro: "false", piprop: "thumbnail", pithumbsize: "500", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        // console.log("Fetching URL:", url);
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { /* ... manejo error HTTP ... */
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                     if (response.status >= 500 || response.status === 429) {
+                       console.warn(`Intento ${i + 1} fallido: HTTP ${response.status}. Reintentando...`); throw new Error(`HTTP error ${response.status}`);
+                    } else {
+                       console.error(`Intento ${i + 1} fallido: HTTP ${response.status}. No se reintentará.`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`);
+                    }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) { throw new Error("Respuesta inesperada: falta query.pages"); }
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) { throw new Error(`Not Found: API reportó que "${title}" no existe.`); }
+                const pageData = pages[pageId];
+                if (!pageData.title || !pageData.extract) { throw new Error(`Respuesta incompleta para "${title}"`); }
+                // console.log("Datos recibidos de API:", pageData);
+                return pageData;
+            } catch (error) { /* ... manejo error fetch/parse/retry ... */
+                 lastKnownError = error;
+                 console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                 if (error.message.startsWith('Not Found:')) { throw error; } // No reintentar si 404 confirmado
+                 if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                 else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }
+             }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    function renderEventCardLoading(message = "Consultando mapas y crónicas...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p style="color: var(--text-color-medium);">${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.85';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Mensajes temáticos Ruta de la Seda
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'La caravana de datos se retrasó. Intente consultar de nuevo más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Este destino no figura en los mapas conocidos.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Hubo un problema al descifrar las coordenadas de la solicitud.';}
+        else if (cleanMessage.includes('Respuesta incompleta')) { cleanMessage = 'El pergamino recuperado está dañado o ilegible.';}
+
+        eventCard.innerHTML = `<p><strong>¡Ruta Perdida!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        const extract = pageData.extract || "Los detalles de este tramo del viaje no están claros.";
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n+/g, '</p><p>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Explorar más en Wikipedia</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    function renderPreview(eventData, targetElement) {
+         if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Pulsa para descubrir este hito.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Orígenes del Intercambio' : 'Nuevas Rutas Marítimas';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrado, buscando rutas alternativas...`);
+        renderEventCardLoading("Destino no encontrado. Buscando mapas relacionados...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al buscar en los archivos.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El destino "<strong>${failedTitle}</strong>" es ambiguo.</p>
+                                       <p>Quizás buscabas una de estas rutas:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un destino para ver detalles)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron sugerencias para "${searchTerm}".`);
+                renderEventCardError(`No se halló el destino "${failedTitle}" ni rutas alternativas.`);
+            }
+        } catch (searchErr) {
+            console.error("Error buscando sugerencias:", searchErr);
+            renderEventCardError(`No se halló "${failedTitle}". La búsqueda de alternativas también falló.`);
+        }
+    }
+
+    async function updateEvent(options) {
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { /* ... manejo índice inválido ... */
+             console.error("Índice temporal fuera de secuencia:", index); renderEventCardError("Referencia temporal inválida."); yearDisplay.textContent = "ERROR"; renderPreview(null, prevPreview); renderPreview(null, nextPreview); return;
+        }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year;
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND') {
+            console.log(`Crónica para "${titleToFetch}" recuperada de caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND') {
+             console.log(`"${titleToFetch}" marcado como 'NOT_FOUND'. Mostrando sugerencias.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Consultando archivos para: ${titleToFetch}`);
+            renderEventCardLoading();
+            try {
+                // await new Promise(resolve => setTimeout(resolve, 150)); // Pausa opcional
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                if (err.message.startsWith('Not Found:')) {
+                    console.warn(`Capturado 'Not Found' para "${titleToFetch}". Buscando alternativas.`);
+                    summaryCache[cacheKey] = 'NOT_FOUND';
+                    findAndDisplaySuggestions(titleToFetch);
+                } else {
+                    console.error(`Error final consultando "${titleToFetch}":`, err);
+                    renderEventCardError(err.toString());
+                }
+            }
+        }
+    }
+
+    function handleClick(event) {
+         if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Cargando destino sugerido: ${suggestedTitle}`);
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando al hito ${targetIndex} desde preview.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+    }
+
+    function initializeTimeline() {
+        if (!events || events.length === 0) { /* ... manejo de error inicial ... */
+             document.querySelector('h1').textContent = "Rutas Olvidadas"; eventCard.innerHTML = "<p>No hay crónicas disponibles para esta ruta.</p>"; eventCard.className = 'error'; slider.disabled = true; yearDisplay.textContent = '----'; renderPreview(null, prevPreview); renderPreview(null, nextPreview); return;
+        }
+
+        slider.max = events.length - 1;
+        slider.value = 0;
+        slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Cronógrafo de la Ruta de la Seda listo para el viaje.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

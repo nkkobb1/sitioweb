@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gran Crónica de la Revolución Industrial - El Taller del Tiempo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #2a2a2a;
+      --container-bg: #4a3c2a;
+      --card-bg: #f4e8d8;
+      --preview-bg: #d3c8b8; /* Ligeramente más oscuro para previews */
+      --text-color-dark: #1a1a1a;
+      --text-color-light: #e0d8cc;
+      --accent-bronze: #b87333;
+      --accent-iron: #5a5a5a;
+      --accent-fire: #d9480f;
+      --border-color: #7a5c3a;
+      --font-body: 'Merriweather', serif;
+      --font-display: 'Roboto Slab', serif;
+      --shadow-dark: rgba(0, 0, 0, 0.5);
+      --shadow-light: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%233a3a3a' fill-opacity='0.3' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+      color: var(--text-color-light);
+      margin: 0;
+      padding: 20px; /* Menos padding vertical */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: linear-gradient(145deg, #5a4a3a, #3a2c1a);
+      border-radius: 10px;
+      border: 3px solid var(--border-color);
+      box-shadow: 0 0 5px var(--border-color), 0 5px 20px var(--shadow-dark), inset 0 0 10px rgba(0, 0, 0, 0.4);
+      padding: 25px;
+      /* Mucho más ancho, usando viewport width */
+      max-width: 90vw;
+      width: 1400px; /* Un max-width fijo grande también */
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decoración Esquinas (sin cambios) */
+    .timeline-container::before, .timeline-container::after { content: ''; position: absolute; width: 15px; height: 15px; background-color: var(--accent-bronze); border-radius: 50%; box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5), 0 0 3px var(--accent-bronze); }
+    .timeline-container::before { top: 10px; left: 10px; }
+    .timeline-container::after { top: 10px; right: 10px; }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 25px;
+      color: var(--accent-bronze);
+      text-shadow: 1px 1px 1px #000, 0 0 5px var(--accent-bronze);
+      font-size: 2.2em; /* Ligeramente más pequeño para no dominar */
+      font-weight: 700;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    /* Nueva estructura Flex para contenido principal */
+    .main-content-area {
+        display: flex;
+        gap: 25px; /* Espacio entre columnas */
+        align-items: stretch; /* Estirar items para misma altura */
+        margin-top: 20px;
+    }
+
+    .event-preview {
+        flex: 1; /* Ocupa espacio disponible */
+        min-width: 200px; /* Ancho mínimo */
+        max-width: 280px; /* Ancho máximo */
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 15px;
+        color: var(--text-color-dark);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+        opacity: 0.85;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        transform: translateY(-2px);
+    }
+    .event-preview.empty-preview {
+        background-color: rgba(0,0,0,0.1);
+        border: 1px dashed var(--accent-iron);
+        opacity: 0.5;
+        cursor: default;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: var(--text-color-light);
+    }
+    .event-preview h3 {
+        font-family: var(--font-display);
+        font-size: 1.1em;
+        margin: 0 0 8px 0;
+        color: #604020;
+        border-bottom: 1px solid var(--accent-bronze);
+        padding-bottom: 5px;
+    }
+    .event-preview .preview-year {
+        font-family: var(--font-display);
+        font-weight: 700;
+        color: var(--accent-fire);
+        margin-bottom: 10px;
+        font-size: 1.2em;
+        text-align: center;
+    }
+    .event-preview p {
+        font-size: 0.9em;
+        line-height: 1.5;
+        margin: 0;
+        flex-grow: 1; /* Ocupa espacio restante */
+        overflow: hidden; /* Evitar overflow si título es largo */
+        text-overflow: ellipsis;
+    }
+
+    .center-column {
+        flex: 3; /* Columna central más ancha */
+        display: flex;
+        flex-direction: column;
+        min-width: 400px; /* Ancho mínimo para contenido central */
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px; /* Menos margen inferior */
+      padding: 8px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Slider styles (sin cambios) */
+    input[type="range"] { flex: 1; height: 12px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-iron), #333); border-radius: 6px; outline: none; border: 1px solid #222; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.1); }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 24px; height: 24px; background: radial-gradient(circle, var(--accent-bronze) 60%, #8a5323 100%); border-radius: 50%; border: 2px solid #444; box-shadow: 0 0 5px rgba(0,0,0,0.7), inset 0 0 3px rgba(255,255,255,0.2); transition: transform 0.2s ease; margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: radial-gradient(circle, var(--accent-bronze) 60%, #8a5323 100%); border-radius: 50%; border: 2px solid #444; box-shadow: 0 0 5px rgba(0,0,0,0.7), inset 0 0 3px rgba(255,255,255,0.2); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); }
+
+    #yearDisplay {
+      min-width: 70px;
+      text-align: center;
+      font-weight: bold;
+      font-family: var(--font-display);
+      background: var(--accent-iron);
+      color: var(--text-color-light);
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 1px 1px 2px rgba(0,0,0,0.5);
+      font-size: 1.1em;
+    }
+
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 25px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      min-height: 450px; /* Más altura para más contenido potencial */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      box-shadow: 0 4px 10px var(--shadow-dark);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1;
+      flex-grow: 1; /* Ocupa espacio vertical */
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background-color: #d3c8b8;
+    }
+    #eventCard.loading { opacity: 0.7; }
+    #eventCard.error { border: 2px solid var(--accent-fire); color: var(--accent-fire); }
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link { /* Estilo para los links de sugerencia */
+        display: inline-block;
+        padding: 8px 15px;
+        background-color: var(--accent-iron);
+        color: var(--text-color-light);
+        border: 1px solid #444;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: background-color 0.3s, color 0.3s;
+        cursor: pointer;
+    }
+    #eventCard.suggestions a.suggestion-link:hover {
+        background-color: var(--accent-bronze);
+        color: #fff;
+    }
+
+
+    /* Estilos internos de la tarjeta (sin muchos cambios) */
+    #eventCard h2 { margin-top: 0; margin-bottom: 15px; text-align: center; color: #604020; font-family: var(--font-display); font-size: 1.6em; font-weight: 700; border-bottom: 1px solid var(--accent-bronze); padding-bottom: 8px; }
+    #eventCard img { max-width: 50%; /* Más pequeña aún */ height: auto; max-height: 180px; object-fit: cover; border-radius: 4px; margin: 0 auto 20px auto; display: block; border: 3px solid var(--container-bg); box-shadow: 0 3px 8px rgba(0,0,0,0.4); filter: sepia(0.3) contrast(0.95); }
+    #eventCard p { line-height: 1.7; margin-bottom: 20px; font-size: 1em; text-align: justify; }
+    #eventCard a:not(.suggestion-link) { /* Excluir links de sugerencia del estilo de botón principal */ display: block; margin: 15px auto 0 auto; padding: 10px 20px; background: linear-gradient(to bottom, var(--accent-bronze), #8a5323); color: var(--card-bg); text-decoration: none; font-weight: 700; font-family: var(--font-display); border-radius: 5px; text-align: center; transition: all 0.3s ease; border: 1px solid #7a5c3a; box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); width: fit-content; text-shadow: 1px 1px 1px rgba(0,0,0,0.4); }
+    #eventCard a:not(.suggestion-link):hover { background: linear-gradient(to bottom, #c88343, #9a6333); box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3); transform: translateY(-2px); color: #fff; }
+
+    /* Spinner (sin cambios) */
+    .spinner { width: 60px; height: 60px; border: 5px solid transparent; border-top: 5px solid var(--accent-bronze); border-radius: 50%; animation: spin 1.5s linear infinite; margin: 30px auto; position: relative; }
+    .spinner::before { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 3px dashed var(--accent-iron); border-radius: 50%; animation: spin 3s linear infinite reverse; }
+    .spinner::after { content: ''; position: absolute; top: 18px; left: 18px; width: 14px; height: 14px; background-color: var(--accent-fire); border-radius: 50%; box-shadow: 0 0 8px var(--accent-fire); }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+     /* Ajustes responsivos */
+     @media (max-width: 1200px) {
+        .timeline-container { max-width: 95vw; width: 100%; }
+        .event-preview { min-width: 180px; padding: 12px;}
+        .event-preview h3 { font-size: 1em; }
+        .event-preview .preview-year { font-size: 1.1em; }
+        .center-column { min-width: 350px; }
+        #eventCard h2 { font-size: 1.5em; }
+     }
+      @media (max-width: 900px) {
+        .main-content-area { flex-direction: column; } /* Apilar en pantallas medianas */
+        .event-preview { max-width: 100%; min-height: 100px; /* Altura mínima para previews */}
+        #eventCard { min-height: 400px; }
+      }
+     @media (max-width: 600px) {
+        body { padding: 10px; }
+        .timeline-container { padding: 15px; }
+        h1 { font-size: 1.6em; }
+        .slider-container { flex-direction: column; gap: 10px;}
+        #yearDisplay { min-width: 60px; padding: 6px 8px; font-size: 1em;}
+        #eventCard { padding: 15px; min-height: 350px;}
+        #eventCard h2 { font-size: 1.4em; }
+        #eventCard img { max-width: 70%; max-height: 150px; }
+        #eventCard p { font-size: 0.95em; line-height: 1.6; }
+        #eventCard a:not(.suggestion-link) { padding: 8px 15px; font-size: 0.9em;}
+        .event-preview { min-height: 80px; padding: 10px;}
+     }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer"> <!-- ID añadido para delegación -->
+    <h1>Gran Crónica de la Revolución Industrial</h1>
+
+    <div class="main-content-area">
+      <!-- Vista Previa Izquierda -->
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+         <!-- Contenido se llenará dinámicamente -->
+          <p>Inicio de los Registros</p>
+      </div>
+
+      <!-- Columna Central -->
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajuste el cronómetro para explorar los hitos de esta era transformadora.</p>
+        </div>
+      </div>
+
+      <!-- Vista Previa Derecha -->
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <!-- Contenido se llenará dinámicamente -->
+         <p>Fin de los Registros Conocidos</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Revolución Industrial (Corregido) ---
+    const events = [
+       { year: 1712, title: "Máquina de Vapor Atmosférica de Newcomen", wikiTitle: "Máquina de Newcomen" },
+       { year: 1733, title: "Lanzadera volante de John Kay", wikiTitle: "Lanzadera volante" },
+       { year: 1764, title: "Spinning Jenny de Hargreaves", wikiTitle: "Spinning Jenny" },
+       { year: 1769, title: "Water Frame de Arkwright", wikiTitle: "Water frame" },
+       { year: 1769, title: "Máquina de Vapor Mejorada de Watt", wikiTitle: "Máquina de vapor de Watt" },
+       { year: 1779, title: "Spinning Mule de Crompton", wikiTitle: "Spinning mule" },
+       { year: 1784, title: "Proceso de Pudelado y Laminado de Cort (Hierro)", wikiTitle: "Pudelación" },
+       { year: 1785, title: "Telar Mecánico de Cartwright", wikiTitle: "Telar mecánico" },
+       { year: 1801, title: "Telar de Jacquard (Patrones complejos)", wikiTitle: "Telar de Jacquard" },
+       { year: 1804, title: "Primera Locomotora de Vapor (Trevithick)", wikiTitle: "Richard Trevithick" },
+       { year: 1807, title: "Barco de Vapor 'Clermont' de Fulton", wikiTitle: "Robert Fulton" },
+       { year: 1811, title: "Movimiento Ludita (Resistencia obrera)", wikiTitle: "Ludismo" },
+       { year: 1825, title: "Ferrocarril Stockton-Darlington (Locomotora de Stephenson)", wikiTitle: "Ferrocarril de Stockton y Darlington" },
+       { year: 1831, title: "Dinamo de Faraday (Principios de electricidad)", wikiTitle: "Michael Faraday" },
+       { year: 1837, title: "Telégrafo Eléctrico (Morse/Cooke/Wheatstone)", wikiTitle: "Telégrafo eléctrico" },
+       { year: 1848, title: "Publicación del 'Manifiesto Comunista'", wikiTitle: "Manifiesto del Partido Comunista"},
+       { year: 1855, title: "Proceso Bessemer para Acero Barato", wikiTitle: "Convertidor Bessemer" },
+       { year: 1859, title: "Primer Pozo Petrolero Exitoso (Drake)", wikiTitle: "Edwin Drake" },
+       { year: 1866, title: "Proceso Siemens-Martin (Acero)", wikiTitle: "Proceso Siemens-Martin"}, // CORREGIDO
+       { year: 1867, title: "Invención de la Dinamita (Nobel)", wikiTitle: "Alfred Nobel"},
+       { year: 1876, title: "Invención del Teléfono (Bell)", wikiTitle: "Alexander Graham Bell" },
+       { year: 1879, title: "Invención de la Bombilla Incandescente (Edison)", wikiTitle: "Lámpara incandescente" }, // Usar título más común
+       { year: 1882, title: "Primera Central Eléctrica (Pearl Street, Edison)", wikiTitle: "Pearl Street Station"},
+       { year: 1886, title: "Primer Automóvil con Motor de Combustión Interna (Benz)", wikiTitle: "Benz Patent-Motorwagen" },
+       { year: 1888, title: "Motor de Corriente Alterna (Tesla)", wikiTitle: "Nikola Tesla" },
+       { year: 1895, title: "Invención del Cinematógrafo (Hermanos Lumière)", wikiTitle: "Hermanos Lumière" },
+       { year: 1901, title: "Primera Transmisión de Radio Transatlántica (Marconi)", wikiTitle: "Guglielmo Marconi" },
+       { year: 1903, title: "Primer Vuelo Sostenido de los Hermanos Wright", wikiTitle: "Hermanos Wright" },
+       { year: 1908, title: "Lanzamiento del Ford Modelo T", wikiTitle: "Ford T" },
+       { year: 1913, title: "Introducción de la Cadena de Montaje Móvil (Ford)", wikiTitle: "Cadena de montaje" }
+    ];
+
+    // --- Elementos del DOM ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const timelineTitle = document.getElementById('timelineTitle');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer'); // Para delegación
+
+    // --- Estado de la Aplicación ---
+    const summaryCache = {};
+
+    // --- Función de Fetch con Reintentos (sin cambios respecto a la última versión) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchWithRetry(url, retries = MAX_RETRIES) { /* ... (código igual que antes) ... */
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                    if (response.status === 404) {
+                        throw new Error(`Not Found: ${response.statusText || 'Página no hallada'}`);
+                    }
+                    if (response.status >= 500 || response.status === 429) {
+                       console.warn(`Intento ${i + 1} fallido: HTTP ${response.status}. Reintentando...`);
+                       throw new Error(`HTTP error ${response.status}`);
+                    } else {
+                       console.error(`Intento ${i + 1} fallido: HTTP ${response.status}. No se reintentará.`);
+                       throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`);
+                    }
+                }
+                const data = await response.json();
+                if (data.type && data.type.startsWith('https://mediawiki.org/wiki/HyperSwitch/errors/not_found')) {
+                    console.error(`Intento ${i + 1}: Wikipedia API reporta 'not_found' para ${url}`);
+                    lastKnownError = { status: 404, statusText: 'MediaWiki Not Found' };
+                    throw new Error('Not Found: MediaWiki reportó no encontrado');
+                }
+                return data;
+            } catch (error) {
+                if (error.message.startsWith('Not Found:')) { throw error; }
+                console.warn(`Intento ${i + 1} fallido por catch: ${error.message}`);
+                lastKnownError = error;
+                if (i < retries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+                } else {
+                    console.error(`No se pudo acceder a los archivos de ${url} después de ${retries} intentos.`);
+                    throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`);
+                }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado en la recuperación de archivos.`);
+    }
+
+    // --- Funciones de Renderizado ---
+
+    function renderEventCardLoading(message = "Consultando Archivos Cronológicos...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.7';
+    }
+
+    function renderEventCardError(errorMessage) {
+        // ... (código igual que antes para limpiar mensaje) ...
+        let cleanMessage = errorMessage.toString();
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Fallo en la conexión con los Archivos Centrales. Intente de nuevo más tarde.'; }
+        else if (cleanMessage.includes('Client error 404') || cleanMessage.includes('Not Found:')) { cleanMessage = 'Registro cronológico no hallado en los Archivos Centrales.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Hubo un problema con la solicitud a los Archivos Centrales.';}
+
+        eventCard.innerHTML = `<p><strong>¡Fallo en la Transmisión Temporal!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(data, eventTitle) {
+        const imgHtml = data.thumbnail ? `<img src="${data.thumbnail.source}" alt="${data.title || eventTitle}">` : '';
+        const displayTitle = (data.displaytitle && data.displaytitle !== data.title)
+                           ? data.displaytitle.replace(/<[^>]*>/g, '')
+                           : (data.title || eventTitle);
+        const description = data.extract || "Descripción no disponible en los archivos.";
+        // Mantenemos el link externo por si acaso, pero el foco está en la interacción interna
+        const wikiLink = data.content_urls?.desktop?.page;
+
+        eventCard.innerHTML = `
+            <h2>${displayTitle}</h2>
+            ${imgHtml}
+            <p>${description}</p>
+            ${wikiLink ? `<a href="${wikiLink}" target="_blank" rel="noopener noreferrer">Ver Registro Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+    }
+
+    // --- Renderizar Vistas Previas ---
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para explorar este evento.</p>
+            `;
+            targetElement.className = 'event-preview'; // Quita clase 'empty'
+            targetElement.dataset.index = events.indexOf(eventData); // Guardar índice para click
+        } else if (targetElement) {
+            // Vaciar si no hay evento (inicio/fin de la lista)
+            const message = targetElement.id === 'prevEventPreview' ? 'Inicio de los Registros' : 'Fin de los Registros Conocidos';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // --- Buscar y Mostrar Sugerencias ---
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrado, buscando sugerencias...`);
+        renderEventCardLoading("Registro no hallado. Buscando alternativas...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+        try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al buscar sugerencias.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro "<strong>${failedTitle}</strong>" no fue localizado.</p>
+                                       <p>Posibles registros relacionados:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    // Usamos data-wiki-title para guardar el título a cargar
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Haz clic en un título para cargarlo aquí)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron sugerencias para "${searchTerm}".`);
+                renderEventCardError(`Registro para "${failedTitle}" no hallado y no se encontraron alternativas.`);
+            }
+        } catch (searchErr) {
+            console.error("Error durante la búsqueda de sugerencias:", searchErr);
+            renderEventCardError(`Registro para "${failedTitle}" no hallado. La búsqueda de alternativas también falló.`);
+        }
+    }
+
+
+    // --- Función Principal de Actualización (Modificada) ---
+    async function updateEvent(options) {
+        const index = options.index; // Índice del evento principal en nuestro array 'events'
+
+        if (isNaN(index) || index < 0 || index >= events.length) {
+            console.error("Índice temporal fuera de secuencia:", index);
+            renderEventCardError("Referencia temporal inválida.");
+            yearDisplay.textContent = "ERROR";
+            renderPreview(null, prevPreview); // Limpiar previews en error
+            renderPreview(null, nextPreview);
+            return;
+        }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year;
+        // Actualizar slider si no fue la fuente del cambio (ej. click en preview)
+        if (slider.value !== index.toString()) {
+            slider.value = index;
+        }
+
+        // Determinar qué título buscar en Wikipedia
+        // Si se pasó un 'wikiTitleOverride' (desde un click de sugerencia), usar ese.
+        // Si no, usar el wikiTitle del evento actual, o su title como fallback.
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+
+        // Usar una clave de caché que incluya el título que *realmente* se busca
+        const cacheKey = titleToFetch.toLowerCase(); // Clave insensible a mayúsculas
+
+        // ---- Renderizar Vistas Previas ----
+        const prevIndex = index - 1;
+        const nextIndex = index + 1;
+        renderPreview(events[prevIndex], prevPreview); // La función maneja índices inválidos
+        renderPreview(events[nextIndex], nextPreview);
+
+        // ---- Cargar Tarjeta Principal ----
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND') {
+            console.log(`Registro para "${titleToFetch}" recuperado de la memoria caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title); // Usar title original para contexto
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND') {
+             console.log(`"${titleToFetch}" marcado como 'NOT_FOUND' en caché. Mostrando sugerencias.`);
+             findAndDisplaySuggestions(titleToFetch);
+        }
+        else {
+            console.log(`Accediendo a Archivos Centrales para: ${titleToFetch}`);
+            renderEventCardLoading(); // Mostrar carga
+
+            const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titleToFetch)}`;
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                const data = await fetchWithRetry(url);
+
+                if (data && (data.title || data.extract)) {
+                    summaryCache[cacheKey] = data; // Cachear resultado exitoso
+                    renderEventCard(data, currentEvent.title); // Usar title original para contexto
+                } else {
+                    console.error("Respuesta incompleta de la API (sin título ni extracto):", data);
+                    summaryCache[cacheKey] = 'NOT_FOUND'; // Marcar como no encontrado en caché
+                    findAndDisplaySuggestions(titleToFetch); // Intentar buscar sugerencias
+                }
+            } catch (err) {
+                if (err.message.startsWith('Not Found:')) {
+                    console.warn(`Capturado error 'Not Found' para "${titleToFetch}". Iniciando búsqueda de sugerencias.`);
+                    summaryCache[cacheKey] = 'NOT_FOUND'; // Marcar en caché
+                    findAndDisplaySuggestions(titleToFetch);
+                } else {
+                    console.error("Error final al acceder a archivos:", err);
+                    renderEventCardError(err.toString());
+                     // Limpiar previews si la carga principal falla por otra razón
+                    renderPreview(null, prevPreview);
+                    renderPreview(null, nextPreview);
+                }
+            }
+        }
+    }
+
+    // --- Manejador de Clics (Delegación) ---
+    function handleClick(event) {
+        // Click en un link de sugerencia?
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault(); // Evitar que el enlace '#' navegue
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Cargando sugerencia: ${suggestedTitle}`);
+                // Llamamos a updateEvent con el índice ACTUAL del slider
+                // pero pasando el título sugerido para que se cargue en la tarjeta principal.
+                updateEvent({
+                    index: parseInt(slider.value, 10),
+                    wikiTitleOverride: suggestedTitle
+                });
+            }
+        }
+        // Click en una vista previa? (verificar el div o sus hijos)
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando a evento ${targetIndex} desde preview.`);
+                // Llamamos a updateEvent con el ÍNDICE del preview
+                updateEvent({ index: targetIndex });
+            }
+        }
+    }
+
+    // --- Inicialización ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+            // ... (código de manejo de error inicial igual) ...
+            timelineTitle.textContent = "Archivos Corruptos";
+            eventCard.innerHTML = "<p>No hay registros disponibles en esta línea temporal.</p>";
+            eventCard.className = 'error';
+            slider.disabled = true;
+            yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview);
+            renderPreview(null, nextPreview);
+            return;
+        }
+
+        slider.max = events.length - 1;
+        slider.value = 0;
+        slider.disabled = events.length <= 1;
+
+        updateEvent({ index: 0 }); // Cargar el primer evento y sus previews
+
+        // Listener para el slider
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+
+        // Listener unificado para clicks (delegación)
+        timelineContainer.addEventListener('click', handleClick);
+
+        console.log("Cronómetro Industrial Avanzado inicializado y operativo.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

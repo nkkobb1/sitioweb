@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anki - Constitución de Colombia</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .anki-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .card {
+            background-color: #e9f5ff;
+            border: 1px solid #b3d7f2;
+            min-height: 250px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer; /* Para indicar que se puede hacer clic */
+            position: relative; /* Para la perspectiva */
+            perspective: 1000px; /* Efecto 3D */
+            transition: transform 0.6s;
+             transform-style: preserve-3d; /* Mantiene el 3D en hijos */
+        }
+
+        .card-content {
+             width: 100%;
+             height: 100%;
+             position: absolute;
+             top: 0;
+             left: 0;
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+             backface-visibility: hidden; /* Oculta la cara trasera */
+             padding: 25px;
+             box-sizing: border-box;
+             overflow-y: auto; /* Scroll si el contenido es largo */
+        }
+
+
+        .card-front {
+             background-color: #e9f5ff;
+             z-index: 2; /* Asegura que el frente esté encima inicialmente */
+        }
+
+        .card-back {
+             background-color: #d0eaff;
+             transform: rotateY(180deg); /* Rotada inicialmente */
+             text-align: left;
+             white-space: pre-wrap; /* Respeta saltos de línea y espacios */
+             font-size: 0.95em;
+             line-height: 1.6;
+             justify-content: flex-start; /* Alinear texto arriba */
+             align-items: flex-start;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+
+        #card-front-content {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+         #card-back-content {
+             /* Estilos específicos si se necesitan, aunque pre-wrap hace mucho */
+         }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-button, .action-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin: 0 5px;
+        }
+
+        .nav-button:hover, .action-button:hover {
+            background-color: #2980b9;
+        }
+         .nav-button:active, .action-button:active {
+            transform: scale(0.98);
+        }
+
+        .nav-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #flip-button {
+            background-color: #2ecc71;
+        }
+        #flip-button:hover {
+            background-color: #27ae60;
+        }
+
+        #progress-indicator {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        #loading-state, #error-state {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            margin-top: 50px;
+        }
+        #error-state {
+            color: #c0392b;
+        }
+
+        /* Estilo para la scrollbar en el reverso */
+        .card-back::-webkit-scrollbar {
+            width: 8px;
+        }
+        .card-back::-webkit-scrollbar-track {
+            background: #b3d7f2;
+            border-radius: 4px;
+        }
+        .card-back::-webkit-scrollbar-thumb {
+            background-color: #3498db;
+            border-radius: 4px;
+            border: 2px solid #b3d7f2;
+        }
+        .card-back {
+            scrollbar-width: thin;
+            scrollbar-color: #3498db #b3d7f2;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="anki-container">
+        <h1>Constitución de Colombia - Estudio</h1>
+
+        <div id="loading-state">Cargando artículos...</div>
+        <div id="error-state" style="display: none;"></div>
+
+        <div id="app-content" style="display: none;">
+            <div class="card" id="flashcard">
+                 <div class="card-content card-front">
+                     <div id="card-front-content"></div>
+                 </div>
+                 <div class="card-content card-back">
+                     <div id="card-back-content"></div>
+                 </div>
+            </div>
+
+            <div class="actions">
+                 <button class="action-button" id="flip-button">Mostrar Respuesta</button>
+             </div>
+
+            <div class="navigation">
+                <button class="nav-button" id="prev-button" disabled>Anterior</button>
+                <span id="progress-indicator">Artículo 1 / N</span>
+                <button class="nav-button" id="next-button">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cardElement = document.getElementById('flashcard');
+        const cardFrontContent = document.getElementById('card-front-content');
+        const cardBackContent = document.getElementById('card-back-content');
+        const flipButton = document.getElementById('flip-button');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const appContent = document.getElementById('app-content');
+
+        let articlesData = [];
+        let currentIndex = 0;
+        let isFlipped = false;
+        // --- ÚNICO CAMBIO AQUÍ ---
+        const jsonUrl = 'https://raw.githubusercontent.com/nkkobb1/sitioweb/main/constitucion.json'; // URL directa al archivo JSON en GitHub Raw
+        // --- FIN DEL CAMBIO ---
+
+        async function loadArticles() {
+            try {
+                loadingState.style.display = 'block';
+                errorState.style.display = 'none';
+                appContent.style.display = 'none';
+
+                const response = await fetch(jsonUrl); // Usará la URL de GitHub
+                if (!response.ok) {
+                    // Mejorar ligeramente el mensaje de error para URL
+                    throw new Error(`Error HTTP ${response.status}: No se pudo cargar el JSON desde la URL.`);
+                }
+                articlesData = await response.json();
+
+                if (!Array.isArray(articlesData) || articlesData.length === 0) {
+                     throw new Error("El archivo JSON está vacío o no tiene el formato esperado (un array de artículos).");
+                }
+
+                console.log(`Cargados ${articlesData.length} artículos desde ${jsonUrl}.`);
+                loadingState.style.display = 'none';
+                appContent.style.display = 'block';
+                displayCard(); // Mostrar la primera tarjeta
+
+            } catch (error) {
+                console.error('Error al cargar los artículos:', error);
+                loadingState.style.display = 'none';
+                // Mensaje de error más específico para URL
+                errorState.textContent = `Error: ${error.message}. Verifica que la URL sea correcta y accesible.`;
+                errorState.style.display = 'block';
+            }
+        }
+
+        function displayCard() {
+            if (articlesData.length === 0) return;
+
+            const currentArticle = articlesData[currentIndex];
+
+            // Resetear la tarjeta a su estado frontal
+             flipCard(false); // Asegurarse de que la tarjeta no esté volteada
+
+            cardFrontContent.textContent = currentArticle.numero_articulo;
+            cardBackContent.textContent = currentArticle.contenido;
+
+            // Actualizar indicador de progreso
+            progressIndicator.textContent = `Artículo ${currentIndex + 1} / ${articlesData.length}`;
+
+            // Habilitar/deshabilitar botones de navegación
+            prevButton.disabled = currentIndex === 0;
+            nextButton.disabled = currentIndex === articlesData.length - 1;
+        }
+
+        function flipCard(forceState = null) {
+            if (forceState !== null) {
+                 isFlipped = forceState;
+            } else {
+                 isFlipped = !isFlipped;
+            }
+
+            if (isFlipped) {
+                cardElement.classList.add('is-flipped');
+                flipButton.textContent = 'Mostrar Pregunta';
+            } else {
+                 cardElement.classList.remove('is-flipped');
+                 flipButton.textContent = 'Mostrar Respuesta';
+                 // Resetear scroll del reverso al ocultarlo
+                 const backContentDiv = cardElement.querySelector('.card-back');
+                 if (backContentDiv) {
+                     backContentDiv.scrollTop = 0;
+                 }
+            }
+        }
+
+
+        function showNextCard() {
+            if (currentIndex < articlesData.length - 1) {
+                currentIndex++;
+                displayCard();
+            }
+        }
+
+        function showPrevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayCard();
+            }
+        }
+
+        // --- Event Listeners ---
+        flipButton.addEventListener('click', () => flipCard());
+        // También voltear al hacer clic en la tarjeta misma
+        cardElement.addEventListener('click', () => flipCard());
+
+        nextButton.addEventListener('click', showNextCard);
+        prevButton.addEventListener('click', showPrevCard);
+
+        // Navegación con teclado (opcional pero útil)
+        document.addEventListener('keydown', (event) => {
+             // Evitar que funcione si se está escribiendo en un input (si hubiera)
+             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                 return;
+             }
+
+            switch (event.key) {
+                case 'ArrowRight':
+                    if (!nextButton.disabled) showNextCard();
+                    break;
+                case 'ArrowLeft':
+                    if (!prevButton.disabled) showPrevCard();
+                    break;
+                case ' ': // Barra espaciadora
+                    event.preventDefault(); // Evitar scroll de página
+                    flipCard();
+                    break;
+            }
+        });
+
+
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', loadArticles);
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Altitudes Históricas - Crónica de la Aviación</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #e0f2f7; /* Azul cielo muy pálido */
+      --container-bg: #ffffff; /* Blanco nube */
+      --card-bg: #f8f9fa; /* Gris muy claro / Metal pulido */
+      --preview-bg: #d1e9f0; /* Azul cielo pálido */
+      --text-color-dark: #212529; /* Gris oscuro casi negro (instrumentos) */
+      --text-color-light: #f0f8ff; /* Blanco cielo */
+      --accent-blue: #007bff; /* Azul vibrante (cielo) */
+      --accent-silver: #adb5bd; /* Plata / Metal */
+      --accent-orange: #fd7e14; /* Naranja (señales/aviso) */
+      --border-color: #ced4da; /* Gris claro borde */
+      --font-body: 'Roboto', sans-serif; /* Fuente limpia y moderna */
+      --font-display: 'Exo 2', sans-serif; /* Fuente tech/moderna para títulos */
+      --shadow-soft: rgba(0, 123, 255, 0.1); /* Sombra azulada suave */
+      --shadow-medium: rgba(33, 37, 41, 0.15); /* Sombra grisácea media */
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, transparent 50%),
+                        radial-gradient(circle at top left, rgba(0, 123, 255, 0.05), transparent 40%);
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      font-weight: 400; /* Default weight */
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 35px var(--shadow-medium), 0 0 8px var(--shadow-soft);
+      padding: 30px;
+      max-width: 90vw;
+      width: 1450px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Sutil línea superior */
+    .timeline-container::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+        background: linear-gradient(to right, transparent, var(--accent-blue), transparent);
+        opacity: 0.6; pointer-events: none;
+    }
+
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-blue);
+      text-shadow: 1px 1px 1px rgba(255,255,255,0.5);
+      font-size: 2.7em;
+      font-weight: 700; /* Bold for title */
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+      letter-spacing: 1px; /* Slight spacing */
+    }
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 20px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo Aviación) */
+    .event-preview {
+        flex: 1; min-width: 210px; max-width: 290px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        color: var(--text-color-dark);
+        box-shadow: 0 4px 10px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        opacity: 0.95; transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1; box-shadow: 0 7px 18px var(--shadow-medium); transform: translateY(-4px); border-color: var(--accent-blue);
+        background-color: #e6f7ff; /* Lighter blue on hover */
+    }
+    .event-preview.empty-preview {
+        background-color: transparent;
+        border: 2px dashed var(--border-color);
+        opacity: 0.7; cursor: default; align-items: center; justify-content: center;
+        text-align: center; color: var(--accent-silver); box-shadow: none;
+    }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.2em; margin: 0 0 10px 0; color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 6px; font-weight: 700; }
+    .event-preview .preview-year { font-family: var(--font-body); font-weight: 700; color: var(--text-color-dark); margin-bottom: 12px; font-size: 1.1em; text-align: center; }
+    .event-preview p { font-size: 0.95em; line-height: 1.6; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; opacity: 0.9; }
+
+    /* Slider Container (Estilo Aviación) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: #e9ecef; /* Gris claro */ border-radius: 8px; border: 1px solid var(--border-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* Slider (Estilo Aviación) */
+    input[type="range"] { flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-silver), var(--border-color)); border-radius: 3px; outline: none; border: 1px solid #adb5bd; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; background: var(--accent-blue); border-radius: 50%; border: 3px solid var(--container-bg); box-shadow: 0 1px 5px rgba(0,0,0,0.3); transition: transform 0.2s ease; margin-top: -8px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--accent-blue); border-radius: 50%; border: 3px solid var(--container-bg); box-shadow: 0 1px 5px rgba(0,0,0,0.3); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); background: var(--accent-orange); }
+
+    /* Year Display (Estilo Aviación) */
+    #yearDisplay { min-width: 75px; text-align: center; font-weight: 700; font-family: var(--font-display); background: var(--text-color-dark); color: var(--bg-color); padding: 8px 15px; border-radius: 6px; border: 1px solid #000; box-shadow: inset 0 0 4px rgba(0,0,0,0.4), 1px 1px 2px rgba(0,0,0,0.5); font-size: 1.1em; letter-spacing: 0.5px; }
+
+    /* Event Card (Estilo Aviación) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 35px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      min-height: 600px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 6px 25px var(--shadow-soft);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: #e9ecef; } /* Fondo gris claro */
+    #eventCard.loading { opacity: 0.9; }
+    #eventCard.error { border: 2px solid var(--accent-orange); color: var(--accent-orange); } /* Error ahora naranja */
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 9px 18px;
+        background-color: var(--accent-blue);
+        color: var(--text-color-light);
+        border: 1px solid #0056b3; border-radius: 6px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700; font-size: 0.95em;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #0056b3; color: #fff; transform: scale(1.03); }
+
+    /* Estilos Tarjeta Principal (Aviación) */
+    #eventCard h2 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--accent-blue); font-family: var(--font-display); font-size: 2em; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; letter-spacing: 0.5px; }
+    #eventCard img {
+        max-width: 55%; /* Permitir imágenes un poco más grandes */
+        height: auto; max-height: 280px; /* Aumentar altura máxima */
+        object-fit: contain; border-radius: 6px;
+        margin: 0 auto 25px auto; display: block;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 5px 15px var(--shadow-medium);
+        background-color: #fff;
+    }
+    #eventCard .content-extract {
+        line-height: 1.7; /* Buen espaciado */
+        margin-bottom: 25px;
+        font-size: 1.0em;
+        text-align: left; /* Texto alineado a la izquierda para lectura técnica */
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 15px;
+        padding-left: 0; /* Sin padding izquierdo extra */
+        /* Optional: border-left: 3px solid var(--accent-silver); */
+    }
+     /* Scrollbar sutil (Webkit) */
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: #e9ecef; border-radius: 4px; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--accent-silver); border-radius: 4px; border: 2px solid #e9ecef; }
+
+     /* Link Externo (Aviación) */
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 28px;
+        background: var(--text-color-dark);
+        color: var(--text-color-light); text-decoration: none; font-weight: 700;
+        font-family: var(--font-display); border-radius: 6px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid #000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+        width: fit-content; letter-spacing: 0.5px;
+    }
+    #eventCard a.external-link:hover { background: #343a40; /* Gris más claro */ box-shadow: 0 3px 7px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); transform: translateY(-2px); color: #fff; }
+
+    /* Spinner (Aviación) */
+    .spinner { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top: 4px solid var(--accent-blue); border-left: 4px solid var(--accent-blue); /* Añadir borde izquierdo para efecto */ border-radius: 50%; animation: spin 1.2s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos (mantener estructura general) */
+     @media (max-width: 1200px) { /* ... */ }
+     @media (max-width: 900px) { /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Altitudes Históricas - Crónica de la Aviación</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Sueños de Ícaro</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajuste el control para navegar por los hitos del vuelo humano.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>El Futuro del Vuelo</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Aviación ---
+    const events = [
+      { year: "1903", title: "Primer Vuelo Controlado (Hermanos Wright)", wikiTitle: "Hermanos Wright" },
+      { year: "1906", title: "Primer Vuelo Público en Europa (Santos Dumont)", wikiTitle: "Alberto Santos Dumont" },
+      { year: "1909", title: "Cruce del Canal de la Mancha (Blériot)", wikiTitle: "Louis Blériot" },
+      { year: "1914-1918", title: "Aviación en la Primera Guerra Mundial", wikiTitle: "Historia de la aviación#Primera Guerra Mundial" }, // Apunta a sección
+      { year: "1927", title: "Cruce del Atlántico en Solitario (Lindbergh)", wikiTitle: "Charles Lindbergh" },
+      { year: "1930s", title: "Edad de Oro: Desarrollo de Aerolíneas y Aviones Comerciales", wikiTitle: "Historia de la aviación#La era de oro de la aviación" },
+      { year: "1935", title: "Primer Vuelo del Douglas DC-3", wikiTitle: "Douglas DC-3" },
+      { year: "1937", title: "Desaparición de Amelia Earhart", wikiTitle: "Amelia Earhart"},
+      { year: "1939", title: "Primer Vuelo de un Avión a Reacción (Heinkel He 178)", wikiTitle: "Heinkel He 178" },
+      { year: "1939-1945", title: "Aviación en la Segunda Guerra Mundial", wikiTitle: "Historia de la aviación#Segunda Guerra Mundial" },
+      { year: "1947", title: "Ruptura de la Barrera del Sonido (Chuck Yeager)", wikiTitle: "Chuck Yeager" },
+      { year: "1949", title: "Primer Vuelo del De Havilland Comet (Primer Jet Comercial)", wikiTitle: "De Havilland DH.106 Comet" },
+      { year: "1950s", title: "Inicio de la Era del Jet en Aviación Comercial", wikiTitle: "Motor de reacción#Aplicaciones en la aviación" },
+      { year: "1954", title: "Primer Vuelo del Boeing 707", wikiTitle: "Boeing 707" },
+      { year: "1961", title: "Primer Humano en el Espacio (Gagarin)", wikiTitle: "Yuri Gagarin" }, // Relacionado, inicio carrera espacial
+      { year: "1968", title: "Primer Vuelo del Tupolev Tu-144 (Primer SST)", wikiTitle: "Tupolev Tu-144" },
+      { year: "1969", title: "Primer Vuelo del Concorde", wikiTitle: "Concorde" },
+      { year: "1969", title: "Primer Vuelo del Boeing 747 (Jumbo Jet)", wikiTitle: "Boeing 747" },
+      { year: "1970s", title: "Consolidación de la Aviación de fuselaje ancho", wikiTitle: "Avión de fuselaje ancho"},
+      { year: "1976", title: "Inicio de Vuelos Comerciales del Concorde", wikiTitle: "Concorde" },
+      { year: "1980s", title: "Introducción del Fly-by-wire y Glass Cockpits (Airbus)", wikiTitle: "Sistema de control de vuelo fly-by-wire"},
+      { year: "1988", title: "Primer Vuelo del Airbus A320", wikiTitle: "Airbus A320"},
+      { year: "2003", title: "Último Vuelo Comercial del Concorde", wikiTitle: "Concorde" },
+      { year: "2005", title: "Primer Vuelo del Airbus A380", wikiTitle: "Airbus A380" },
+      { year: "2009", title: "Primer Vuelo del Boeing 787 Dreamliner (Materiales compuestos)", wikiTitle: "Boeing 787" },
+      { year: "2010s", title: "Auge de las Aerolíneas de Bajo Costo", wikiTitle: "Aerolínea de bajo costo" }
+    ];
+
+
+    // --- Elementos del DOM (igual) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+
+    // --- Estado y Caché (igual) ---
+    const summaryCache = {};
+
+    // --- Función Fetch Detallada (action=query - sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que antes) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info",
+            titles: title, format: "json", origin: "*",
+            explaintext: "true", exchars: "2000",
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600",
+            inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log("Fetching URL:", url);
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                     if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                     else { throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) { throw new Error("Respuesta inesperada API: falta query.pages"); }
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) {
+                    throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                }
+                const pageData = pages[pageId];
+                if (!pageData.title || !pageData.extract) {
+                     throw new Error(`Respuesta incompleta para "${title}"`);
+                }
+                 console.log("Datos recibidos de API:", pageData);
+                 return pageData;
+            } catch (error) {
+                 lastKnownError = error;
+                 console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                 if (error.message.startsWith('Not Found:')) { throw error; }
+                 if (i < retries - 1) {
+                     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+                 } else {
+                     console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`);
+                     throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`);
+                 }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado recuperando datos para ${title}.`);
+    }
+
+
+    // --- Funciones de Renderizado (Adaptadas + Limpieza Citas) ---
+
+    function renderEventCardLoading(message = "Consultando registros de vuelo...") { // Mensaje temático
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.9';
+    }
+
+    // Se mantiene por si acaso, aunque el objetivo es mostrar sugerencias
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos Aviación
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Interferencia en la señal con la torre de control. Intente de nuevo.'; }
+        else if (cleanMessage.includes('Client error 404') || cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Plan de vuelo no encontrado en los archivos.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Hubo un problema con la solicitud a la torre de control.';}
+        else if (cleanMessage.includes('Respuesta incompleta')) { cleanMessage = 'Los datos de vuelo recibidos están corruptos o incompletos.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error de Comunicación!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    // Renderiza datos y limpia citas [ ]
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        let extract = pageData.extract || "Datos de vuelo no disponibles.";
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim();
+        extract = extract.replace(/\s{2,}/g, ' ');
+
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Informe Completo (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar mensajes)
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para explorar esta era.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Sueños de Ícaro' : 'El Futuro del Vuelo';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar mensajes)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrado o con error, buscando rutas alternativas...`);
+        renderEventCardLoading("Registro no encontrado/ilegible. Buscando rutas alternativas...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} buscando rutas alternativas.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro de vuelo para "<strong>${failedTitle}</strong>" no fue localizado o contiene errores.</p>
+                                       <p>Quizás estas rutas alternativas sean de interés:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona una ruta para intentar cargarla)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron alternativas para "${searchTerm}".`);
+                 renderEventCardError(`Registro para "${failedTitle}" no localizado y no se hallaron rutas alternativas.`);
+                 eventCard.className = 'error';
+            }
+        } catch (searchErr) {
+            console.error("Error buscando rutas alternativas:", searchErr);
+             renderEventCardError(`Registro para "${failedTitle}" no localizado. La búsqueda de alternativas también falló.`);
+             eventCard.className = 'error';
+        }
+    }
+
+    // --- Función Principal de Actualización (Mantiene lógica de mostrar alternativas siempre) ---
+    async function updateEvent(options) {
+        const index = options.index;
+
+        // Validación inicial (igual)
+        if (isNaN(index) || index < 0 || index >= events.length) { /* ... error handling ... */ return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            console.log(`Datos de vuelo para "${titleToFetch}" recuperados de caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}' en caché. Mostrando rutas alternativas.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Contactando torre de control para: ${titleToFetch}`);
+            renderEventCardLoading();
+
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                // *** Siempre intentar mostrar sugerencias en CUALQUIER error de fetch ***
+                console.error(`Error al cargar datos para "${titleToFetch}":`, err.message);
+                if (err.message.startsWith('Not Found:')) {
+                     summaryCache[cacheKey] = 'NOT_FOUND';
+                } else {
+                     summaryCache[cacheKey] = 'LOAD_ERROR';
+                }
+                findAndDisplaySuggestions(titleToFetch); // Fallback a sugerencias
+            }
+        }
+    }
+
+    // --- Manejador de Clics (lógica igual) ---
+    function handleClick(event) { /* ... (código igual que antes) ... */
+         if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Intentando cargar ruta alternativa: ${suggestedTitle}`);
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando al hito ${targetIndex} desde vista previa.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+    }
+
+    // --- Inicialización (adaptar mensajes) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Hangar Vacío"; // Mensaje temático
+            eventCard.innerHTML = "<p>No hay registros de vuelo disponibles en esta línea temporal.</p>";
+            eventCard.className = 'error';
+            slider.disabled = true; yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview); renderPreview(null, nextPreview);
+            return;
+        }
+        // Resto de inicialización igual...
+        slider.max = events.length - 1; slider.value = 0;
+        slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Cronología Aérea inicializada. Listo para el despegue."); // Mensaje temático
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

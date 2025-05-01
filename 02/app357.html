@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ascenso Cronológico - La Conquista del Everest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #e4f0f5; /* Azul cielo muy pálido */
+      --panel-bg: #d0dde4; /* Gris azulado claro / Nube */
+      --container-bg: #f8fafd; /* Blanco nieve */
+      --card-bg: #ffffff; /* Blanco puro */
+      --preview-bg: #e8eef2; /* Blanco ligeramente azulado */
+      --text-color-dark: #2c3e50; /* Azul pizarra oscuro */
+      --text-color-light: #f0f5f8; /* Casi blanco */
+      --accent-blue: #2980b9; /* Azul cielo intenso */
+      --accent-orange: #e67e22; /* Naranja expedición */
+      --accent-red: #c0392b; /* Rojo bandera */
+      --border-color: #b4c5d1; /* Borde gris azulado */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Anton', sans-serif; /* Fuente impactante, como picos */
+      --shadow-soft: rgba(44, 62, 80, 0.15);
+      --shadow-medium: rgba(44, 62, 80, 0.3);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      /* Sutil gradiente de cielo */
+      background-image: linear-gradient(to bottom, var(--bg-color) 0%, #d6e6ee 100%);
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      gap: 20px;
+    }
+
+    /* Panel del Índice de Títulos (Estilo Expedición) */
+    .title-index-panel {
+        background-color: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 20px;
+        width: 300px; /* Un poco más ancho */
+        flex-shrink: 0;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        box-shadow: 0 3px 10px var(--shadow-soft);
+    }
+    .title-index-panel h2 {
+        font-family: var(--font-display);
+        color: var(--accent-blue);
+        margin: 0 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 1.5em; /* Más grande */
+        text-align: center;
+        letter-spacing: 1px; /* Espaciado */
+    }
+    #titleList { list-style: none; padding: 0; margin: 0; }
+    #titleList li {
+        padding: 11px 10px;
+        margin-bottom: 6px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s, border-left 0.3s;
+        font-size: 0.95em; /* Ligeramente más grande */
+        border-left: 4px solid transparent;
+        line-height: 1.4;
+    }
+    #titleList li:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+        border-left: 4px solid var(--accent-orange);
+    }
+    #titleList li.active {
+        background-color: var(--accent-blue);
+        color: var(--text-color-light);
+        font-weight: 700;
+        border-left: 4px solid var(--accent-red);
+    }
+    /* Scrollbar sutil para el índice (Webkit) */
+    .title-index-panel::-webkit-scrollbar { width: 6px; }
+    .title-index-panel::-webkit-scrollbar-track { background: transparent; }
+    .title-index-panel::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 3px; }
+
+    /* Contenedor Principal (Estilo Montaña) */
+    .timeline-container {
+      background-color: var(--container-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 5px 20px var(--shadow-medium);
+      padding: 25px;
+      flex-grow: 1;
+      max-width: 1150px;
+      position: relative;
+      overflow: hidden;
+       /* Opcional: Sutil silueta montaña
+       &::before {
+           content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
+           background: url('mountain-silhouette.svg') no-repeat center bottom;
+           background-size: contain; opacity: 0.05; pointer-events: none;
+       } */
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin: 0 0 30px 0;
+      color: var(--text-color-dark);
+      /* text-shadow: 1px 1px 1px #fff; */
+      font-size: 2.8em; /* Más prominente */
+      font-weight: 400; /* Anton es bold por defecto */
+      border-bottom: 2px solid var(--accent-blue);
+      padding-bottom: 15px;
+      letter-spacing: 1.5px;
+    }
+
+    /* Estructura Flex interna (sin cambios) */
+    .main-content-area { display: flex; gap: 25px; align-items: stretch; margin-top: 20px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 400px; }
+
+    /* Vistas Previas (Estilo Claro/Informativo) */
+    .event-preview {
+        flex: 1; min-width: 180px; max-width: 260px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 18px;
+        color: var(--text-color-dark);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 1px 3px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        opacity: 0.95; transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1; border-color: var(--accent-blue);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 3px 8px var(--shadow-medium);
+        transform: translateY(-3px);
+    }
+    .event-preview.empty-preview {
+        background: transparent; border: 2px dashed var(--border-color);
+        opacity: 0.7; cursor: default; align-items: center; justify-content: center;
+        text-align: center; color: var(--text-color-dark); box-shadow: none;
+    }
+
+    .event-preview h3 { font-family: var(--font-body); font-weight: 700; font-size: 1.05em; margin: 0 0 10px 0; color: var(--accent-blue); border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+    .event-preview .preview-year { font-family: var(--font-display); font-weight: 400; color: var(--accent-orange); margin-bottom: 10px; font-size: 1.3em; text-align: center; }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; opacity: 0.9; }
+
+    /* Slider Container (Estilo Funcional) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: var(--panel-bg); border-radius: 6px; border: 1px solid var(--border-color); }
+
+    /* Slider (Estilo Nieve/Cielo) */
+    input[type="range"] { flex: 1; height: 8px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-blue), var(--border-color)); border-radius: 4px; outline: none; border: 1px solid #aab; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; background: var(--accent-orange); border-radius: 50%; border: 3px solid var(--card-bg); box-shadow: 0 1px 4px var(--shadow-medium); transition: transform 0.2s ease; margin-top: -7px; }
+    input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent-orange); border-radius: 50%; border: 3px solid var(--card-bg); box-shadow: 0 1px 4px var(--shadow-medium); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.1); background: var(--accent-red); }
+
+    /* Year Display (Estilo Etiqueta) */
+    #yearDisplay { min-width: 75px; text-align: center; font-weight: 700; font-family: var(--font-display); background: var(--text-color-dark); color: var(--accent-orange); padding: 9px 16px; border-radius: 4px; border: 1px solid #1c2833; font-size: 1.2em; letter-spacing: 1px; }
+
+    /* Event Card (Estilo Blanco/Claro) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 35px; /* Más padding */
+      border-radius: 6px;
+      border: 1px solid #d5dce0;
+      min-height: 600px; /* Buena altura */
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px var(--shadow-soft);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: var(--preview-bg); color: var(--text-color-dark); }
+    #eventCard.loading { opacity: 0.95; }
+    #eventCard.error { border: 2px solid var(--accent-red); color: var(--accent-red); } /* Error usa rojo */
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link { /* Botones sugerencia estilo expedición */
+        display: inline-block; padding: 10px 20px;
+        background-color: var(--accent-blue);
+        color: var(--text-color-light);
+        border: 1px solid #2471a3; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700; font-size: 0.95em;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: var(--accent-orange); border-color: #d35400; color: #fff; transform: translateY(-2px); }
+
+    /* Estilos Tarjeta Principal (Claro/Expedición) */
+    #eventCard h2 { margin: 0 0 25px 0; text-align: center; color: var(--text-color-dark); font-family: var(--font-display); font-size: 2.1em; /* Más grande */ font-weight: 400; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; letter-spacing: 1px; }
+    #eventCard img {
+        max-width: 50%; height: auto; max-height: 250px; /* Permitir imágenes más grandes */
+        object-fit: contain; border-radius: 4px;
+        margin: 0 auto 30px auto; display: block;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 12px var(--shadow-medium);
+        background-color: #eee; /* Fondo gris claro si la imagen es transparente */
+    }
+    #eventCard .content-extract {
+        line-height: 1.75; margin-bottom: 30px; font-size: 1.0em;
+        text-align: justify; max-height: 380px; overflow-y: auto;
+        padding: 0 10px; /* Padding lateral */
+    }
+     /* Scrollbar estándar claro */
+     #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+     #eventCard .content-extract::-webkit-scrollbar-track { background: #f1f1f1; }
+     #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: #c1c1c1; border-radius: 4px; }
+     #eventCard .content-extract::-webkit-scrollbar-thumb:hover { background-color: #a8a8a8; }
+
+     /* Link Externo (Estilo Botón Expedición) */
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 28px;
+        background: var(--accent-orange);
+        color: #fff; text-decoration: none; font-weight: 700;
+        font-family: var(--font-body); border-radius: 4px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid #d35400; /* Borde naranja oscuro */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        width: fit-content; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px;
+    }
+    #eventCard a.external-link:hover { background: #f39c12; /* Naranja más brillante */ border-color: #e67e22; box-shadow: 0 3px 6px rgba(0,0,0,0.3); transform: translateY(-2px); }
+
+    /* Spinner (Naranja/Rojo) */
+    .spinner { width: 50px; height: 50px; border: 5px solid var(--border-color); border-top-color: var(--accent-orange); border-bottom-color: var(--accent-red); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos (Mismos breakpoints, adaptar si es necesario) */
+     @media (max-width: 1000px) { body { flex-direction: column; align-items: center; } .title-index-panel { width: 90%; max-height: 250px; margin-bottom: 20px; } .timeline-container { max-width: 90%; } }
+     @media (max-width: 768px) { .main-content-area { flex-direction: column; } .event-preview { max-width: 100%; min-height: 100px; } h1 { font-size: 2.2em; } #eventCard h2 { font-size: 1.8em;} }
+     @media (max-width: 480px) { body { padding: 10px; gap: 15px; } .title-index-panel { padding: 15px; width: calc(100% - 20px); max-height: 200px;} .title-index-panel h2 { font-size: 1.3em; } #titleList li { font-size: 0.9em; padding: 9px 8px;} .timeline-container { padding: 15px; max-width: calc(100% - 20px); } h1 { font-size: 2em; margin-bottom: 20px;} .slider-container { flex-direction: column; gap: 10px;} #eventCard { padding: 20px; min-height: 450px; } #eventCard h2 { font-size: 1.6em;} #eventCard img { max-width: 70%; max-height: 200px; } #eventCard .content-extract { font-size: 0.95em; max-height: 320px;} }
+
+  </style>
+</head>
+<body>
+
+  <!-- Panel de Índice Lateral -->
+  <div class="title-index-panel">
+    <h2>Bitácora de Ascenso</h2>
+    <ul id="titleList">
+      <!-- Llenado por JS -->
+    </ul>
+  </div>
+
+  <!-- Contenedor Principal -->
+  <div class="timeline-container" id="mainTimelineContainer"> <!-- Añadido ID para listener -->
+    <h1>Ascenso Cronológico - La Conquista del Everest</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Exploraciones Tempranas</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajuste el altímetro temporal para explorar los hitos del techo del mundo.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Montañismo Moderno</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Conquista del Everest ---
+    // CORREGIDO: Eliminados '#' de wikiTitle
+    const events = [
+        { year: 1852, title: "Identificación como la montaña más alta (Gran Proyecto de Trigonometría)", wikiTitle: "Gran Proyecto de Trigonometría" },
+        { year: 1921, title: "Primera Expedición Británica (Reconocimiento)", wikiTitle: "Expedición británica al Everest de 1921" },
+        { year: 1922, title: "Segundo Intento Británico (Primer uso de oxígeno)", wikiTitle: "Expedición británica al Everest de 1922" },
+        { year: 1924, title: "Expedición con Mallory e Irvine (Desaparición)", wikiTitle: "Expedición británica al Everest de 1924" },
+        { year: 1933, title: "Primer Vuelo sobre el Everest", wikiTitle: "Vuelo sobre el Everest de Houston"},
+        { year: 1950, title: "Nepal abre sus fronteras (Acceso Sur)", wikiTitle: "Monte Everest"}, // Usar página principal
+        { year: 1952, title: "Expedición Suiza (Intento cercano de Lambert y Tenzing)", wikiTitle: "Expedición suiza al Monte Everest de 1952" },
+        { year: 1953, title: "¡Primera Ascensión Exitosa! (Hillary y Tenzing Norgay)", wikiTitle: "Expedición británica al Everest de 1953" },
+        { year: 1963, title: "Primera Travesía Americana (Corredor Hornbein)", wikiTitle: "Expedición estadounidense al monte Everest de 1963"},
+        { year: 1975, title: "Junko Tabei: Primera Mujer en la Cima", wikiTitle: "Junko Tabei" },
+        { year: 1978, title: "Messner y Habeler: Primera Ascensión sin Oxígeno Suplementario", wikiTitle: "Reinhold Messner" }, // Página principal de Messner
+        { year: 1980, title: "Messner: Primera Ascensión en Solitario (y sin oxígeno)", wikiTitle: "Reinhold Messner"}, // Página principal de Messner
+        { year: 1980, title: "Polacos: Primera Ascensión Invernal", wikiTitle: "Leszek Cichy" }, // Uno de los escaladores principales
+        { year: 1996, title: "Desastre de 1996 (Tormenta mortal)", wikiTitle: "Desastre del Everest de 1996" },
+        { year: 1999, title: "Hallazgo del cuerpo de George Mallory", wikiTitle: "George Mallory"}, // Página principal de Mallory
+        { year: 2001, title: "Erik Weihenmayer: Primer Ciego en la Cima", wikiTitle: "Erik Weihenmayer" },
+        { year: 2010, title: "Jordan Romero: Persona más Joven en la Cima (13 años)", wikiTitle: "Jordan Romero" },
+        { year: 2013, title: "Yuichiro Miura: Persona más Anciana en la Cima (80 años)", wikiTitle: "Yuichiro Miura"},
+        { year: 2014, title: "Avalancha mortal en la Cascada de Hielo del Khumbu", wikiTitle: "Monte Everest"}, // Página principal, buscar detalles
+        { year: 2015, title: "Terremoto de Nepal y Avalancha en el Campo Base", wikiTitle: "Terremoto de Nepal de 2015"}, // Página del terremoto
+        { year: "Actualidad", title: "Debates sobre masificación, récords y seguridad", wikiTitle: "Monte Everest" } // Página principal
+    ];
+
+    // --- Elementos del DOM ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('mainTimelineContainer'); // Usar el ID añadido
+    const titleList = document.getElementById('titleList');
+
+    // --- Estado y Caché ---
+    const summaryCache = {};
+
+    // --- Fetch Detallado (action=query) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) {
+         const baseUrl = "https://es.wikipedia.org/w/api.php";
+         const params = new URLSearchParams({
+             action: "query", prop: "extracts|pageimages|info", titles: title,
+             format: "json", origin: "*", explaintext: "true", exchars: "2300", // Ligeramente más caracteres
+             exintro: "false", piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+         });
+         const url = `${baseUrl}?${params.toString()}`;
+         console.log("Fetching URL:", url);
+         let lastKnownError = null;
+         for (let i = 0; i < retries; i++) {
+             try {
+                 const response = await fetch(url);
+                 // Mejor manejo de errores HTTP no-OK
+                 if (!response.ok) {
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                     if (response.status >= 500 || response.status === 429) { // Error servidor o rate limit
+                         console.warn(`Intento ${i + 1} fallido por HTTP ${response.status} (${title})`);
+                         throw new Error(`HTTP error ${response.status}`); // Reintentará si es posible
+                     } else { // Error cliente (404, 400, etc.) - No reintentar generalmente
+                        console.error(`Error Cliente ${response.status} al buscar "${title}"`);
+                         throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`);
+                     }
+                 }
+                 const data = await response.json();
+                 // Verificación robusta de la estructura de respuesta
+                 if (!data.query || !data.query.pages) {
+                    console.error("Respuesta inesperada API (sin query.pages):", data);
+                    throw new Error("Respuesta inesperada API: falta query.pages");
+                 }
+                 const pages = data.query.pages;
+                 const pageId = Object.keys(pages)[0];
+                 // Manejo de página no encontrada (-1 o 'missing')
+                 if (pageId === "-1" || pages[pageId].missing !== undefined) {
+                    console.warn(`API reportó que "${title}" no existe.`);
+                     throw new Error(`Not Found: API reportó que "${title}" no existe.`); // Error específico
+                 }
+                 const pageData = pages[pageId];
+                 // Verificación de contenido esencial
+                 if (!pageData.title || !pageData.extract) {
+                    console.warn(`Respuesta incompleta para "${title}", falta título o extracto.`, pageData);
+                     throw new Error(`Respuesta incompleta para "${title}"`);
+                 }
+                 console.log(`Datos recibidos OK para "${title}"`);
+                 return pageData; // Éxito
+             } catch (error) {
+                 lastKnownError = error; // Guardar el último error conocido
+                 console.warn(`Intento ${i + 1} fallido en CATCH (${title}): ${error.message}`);
+                 // Si es 'Not Found' definitivo, no reintentar más
+                 if (error.message.startsWith('Not Found:') || error.message.startsWith('Client error')) {
+                     throw error; // Propagar error definitivo
+                 }
+                 // Si quedan reintentos, esperar y continuar loop
+                 if (i < retries - 1) {
+                     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+                 } else {
+                    // Se agotaron los reintentos
+                    console.error(`No se pudo obtener datos para "${title}" después de ${retries} intentos.`);
+                    throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`);
+                 }
+             }
+         }
+         // Si por alguna razón sale del loop sin éxito ni error propagado (no debería pasar)
+         throw lastKnownError || new Error(`Fallo inesperado recuperando datos para ${title}.`);
+     }
+
+    // --- Funciones de Renderizado ---
+
+    function renderEventCardLoading(message = "Estableciendo campamento base de datos...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading'; eventCard.style.opacity = '0.95';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Mensajes temáticos (igual que antes)
+        if (cleanMessage.includes('Imposible recuperar') || cleanMessage.includes('HTTP')) { cleanMessage = 'Avalancha en la conexión. Imposible recuperar datos de la expedición.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe') || cleanMessage.includes('Client error 404')) { cleanMessage = 'Ruta de datos desconocida. Este registro no se encuentra en la bitácora.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error en el equipo de solicitud de datos.';}
+        else if (cleanMessage.includes('incompleta')) { cleanMessage = 'Registro dañado o incompleto recuperado.';}
+        else if (cleanMessage.includes('alternativas')) { cleanMessage = cleanMessage; } // Mantener mensaje de fallo de búsqueda de sugerencias
+
+        eventCard.innerHTML = `<p><strong>¡Peligro! ¡Fallo en la Ruta de Datos!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error'; eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        let extract = pageData.extract || "Bitácora ilegible o no disponible.";
+        // Limpieza de citas y espacios extra
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim().replace(/\s{2,}/g, ' ');
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Ver Bitácora Completa (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0; // Reset scroll on new content
+    }
+
+    function renderPreview(eventData, targetElement) {
+         if (eventData && targetElement) {
+            const currentIndex = events.indexOf(eventData); // Obtener índice para el dataset
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Explorar este hito.</p>
+            `;
+             targetElement.className = 'event-preview';
+             targetElement.dataset.index = currentIndex; // Asegurar que el índice está en el dataset
+         } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Exploraciones Tempranas' : 'Montañismo Moderno';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" perdido, buscando rutas alternativas...`);
+        renderEventCardLoading("Registro perdido. Buscando rutas alternativas...");
+        const searchTerm = failedTitle;
+        // Usar API de búsqueda estándar
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+         try {
+            const response = await fetch(searchUrl); // Usar fetch simple aquí, sin reintentos complejos
+            if (!response.ok) {
+                throw new Error(`Error ${response.status} consultando índice de rutas.`);
+            }
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5); // Limitar a 5 sugerencias
+                let suggestionsHtml = `<p>El registro "<strong>${failedTitle}</strong>" está perdido o es inaccesible.</p>
+                                       <p>Posibles rutas alternativas en la bitácora:</p>
+                                       <ul class="suggestions-list">`; // No necesita clase aquí realmente
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, ''); // Limpiar HTML del snippet
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona una ruta para intentar acceder)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions'; // Clase para estilizar si es necesario
+                eventCard.style.opacity = '1';
+            } else {
+                // No se encontraron ni la página original ni sugerencias
+                console.log(`No se encontraron rutas alternativas para "${searchTerm}".`);
+                renderEventCardError(`Registro para "${failedTitle}" perdido y no se hallaron rutas alternativas.`);
+                eventCard.className = 'error'; // Asegurar clase error
+            }
+        } catch (searchErr) {
+            console.error("Error buscando rutas alternativas:", searchErr);
+            // Fallback al error original si la búsqueda también falla
+            renderEventCardError(`Registro para "${failedTitle}" perdido. La búsqueda de alternativas también falló (${searchErr.message}).`);
+            eventCard.className = 'error'; // Asegurar clase error
+        }
+    }
+
+    // --- Actualizar Índice Activo ---
+    function updateActiveTitleInList(activeIndex) {
+        const listItems = titleList.querySelectorAll('li');
+        listItems.forEach((li, index) => {
+            if (index === activeIndex) {
+                li.classList.add('active');
+                // Scroll suave para visibilidad
+                li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                li.classList.remove('active');
+            }
+        });
+    }
+
+    // --- Función Principal de Actualización ---
+    async function updateEvent(options) {
+        const index = options.index;
+        // Validación robusta del índice
+        if (isNaN(index) || index < 0 || index >= events.length) {
+             console.error(`Índice inválido solicitado: ${index}`);
+             return;
+         }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        // Sincronizar slider y lista
+        if (slider.value !== index.toString()) { slider.value = index; }
+        updateActiveTitleInList(index);
+
+        // Determinar título a buscar (override o del evento)
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase(); // Clave de caché normalizada
+
+        // Renderizar previews adyacentes
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        // Lógica de caché
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            console.log(`Datos para "${titleToFetch}" recuperados de caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}' en caché. Buscando sugerencias.`);
+             findAndDisplaySuggestions(titleToFetch); // Mostrar sugerencias si falló antes
+        } else {
+            // No está en caché o es un error previo no definitivo, intentar fetch
+            console.log(`Accediendo a bitácora para: ${titleToFetch}`);
+            renderEventCardLoading(); // Mostrar carga
+
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData; // Guardar éxito en caché
+                renderEventCard(pageData, currentEvent.title); // Mostrar datos
+            } catch (err) {
+                // Error durante el fetch
+                console.error(`Error final al cargar "${titleToFetch}":`, err.message);
+                // Marcar en caché según el tipo de error
+                if (err.message.startsWith('Not Found:') || err.message.startsWith('Client error 404')) {
+                     summaryCache[cacheKey] = 'NOT_FOUND';
+                } else {
+                     summaryCache[cacheKey] = 'LOAD_ERROR'; // Marcar error genérico
+                }
+                // Siempre intentar mostrar sugerencias como fallback
+                findAndDisplaySuggestions(titleToFetch);
+            }
+        }
+    }
+
+    // --- Manejador de Clics (Unificado) ---
+    function handleInteraction(event) {
+        // Click en un link de sugerencia dentro de eventCard
+        if (event.target.matches('#eventCard a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Cargando sugerencia: ${suggestedTitle}`);
+                // Obtener índice actual del slider para pasarlo
+                const currentIndex = parseInt(slider.value, 10);
+                updateEvent({ index: currentIndex, wikiTitleOverride: suggestedTitle });
+            }
+        }
+        // Click en una vista previa (prev o next)
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            // Validar índice antes de llamar a updateEvent
+            if (!isNaN(targetIndex) && targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando a índice ${targetIndex} desde preview.`);
+                updateEvent({ index: targetIndex });
+            } else {
+                 console.warn("Índice de preview inválido:", previewElement.dataset.index);
+            }
+        }
+    }
+
+    // --- Inicialización ---
+    function initializeTimeline() {
+        // Verificar si hay eventos
+        if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Bitácora Vacía";
+            eventCard.innerHTML = "<p>No hay registros de expediciones disponibles.</p>";
+            eventCard.className = 'error';
+            if(slider) slider.disabled = true;
+            if(yearDisplay) yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview);
+            renderPreview(null, nextPreview);
+            if(titleList) titleList.innerHTML = '<li>Índice no disponible</li>';
+            console.error("No hay eventos definidos para la línea de tiempo.");
+            return;
+        }
+
+        // Poblar índice lateral
+        titleList.innerHTML = ''; // Limpiar por si acaso
+        events.forEach((event, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${event.year} - ${event.title}`;
+            listItem.dataset.index = index;
+            listItem.addEventListener('click', () => {
+                // Evitar doble llamada si ya se está actualizando
+                if (slider.value !== index.toString()) {
+                    updateEvent({ index: index });
+                }
+            });
+            titleList.appendChild(listItem);
+        });
+
+        // Configurar slider
+        slider.max = events.length - 1;
+        slider.value = 0;
+        slider.disabled = events.length <= 1;
+
+        // Carga inicial del primer evento
+        updateEvent({ index: 0 });
+
+        // Añadir listeners principales
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+
+        // Asegurar que el contenedor existe antes de añadir listener
+        if (timelineContainer) {
+            timelineContainer.addEventListener('click', handleInteraction);
+        } else {
+            console.error("Contenedor principal 'mainTimelineContainer' no encontrado. Listener de interacción no añadido.");
+        }
+
+        console.log("Bitácora de Ascenso Cronológico cargada. ¡A explorar!");
+    }
+
+    // Ejecutar inicialización cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

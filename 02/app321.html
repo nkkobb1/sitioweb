@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudio Constitución Colombia v2.3</title> <!-- Increment version -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* --- (Estilos CSS - Sin cambios respecto a la v2.1 / v2.2) --- */
+        :root { --bg-color: #eef1f5; --card-bg: #ffffff; --text-color: #34495e; --primary-color: #3498db; --secondary-color: #95a5a6; --accent-color: #2ecc71; --easy-color: #1abc9c; --hard-color: #f39c12; --again-color: #e74c3c; --important-color: #f1c40f; --status-bg-color: #d1ecf1; --status-text-color: #0c5460; --border-color: #dce4ec; --shadow-color: rgba(0, 0, 0, 0.12); --font-ui: 'Poppins', sans-serif; --font-content: 'Lora', serif; --border-radius-sm: 6px; --border-radius-md: 12px; --border-radius-lg: 25px; --transition-speed: 0.3s; --transition-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        body { font-family: var(--font-ui); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; background: linear-gradient(-45deg, var(--bg-gradient-start, #f8fafc), var(--bg-gradient-end, #e0e7ff), #dbeafe, #c7d2fe); background-size: 400% 400%; animation: backgroundGradient 18s ease infinite; color: var(--text-color); margin: 0; padding: 40px 20px; box-sizing: border-box; line-height: 1.7; }
+        @keyframes backgroundGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .anki-container { background-color: var(--card-bg); padding: 40px 50px; border-radius: var(--border-radius-md); box-shadow: 0 15px 35px var(--shadow-medium); text-align: center; max-width: 850px; width: 100%; border: 1px solid rgba(255,255,255,0.5); }
+        h1 { background: var(--primary-gradient, linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-top: 0; margin-bottom: 40px; font-weight: 700; font-size: 2.4em; letter-spacing: -0.5px; display: inline-block; }
+        .mode-selector { display: flex; justify-content: center; gap: 12px; margin-bottom: 35px; flex-wrap: wrap; }
+        .mode-button { padding: 10px 22px; border: 2px solid transparent; border-radius: var(--border-radius-lg); background-color: #f3f4f6; color: var(--text-light, #6b7280); cursor: pointer; font-size: 0.95em; font-weight: 600; transition: all var(--transition-speed) var(--transition-ease); display: inline-flex; align-items: center; gap: 8px; }
+        .mode-button i { font-size: 1.1em; transition: transform 0.3s ease; }
+        .mode-button:hover { background-color: #e5e7eb; color: var(--text-color); border-color: var(--border-color); transform: translateY(-2px); }
+        .mode-button.active { background: var(--primary-gradient, linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)); color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); transform: translateY(-2px); }
+        .mode-button.active i { transform: rotate(-10deg); }
+        .card-area { position: relative; margin-bottom: 30px; }
+        .star-button-wrapper { position: absolute; top: 18px; right: 18px; z-index: 10; }
+        .star-button { background: none; border: none; font-size: 2em; cursor: pointer; color: var(--secondary-color); transition: color 0.2s, transform 0.2s; padding: 0; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1)); }
+        .star-button:hover { transform: scale(1.2); }
+        .star-button.important { color: var(--important-color); }
+        #review-reason-indicator { position: absolute; top: 18px; left: 18px; z-index: 10; background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); color: var(--secondary-color); padding: 4px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; border: 1px solid var(--border-color); transition: opacity 0.4s ease, transform 0.4s ease; opacity: 0; transform: translateX(-10px); }
+        #review-reason-indicator:not(.hidden) { opacity: 1; transform: translateX(0); }
+        #review-reason-indicator.reason-again { color: var(--again-color); border-color: var(--again-color); box-shadow: 0 0 5px rgba(248, 113, 113, 0.3);}
+        #review-reason-indicator.reason-hard { color: var(--hard-color); border-color: var(--hard-color); box-shadow: 0 0 5px rgba(251, 191, 36, 0.3);}
+        #review-reason-indicator.reason-good { color: var(--accent-color); border-color: var(--accent-color); box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);}
+        #review-reason-indicator.reason-easy { color: var(--easy-color); border-color: var(--easy-color); box-shadow: 0 0 5px rgba(34, 211, 238, 0.3);}
+        .card-scene { width: 100%; height: 400px; perspective: 1800px; }
+        .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55); cursor: pointer; border-radius: var(--border-radius-md); box-shadow: 0 10px 30px var(--shadow-medium); border: 1px solid var(--border-color); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-sizing: border-box; border-radius: var(--border-radius-md); overflow: hidden; background-color: var(--card-bg); }
+        .card-face-content-wrapper { width: 100%; height: 100%; overflow-y: auto; padding-right: 15px; text-align: center; }
+        .card-face-content-wrapper::-webkit-scrollbar { width: 10px; }
+        .card-face-content-wrapper::-webkit-scrollbar-track { background: transparent; border-radius: 5px; }
+        .card-face-content-wrapper::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 5px; border: 2px solid var(--card-bg); background-clip: padding-box;}
+        .card-face-content-wrapper:hover::-webkit-scrollbar-thumb { background-color: var(--secondary-color); }
+        .card-face-content-wrapper { scrollbar-width: thin; scrollbar-color: var(--secondary-color) transparent; }
+        .card-front {}
+        .card-back { transform: rotateY(180deg); align-items: flex-start; background-color: #f9fafb; }
+        .card-back .card-face-content-wrapper { text-align: left; white-space: pre-wrap; font-family: var(--font-content); font-size: 1.1em; line-height: 1.8; padding-top: 15px; }
+        .card.is-flipped { transform: rotateY(180deg); box-shadow: 0 10px 30px var(--shadow-medium); }
+        #card-front-content { font-size: 2.5em; font-weight: 700; color: var(--primary-color); padding: 15px; letter-spacing: -0.5px; }
+        .reformas-section { margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--border-color); font-size: 0.95em; color: var(--text-light, #6b7280); font-family: var(--font-ui); }
+        .reformas-section strong { color: var(--text-color); font-weight: 600; display: block; margin-bottom: 8px; }
+        #reformas-list { padding-left: 20px; margin: 0; list-style: none; }
+        #reformas-list li { margin-bottom: 6px; position: relative; padding-left: 15px;}
+        #reformas-list li::before { content: "\f0da"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: var(--primary-color); position: absolute; left: 0; top: 2px; font-size: 0.9em; }
+        .card-actions#card-actions-container { display: flex; justify-content: center; align-items: center; margin-top: 30px; margin-bottom: 30px; min-height: 50px; }
+        .srs-buttons:not(.hidden) { display: flex; justify-content: center; gap: 12px; width: 100%; }
+        .srs-buttons:not(.hidden) ~ #flip-button { display: none; }
+        .srs-buttons button { font-size: 0.95em; font-weight: 600; padding: 12px 20px; border: none; color: white; border-radius: var(--border-radius-lg); cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+        .srs-buttons button:hover { transform: translateY(-3px) scale(1.03); filter: brightness(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.15);}
+        #srs-again { background: var(--again-color); }
+        #srs-hard { background: var(--hard-color); color: var(--text-color); }
+        #srs-good { background: var(--accent-color); }
+        #srs-easy { background: var(--easy-color); }
+        .navigation#navigation-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border-color); }
+        .nav-button, .action-button#flip-button { color: white; border: none; padding: 14px 30px; border-radius: var(--border-radius-lg); cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; background: var(--primary-gradient, linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)); box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2); }
+        .nav-button i, .action-button#flip-button i { font-size: 1.1em; transition: transform 0.3s ease;}
+        .nav-button:hover, .action-button#flip-button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3); filter: brightness(1.1); }
+        .nav-button:hover i:first-child { transform: translateX(-3px); }
+        .nav-button:hover i:last-child { transform: translateX(3px); }
+        .nav-button:active, .action-button#flip-button:active { transform: translateY(-1px); box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2); }
+        .nav-button:disabled { background: var(--secondary-color); cursor: not-allowed; box-shadow: none; transform: none; opacity: 0.6; }
+        #flip-button { background: var(--accent-gradient, linear-gradient(135deg, #10b981 0%, #34d399 100%)); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
+        #flip-button:hover { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3); }
+        #progress-container { width: 100%; margin-top: 30px; text-align: left; }
+        #progress-bar { width: 100%; height: 12px; background-color: var(--border-color); border-radius: 6px; overflow: hidden; margin-bottom: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        #progress-bar-inner { height: 100%; width: 0%; background: var(--primary-gradient, linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)); border-radius: 6px; transition: width 0.5s var(--transition-ease); }
+        #progress-indicator { color: var(--text-light, #6b7280); font-size: 0.9em; font-weight: 500; }
+        #loading-state, #error-state, #no-cards-state { font-size: 1.15em; color: var(--text-light, #6b7280); margin-top: 50px; padding: 30px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 5px 15px var(--shadow-light); }
+        #error-state { color: #9f1239; background-color: #ffe4e6; border-color: #fecdd3;}
+        #loading-state i { color: var(--primary-color); font-size: 1.3em; }
+        #no-cards-state i { color: var(--secondary-color); font-size: 1.3em;}
+        #status-message { margin-top: 25px; padding: 12px 20px; font-size: 1em; color: var(--status-text-color); background-color: var(--status-bg-color); border: 1px solid var(--primary-color); border-radius: var(--border-radius-sm); opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.3s ease; transform: translateY(10px); min-height: 1.5em; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 3px 10px var(--shadow-light); }
+        #status-message.visible { opacity: 1; transform: translateY(0); }
+        #status-message i { font-size: 1.2em; }
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="anki-container">
+        <h1><i class="fas fa-book-open" style="margin-right: 10px; color: var(--primary-color);"></i>Estudio Constitución Colombia</h1>
+
+        <!-- Mode Selector -->
+        <div class="mode-selector" id="mode-selector-buttons">
+             <button class="mode-button" data-mode="sequential" title="Estudiar en orden">
+                 <i class="fas fa-list-ol"></i> Secuencial
+             </button>
+             <button class="mode-button" data-mode="random" title="Estudiar en orden aleatorio">
+                 <i class="fas fa-random"></i> Aleatorio
+             </button>
+             <button class="mode-button" data-mode="review" title="Repasar tarjetas vencidas">
+                 <i class="fas fa-history"></i> Repasar Hoy
+             </button>
+             <button class="mode-button" data-mode="important" title="Estudiar solo importantes">
+                 <i class="fas fa-star"></i> Importantes
+             </button>
+        </div>
+
+        <div id="loading-state"> <i class="fas fa-spinner fa-spin"></i> Cargando artículos...</div>
+        <div id="error-state" class="hidden"></div>
+        <div id="no-cards-state" class="hidden"></div>
+
+        <div id="app-content" class="hidden">
+
+            <div class="card-area">
+                <div class="star-button-wrapper">
+                     <button class="star-button" id="important-button" title="Marcar como importante">
+                         <i class="fa-regular fa-star"></i>
+                     </button>
+                </div>
+                 <div id="review-reason-indicator" class="hidden"></div>
+
+                <div class="card-scene">
+                    <div class="card" id="flashcard">
+                        <div class="card-face card-front">
+                            <div class="card-face-content-wrapper">
+                               <div id="card-front-content"></div>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                             <div class="card-face-content-wrapper">
+                                <div id="card-back-content"></div>
+                                <div id="reformas-content" class="reformas-section hidden">
+                                    <strong>Reformas:</strong>
+                                    <ul id="reformas-list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="card-actions" id="card-actions-container">
+                 <button class="action-button" id="flip-button"><i class="fas fa-eye"></i> Mostrar Respuesta</button>
+                 <div class="srs-buttons hidden" id="srs-controls">
+                      <button id="srs-again" title="Repasar en 1 minuto (Tecla 1)"> <i class="fas fa-redo"></i> Otra vez</button>
+                      <button id="srs-hard" title="Repasar en 10 minutos (Tecla 2)"> <i class="fas fa-brain"></i> Difícil</button>
+                      <button id="srs-good" title="Repasar mañana (Tecla 3)"> <i class="fas fa-check"></i> Bien</button>
+                      <button id="srs-easy" title="Repasar en 4 días (Tecla 4)"> <i class="fas fa-thumbs-up"></i> Fácil</button>
+                  </div>
+             </div>
+
+            <div id="progress-container">
+                <div id="progress-bar"><div id="progress-bar-inner"></div></div>
+                <span id="progress-indicator">Artículo 1 / N | Modo: Secuencial</span>
+            </div>
+
+             <div class="navigation" id="navigation-controls">
+                <button class="nav-button" id="prev-button" disabled><i class="fas fa-arrow-left"></i> Anterior</button>
+                <button class="nav-button" id="next-button">Siguiente <i class="fas fa-arrow-right"></i></button>
+            </div>
+
+            <div id="status-message"></div>
+
+        </div> <!-- End #app-content -->
+    </div> <!-- End .anki-container -->
+
+    <script>
+        // --- DOM Elements ---
+        const cardElement = document.getElementById('flashcard');
+        const cardFrontContent = document.getElementById('card-front-content');
+        const cardBackContent = document.getElementById('card-back-content');
+        const reformasContent = document.getElementById('reformas-content');
+        const reformasList = document.getElementById('reformas-list');
+        const flipButton = document.getElementById('flip-button');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const navigationControls = document.getElementById('navigation-controls');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const progressBarInner = document.getElementById('progress-bar-inner');
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const noCardsState = document.getElementById('no-cards-state');
+        const appContent = document.getElementById('app-content');
+        const modeSelectorButtons = document.getElementById('mode-selector-buttons');
+        const modeButtons = modeSelectorButtons.querySelectorAll('.mode-button');
+        const importantButton = document.getElementById('important-button');
+        const importantButtonIcon = importantButton.querySelector('i');
+        const srsControls = document.getElementById('srs-controls');
+        const srsAgainBtn = document.getElementById('srs-again');
+        const srsHardBtn = document.getElementById('srs-hard');
+        const srsGoodBtn = document.getElementById('srs-good');
+        const srsEasyBtn = document.getElementById('srs-easy');
+        const statusMessage = document.getElementById('status-message');
+        const reviewReasonIndicator = document.getElementById('review-reason-indicator');
+        const cardActionsContainer = document.getElementById('card-actions-container');
+        let statusTimeout = null;
+
+        // --- State Variables ---
+        let articlesData = [];
+        let studyItems = [];
+        let studyStateData = {};
+        let currentIndexInStudy = 0;
+        let currentArticleIndex = -1;
+        let currentMode = 'sequential';
+        let isFlipped = false;
+        const jsonUrl = 'https://raw.githubusercontent.com/nkkobb1/sitioweb/main/constitucion.json';
+        const LS_STATE_KEY = 'ankiConstitucionAppState_v3';
+        const LS_STUDY_DATA_KEY = 'ankiConstitucionStudyData_v3';
+
+        // --- Constants ---
+        const MINUTE = 60 * 1000; const HOUR = 60 * MINUTE; const DAY = 24 * HOUR;
+        const SRS_INTERVALS = { again: 1 * MINUTE, hard: 10 * MINUTE, good: 1 * DAY, easy: 4 * DAY };
+        const SRS_REASONS_MAP = {
+            [SRS_INTERVALS.again]: { text: "Debido: Otra vez", class: "reason-again" },
+            [SRS_INTERVALS.hard]:  { text: "Debido: Difícil", class: "reason-hard" },
+            [SRS_INTERVALS.good]:  { text: "Debido: Bien", class: "reason-good" },
+            [SRS_INTERVALS.easy]:  { text: "Debido: Fácil", class: "reason-easy" }
+        };
+
+        // --- Initialization ---
+        async function initializeApp() { /* (No changes) */ showLoading(); loadState(); await loadArticles(); if (articlesData.length > 0) { loadStudyData(); initializeStudyStateForAllArticles(); updateModeButtonsUI(); prepareStudyMode(); hideLoading(); appContent.classList.remove('hidden'); displayCard(); } }
+
+        // --- Data Loading and State Management ---
+        async function loadArticles() { /* (No changes) */ try { const r = await fetch(jsonUrl); if (!r.ok) throw new Error(`HTTP ${r.status}`); const d = await r.json(); if (!Array.isArray(d) || d.length === 0 || typeof d[0].numero_articulo === 'undefined' || typeof d[0].contenido === 'undefined') throw new Error("JSON inválido."); articlesData = d; console.log(`Loaded ${articlesData.length} articles.`); } catch (e) { showError(`Error loading articles: ${e.message}.`); console.error('Fetch error:', e); articlesData = []; } }
+        function loadState() { /* (No changes) */ const s = JSON.parse(localStorage.getItem(LS_STATE_KEY) || '{}'); currentMode = s.mode || 'sequential'; console.log("Loaded state:", s); }
+        function saveState() { /* (No changes) */ const s = { mode: currentMode, lastArticleIndex: currentArticleIndex >= 0 ? currentArticleIndex : undefined }; localStorage.setItem(LS_STATE_KEY, JSON.stringify(s)); }
+        function loadStudyData() { /* (No changes) */ try { studyStateData = JSON.parse(localStorage.getItem(LS_STUDY_DATA_KEY) || '{}'); console.log(`Loaded study data for ${Object.keys(studyStateData).length} articles`); } catch(e) { console.error("Parse study data error:", e); studyStateData = {}; } }
+        function saveStudyData() { /* (No changes) */ try { localStorage.setItem(LS_STUDY_DATA_KEY, JSON.stringify(studyStateData)); console.log("Saved study data (example entry for current card if exists):", studyStateData[articlesData[currentArticleIndex]?.numero_articulo] );} catch (e) { console.error("Save study data error:", e); } } // Added log
+        function initializeStudyStateForAllArticles() { /* (No changes) */ let u = false; articlesData.forEach((a) => { const id = a.numero_articulo; if (!studyStateData[id]) { studyStateData[id] = { isImportant: false, nextReviewDate: null, lastInterval: null }; u = true; } if (typeof studyStateData[id].isImportant === 'undefined') { studyStateData[id].isImportant = false; u = true; } if (typeof studyStateData[id].nextReviewDate === 'undefined') { studyStateData[id].nextReviewDate = null; u = true; } if (typeof studyStateData[id].lastInterval === 'undefined') { studyStateData[id].lastInterval = null; u = true; } }); if (u) { console.log("Initialized/Updated study state."); saveStudyData(); } }
+
+        // --- Study Mode Logic ---
+        function prepareStudyMode() {
+            const now = Date.now();
+            console.log(`%cPreparing mode: ${currentMode}. Current time: ${new Date(now).toLocaleString()}`, "color: blue; font-weight: bold;");
+
+            switch (currentMode) {
+                case 'random': studyItems = articlesData.map((_, i) => i); shuffleArray(studyItems); break;
+                case 'review':
+                    console.log("%c--- Filtering for Review Mode ---", "color: green;");
+                    studyItems = articlesData
+                        .map((article, index) => {
+                            const state = studyStateData[article.numero_articulo];
+                            const reviewDate = state?.nextReviewDate;
+                             // --- Ensure reviewDate is a number before comparison ---
+                            const isValidDate = typeof reviewDate === 'number' && !isNaN(reviewDate);
+                            const isDue = isValidDate && reviewDate <= now;
+                            // Log details for debugging
+                            // console.log(`Review Check: ID=${article.numero_articulo}, Date=${reviewDate ? new Date(reviewDate).toISOString() : 'N/A'}, Now=${new Date(now).toISOString()}, IsDue=${isDue}`);
+                            return { index, article, state, isDue };
+                        })
+                        .filter(item => item.isDue) // Filter based on the calculated 'isDue'
+                        .sort((a, b) => (a.state?.nextReviewDate || Infinity) - (b.state?.nextReviewDate || Infinity))
+                        .map(({ index }) => index);
+                    console.log(`%c--- Found ${studyItems.length} items for review ---`, "color: green;");
+                    break;
+                case 'important': studyItems = articlesData.map((a, i) => ({ index: i, article: a })).filter(({ article }) => studyStateData[article.numero_articulo]?.isImportant === true).map(({ index }) => index); break;
+                case 'sequential': default: studyItems = articlesData.map((_, i) => i); break;
+            }
+            currentIndexInStudy = 0;
+            const s = JSON.parse(localStorage.getItem(LS_STATE_KEY) || '{}');
+            if (s.lastArticleIndex !== undefined && s.lastArticleIndex >= 0) { const r = studyItems.indexOf(s.lastArticleIndex); if (r !== -1) { currentIndexInStudy = r; } }
+            console.log(`Mode: ${currentMode}, Items: ${studyItems.length}, Start Index: ${currentIndexInStudy}`);
+        }
+
+
+        function updateNoCardsState() { /* (No changes needed) */ const appVisible = !appContent.classList.contains('hidden'); if (appVisible) { const hasCardsInMode = studyItems.length > 0; let msg = "No hay tarjetas para mostrar en este modo."; if (!hasCardsInMode && currentMode === 'review') msg = "¡Nada para repasar hoy! Sigue estudiando."; else if (!hasCardsInMode && currentMode === 'important') msg = "No has marcado ningún artículo como importante."; noCardsState.textContent = msg; const icon = noCardsState.querySelector('i'); if (!hasCardsInMode && !icon) { noCardsState.prepend(createIcon('info-circle')); } else if (hasCardsInMode && icon) { icon.remove(); } noCardsState.classList.toggle('hidden', !hasCardsInMode); cardElement.parentElement.classList.toggle('hidden', !hasCardsInMode); cardActionsContainer.classList.toggle('hidden', !hasCardsInMode); navigationControls.classList.toggle('hidden', !hasCardsInMode); importantButton.parentElement.classList.toggle('hidden', !hasCardsInMode); if (!hasCardsInMode) { flipButton.classList.add('hidden'); srsControls.classList.add('hidden'); } else if (!isFlipped) { flipButton.classList.remove('hidden'); srsControls.classList.add('hidden'); } else { flipButton.classList.add('hidden'); srsControls.classList.remove('hidden'); } } else { noCardsState.classList.add('hidden'); } }
+
+
+        // --- Card Display Logic ---
+        function displayCard() { /* (No changes needed) */ updateNoCardsState(); if (studyItems.length === 0 || currentIndexInStudy >= studyItems.length || currentIndexInStudy < 0) { currentArticleIndex = -1; updateUI(); return; } currentArticleIndex = studyItems[currentIndexInStudy]; if (currentArticleIndex < 0 || currentArticleIndex >= articlesData.length) { showError("Error interno: Índice inválido."); currentArticleIndex = -1; updateUI(); return; } const currentArticle = articlesData[currentArticleIndex]; const articleId = currentArticle.numero_articulo; const articleState = studyStateData[articleId] || {}; flipCard(false); cardFrontContent.textContent = articleId; cardBackContent.textContent = currentArticle.contenido; if (currentArticle.reformas?.length > 0) { reformasList.innerHTML = currentArticle.reformas.map(r => `<li>${r}</li>`).join(''); reformasContent.classList.remove('hidden'); } else { reformasList.innerHTML = ''; reformasContent.classList.add('hidden'); } const isImp = articleState.isImportant === true; importantButtonIcon.className = isImp ? 'fa-solid fa-star' : 'fa-regular fa-star'; importantButton.classList.toggle('important', isImp); importantButton.title = isImp ? "Desmarcar" : "Marcar"; if (currentMode === 'review' && articleState?.lastInterval) { const reasonInfo = SRS_REASONS_MAP[articleState.lastInterval] || { text: "Debido", class: "" }; reviewReasonIndicator.textContent = reasonInfo.text; reviewReasonIndicator.className = 'review-reason-indicator'; if (reasonInfo.class) reviewReasonIndicator.classList.add(reasonInfo.class); reviewReasonIndicator.classList.remove('hidden'); } else { reviewReasonIndicator.classList.add('hidden'); } srsControls.classList.add('hidden'); flipButton.classList.remove('hidden'); updateUI(); }
+
+        function updateUI() { /* (No changes needed) */ const totalCards = articlesData.length; const totalInMode = studyItems.length; const currentCardNum = totalInMode > 0 ? currentIndexInStudy + 1 : 0; let modeButton = modeSelectorButtons.querySelector(`.mode-button[data-mode="${currentMode}"]`); let modeText = modeButton ? modeButton.innerText.trim() : currentMode; progressIndicator.textContent = `Artículo ${currentCardNum} / ${totalInMode} | Modo: ${modeText} (Total: ${totalCards})`; const progressPercent = totalInMode > 0 ? (currentCardNum / totalInMode) * 100 : 0; progressBarInner.style.width = `${progressPercent}%`; prevButton.disabled = currentIndexInStudy <= 0; nextButton.disabled = currentIndexInStudy >= totalInMode - 1; }
+        function updateModeButtonsUI() { /* (No changes needed) */ modeButtons.forEach(b => { b.classList.toggle('active', b.dataset.mode === currentMode); }); }
+
+        // --- Card Actions ---
+        function flipCard(forceState = null) { /* (No changes needed) */ if (currentArticleIndex === -1) return; if (forceState !== null) { isFlipped = forceState; } else { isFlipped = !isFlipped; } cardElement.classList.toggle('is-flipped', isFlipped); srsControls.classList.toggle('hidden', !isFlipped); flipButton.classList.toggle('hidden', isFlipped); if (isFlipped) { const bcw = cardElement.querySelector('.card-back .card-face-content-wrapper'); if (bcw) bcw.scrollTop = 0; } }
+        function toggleImportant() { /* (No changes needed) */ if (currentArticleIndex === -1) return; const id = articlesData[currentArticleIndex].numero_articulo; const s = studyStateData[id]; if (s) { s.isImportant = !s.isImportant; saveStudyData(); const isImp = s.isImportant; importantButtonIcon.className = isImp ? 'fa-solid fa-star' : 'fa-regular fa-star'; importantButton.classList.toggle('important', isImp); importantButton.title = isImp ? "Desmarcar" : "Marcar"; showStatusMessage(`Artículo ${isImp ? 'marcado' : 'desmarcado'} como importante.`, isImp ? 'star' : 'star-half-alt'); } }
+        function handleSrsRating(level) { /* (Added explicit save call confirmation) */
+            if (currentArticleIndex === -1) return;
+            const id = articlesData[currentArticleIndex].numero_articulo;
+            const s = studyStateData[id];
+            const now = Date.now();
+            if (s) {
+                const interval = SRS_INTERVALS[level];
+                const nextTs = now + interval;
+                s.nextReviewDate = nextTs; // Ensure this is a number (timestamp)
+                s.lastInterval = interval;
+                const nextDt = new Date(nextTs).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true });
+                showStatusMessage(`Repasar: ${nextDt}`, 'calendar-check');
+                console.log(`SRS: ${level}. ${id} nextReviewDate set to: ${nextTs} (${new Date(nextTs).toLocaleString()})`);
+                saveStudyData(); // Explicitly save AFTER updating the state object
+            }
+            setTimeout(showNextCard, 300);
+         }
+
+        // --- Navigation ---
+        function showNextCard() { /* (No changes needed) */ if (currentIndexInStudy >= studyItems.length - 1) { if (studyItems.length > 0 && (currentMode === 'review' || currentMode === 'important')) { let modeButton = modeSelectorButtons.querySelector(`.mode-button[data-mode="${currentMode}"]`); let modeText = modeButton ? modeButton.innerText.trim() : currentMode; showStatusMessage(`¡Completaste las tarjetas de "${modeText}" por ahora!`, 'check-circle'); } updateUI(); return; } if (currentIndexInStudy < studyItems.length - 1) { currentIndexInStudy++; displayCard(); saveState(); } else { updateUI(); } }
+        function showPrevCard() { /* (No changes needed) */ if (currentIndexInStudy > 0) { currentIndexInStudy--; displayCard(); saveState(); } }
+        function changeMode(newMode) { /* (No changes needed) */ if (newMode !== currentMode) { currentMode = newMode; updateModeButtonsUI(); console.log("Mode changed to:", currentMode); prepareStudyMode(); displayCard(); saveState(); } }
+
+        // --- Utility ---
+        function shuffleArray(a) { /* (No changes) */ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } }
+        function showLoading() { /* (No changes) */ loadingState.classList.remove('hidden'); errorState.classList.add('hidden'); appContent.classList.add('hidden'); noCardsState.classList.add('hidden'); }
+        function hideLoading() { /* (No changes) */ loadingState.classList.add('hidden'); }
+        function showError(m) { /* (No changes) */ hideLoading(); errorState.textContent = m; if (!errorState.querySelector('i')) errorState.prepend(createIcon('exclamation-triangle')); errorState.classList.remove('hidden'); appContent.classList.add('hidden'); noCardsState.classList.add('hidden'); }
+        function showStatusMessage(msg, iconName = null, duration = 3000) { /* (No changes) */ if (statusTimeout) clearTimeout(statusTimeout); statusMessage.innerHTML = ''; if(iconName) statusMessage.appendChild(createIcon(iconName)); statusMessage.appendChild(document.createTextNode(" " + msg)); statusMessage.classList.add('visible'); statusTimeout = setTimeout(() => { statusMessage.classList.remove('visible'); }, duration); }
+        function createIcon(iconClass) { /* (No changes) */ const i = document.createElement('i'); i.className = `fas fa-${iconClass}`; return i; }
+
+        // --- Event Listeners ---
+        cardElement.addEventListener('click', () => { if (!isFlipped && currentArticleIndex !== -1) flipCard() });
+        flipButton.addEventListener('click', () => { if (currentArticleIndex !== -1) flipCard() });
+        nextButton.addEventListener('click', showNextCard);
+        prevButton.addEventListener('click', showPrevCard);
+        importantButton.addEventListener('click', toggleImportant);
+        modeButtons.forEach(b => { b.addEventListener('click', () => changeMode(b.dataset.mode)); });
+        srsAgainBtn.addEventListener('click', () => handleSrsRating('again'));
+        srsHardBtn.addEventListener('click', () => handleSrsRating('hard'));
+        srsGoodBtn.addEventListener('click', () => handleSrsRating('good'));
+        srsEasyBtn.addEventListener('click', () => handleSrsRating('easy'));
+        document.addEventListener('keydown', (e) => { /* (No changes) */ if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return; if (appContent.classList.contains('hidden') || !errorState.classList.contains('hidden')) return; const cardExists = currentArticleIndex !== -1; switch (e.key) { case 'ArrowRight': if (!nextButton.disabled) showNextCard(); break; case 'ArrowLeft': if (!prevButton.disabled) showPrevCard(); break; case ' ': e.preventDefault(); if (cardExists) flipCard(); break; case '1': if (cardExists && isFlipped && !srsControls.classList.contains('hidden')) handleSrsRating('again'); break; case '2': if (cardExists && isFlipped && !srsControls.classList.contains('hidden')) handleSrsRating('hard'); break; case '3': if (cardExists && isFlipped && !srsControls.classList.contains('hidden')) handleSrsRating('good'); break; case '4': if (cardExists && isFlipped && !srsControls.classList.contains('hidden')) handleSrsRating('easy'); break; case 's': case '*': if (cardExists) toggleImportant(); break; } });
+
+        // --- Start the app ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+
+</body>
+</html>

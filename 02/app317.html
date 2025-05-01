@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlas de la Exploración - Nuevos Horizontes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #e8e0d0; /* Pergamino claro */
+      --container-bg: #fdfaf3; /* Papel casi blanco */
+      --card-bg: #fdfdfd; /* Blanco limpio para la tarjeta */
+      --preview-bg: #f0e8d8; /* Pergamino ligeramente más oscuro */
+      --text-color-dark: #4a3c2a; /* Marrón oscuro sepia */
+      --text-color-medium: #6b5b4a; /* Marrón medio */
+      --text-color-light: #f0e8d9; /* Crema claro (para fondos oscuros si los hubiera) */
+      --accent-blue: #2c3e50; /* Azul marino profundo */
+      --accent-gold: #c8a464; /* Oro viejo / Latón */
+      --accent-red: #a05a5a; /* Rojo mapa apagado */
+      --border-color: #d1c0a8; /* Borde pergamino */
+      --font-body: 'Source Sans Pro', sans-serif;
+      --font-display: 'Playfair Display', serif; /* Fuente elegante y clásica */
+      --shadow-soft: rgba(74, 60, 42, 0.15);
+      --shadow-medium: rgba(74, 60, 42, 0.25);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d1c0a8' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); /* Patrón geométrico sutil */
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 30px 20px; /* Más padding vertical */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 30px var(--shadow-medium);
+      padding: 30px 35px; /* Más padding */
+      max-width: 95vw; /* Ligeramente más ancho */
+      width: 1500px; /* Ancho máximo generoso */
+      position: relative;
+      overflow: hidden; /* Evitar que decoraciones se salgan */
+    }
+
+     /* Decoración sutil - Líneas finas */
+    .timeline-container::before, .timeline-container::after {
+      content: ''; position: absolute; background-color: var(--border-color); opacity: 0.7;
+    }
+    .timeline-container::before { height: 1px; left: 30px; right: 30px; top: 15px; }
+    .timeline-container::after { height: 1px; left: 30px; right: 30px; bottom: 15px; }
+
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-blue);
+      font-size: 2.6em; /* Más grande */
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+      letter-spacing: 1px;
+    }
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 20px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; } /* Más ancho */
+
+    /* Vistas Previas (Estilo "Mapa Enrollado" / Tarjeta) */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px; /* Ligeramente más anchas */
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: 0 3px 8px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        box-shadow: 0 6px 15px var(--shadow-medium);
+        transform: translateY(-4px);
+        border-color: var(--accent-gold);
+        background-color: #f5efe0; /* Ligeramente más claro al hover */
+    }
+    .event-preview.empty-preview {
+      background-color: transparent;
+      border: 2px dashed var(--border-color);
+      opacity: 0.7; cursor: default; align-items: center;
+      justify-content: center; text-align: center;
+      color: var(--text-color-medium); box-shadow: none;
+    }
+
+    .event-preview h3 {
+        font-family: var(--font-display); font-size: 1.2em; /* Más grande */
+        margin: 0 0 10px 0; color: var(--accent-blue);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px;
+        font-weight: 700;
+    }
+    .event-preview .preview-year {
+        font-family: var(--font-body); font-weight: 600; /* Usar font body pero en negrita */
+        color: var(--accent-red); margin-bottom: 12px;
+        font-size: 1.1em; text-align: center;
+    }
+    .event-preview p { font-size: 0.95em; line-height: 1.6; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container (Más limpio) */
+    .slider-container {
+      display: flex; align-items: center; gap: 15px;
+      margin-bottom: 20px; padding: 10px 0; /* Sin fondo, solo padding */
+      border-bottom: 1px solid var(--border-color); /* Línea divisoria */
+    }
+
+    /* Slider (Estilo Brújula/Navegación) */
+    input[type="range"] {
+      flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-blue), var(--border-color));
+      border-radius: 3px; outline: none; transition: background 0.3s ease;
+    }
+    input[type="range"]:hover { background: linear-gradient(to right, var(--accent-blue), var(--accent-gold)); }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 22px; height: 22px;
+      background: var(--accent-gold);
+      border-radius: 50%; border: 3px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-blue), 0 2px 5px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -8px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent-gold);
+      border-radius: 50%; border: 3px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-blue), 0 2px 5px rgba(0,0,0,0.2); cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active {
+       transform: scale(1.2); box-shadow: 0 0 0 4px var(--accent-blue), 0 3px 7px rgba(0,0,0,0.3);
+    }
+
+    /* Year Display (Integrado) */
+    #yearDisplay {
+      min-width: 80px; text-align: center; font-weight: 600;
+      font-family: var(--font-body); background: var(--accent-blue);
+      color: var(--container-bg); padding: 8px 10px;
+      border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      font-size: 1.1em;
+    }
+
+    /* Event Card (Estilo "Página de Bitácora") */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-dark);
+      padding: 35px 40px; /* Más padding */
+      border-radius: 6px; border: 1px solid var(--border-color);
+      min-height: 600px; /* Más alta */
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 5px 20px var(--shadow-soft);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); /* Transición más suave */
+      opacity: 1; flex-grow: 1; overflow: hidden; /* Ocultar overflow general */
+      position: relative; /* Para pseudo elementos si se necesitan */
+    }
+    /* Añadir líneas sutiles como de cuaderno */
+     #eventCard::before {
+       content: ''; position: absolute; top: 80px; /* Ajustar posición */
+       left: 40px; right: 40px; bottom: 60px; /* Ajustar márgenes */
+       background: linear-gradient(var(--border-color) 1px, transparent 1px);
+       background-size: 100% 28px; /* Espaciado de línea (line-height approx) */
+       opacity: 0.2; z-index: 0; pointer-events: none;
+     }
+
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      justify-content: center; align-items: center; text-align: center;
+      background-color: #f8f5f0; /* Fondo ligeramente diferente para estados especiales */
+    }
+    #eventCard.loading { opacity: 0.8; }
+    #eventCard.error { border-color: var(--accent-red); }
+    #eventCard.error p { font-weight: 600; font-size: 1.1em; color: var(--accent-red); }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 10px 18px;
+        background-color: var(--accent-blue); color: var(--container-bg);
+        border: 1px solid transparent; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 600;
+    }
+    #eventCard.suggestions a.suggestion-link:hover {
+        background-color: var(--accent-gold); color: var(--text-color-dark);
+    }
+
+    /* Estilos Tarjeta Principal (Refinados) */
+    #eventCard h2 {
+      margin: 0 0 20px 0; /* Ajuste margen */ text-align: center;
+      color: var(--accent-blue); font-family: var(--font-display);
+      font-size: 2em; font-weight: 700; border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px; position: relative; z-index: 1; /* Encima de las líneas */
+    }
+    #eventCard img {
+      max-width: 55%; /* Un poco más grande */ height: auto; max-height: 250px;
+      object-fit: contain; border-radius: 4px; margin: 0 auto 25px auto; display: block;
+      border: 1px solid var(--border-color); background-color: #fff; padding: 5px;
+      box-shadow: 0 4px 12px var(--shadow-soft); position: relative; z-index: 1;
+    }
+    #eventCard .content-extract {
+        line-height: 1.7; margin-bottom: 25px; font-size: 1.05em; text-align: justify;
+        max-height: 400px; /* Altura máxima antes de scroll */
+        overflow-y: auto; /* Scroll si es necesario */
+        padding-right: 15px; /* Espacio para scrollbar */
+        position: relative; z-index: 1;
+        /* Scrollbar más estilizado (Webkit) */
+        scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 25px;
+        background: var(--accent-gold); color: var(--text-color-dark);
+        text-decoration: none; font-weight: 600; font-family: var(--font-body);
+        border-radius: 5px; text-align: center; transition: all 0.3s ease;
+        border: 1px solid #b8860b; box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        width: fit-content; position: relative; z-index: 1;
+    }
+    #eventCard a.external-link:hover { background-color: #d4b57a; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: translateY(-2px); }
+
+    /* Spinner (Brújula estilizada) */
+    .spinner {
+      width: 60px; height: 60px; margin: 30px auto; position: relative;
+      border: 3px solid var(--border-color); border-radius: 50%;
+      animation: spin 2s linear infinite;
+    }
+    .spinner::before { /* Aguja */
+      content: ''; position: absolute; width: 0; height: 0;
+      top: 5px; left: 50%; transform: translateX(-50%);
+      border-left: 6px solid transparent; border-right: 6px solid transparent;
+      border-bottom: 18px solid var(--accent-red); /* Punta roja */
+    }
+    .spinner::after { /* Centro */
+      content: ''; position: absolute; width: 8px; height: 8px;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background-color: var(--accent-blue); border-radius: 50%;
+      box-shadow: 0 0 0 3px var(--container-bg);
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos (mantener y refinar) */
+     @media (max-width: 1300px) { .main-content-area { gap: 20px;} .center-column { min-width: 400px;} .event-preview {min-width: 200px; max-width: 250px;} }
+     @media (max-width: 1100px) { .timeline-container { padding: 25px;} h1 {font-size: 2.2em;} }
+     @media (max-width: 900px) { .main-content-area { flex-direction: column; } .event-preview { max-width: 100%; min-height: 120px;} }
+     @media (max-width: 600px) { body { padding: 15px 10px;} .timeline-container{padding: 20px 15px;} h1 { font-size: 1.8em;} .center-column{min-width: auto;} #eventCard {padding: 25px 20px; min-height: 450px;} #eventCard h2 { font-size: 1.6em;} #eventCard img {max-width: 70%; max-height: 180px;} #eventCard .content-extract { font-size: 1em; max-height: 300px;} }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Atlas de la Exploración</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Mares Conocidos</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajusta el cronómetro para navegar por los grandes viajes de descubrimiento.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Cartografía Completa</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Era de la Exploración ---
+    // Fechas aproximadas o rangos eliminando '~'
+    const events = [
+      { year: "c. 1419", title: "Inicio exploraciones portuguesas (Enrique el Navegante)", wikiTitle: "Enrique el Navegante" },
+      { year: "1488", title: "Bartolomé Díaz dobla el Cabo de Buena Esperanza", wikiTitle: "Bartolomeu Dias" },
+      { year: "1492", title: "Primer Viaje de Cristóbal Colón (Llegada a América)", wikiTitle: "Primer viaje de Colón" },
+      { year: "1494", title: "Tratado de Tordesillas", wikiTitle: "Tratado de Tordesillas" },
+      { year: "1497-1499", title: "Vasco da Gama llega a la India por mar", wikiTitle: "Vasco da Gama" },
+      { year: "1497", title: "Juan Caboto explora costas de Norteamérica", wikiTitle: "Juan Caboto" },
+      { year: "1500", title: "Pedro Álvares Cabral llega a Brasil", wikiTitle: "Pedro Álvares Cabral" },
+      { year: "1513", title: "Vasco Núñez de Balboa avista el Océano Pacífico", wikiTitle: "Vasco Núñez de Balboa" },
+      { year: "1513", title: "Juan Ponce de León explora Florida", wikiTitle: "Juan Ponce de León" },
+      { year: "1519-1521", title: "Hernán Cortés conquista el Imperio Azteca", wikiTitle: "Conquista de México" },
+      { year: "1519-1522", title: "Primera Circunnavegación (Magallanes-Elcano)", wikiTitle: "Expedición de Magallanes-Elcano" },
+      { year: "1524", title: "Giovanni da Verrazzano explora costa este de Norteamérica", wikiTitle: "Giovanni da Verrazzano"},
+      { year: "1532-1533", title: "Francisco Pizarro conquista el Imperio Inca", wikiTitle: "Conquista del Imperio incaico" },
+      { year: "1534-1542", title: "Jacques Cartier explora el río San Lorenzo (Canadá)", wikiTitle: "Jacques Cartier" },
+      { year: "1539-1542", title: "Hernando de Soto explora el sureste de Norteamérica", wikiTitle: "Hernando de Soto"},
+      { year: "1540-1542", title: "Francisco Vázquez de Coronado explora el suroeste de Norteamérica", wikiTitle: "Francisco Vázquez de Coronado"},
+      { year: "1542", title: "Descubrimiento de Japón por los portugueses (naufragio)", wikiTitle: "Período Nanban" },
+      { year: "1577-1580", title: "Circunnavegación de Francis Drake", wikiTitle: "Francis Drake" },
+      { year: "1596", title: "Willem Barents busca Paso del Noreste, descubre Spitsbergen", wikiTitle: "Willem Barentsz" },
+      { year: "1606", title: "Willem Janszoon (Holanda) avista Australia", wikiTitle: "Willem Janszoon" },
+      { year: "1608", title: "Samuel de Champlain funda Quebec", wikiTitle: "Samuel de Champlain" },
+      { year: "1609", title: "Henry Hudson explora el río Hudson", wikiTitle: "Henry Hudson" },
+      { year: "1642-1644", title: "Abel Tasman explora Tasmania y Nueva Zelanda", wikiTitle: "Abel Tasman" },
+      { year: "1673", title: "Marquette y Jolliet exploran el río Misisipi", wikiTitle: "Jacques Marquette" }, // Podría ser Louis Jolliet también
+      { year: "1768-1771", title: "Primer Viaje de James Cook (Pacífico Sur)", wikiTitle: "Primer viaje de James Cook" },
+      { year: "1770", title: "James Cook reclama costa este de Australia para Gran Bretaña", wikiTitle: "James Cook"},
+      { year: "1778", title: "James Cook llega a Hawái", wikiTitle: "James Cook"} // Mismo artículo, diferente evento
+    ];
+
+
+    // --- Elementos del DOM (sin cambios) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+
+    // --- Estado y Caché (sin cambios) ---
+    const summaryCache = {};
+
+    // --- Función de Fetch Detallada (sin cambios lógicos, pero revisada) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) {
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query",
+            prop: "extracts|pageimages|info",
+            titles: title,
+            format: "json", origin: "*",
+            explaintext: "true", exchars: "2000", // Aumentamos un poco los caracteres
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600", // Imagen un poco más grande
+            inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log("Fetching URL:", url);
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                    if (response.status >= 500 || response.status === 429) {
+                       console.warn(`Intento ${i + 1} fallido: HTTP ${response.status}. Reintentando...`);
+                       throw new Error(`HTTP error ${response.status}`);
+                    } else {
+                       console.error(`Intento ${i + 1} fallido: HTTP ${response.status}. No se reintentará.`);
+                       // Lanzamos error específico para Not Found si es 404
+                       if (response.status === 404) throw new Error(`Not Found: HTTP 404`);
+                       throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`);
+                    }
+                }
+                const data = await response.json();
+
+                if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+
+                if (pageId === "-1" || pages[pageId].missing !== undefined) {
+                    console.warn(`API reporta página no encontrada para "${title}"`);
+                    throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                }
+
+                const pageData = pages[pageId];
+                // **IMPORTANTE:** Verificar si hay extracto aquí
+                if (!pageData.extract || pageData.extract.trim() === '') {
+                     console.warn(`Respuesta válida pero sin extracto para "${title}":`, pageData);
+                     // Considerar esto como un fallo para mostrar alternativas
+                     throw new Error(`Incomplete Data: No extract found for "${title}"`);
+                }
+                 console.log("Datos recibidos de API:", pageData);
+                 return pageData;
+
+            } catch (error) {
+                 lastKnownError = error;
+                 console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                 // No reintentar en 404 o datos incompletos
+                 if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) {
+                     throw error;
+                 }
+                 if (i < retries - 1) {
+                     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+                 } else {
+                     console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`);
+                     throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`);
+                 }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    // --- NUEVA: Función para Limpiar Texto ---
+    function cleanWikipediaText(text) {
+        if (!text) return "";
+        // Eliminar citas como [1], [2], [cita requerida], etc.
+        let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, '');
+        // Podríamos añadir más reemplazos si viéramos otros patrones comunes
+        // Por ejemplo, a veces quedan espacios extra antes de puntos o comas:
+        cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ',');
+        return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Adaptadas y Usando Limpieza) ---
+
+    function renderEventCardLoading(message = "Consultando cartas de navegación...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.7';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Se perdió la señal con el archivo naval. Intente más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Esta carta náutica no se encontró en los archivos.'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('sin extracto')) { cleanMessage = 'La carta recuperada está incompleta o dañada.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Hubo un problema al solicitar la carta a los archivos.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error en la Bitácora!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    // MODIFICADO: Renderiza usando datos de action=query y limpia el texto
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        // LIMPIEZA DEL EXTRACTO ANTES DE MOSTRAR
+        const extract = cleanWikipediaText(pageData.extract);
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        // Usar <br> solo si el texto original tenía saltos de línea significativos,
+        // de lo contrario, dejar que fluya como párrafo.
+        const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`; // Convertir saltos
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract">${contentHtml}</div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Carta Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar textos)
+    function renderPreview(eventData, targetElement) {
+         if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para explorar esta expedición.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Mares Conocidos' : 'Cartografía Completa';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar textos)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrado, buscando rutas alternativas...`);
+        renderEventCardLoading("Carta no localizada. Buscando rutas alternativas...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al consultar mapas estelares.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>La carta náutica para "<strong>${failedTitle}</strong>" no fue hallada.</p>
+                                       <p>Quizás te interese una de estas rutas:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = cleanWikipediaText(item.snippet); // Limpiar también snippet
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un título para trazar el rumbo)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron rutas alternativas para "${searchTerm}".`);
+                renderEventCardError(`Carta para "${failedTitle}" no hallada y no hay rutas alternativas conocidas.`);
+            }
+        } catch (searchErr) {
+            console.error("Error buscando rutas alternativas:", searchErr);
+            renderEventCardError(`Carta para "${failedTitle}" no hallada. La búsqueda de alternativas también falló.`);
+        }
+    }
+
+    // --- Función Principal de Actualización (Reforzada) ---
+    async function updateEvent(options) {
+        const index = options.index;
+
+        if (isNaN(index) || index < 0 || index >= events.length) { /* ... (manejo de índice inválido igual) ... */ return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') {
+            console.log(`Carta para "${titleToFetch}" recuperada de la caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Mostrando sugerencias.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Consultando Archivo Naval para: ${titleToFetch}`);
+            renderEventCardLoading();
+
+            try {
+                // Pausa opcional
+                // await new Promise(resolve => setTimeout(resolve, 150));
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+
+            } catch (err) {
+                 // Si el error es 'Not Found' O 'Incomplete Data', mostrar sugerencias
+                if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) {
+                    console.warn(`Capturado error "${err.message}" para "${titleToFetch}". Buscando alternativas.`);
+                    // Marcar en caché específicamente por qué falló
+                    summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE';
+                    findAndDisplaySuggestions(titleToFetch);
+                } else {
+                    // Otro tipo de error (red, etc.)
+                    console.error(`Error final al obtener carta "${titleToFetch}":`, err);
+                    renderEventCardError(err.toString());
+                    // Podríamos marcar como error genérico en caché si quisiéramos no reintentar
+                    // summaryCache[cacheKey] = 'ERROR';
+                }
+            }
+        }
+    }
+
+    // --- Manejador de Clics (sin cambios lógicos) ---
+    function handleClick(event) { /* ... (código igual que antes) ... */
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Trazando nueva ruta hacia: ${suggestedTitle}`);
+                updateEvent({
+                    index: parseInt(slider.value, 10),
+                    wikiTitleOverride: suggestedTitle
+                });
+            }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando a la expedición ${targetIndex} desde la vista previa.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+    }
+
+    // --- Inicialización (Adaptar mensajes) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Archivos Vacíos";
+            eventCard.innerHTML = "<p>No hay cartas de navegación disponibles en este archivo.</p>";
+            /* ... (resto del manejo de error inicial igual) ... */ return;
+        }
+        // ... (resto de la inicialización igual) ...
+        slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Atlas de Exploración inicializado. Listo para zarpar.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

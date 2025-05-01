@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fotografía: Una Crónica Visual - Del Daguerrotipo al Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f4f0e8; /* Off-white / Light Parchment */
+      --container-bg: #e9e5dc; /* Slightly darker paper tone */
+      --card-bg: #ffffff; /* Clean white for main content */
+      --preview-bg: #d1ccc0; /* Grey resembling photo matte */
+      --text-color-dark: #3d3a35; /* Dark Sepia/Brown */
+      --text-color-medium: #6e6a64; /* Medium Grey/Brown */
+      --text-color-light: #f0f2f5; /* For dark backgrounds (if used) */
+      --accent-primary: #8c7853; /* Muted Gold/Brass/Sepia */
+      --accent-secondary: #000000; /* Black for contrast */
+      --accent-error: #a04040; /* Muted Darkroom Red */
+      --border-color: #c1b8a9; /* Mid-tone Sepia/Grey */
+      --font-body: 'Merriweather', serif;
+      --font-ui: 'Lato', sans-serif; /* Clean sans-serif for UI */
+      --shadow-soft: rgba(61, 58, 53, 0.15);
+      --shadow-medium: rgba(61, 58, 53, 0.25);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      /* Subtle noise texture */
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 6px 20px var(--shadow-medium);
+      padding: 30px 35px;
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+    }
+
+    h1 {
+      font-family: var(--font-body);
+      font-weight: 700;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--text-color-dark);
+      font-size: 2.5em;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    /* --- Índice de Eventos --- */
+    #eventIndexContainer {
+      background-color: rgba(255,255,255,0.3); /* Semi-transparent white */
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      margin-bottom: 25px;
+      padding: 0 15px;
+      transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+      max-height: 45px; overflow: hidden;
+    }
+    #eventIndexContainer.expanded { max-height: 400px; padding: 15px; overflow-y: auto; }
+    #toggleIndexBtn {
+      display: block; width: 100%; background: none; border: none;
+      color: var(--accent-primary); font-family: var(--font-ui);
+      font-size: 0.95em; text-align: left; padding: 12px 0;
+      cursor: pointer; font-weight: 700; position: relative;
+    }
+    #toggleIndexBtn::after { content: '▼'; position: absolute; right: 5px; transition: transform 0.3s ease; }
+    #eventIndexContainer.expanded #toggleIndexBtn::after { transform: rotate(180deg); }
+    #eventIndexList { list-style: none; padding: 0; margin: 10px 0 0 0; columns: 3; column-gap: 20px; }
+     @media (max-width: 900px) { #eventIndexList { columns: 2; } }
+     @media (max-width: 600px) { #eventIndexList { columns: 1; } }
+    #eventIndexList li { margin-bottom: 8px; }
+    #eventIndexList a {
+      color: var(--text-color-medium); text-decoration: none; font-size: 0.9em;
+      transition: color 0.2s ease; display: block; font-family: var(--font-ui);
+    }
+    #eventIndexList a:hover, #eventIndexList a.active { color: var(--accent-secondary); font-weight: 700; }
+
+    /* --- Estructura Principal --- */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 0; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo "Matte Board") */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid darken(var(--preview-bg), 10%);
+        border-radius: 4px; padding: 20px;
+        color: var(--text-color-dark); /* Darker text on lighter matte */
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.1);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        border-color: var(--accent-primary);
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05), 0 3px 6px var(--shadow-soft);
+        transform: translateY(-2px); background-color: lighten(var(--preview-bg), 3%);
+    }
+    .event-preview.empty-preview { /* Similar al anterior */
+      background-color: transparent; border: 2px dashed var(--border-color);
+      opacity: 0.7; cursor: default; align-items: center;
+      justify-content: center; text-align: center; color: var(--text-color-medium); box-shadow: none;
+    }
+
+    .event-preview h3 { /* Título del evento */
+        font-family: var(--font-body); font-weight: 700; font-size: 1.1em;
+        margin: 0 0 10px 0; color: var(--text-color-dark);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px;
+    }
+    .event-preview .preview-year { /* Año */
+        font-family: var(--font-ui); font-weight: 700; /* UI font for year */
+        color: var(--accent-primary); margin-bottom: 12px;
+        font-size: 1.05em; text-align: center;
+    }
+    .event-preview p { font-family: var(--font-ui); font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+
+    /* Slider (Classic/Subtle) */
+    input[type="range"] {
+      flex: 1; height: 4px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-secondary), var(--border-color));
+      border-radius: 2px; outline: none; transition: background 0.3s ease;
+    }
+    input[type="range"]:hover { background: linear-gradient(to right, var(--accent-secondary), var(--accent-primary)); }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 16px; height: 16px;
+      background: var(--accent-secondary); border-radius: 50%; /* Círculo clásico */
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -6px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 12px; height: 12px; background: var(--accent-secondary); border-radius: 50%;
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3); cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.2); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+
+    /* Year Display (Simple Label) */
+    #yearDisplay {
+      min-width: 70px; text-align: center; font-weight: 700;
+      font-family: var(--font-ui); background: var(--bg-color);
+      color: var(--text-color-dark); padding: 6px 8px;
+      border-radius: 4px; border: 1px solid var(--border-color);
+      font-size: 1em;
+    }
+
+    /* Event Card (Clean Page / Photo Mount) */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-dark);
+      padding: 35px 40px; border-radius: 4px; /* Menos redondeado */
+      border: 1px solid #ccc;
+      min-height: 600px; display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px var(--shadow-soft);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1; overflow: hidden;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      background-color: #f0eef2; /* Slightly different bg for states */
+      justify-content: center; align-items: center; text-align: center;
+      color: var(--text-color-medium);
+    }
+    #eventCard.error { border-color: var(--accent-error); }
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; color: var(--accent-error); font-family: var(--font-ui); }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 8px 16px; font-family: var(--font-ui);
+        background-color: var(--accent-primary); color: #fff;
+        border: 1px solid darken(var(--accent-primary), 10%); border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-weight: 700; font-size: 0.95em;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: lighten(var(--accent-primary), 10%); }
+
+    /* Estilos Tarjeta Principal */
+    #eventCard h2 {
+      margin: 0 0 25px 0; text-align: center;
+      color: var(--text-color-dark); font-family: var(--font-body); font-weight: 700;
+      font-size: 2em; border-bottom: 1px solid #ddd; padding-bottom: 15px;
+    }
+    #eventCard img {
+      max-width: 60%; /* Imagen más prominente */ height: auto; max-height: 300px;
+      object-fit: contain; border-radius: 2px; /* Bordes más rectos */
+      margin: 0 auto 30px auto; display: block;
+      border: 1px solid #bbb; /* Borde gris */
+      background-color: #f8f8f8; padding: 5px; /* Padding tipo matte */
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    #eventCard .content-extract {
+        line-height: 1.8; margin-bottom: 25px; font-size: 1.05em; text-align: justify;
+        max-height: 400px; overflow-y: auto; padding-right: 15px;
+        scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid var(--card-bg); background-clip: content-box; }
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 10px 22px;
+        background: var(--accent-secondary); color: var(--card-bg); /* Contraste fuerte */
+        text-decoration: none; font-weight: 700; font-family: var(--font-ui);
+        border-radius: 4px; text-align: center; transition: all 0.3s ease;
+        border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); width: fit-content;
+        font-size: 0.95em; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    #eventCard a.external-link:hover { background-color: #333; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transform: translateY(-1px); }
+
+    /* Spinner (Aperture / Simple Ring) */
+    .spinner {
+      width: 44px; height: 44px; margin: 30px auto; position: relative;
+      border: 4px solid var(--border-color); border-radius: 50%;
+      border-top-color: var(--accent-primary);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos (mantener) */
+     @media (max-width: 1300px) { /* ... */ }
+     @media (max-width: 1100px) { /* ... */ }
+     @media (max-width: 900px) { .main-content-area { flex-direction: column; } /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Fotografía: Una Crónica Visual</h1>
+
+    <!-- Índice de Eventos -->
+    <div id="eventIndexContainer">
+      <button id="toggleIndexBtn">Índice Cronológico</button>
+      <ul id="eventIndexList"></ul>
+    </div>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Primeros Experimentos</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajusta el enfoque temporal para explorar la historia de la fotografía.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Futuro de la Imagen</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Historia de la Fotografía ---
+    const events = [
+      { year: "c. 1826", title: "Primera fotografía permanente (Niépce)", wikiTitle: "Joseph Nicéphore Niépce" },
+      { year: "1839", title: "Invención del Daguerrotipo (Daguerre)", wikiTitle: "Daguerrotipo" },
+      { year: "1841", title: "Invención del Calotipo (Talbot)", wikiTitle: "Calotipo" },
+      { year: "1851", title: "Proceso del Colodión Húmedo (Archer)", wikiTitle: "Colodión húmedo" },
+      { year: "1861", title: "Primera fotografía en color permanente (Maxwell)", wikiTitle: "Fotografía en color" }, // Teoría y demostración
+      { year: "1871", title: "Invención de la Placa Seca (Maddox)", wikiTitle: "Placa seca" },
+      { year: "1888", title: "Lanzamiento de la cámara Kodak No. 1 (Eastman)", wikiTitle: "Kodak No. 1" },
+      { year: "1889", title: "Invención del rollo de película transparente", wikiTitle: "Película fotográfica" },
+      { year: "1907", title: "Proceso Autochrome Lumière (Color)", wikiTitle: "Autochrome" },
+      { year: "1913", title: "Desarrollo del formato 35mm (Oskar Barnack/Leica)", wikiTitle: "Oskar Barnack" }, // Prototipo
+      { year: "1925", title: "Lanzamiento de la cámara Leica I (35mm)", wikiTitle: "Leica I" },
+      { year: "1935", title: "Introducción de Kodachrome (Película color)", wikiTitle: "Kodachrome" },
+      { year: "1942", title: "Introducción de Kodacolor (Negativo color)", wikiTitle: "Kodacolor" },
+      { year: "1948", title: "Lanzamiento de la cámara Polaroid Land Model 95 (Instantánea)", wikiTitle: "Polaroid Land Camera" },
+      { year: "1963", title: "Introducción de la Polacolor (Instantánea color)", wikiTitle: "Polaroid"},
+      { year: "1969", title: "Invención del sensor CCD (Boyle & Smith)", wikiTitle: "Dispositivo de carga acoplada" }, // Base de lo digital
+      { year: "1975", title: "Primera cámara digital prototipo (Kodak - Sasson)", wikiTitle: "Steven Sasson" },
+      { year: "1977", title: "Konica C35 AF (Primera cámara autofocus)", wikiTitle: "Konica C35 AF" },
+      { year: "1981", title: "Sony Mavica (Cámara electrónica de imagen fija)", wikiTitle: "Sony Mavica" }, // No puramente digital pero precursor
+      { year: "1988", title: "Primera cámara digital comercial (Fujix DS-1P)", wikiTitle: "Fujix DS-1P" }, // Muy limitada y cara
+      { year: "1991", title: "Kodak DCS 100 (Primera réflex digital profesional)", wikiTitle: "Kodak DCS 100" },
+      { year: "1995", title: "Casio QV-10 (Primera digital con pantalla LCD)", wikiTitle: "Casio QV-10" },
+      { year: "1999", title: "Nikon D1 (Popularización de DSLR profesionales)", wikiTitle: "Nikon D1" },
+      { year: "2000", title: "Sharp J-SH04 (Primer teléfono con cámara integrada)", wikiTitle: "Sharp J-SH04" }, // En Japón
+      { year: "2002", title: "Canon EOS-1Ds (Primera DSLR full-frame)", wikiTitle: "Canon EOS-1Ds" },
+      { year: "2007", title: "Lanzamiento del iPhone (Populariza fotografía móvil)", wikiTitle: "IPhone (1.ª generación)"},
+      { year: "2008", title: "Panasonic Lumix G1 (Primera cámara Micro Cuatro Tercios/Mirrorless)", wikiTitle: "Micro Cuatro Tercios" },
+      { year: "c. 2010s", title: "Auge de la fotografía computacional", wikiTitle: "Fotografía computacional" },
+      { year: "Actualidad", title: "IA en fotografía, cámaras mirrorless avanzadas", wikiTitle: "Cámara sin espejo"}
+    ];
+
+    // --- Elementos del DOM (sin cambios en nombres) ---
+    const slider = document.getElementById('timelineSlider'); /*...*/
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexContainer = document.getElementById('eventIndexContainer');
+    const eventIndexList = document.getElementById('eventIndexList');
+    const toggleIndexBtn = document.getElementById('toggleIndexBtn');
+
+    // --- Estado y Caché (sin cambios) ---
+    const summaryCache = {};
+
+    // --- Función de Fetch Detallada (sin cambios lógicos) ---
+    const MAX_RETRIES = 3; const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código idéntico al anterior) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({ action: "query", prop: "extracts|pageimages|info", titles: title, format: "json", origin: "*", explaintext: "true", exchars: "2000", exintro: "false", piprop: "thumbnail", pithumbsize: "600", inprop: "url"});
+        const url = `${baseUrl}?${params.toString()}`; console.log("Fetching URL:", url);
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+             try {
+                 const response = await fetch(url);
+                 if (!response.ok) { lastKnownError = { status: response.status, statusText: response.statusText }; if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); } else { if (response.status === 404) throw new Error(`Not Found: HTTP 404`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }}
+                 const data = await response.json();
+                 if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                 const pages = data.query.pages; const pageId = Object.keys(pages)[0];
+                 if (pageId === "-1" || pages[pageId].missing !== undefined) throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                 const pageData = pages[pageId];
+                 if (!pageData.extract || pageData.extract.trim() === '') throw new Error(`Incomplete Data: No extract found for "${title}"`);
+                 return pageData;
+             } catch (error) { lastKnownError = error; console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`); if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) { throw error; } if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); } else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }}
+        } throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    // --- Función para Limpiar Texto (sin cambios) ---
+    function cleanWikipediaText(text) { /* ... (código idéntico al anterior) ... */
+        if (!text) return ""; let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, ''); cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ','); return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Adaptar textos temáticos) ---
+    function renderEventCardLoading(message = "Enfocando imagen...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading'; eventCard.style.opacity = '0.7';
+    }
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Error de revelado. Intente más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Negativo no encontrado en el archivo (404).'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('sin extracto')) { cleanMessage = 'Imagen recibida dañada o incompleta.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error en la solicitud al archivo.';}
+        eventCard.innerHTML = `<p><strong>¡Fallo en la Exposición!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error'; eventCard.style.opacity = '1';
+    }
+    function renderEventCard(pageData, originalEventTitle) { /* ... (código igual, usa cleanWikipediaText) ... */
+        const title = pageData.title || originalEventTitle; const extract = cleanWikipediaText(pageData.extract); const imageUrl = pageData.thumbnail?.source; const wikiUrl = pageData.fullurl; const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : ''; const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+        eventCard.innerHTML = `<h2>${title}</h2> ${imgHtml} <div class="content-extract">${contentHtml}</div> ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Ver Original en Archivo</a>` : ''}`;
+        eventCard.className = ''; eventCard.style.opacity = '1'; const extractDiv = eventCard.querySelector('.content-extract'); if (extractDiv) extractDiv.scrollTop = 0;
+    }
+    function renderPreview(eventData, targetElement) { // Adaptar textos
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `<div class="preview-year">${eventData.year}</div> <h3>${eventData.title}</h3> <p>Clic para ver este hito fotográfico.</p>`;
+            targetElement.className = 'event-preview'; targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) { const message = targetElement.id === 'prevEventPreview' ? 'Primeros Experimentos' : 'Futuro de la Imagen'; targetElement.innerHTML = `<p>${message}</p>`; targetElement.className = 'event-preview empty-preview'; targetElement.dataset.index = -1; }
+    }
+    async function findAndDisplaySuggestions(failedTitle) { // Adaptar textos
+        console.log(`"${failedTitle}" no encontrado, buscando otras exposiciones...`); renderEventCardLoading("Negativo no encontrado. Buscando alternativas...");
+        const searchTerm = failedTitle; const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+         try {
+            const response = await fetch(searchUrl); if (!response.ok) throw new Error(`Error ${response.status} al buscar en el archivo.`); const searchData = await response.json();
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5); let suggestionsHtml = `<p>El negativo para "<strong>${failedTitle}</strong>" no fue hallado.</p><p>Quizás te interesen estas otras tomas:</p><ul class="suggestions-list">`;
+                suggestions.forEach(item => { const snippet = cleanWikipediaText(item.snippet); suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`; });
+                suggestionsHtml += `</ul><p><small>(Selecciona un título para intentar cargar)</small></p>`; eventCard.innerHTML = suggestionsHtml; eventCard.className = 'suggestions'; eventCard.style.opacity = '1';
+            } else { console.log(`No se encontraron alternativas para "${searchTerm}".`); renderEventCardError(`Negativo para "${failedTitle}" no hallado y no hay copias alternativas.`); }
+        } catch (searchErr) { console.error("Error buscando alternativas:", searchErr); renderEventCardError(`Negativo para "${failedTitle}" no hallado. Búsqueda de alternativas falló.`); }
+    }
+
+    // --- Función Principal de Actualización (sin cambios lógicos) ---
+    async function updateEvent(options) { /* ... (código idéntico, llama a updateIndexActiveState) ... */
+        const index = options.index; if (isNaN(index) || index < 0 || index >= events.length) { return; }
+        const currentEvent = events[index]; yearDisplay.textContent = currentEvent.year.toString(); if (slider.value !== index.toString()) { slider.value = index; }
+        updateIndexActiveState(index);
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title; const cacheKey = titleToFetch.toLowerCase();
+        renderPreview(events[index - 1], prevPreview); renderPreview(events[index + 1], nextPreview);
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') { console.log(`"${titleToFetch}" cargado desde caché.`); renderEventCard(summaryCache[cacheKey], currentEvent.title); }
+        else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') { console.log(`"${titleToFetch}" marcado '${summaryCache[cacheKey]}'. Buscando alt.`); findAndDisplaySuggestions(titleToFetch); }
+        else { console.log(`Consultando archivo para: ${titleToFetch}`); renderEventCardLoading(); try { const pageData = await fetchDetailedData(titleToFetch); summaryCache[cacheKey] = pageData; renderEventCard(pageData, currentEvent.title); } catch (err) { if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) { console.warn(`Error "${err.message}" para "${titleToFetch}". Buscando alt.`); summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE'; findAndDisplaySuggestions(titleToFetch); } else { console.error(`Error final al obtener "${titleToFetch}":`, err); renderEventCardError(err.toString()); }}}
+    }
+
+    // --- Funciones para el Índice (sin cambios lógicos) ---
+    function populateEventIndex() { /* ... (código idéntico) ... */
+         eventIndexList.innerHTML = ''; events.forEach((event, index) => { const li = document.createElement('li'); const a = document.createElement('a'); a.href = '#'; a.textContent = `${event.year} - ${event.title}`; a.dataset.index = index; li.appendChild(a); eventIndexList.appendChild(li); });
+    }
+    function toggleEventIndex() { eventIndexContainer.classList.toggle('expanded'); }
+    function updateIndexActiveState(activeIndex) { /* ... (código idéntico) ... */
+         eventIndexList.querySelectorAll('a').forEach(a => a.classList.remove('active')); const activeLink = eventIndexList.querySelector(`a[data-index="${activeIndex}"]`); if (activeLink) { activeLink.classList.add('active'); }
+    }
+
+    // --- Manejador de Clics (sin cambios lógicos) ---
+    function handleClick(event) { /* ... (código idéntico) ... */
+        if (event.target.matches('a.suggestion-link')) { event.preventDefault(); const suggestedTitle = event.target.dataset.wikiTitle; if (suggestedTitle) { console.log(`Cargando sugerencia: ${suggestedTitle}`); updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle }); } }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) { const previewElement = event.target.closest('.event-preview'); const targetIndex = parseInt(previewElement.dataset.index, 10); if (targetIndex >= 0 && targetIndex < events.length) { console.log(`Navegando al hito ${targetIndex} desde preview.`); updateEvent({ index: targetIndex }); } }
+        else if (event.target.matches('#eventIndexList a')) { event.preventDefault(); const targetIndex = parseInt(event.target.dataset.index, 10); if (!isNaN(targetIndex)) { console.log(`Navegando al hito ${targetIndex} desde índice.`); updateEvent({ index: targetIndex }); } }
+    }
+
+    // --- Inicialización (Adaptar mensaje) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) { /* ... (manejo error inicial igual) ... */ return; }
+        populateEventIndex(); slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1; updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) })); toggleIndexBtn.addEventListener('click', toggleEventIndex); timelineContainer.addEventListener('click', handleClick);
+        console.log("Archivo Fotográfico inicializado. Listo para enfocar.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+  </script>
+</body>
+</html>

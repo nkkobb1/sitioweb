@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Valor a Través del Tiempo - Historia del Dinero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #e8e4d9; /* Pergamino / Piedra clara */
+      --container-bg: #fdfaf3; /* Papel viejo blanco */
+      --card-bg: #ffffff; /* Blanco limpio */
+      --preview-bg: #f0ebe0; /* Pergamino más oscuro */
+      --text-color-dark: #3a3a3a; /* Gris muy oscuro */
+      --text-color-medium: #6c6c6c; /* Gris medio */
+      --text-color-light: #f0ebe0; /* Crema (para fondos oscuros) */
+      --accent-green: #1e8449; /* Verde billete oscuro */
+      --accent-gold: #b8860b; /* Oro viejo */
+      --accent-silver: #aab7b8; /* Plata / Gris metalizado */
+      --accent-crypto: #2980b9; /* Azul digital moderado */
+      --border-color: #c8c0b0; /* Borde pergamino/piedra */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Merriweather', serif; /* Serif clásico */
+      --font-mono: 'Source Code Pro', monospace; /* Para fechas/códigos */
+      --shadow-soft: rgba(58, 58, 58, 0.15);
+      --shadow-medium: rgba(58, 58, 58, 0.25);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      /* Textura sutil de papel */
+      background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c8c0b0' fill-opacity='0.15' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 6px 25px var(--shadow-medium);
+      padding: 30px 35px;
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+      border-top: 5px solid var(--accent-green); /* Detalle superior */
+    }
+
+    h1 {
+      font-family: var(--font-display); /* Serif para el título */
+      font-weight: 700;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--accent-green);
+      font-size: 2.5em;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    /* --- Sección del Índice de Eventos (Estilo Libro Mayor) --- */
+    #eventIndexContainer {
+      background-color: rgba(240, 235, 224, 0.5); /* Fondo pergamino semi-transparente */
+      border: 1px solid var(--border-color);
+      border-radius: 4px; margin-bottom: 25px; padding: 0 15px;
+      transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+      max-height: 45px; overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    }
+    #eventIndexContainer.expanded { max-height: 400px; padding: 15px; overflow-y: auto; }
+    #toggleIndexBtn {
+      display: block; width: 100%; background: none; border: none;
+      color: var(--accent-green); font-family: var(--font-mono); font-size: 0.95em;
+      text-align: left; padding: 12px 0; cursor: pointer; font-weight: 700; position: relative;
+    }
+     #toggleIndexBtn::after { /* Icono tipo libro/flecha */
+       content: '▼'; position: absolute; right: 5px; transition: transform 0.3s ease;
+     }
+    #eventIndexContainer.expanded #toggleIndexBtn::after { transform: rotate(180deg); }
+    #eventIndexList { list-style: none; padding: 0; margin: 10px 0 0 0; columns: 3; column-gap: 20px; }
+     @media (max-width: 900px) { #eventIndexList { columns: 2; } }
+     @media (max-width: 600px) { #eventIndexList { columns: 1; } }
+
+    #eventIndexList li { margin-bottom: 8px; }
+    #eventIndexList a {
+      color: var(--text-color-medium); text-decoration: none; font-size: 0.9em;
+      transition: color 0.2s ease; display: block;
+      font-family: var(--font-body); /* Cuerpo para la lista */
+    }
+    #eventIndexList a:hover, #eventIndexList a.active {
+      color: var(--accent-gold); /* Dorado para resaltar */
+      font-weight: 700;
+    }
+    /* --- Fin Índice --- */
+
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 0; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo Ficha / Moneda Antigua) */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px; padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: 0 3px 8px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        box-shadow: 0 6px 15px var(--shadow-medium);
+        transform: translateY(-4px);
+        border-color: var(--accent-gold);
+        background-color: #f5efe0; /* Más claro al hover */
+    }
+    .event-preview.empty-preview {
+      background-color: transparent; border: 2px dashed var(--border-color);
+      opacity: 0.7; cursor: default; align-items: center; justify-content: center;
+      text-align: center; color: var(--text-color-medium); box-shadow: none;
+    }
+
+    .event-preview h3 { /* Título del evento */
+        font-family: var(--font-display); /* Serif */ font-size: 1.15em;
+        margin: 0 0 10px 0; color: var(--text-color-dark);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px; font-weight: 700;
+    }
+    .event-preview .preview-year { /* Año */
+        font-family: var(--font-mono); font-weight: 700;
+        color: var(--accent-green); margin-bottom: 12px;
+        font-size: 1.05em; text-align: center;
+    }
+    .event-preview p { font-size: 0.95em; line-height: 1.6; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+
+    /* Slider (Estilo Barra de Metal / Oro) */
+    input[type="range"] {
+      flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-gold), var(--accent-silver));
+      border-radius: 3px; outline: none; transition: background 0.3s ease;
+      border: 1px solid #a08c60; /* Borde sutil */
+    }
+    input[type="range"]:hover { background: linear-gradient(to right, var(--accent-gold), #d4af37); /* Oro más brillante al hover */ }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 20px; height: 20px;
+      background: var(--accent-green); border-radius: 50%; /* Como un sello o moneda */
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-green), 0 1px 4px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -8px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; background: var(--accent-green); border-radius: 50%;
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-green), 0 1px 4px rgba(0,0,0,0.3); cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); box-shadow: 0 0 0 3px var(--accent-green), 0 2px 6px rgba(0,0,0,0.4); }
+
+    /* Year Display (Estilo Sello/Fecha en Documento) */
+    #yearDisplay {
+      min-width: 90px; text-align: center; font-weight: 700;
+      font-family: var(--font-mono); background: var(--text-color-dark);
+      color: var(--accent-gold); padding: 8px 10px;
+      border-radius: 3px; border: 1px solid #555;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); font-size: 1.1em;
+    }
+
+    /* Event Card (Estilo Página de Libro Mayor / Documento Oficial) */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-dark);
+      padding: 35px 40px; border-radius: 4px; border: 1px solid #ccc;
+      min-height: 600px; display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px var(--shadow-soft);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1; overflow: hidden; position: relative;
+      /* Líneas sutiles de fondo */
+       background-image: linear-gradient(var(--border-color) 1px, transparent 1px);
+       background-size: 100% 30px; /* Espaciado de línea */
+       background-position: 0 80px; /* Empezar debajo del título */
+       background-repeat: repeat-y;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      background-image: none; /* Quitar líneas en estos estados */
+      background-color: #f8f5f0; /* Fondo pergamino pálido */
+      justify-content: center; align-items: center; text-align: center;
+    }
+    #eventCard.loading { color: var(--text-color-medium); }
+    #eventCard.error { border-color: #c0392b; } /* Rojo error */
+    #eventCard.error p { font-weight: 600; font-size: 1.1em; color: #c0392b; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 10px 18px;
+        background-color: var(--accent-green); color: #fff;
+        border: 1px solid transparent; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 600;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #229954; }
+
+    /* Estilos Tarjeta Principal */
+    #eventCard h2 {
+      margin: 0 0 25px 0; text-align: center; position: relative; z-index: 1;
+      color: var(--text-color-dark); font-family: var(--font-display); font-weight: 700;
+      font-size: 2em; border-bottom: 2px solid var(--accent-gold); padding-bottom: 15px;
+      background-color: var(--card-bg); /* Para tapar líneas */ padding-left: 10px; padding-right: 10px; /* Evitar que el borde toque texto */
+    }
+    #eventCard img {
+      max-width: 50%; height: auto; max-height: 240px;
+      object-fit: contain; border-radius: 3px; margin: 0 auto 30px auto; display: block;
+      border: 1px solid var(--border-color); background-color: #f8f8f8; padding: 5px;
+      box-shadow: 0 3px 10px var(--shadow-soft); position: relative; z-index: 1;
+    }
+    #eventCard .content-extract {
+        line-height: 1.8; margin-bottom: 30px; font-size: 1.05em; text-align: justify;
+        max-height: 400px; overflow-y: auto; padding-right: 15px; position: relative; z-index: 1;
+        scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+        background-color: rgba(255,255,255,0.7); /* Semi-transparente para leer sobre líneas */
+        padding: 10px; border-radius: 3px;
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 25px;
+        background: var(--accent-gold); color: var(--text-color-dark);
+        text-decoration: none; font-weight: 700; font-family: var(--font-body);
+        border-radius: 4px; text-align: center; transition: all 0.3s ease;
+        border: 1px solid #a08c60; box-shadow: 0 2px 5px rgba(0,0,0,0.15); width: fit-content;
+        position: relative; z-index: 1;
+    }
+    #eventCard a.external-link:hover { background-color: #cca347; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: translateY(-1px); }
+
+    /* Spinner (Moneda Giratoria / Balanza) */
+    .spinner {
+      width: 50px; height: 50px; margin: 30px auto; position: relative;
+      border: 5px solid var(--accent-silver); border-radius: 50%;
+      border-top-color: var(--accent-gold);
+      animation: spin 1s linear infinite;
+    }
+     .spinner::after { /* Punto central */
+       content: ''; position: absolute; width: 8px; height: 8px;
+       top: 50%; left: 50%; transform: translate(-50%, -50%);
+       background-color: var(--accent-green); border-radius: 50%;
+     }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+    /* Ajustes responsivos (mantener y refinar) */
+     @media (max-width: 1300px) { /* ... */ }
+     @media (max-width: 1100px) { /* ... */ }
+     @media (max-width: 900px) { .main-content-area { flex-direction: column; } /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>El Valor a Través del Tiempo</h1>
+
+    <!-- Índice de Eventos Desplegable -->
+    <div id="eventIndexContainer">
+      <button id="toggleIndexBtn">Índice de Hitos Monetarios</button>
+      <ul id="eventIndexList"></ul>
+    </div>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Orígenes del Trueque</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajusta la escala temporal para explorar la evolución del dinero.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Futuro Financiero</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Historia del Dinero ---
+    const events = [
+      { year: "c. 9000 a.C.", title: "Trueque y Ganadería como Valor", wikiTitle: "Trueque" },
+      { year: "c. 6000 a.C.", title: "Obsidiana y Metales Preciosos", wikiTitle: "Dinero" }, // Artículo general sobre dinero
+      { year: "c. 1200 a.C.", title: "Conchas de Cauri como Moneda (China)", wikiTitle: "Cauri" },
+      { year: "c. 600 a.C.", title: "Primeras Monedas Acuñadas (Lidia)", wikiTitle: "Moneda lidia" },
+      { year: "c. 400 a.C.", title: "Monedas Griegas y Romanas", wikiTitle: "Moneda de la Antigua Grecia" }, // O moneda romana
+      { year: "c. 806 d.C.", title: "Primer Papel Moneda (Dinastía Tang, China)", wikiTitle: "Papel moneda" },
+      { year: "c. 1290", title: "Marco Polo describe Papel Moneda Chino", wikiTitle: "Los viajes de Marco Polo"},
+      { year: "1602", title: "Bolsa de Ámsterdam (Primeras Acciones)", wikiTitle: "Bolsa de Ámsterdam" },
+      { year: "1661", title: "Primer Papel Moneda Europeo (Suecia)", wikiTitle: "Stockholms Banco" },
+      { year: "1694", title: "Fundación del Banco de Inglaterra", wikiTitle: "Banco de Inglaterra" },
+      { year: "c. 1700", title: "Adopción del Patrón Oro (Gran Bretaña)", wikiTitle: "Patrón oro" },
+      { year: "1792", title: "Creación del Dólar Estadounidense", wikiTitle: "Dólar estadounidense" },
+      { year: "1930s", title: "Abandono del Patrón Oro (Crisis)", wikiTitle: "Patrón oro" }, // Evento global
+      { year: "1950", title: "Invención de la Tarjeta de Crédito (Diners Club)", wikiTitle: "Tarjeta de crédito" }, // O Diners Club
+      { year: "1967", title: "Primer Cajero Automático (ATM)", wikiTitle: "Cajero automático" },
+      { year: "1971", title: "Fin de la Convertibilidad del Dólar en Oro (Nixon Shock)", wikiTitle: "Choque de Nixon" },
+      { year: "1980s", title: "Inicio de la Banca Electrónica", wikiTitle: "Banca electrónica" },
+      { year: "1994", title: "Primeras Transacciones Seguras Online (SSL)", wikiTitle: "Transport Layer Security" },
+      { year: "1998", title: "Fundación de PayPal", wikiTitle: "PayPal" },
+      { year: "1999", title: "Introducción del Euro (virtual)", wikiTitle: "Euro" },
+      { year: "2002", title: "Circulación de Billetes y Monedas de Euro", wikiTitle: "Euro" },
+      { year: "2008", title: "Publicación del Whitepaper de Bitcoin (Satoshi Nakamoto)", wikiTitle: "Bitcoin" },
+      { year: "2009", title: "Creación del Bloque Génesis de Bitcoin", wikiTitle: "Bitcoin" }, // Evento clave
+      { year: "c. 2010s", title: "Auge de Pagos Móviles y Contactless", wikiTitle: "Pago móvil" },
+      { year: "2015", title: "Lanzamiento de Ethereum (Contratos Inteligentes)", wikiTitle: "Ethereum" },
+      { year: "c. 2017", title: "Boom de las ICOs y Altcoins", wikiTitle: "Initial coin offering" },
+      { year: "c. 2020s", title: "Debate sobre CBDCs (Monedas Digitales de Banco Central)", wikiTitle: "Moneda digital de banco central" },
+      { year: "c. 2021", title: "Auge de los NFTs", wikiTitle: "Token no fungible" },
+      { year: "Actualidad", title: "DeFi, Regulación Cripto, Inflación Global", wikiTitle: "Finanzas descentralizadas"} // Temas actuales
+    ];
+
+
+    // --- Elementos del DOM (sin cambios estructurales) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexContainer = document.getElementById('eventIndexContainer');
+    const eventIndexList = document.getElementById('eventIndexList');
+    const toggleIndexBtn = document.getElementById('toggleIndexBtn');
+
+    // --- Estado y Caché (sin cambios) ---
+    const summaryCache = {};
+
+    // --- Función de Fetch Detallada (CORREGIDA) ---
+    const MAX_RETRIES = 3; const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) {
+       const baseUrl = "https://es.wikipedia.org/w/api.php";
+       // Definir parámetros UNA VEZ, fuera del bucle
+       const params = new URLSearchParams({
+           action: "query", prop: "extracts|pageimages|info",
+           titles: title, format: "json", origin: "*",
+           explaintext: "true", exchars: "2000", exintro: "false",
+           piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+       });
+       const url = `${baseUrl}?${params.toString()}`;
+       console.log("Fetching URL:", url); // Log para depuración
+
+       let lastKnownError = null;
+       for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                   lastKnownError = { status: response.status, statusText: response.statusText };
+                   if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                   else { if (response.status === 404) throw new Error(`Not Found: HTTP 404`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                const pageData = pages[pageId];
+                // Asegurarse de que hay texto ANTES de devolverlo
+                if (!pageData.extract || pageData.extract.trim() === '') throw new Error(`Incomplete Data: No extract found for "${title}"`);
+                console.log("Datos recibidos:", pageData); // Log para depuración
+                return pageData;
+            } catch (error) {
+                 lastKnownError = error;
+                 console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                 // Si es un error definitivo (404, sin extracto), no reintentar y lanzar para manejarlo arriba
+                 if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) { throw error; }
+                 // Si quedan reintentos y no es error definitivo, esperar y reintentar
+                 if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                 // Si es el último intento, lanzar el último error conocido
+                 else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }
+            }
+       }
+       // En teoría, no debería llegar aquí, pero por si acaso
+       throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    // --- Función para Limpiar Texto (sin cambios) ---
+    function cleanWikipediaText(text) {
+       if (!text) return "";
+       let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, '');
+       // Limpieza adicional opcional (ej. espacios antes de puntuación)
+       cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ',');
+       return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Adaptar textos temáticos) ---
+
+    function renderEventCardLoading(message = "Consultando Archivos del Tesoro...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`; // Spinner actualizado
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.7';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Fallo en la conexión con la cámara acorazada. Intente más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe') || cleanMessage.includes('404')) { cleanMessage = 'Documento no encontrado en el archivo (Error 404).'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('No extract found')) { cleanMessage = 'El documento recuperado está incompleto o dañado (sin extracto).'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Solicitud inválida enviada al archivo central.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error en la Transacción!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        const extract = cleanWikipediaText(pageData.extract); // Limpiar texto aquí
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+        // Usar párrafos <p> para saltos de línea dobles, <br> para simples si es necesario
+        const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract">${contentHtml}</div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Documento Fuente (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0; // Reset scroll on new content
+    }
+
+    // Renderizar Vistas Previas (Adaptar textos)
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para examinar este hito.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Orígenes del Trueque' : 'Futuro Financiero';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar textos)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrado o incompleto, buscando registros alternativos...`);
+        renderEventCardLoading("Documento no localizado/incompleto. Buscando rutas de intercambio alternativas...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al consultar el índice central.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El documento para "<strong>${failedTitle}</strong>" no fue hallado o está incompleto.</p>
+                                       <p>Quizás te interese uno de estos registros relacionados:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = cleanWikipediaText(item.snippet); // Limpiar snippet también
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un registro para intentar cargarlo)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron registros alternativos para "${searchTerm}".`);
+                renderEventCardError(`Documento para "${failedTitle}" no hallado/incompleto y no hay rutas alternativas conocidas.`);
+            }
+        } catch (searchErr) {
+            console.error("Error buscando alternativas:", searchErr);
+            renderEventCardError(`Documento para "${failedTitle}" no hallado/incompleto. La búsqueda de alternativas también falló.`);
+        }
+    }
+
+
+    // --- Función Principal de Actualización (Manejo mejorado de errores de fetch) ---
+    async function updateEvent(options) {
+       const index = options.index;
+       if (isNaN(index) || index < 0 || index >= events.length) { return; }
+
+       const currentEvent = events[index];
+       yearDisplay.textContent = currentEvent.year.toString();
+       if (slider.value !== index.toString()) { slider.value = index; }
+
+       updateIndexActiveState(index); // Actualizar índice
+
+       const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+       const cacheKey = titleToFetch.toLowerCase(); // Usar minúsculas para clave de caché consistente
+
+       renderPreview(events[index - 1], prevPreview);
+       renderPreview(events[index + 1], nextPreview);
+
+       // Comprobar caché
+       if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') {
+           console.log(`Documento "${titleToFetch}" cargado desde archivo local (caché).`);
+           renderEventCard(summaryCache[cacheKey], currentEvent.title);
+       // Si está marcado como error en caché, mostrar sugerencias directamente
+       } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') {
+            console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Buscando alternativas.`);
+            findAndDisplaySuggestions(titleToFetch);
+       // Si no está en caché o marcado como error, intentar fetch
+       } else {
+           console.log(`Consultando Archivo Central para: ${titleToFetch}`);
+           renderEventCardLoading();
+           try {
+               const pageData = await fetchDetailedData(titleToFetch); // Llamar a la función corregida
+               summaryCache[cacheKey] = pageData; // Guardar datos válidos en caché
+               renderEventCard(pageData, currentEvent.title);
+           } catch (err) {
+               // Si el error es 'Not Found' o 'Incomplete', marcar en caché y mostrar sugerencias
+               if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) {
+                   console.warn(`Error recuperable "${err.message}" para "${titleToFetch}". Buscando alternativas.`);
+                   // Marcar en caché el tipo de error para no reintentar fetch innecesariamente
+                   summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE';
+                   findAndDisplaySuggestions(titleToFetch); // Mostrar sugerencias
+               } else {
+                   // Para otros errores (red, HTTP 5xx), mostrar error genérico
+                   console.error(`Error final irrecuperable al obtener "${titleToFetch}":`, err);
+                   // Podrías marcar 'LOAD_ERROR' en caché si quisieras
+                   // summaryCache[cacheKey] = 'LOAD_ERROR';
+                   renderEventCardError(err.toString()); // Mostrar el error
+               }
+           }
+       }
+    }
+
+    // --- Funciones para el Índice (sin cambios estructurales) ---
+    function populateEventIndex() {
+        eventIndexList.innerHTML = ''; // Limpiar antes de poblar
+        events.forEach((event, index) => {
+            const li = document.createElement('li'); const a = document.createElement('a');
+            a.href = '#'; a.textContent = `${event.year} - ${event.title}`; a.dataset.index = index;
+            li.appendChild(a); eventIndexList.appendChild(li);
+        });
+    }
+    function toggleEventIndex() { eventIndexContainer.classList.toggle('expanded'); }
+    function updateIndexActiveState(activeIndex) {
+         eventIndexList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+         const activeLink = eventIndexList.querySelector(`a[data-index="${activeIndex}"]`);
+         if (activeLink) { activeLink.classList.add('active'); }
+    }
+
+    // --- Manejador de Clics (Unificado) ---
+    function handleClick(event) {
+        // Click en un link de sugerencia
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) { updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle }); }
+        }
+        // Click en una vista previa válida
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (!isNaN(targetIndex) && targetIndex >= 0 && targetIndex < events.length) {
+                 updateEvent({ index: targetIndex });
+            }
+        }
+        // Click en un link del índice de eventos
+        else if (event.target.matches('#eventIndexList a')) {
+             event.preventDefault();
+             const targetIndex = parseInt(event.target.dataset.index, 10);
+             if (!isNaN(targetIndex)) { updateEvent({ index: targetIndex }); }
+        }
+    }
+
+    // --- Inicialización (sin cambios estructurales) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+             // Manejar caso sin eventos
+             document.querySelector('h1').textContent = "Archivo Vacío";
+             eventCard.innerHTML = "<p>No hay registros históricos disponibles.</p>";
+             eventCard.className = 'error';
+             slider.disabled = true; yearDisplay.textContent = '----';
+             toggleIndexBtn.disabled = true;
+             return;
+        }
+        populateEventIndex();
+        slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 }); // Carga inicial
+        // Listeners
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        toggleIndexBtn.addEventListener('click', toggleEventIndex);
+        // Usar delegación en un contenedor superior para previews, índice y sugerencias
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Archivo Histórico del Dinero inicializado. Registros listos.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuaderno de Bitácora - Los Viajes de Darwin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f5f0e5; /* Pergamino/Papel viejo */
+      --container-bg: #e8e0d0; /* Papel ligeramente más oscuro/Cartón */
+      --card-bg: #fdfaf3; /* Papel de carta muy claro */
+      --preview-bg: #e0d8c8; /* Papel grisáceo/Usado */
+      --index-bg: #d8ccb8; /* Fondo índice (como madera clara o caja) */
+      --text-color-dark: #4a4032; /* Marrón tinta sepia */
+      --text-color-light: #f0e8dc; /* Crema muy claro */
+      --accent-green: #556b2f; /* Verde oliva oscuro (botánico) */
+      --accent-blue: #4682b4; /* Azul acero (mar/instrumentos) */
+      --accent-brass: #b8860b; /* Latón envejecido */
+      --border-color: #c8b8a8; /* Borde papel/madera clara */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'EB Garamond', serif; /* Fuente clásica/científica */
+      --shadow-soft: rgba(74, 64, 50, 0.15);
+      --shadow-medium: rgba(74, 64, 50, 0.3);
+      --shadow-dark: rgba(74, 64, 50, 0.4);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d8ccb8' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); /* Patrón sutil tipo papel verjurado */
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 6px 25px var(--shadow-medium), inset 0 0 10px rgba(0,0,0,0.05);
+      padding: 30px 35px; /* Más padding lateral */
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+      overflow: hidden;
+    }
+     /* Decoración tipo sello de lacre o detalle metálico */
+    .timeline-container::before { content: ''; position: absolute; width: 18px; height: 18px; background: var(--accent-green); border-radius: 50%; top: 15px; left: 15px; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); opacity: 0.8; }
+     .timeline-container::after { content: ''; position: absolute; width: 18px; height: 18px; background: var(--accent-blue); border-radius: 50%; bottom: 15px; right: 15px; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); opacity: 0.8; }
+
+
+    h1 {
+      font-family: var(--font-display);
+      font-style: italic; /* Darle un toque de manuscrito */
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-green);
+      text-shadow: 1px 1px 2px var(--shadow-soft);
+      font-size: 2.7em;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    /* Estructura Grid (igual) */
+    .main-content-area { display: grid; grid-template-columns: minmax(220px, 1fr) 3fr minmax(250px, 1.2fr); gap: 30px; align-items: stretch; margin-top: 20px; }
+    .center-column { display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo Notas/Bocetos) */
+    .event-preview {
+        min-width: 0;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px; /* Bordes más rectos */
+        padding: 18px;
+        color: var(--text-color-dark);
+        box-shadow: 2px 2px 5px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        opacity: 0.95; transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) { opacity: 1; box-shadow: 3px 3px 8px var(--shadow-medium); transform: translate(-2px, -2px); border-color: var(--accent-green); }
+    .event-preview.empty-preview { background: transparent; border: 2px dashed var(--border-color); opacity: 0.7; cursor: default; align-items: center; justify-content: center; text-align: center; color: var(--accent-grey); box-shadow: none; }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.1em; font-style: italic; margin: 0 0 8px 0; color: var(--accent-green); border-bottom: 1px solid #ccc; padding-bottom: 5px; font-weight: 700; }
+    .event-preview .preview-year { font-family: var(--font-body); font-weight: 700; color: var(--accent-blue); margin-bottom: 10px; font-size: 1.0em; text-align: center; }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Contenedor Índice (Estilo Caja de Muestras/Archivo) */
+    #eventIndexContainer {
+        background-color: var(--index-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 15px;
+        color: var(--text-color-dark);
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.15);
+        display: flex; flex-direction: column;
+        min-width: 0; max-height: 700px;
+    }
+    #eventIndexContainer h3 { font-family: var(--font-display); font-size: 1.2em; color: var(--accent-green); margin: 0 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); text-align: center; font-weight: 700; }
+    #eventIndexList { list-style: none; padding: 0 5px 0 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+    /* Scrollbar Estilizado */
+    #eventIndexList::-webkit-scrollbar { width: 8px; }
+    #eventIndexList::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
+    #eventIndexList::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid var(--index-bg); }
+    #eventIndexList::-webkit-scrollbar-thumb:hover { background-color: #b8a898; }
+
+    #eventIndexList li { margin-bottom: 1px; }
+    #eventIndexList a { display: block; padding: 7px 10px; color: var(--text-color-dark); text-decoration: none; border-radius: 3px; font-size: 0.9em; transition: background-color 0.2s, color 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid transparent; }
+    #eventIndexList a:hover { background-color: rgba(255, 255, 255, 0.3); color: #000; }
+    /* Item activo en índice */
+    #eventIndexList a.current-index-item { background-color: var(--accent-green); color: var(--bg-color); font-weight: 700; border-color: var(--accent-green); }
+    #eventIndexList a.current-index-item:hover { color: #fff; } /* Mantener claro al hover activo */
+
+
+    /* Slider Container (Estilo Instrumento) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 8px; background: rgba(0,0,0,0.03); border-radius: 6px; border: 1px solid var(--border-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* Slider (Estilo Latón/Madera) */
+    input[type="range"] { flex: 1; height: 5px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-brass), var(--border-color)); border-radius: 3px; outline: none; border: 1px solid #b8a898; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent-brass); border-radius: 50%; border: 2px solid var(--card-bg); box-shadow: 0 1px 3px var(--shadow-medium); transition: transform 0.2s ease; margin-top: -7px; }
+    input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; background: var(--accent-brass); border-radius: 50%; border: 2px solid var(--card-bg); box-shadow: 0 1px 3px var(--shadow-medium); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); background: var(--accent-green); }
+
+    /* Year Display (Estilo Etiqueta) */
+    #yearDisplay { min-width: 65px; text-align: center; font-weight: 700; font-family: var(--font-body); background: var(--accent-blue); color: var(--bg-color); padding: 7px 12px; border-radius: 3px; border: 1px solid #3a6890; box-shadow: inset 0 0 4px rgba(0,0,0,0.2), 1px 1px 2px rgba(0,0,0,0.3); font-size: 1.0em; }
+
+    /* Event Card (Estilo Página de Cuaderno) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 30px 35px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      min-height: 550px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 3px 3px 10px var(--shadow-soft);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto;
+      position: relative; /* Para pseudo-elementos si se añaden (ej. líneas) */
+    }
+     /* Líneas sutiles de cuaderno (opcional) */
+    /* #eventCard { background-image: linear-gradient(rgba(200, 184, 168, 0.2) 1px, transparent 1px); background-size: 100% 1.8em; } */
+
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: var(--preview-bg); color: var(--text-color-dark); }
+    #eventCard.loading { opacity: 0.9; }
+    #eventCard.error { border: 2px solid var(--accent-blue); color: var(--accent-blue); background: #d0d8e0; } /* Error usa azul */
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; color: var(--text-color-dark); }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 8px 16px;
+        background-color: var(--accent-green);
+        color: var(--card-bg);
+        border: 1px solid var(--accent-green); border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700; font-size: 0.95em;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: var(--accent-brass); color: var(--text-color-dark); border-color: var(--accent-brass); transform: scale(1.03); }
+
+    /* Estilos Tarjeta Principal (Cuaderno) */
+    #eventCard h2 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--accent-green); font-family: var(--font-display); font-size: 1.9em; font-weight: 700; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; }
+    #eventCard img {
+        max-width: 45%;
+        height: auto; max-height: 230px;
+        object-fit: contain; border-radius: 3px;
+        margin: 0 auto 25px auto; display: block;
+        border: 1px solid var(--border-color);
+        box-shadow: 2px 2px 8px var(--shadow-medium);
+        background-color: #fff; /* Fondo blanco por si acaso */
+    }
+    #eventCard .content-extract {
+        line-height: 1.75;
+        margin-bottom: 25px;
+        font-size: 1.0em;
+        text-align: justify;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 0 10px 0 15px; /* Padding para scroll e indentación */
+        border-left: 2px solid var(--accent-blue); /* Línea tipo margen */
+    }
+     /* Scrollbar Estilizado para extracto */
+    #eventCard .content-extract::-webkit-scrollbar { width: 7px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 3px; border: 1px solid var(--card-bg); }
+
+     /* Link Externo (Estilo Botón Científico/Explorador) */
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 10px 22px;
+        background: linear-gradient(to bottom, var(--accent-blue), #3a6890);
+        color: var(--bg-color); text-decoration: none; font-weight: 700;
+        font-family: var(--font-body); border-radius: 4px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid #2f506e;
+        box-shadow: 0 2px 4px var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1);
+        width: fit-content; text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    }
+    #eventCard a.external-link:hover { background: linear-gradient(to bottom, #5692c4, #4682b4); box-shadow: 0 3px 6px var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); color: #fff; }
+
+    /* Spinner (Estilo Brújula/Instrumento) */
+    .spinner { width: 45px; height: 45px; border: 4px solid var(--border-color); border-left-color: var(--accent-brass); border-top-color: var(--accent-brass); border-radius: 50%; animation: spin 1.1s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos */
+    @media (max-width: 1200px) { .main-content-area { grid-template-columns: minmax(180px, 1fr) 3fr minmax(200px, 1.2fr); gap: 20px; } h1 { font-size: 2.4em; } #eventIndexContainer { max-height: 650px; } }
+    @media (max-width: 900px) { .main-content-area { grid-template-columns: 1fr; gap: 20px; } .center-column { min-width: 0; } #eventIndexContainer { max-height: 300px; } }
+    @media (max-width: 600px) { body { padding: 15px; } .timeline-container { padding: 20px; } h1 { font-size: 1.9em; } .slider-container { flex-direction: column; gap: 10px; } #eventCard { padding: 20px; min-height: 400px; } #eventCard h2 { font-size: 1.6em; } #eventCard img { max-width: 70%; max-height: 180px; } #eventIndexContainer h3 { font-size: 1.1em; } #eventIndexList a { font-size: 0.85em; padding: 6px 10px; } }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Cuaderno de Bitácora - Los Viajes de Darwin</h1>
+
+    <div class="main-content-area">
+      <!-- Columna 1: Preview Anterior -->
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Primeras Observaciones</p>
+      </div>
+
+      <!-- Columna 2: Central (Slider + Tarjeta Evento) -->
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajuste el cronómetro para seguir la travesía y descubrimientos de Charles Darwin.</p>
+        </div>
+      </div>
+
+      <!-- Columna 3: Índice de Eventos -->
+      <div id="eventIndexContainer">
+          <h3>Índice de la Bitácora</h3>
+          <ul id="eventIndexList">
+              <li>Cargando índice...</li>
+          </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Vida y Viajes de Charles Darwin ---
+    const events = [
+        { year: 1809, title: "Nacimiento de Charles Darwin", wikiTitle: "Charles Darwin" },
+        { year: 1825, title: "Estudios de Medicina en Edimburgo", wikiTitle: "Charles Darwin" }, // Podría buscarse sección específica si existe
+        { year: 1828, title: "Estudios de Teología en Cambridge", wikiTitle: "Christ's College (Cambridge)" }, // Menciona a Darwin
+        { year: 1831, title: "Inicio del Viaje del Beagle", wikiTitle: "Segundo viaje del HMS Beagle" },
+        { year: 1832, title: "Exploración en Brasil / Primeros hallazgos", wikiTitle: "Segundo viaje del HMS Beagle" }, // Podría refinarse si hay artículo específico
+        { year: 1833, title: "Descubrimientos Fósiles en Argentina", wikiTitle: "Segundo viaje del HMS Beagle" },
+        { year: 1835, title: "Llegada a las Islas Galápagos", wikiTitle: "Galápagos" }, // O vincular a sección del viaje del Beagle
+        { year: 1835, title: "Observación de Pinzones y Tortugas", wikiTitle: "Pinzones de Darwin" }, // Hito clave
+        { year: 1836, title: "Regreso a Inglaterra / Fin del Viaje", wikiTitle: "Segundo viaje del HMS Beagle" },
+        { year: 1837, title: "Primer Cuaderno sobre la Transmutación de Especies", wikiTitle: "Charles Darwin" }, // Desarrollo temprano de ideas
+        { year: 1839, title: "Publicación de 'El Viaje del Beagle'", wikiTitle: "El viaje del Beagle" },
+        { year: 1839, title: "Matrimonio con Emma Wedgwood", wikiTitle: "Emma Darwin" },
+        { year: 1842, title: "Primer Esbozo de su Teoría", wikiTitle: "Desarrollo de la teoría de Darwin"},
+        { year: 1844, title: "Ensayo Extendido sobre Selección Natural", wikiTitle: "Desarrollo de la teoría de Darwin"},
+        { year: 1856, title: "Comienza a Escribir 'El Origen de las Especies'", wikiTitle: "El origen de las especies" },
+        { year: 1858, title: "Recepción de Manuscrito de Wallace", wikiTitle: "Alfred Russel Wallace" },
+        { year: 1858, title: "Presentación Conjunta en la Linnean Society", wikiTitle: "Sociedad Linneana de Londres" }, // Buscar evento específico
+        { year: 1859, title: "Publicación de 'El Origen de las Especies'", wikiTitle: "El origen de las especies" },
+        { year: 1871, title: "Publicación de 'El Origen del Hombre'", wikiTitle: "El origen del hombre" },
+        { year: 1872, title: "Publicación de 'La Expresión de las Emociones'", wikiTitle: "La expresión de las emociones en el hombre y en los animales" },
+        { year: 1882, title: "Muerte de Charles Darwin", wikiTitle: "Charles Darwin" }
+    ];
+
+
+    // --- Elementos del DOM (igual) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexList = document.getElementById('eventIndexList');
+
+    // --- Estado y Caché (igual) ---
+    const summaryCache = {};
+
+    // --- Fetch Detallado (action=query - sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que versión Cine) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info",
+            titles: title, format: "json", origin: "*",
+            explaintext: "true", exchars: "2000",
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600",
+            inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        // console.log("Fetching URL:", url);
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { /* ... manejo errores HTTP ... */
+                     lastKnownError = { status: response.status, statusText: response.statusText };
+                     if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                     else { throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) { throw new Error("Respuesta inesperada API"); }
+                const pages = data.query.pages; const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) { throw new Error(`Not Found: "${title}" no existe.`); }
+                const pageData = pages[pageId];
+                if (!pageData.title || !pageData.extract) { throw new Error(`Respuesta incompleta para "${title}"`); }
+                 // console.log("Datos recibidos de API:", pageData);
+                 return pageData;
+            } catch (error) { /* ... manejo de reintentos y error final ... */
+                 lastKnownError = error; console.warn(`Intento ${i + 1} fallido (${title}): ${error.message}`);
+                 if (error.message.startsWith('Not Found:')) { throw error; }
+                 if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                 else { console.error(`No se pudo obtener datos para ${title} tras ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos.`); }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado fetch.`);
+    }
+
+
+    // --- Funciones de Renderizado (Mensajes Darwin) ---
+
+    function renderEventCardLoading(message = "Consultando bitácora...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.9';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Mensajes temáticos
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Comunicación perdida con el archivo. Intente más tarde.'; }
+        else if (cleanMessage.includes('Client error 404') || cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Esta entrada de la bitácora no fue hallada.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Problema al solicitar la entrada de la bitácora.';}
+        else if (cleanMessage.includes('Respuesta incompleta')) { cleanMessage = 'La entrada recuperada está dañada o ilegible.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error en la Bitácora!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    // Render Card (con limpieza de citas)
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        let extract = pageData.extract || "Anotación no disponible.";
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim().replace(/\s{2,}/g, ' ');
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Entrada Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Render Preview (mensajes adaptados)
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para examinar esta etapa.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = 'Primeras Observaciones'; // Placeholder preview izq.
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y mostrar sugerencias (mensajes adaptados)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrada/ilegible, buscando referencias cruzadas...`);
+        renderEventCardLoading("Entrada no hallada/ilegible. Consultando índices relacionados...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} consultando índices.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>La entrada de bitácora "<strong>${failedTitle}</strong>" no pudo ser leída o localizada.</p>
+                                       <p>Quizás estas otras anotaciones sean relevantes:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un título para intentar consultarlo)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron referencias cruzadas para "${searchTerm}".`);
+                 renderEventCardError(`Entrada para "${failedTitle}" no localizada y sin referencias cruzadas.`);
+                 eventCard.className = 'error';
+            }
+        } catch (searchErr) {
+            console.error("Error buscando referencias:", searchErr);
+             renderEventCardError(`Entrada para "${failedTitle}" no localizada. La búsqueda de referencias falló.`);
+             eventCard.className = 'error';
+        }
+    }
+
+    // --- Llenar Índice (lógica igual) ---
+    function populateEventIndex() { /* ... (código igual que versión Cine) ... */
+        if (!eventIndexList) return;
+        eventIndexList.innerHTML = '';
+        events.forEach((event, index) => {
+            const li = document.createElement('li'); const a = document.createElement('a');
+            a.href = "#"; a.textContent = `${event.year} - ${event.title}`;
+            a.dataset.index = index; a.title = event.title;
+            li.appendChild(a); eventIndexList.appendChild(li);
+        });
+     }
+
+    // --- Actualizar Resaltado Índice (lógica igual) ---
+    function updateIndexHighlight(activeIndex) { /* ... (código igual que versión Cine) ... */
+          if (!eventIndexList) return;
+         const links = eventIndexList.querySelectorAll('a');
+         links.forEach((link, index) => {
+             if (index === activeIndex) {
+                 link.classList.add('current-index-item');
+                 link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+             } else {
+                 link.classList.remove('current-index-item');
+             }
+         });
+    }
+
+
+    // --- Función Principal de Actualización (lógica igual) ---
+    async function updateEvent(options) { /* ... (código igual que versión Cine, llama a updateIndexHighlight) ... */
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { return; }
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        updateIndexHighlight(index);
+
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                console.error(`Error al cargar "${titleToFetch}":`, err.message);
+                summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'LOAD_ERROR';
+                findAndDisplaySuggestions(titleToFetch);
+            }
+        }
+    }
+
+    // --- Manejador de Clics (lógica igual) ---
+    function handleClick(event) { /* ... (código igual que versión Cine, incluye clics en índice) ... */
+         if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault(); const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) { updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle }); }
+        }
+        else if (event.target.closest('#prevEventPreview:not(.empty-preview)')) {
+             const previewElement = event.target.closest('#prevEventPreview'); const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) { updateEvent({ index: targetIndex }); }
+        }
+         else if (event.target.matches('#eventIndexList a')) {
+             event.preventDefault(); const targetIndex = parseInt(event.target.dataset.index, 10);
+             if (!isNaN(targetIndex) && targetIndex >= 0 && targetIndex < events.length) {
+                 slider.value = targetIndex; updateEvent({ index: targetIndex });
+             }
+         }
+     }
+
+    // --- Inicialización (mensajes adaptados) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+             document.querySelector('h1').textContent = "Bitácora Perdida";
+            eventCard.innerHTML = "<p>No hay registros disponibles de este viaje.</p>";
+            eventCard.className = 'error';
+            slider.disabled = true; yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview);
+            if(eventIndexList) eventIndexList.innerHTML = '<li>Índice vacío</li>';
+            return;
+        }
+        populateEventIndex(); // Llenar índice
+        slider.max = events.length - 1; slider.value = 0;
+        slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 }); // Carga inicial
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Cuaderno de Bitácora abierto. Listo para explorar.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexo Temporal Sudamericano - Historia Interactiva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0a0a1a; /* Azul muy oscuro casi negro */
+      --primary-glow: #00ffff; /* Cian neón */
+      --secondary-glow: #ff00ff; /* Magenta neón */
+      --text-color: #e0e0ff; /* Texto blanco azulado claro */
+      --card-bg: rgba(20, 20, 40, 0.7); /* Fondo de tarjeta semi-transparente */
+      --card-border: rgba(0, 255, 255, 0.3);
+      --accent-color: #00ffff;
+      --error-color: #ff4444;
+      --font-body: 'Poppins', sans-serif;
+      --font-display: 'Orbitron', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%);
+      color: var(--text-color);
+      margin: 0;
+      padding: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      overflow-x: hidden; /* Evita scroll horizontal */
+    }
+
+    .timeline-container {
+      background: rgba(15, 15, 30, 0.5); /* Ligeramente más claro que el body */
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.15);
+      border: 1px solid var(--card-border);
+      padding: 25px 35px;
+      max-width: 700px;
+      width: 100%;
+      backdrop-filter: blur(10px); /* Efecto cristal */
+      -webkit-backdrop-filter: blur(10px); /* Soporte Safari */
+      transition: box-shadow 0.3s ease;
+    }
+    .timeline-container:hover {
+        box-shadow: 0 0 40px rgba(0, 255, 255, 0.25);
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 25px;
+      color: var(--accent-color);
+      text-shadow: 0 0 8px var(--primary-glow);
+      font-size: 2em;
+      letter-spacing: 1px;
+    }
+
+    .country-selector {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .country-selector label {
+      margin-right: 10px;
+      font-weight: 600;
+      color: var(--accent-color);
+      font-size: 1.1em;
+    }
+    .country-selector select {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--primary-glow);
+      background-color: rgba(0, 0, 10, 0.8);
+      color: var(--text-color);
+      font-family: var(--font-body);
+      font-size: 1em;
+      cursor: pointer;
+      appearance: none; /* Quita estilo nativo */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300ffff' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E"); /* Flecha SVG cian */
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px 12px;
+      min-width: 200px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .country-selector select:focus {
+        outline: none;
+        border-color: var(--secondary-glow);
+        box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    /* Estilo Futurista para el Slider */
+    input[type="range"] {
+      flex: 1;
+      height: 8px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background: linear-gradient(90deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+      border-radius: 5px;
+      outline: none;
+      box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+      transition: box-shadow 0.2s ease;
+    }
+    input[type="range"]:hover {
+        box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    /* Thumb (manija del slider) - Webkit (Chrome, Safari, Edge) */
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      border: 2px solid var(--bg-color);
+      box-shadow: 0 0 5px var(--primary-glow), 0 0 10px var(--primary-glow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:active {
+        transform: scale(1.2);
+        box-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+    }
+
+    /* Thumb (manija del slider) - Firefox */
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      border: 2px solid var(--bg-color);
+      box-shadow: 0 0 5px var(--primary-glow), 0 0 10px var(--primary-glow);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+     input[type="range"]::-moz-range-thumb:active {
+        transform: scale(1.2);
+        box-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+    }
+
+    #yearDisplay {
+      min-width: 70px;
+      text-align: center;
+      font-weight: bold;
+      font-family: var(--font-display);
+      background: var(--card-bg);
+      padding: 8px 12px;
+      border-radius: 5px;
+      border: 1px solid var(--card-border);
+      font-size: 1.1em;
+      color: var(--accent-color);
+      text-shadow: 0 0 3px var(--primary-glow);
+    }
+
+    #eventCard {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.5s ease-in-out;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(5px); /* Más sutil aquí */
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    #eventCard.loading, #eventCard.error {
+        align-items: center;
+        text-align: center;
+    }
+
+    #eventCard.error {
+        background-color: rgba(80, 20, 20, 0.7);
+        border-color: rgba(255, 68, 68, 0.5);
+        color: var(--error-color);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+    }
+    #eventCard.error p {
+        font-weight: 600;
+    }
+
+    #eventCard h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      text-align: center;
+      color: var(--accent-color);
+      font-family: var(--font-display);
+      font-size: 1.6em;
+      text-shadow: 0 0 5px var(--primary-glow);
+    }
+
+    #eventCard img {
+      max-width: 80%; /* No ocupar todo el ancho */
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 0 auto 20px auto;
+      display: block;
+      border: 2px solid var(--card-border);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    #eventCard p {
+      line-height: 1.7;
+      margin-bottom: 20px;
+      font-size: 1em;
+      text-align: justify; /* Justificar texto descriptivo */
+    }
+
+    #eventCard a {
+      display: block; /* Ocupa todo el ancho disponible */
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: linear-gradient(90deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+      color: var(--bg-color); /* Texto oscuro sobre fondo brillante */
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 8px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+    }
+    #eventCard a:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 15px var(--primary-glow), 0 0 5px var(--secondary-glow);
+      filter: brightness(1.1);
+    }
+
+    /* Spinner Futurista */
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      position: relative;
+      margin: 30px auto;
+      border: 4px solid transparent;
+      border-top-color: var(--primary-glow);
+      border-left-color: var(--primary-glow);
+      box-shadow: 0 0 10px var(--primary-glow);
+      animation: spin 1s linear infinite;
+    }
+    .spinner::before {
+        content: '';
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        border-radius: 50%;
+        border: 4px solid transparent;
+        border-top-color: var(--secondary-glow);
+        border-left-color: var(--secondary-glow);
+        box-shadow: 0 0 10px var(--secondary-glow);
+        opacity: 0.8;
+        animation: spin 1.5s linear infinite reverse;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Pequeños ajustes para pantallas más pequeñas */
+     @media (max-width: 600px) {
+        body { padding: 15px; }
+        .timeline-container { padding: 20px; }
+        h1 { font-size: 1.5em; }
+        .country-selector label { display: block; margin-bottom: 8px;}
+        .country-selector select { width: 100%; }
+        #eventCard h2 { font-size: 1.4em; }
+        #eventCard p { font-size: 0.95em; }
+        #eventCard a { padding: 10px 15px; }
+     }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container">
+    <h1 id="timelineTitle">Nexo Temporal Sudamericano</h1>
+
+    <div class="country-selector">
+      <label for="countrySelect">Selecciona un país:</label>
+      <select id="countrySelect"></select>
+    </div>
+
+    <div class="slider-container">
+      <input type="range" id="timelineSlider" min="0" step="1" value="0">
+      <div id="yearDisplay">----</div>
+    </div>
+
+    <div id="eventCard">
+      <p>Selecciona un país para explorar su historia.</p>
+    </div>
+  </div>
+
+  <script>
+    // --- Definición de Datos por País (EJEMPLO - ¡NECESITA AMPLIARSE!) ---
+    const countriesData = {
+      "Argentina": [
+        { year: 1810, title: "Revolución de Mayo", wikiTitle: "Revolución de Mayo" },
+        { year: 1816, title: "Declaración de Independencia", wikiTitle: "Declaración de independencia de la Argentina" },
+        { year: 1880, title: "Generación del 80 / Modelo Agroexportador", wikiTitle: "Generación del 80" },
+        { year: 1946, title: "Primer gobierno de Perón", wikiTitle: "Juan Domingo Perón" },
+        { year: 1976, title: "Golpe de Estado / Dictadura", wikiTitle: "Proceso de Reorganización Nacional" },
+        { year: 1982, title: "Guerra de las Malvinas", wikiTitle: "Guerra de las Malvinas" },
+        { year: 1983, title: "Retorno a la Democracia", wikiTitle: "Raúl Alfonsín" },
+        { year: 2001, title: "Crisis de Diciembre", wikiTitle: "Crisis de diciembre de 2001 en Argentina" }
+      ],
+      "Brasil": [
+        { year: 1822, title: "Independencia de Brasil", wikiTitle: "Independencia de Brasil" },
+        { year: 1888, title: "Abolición de la Esclavitud (Lei Áurea)", wikiTitle: "Ley Áurea" },
+        { year: 1889, title: "Proclamación de la República", wikiTitle: "Proclamación de la República de Brasil" },
+        { year: 1930, title: "Revolución de 1930 / Era Vargas", wikiTitle: "Revolución de 1930" },
+        { year: 1964, title: "Golpe de Estado / Dictadura Militar", wikiTitle: "Dictadura militar en Brasil (1964-1985)" },
+        { year: 1985, title: "Fin de la Dictadura / Redemocratización", wikiTitle: "Diretas Já" },
+        { year: 1994, title: "Plan Real", wikiTitle: "Plan Real" },
+        { year: 2002, title: "Elección de Lula da Silva", wikiTitle: "Luiz Inácio Lula da Silva" }
+      ],
+      "Chile": [
+        { year: 1810, title: "Primera Junta de Gobierno", wikiTitle: "Primera Junta Nacional de Gobierno de Chile" },
+        { year: 1818, title: "Declaración de Independencia", wikiTitle: "Acta de Independencia de Chile" },
+        { year: 1879, title: "Guerra del Pacífico", wikiTitle: "Guerra del Pacífico" },
+        { year: 1970, title: "Elección de Salvador Allende", wikiTitle: "Salvador Allende" },
+        { year: 1973, title: "Golpe de Estado / Dictadura", wikiTitle: "Golpe de Estado en Chile de 1973" },
+        { year: 1988, title: "Plebiscito Nacional", wikiTitle: "Plebiscito nacional de Chile de 1988" },
+        { year: 1990, title: "Retorno a la Democracia", wikiTitle: "Transición a la democracia (Chile)" },
+        { year: 2010, title: "Terremoto y Tsunami", wikiTitle: "Terremoto de Chile de 2010" }
+      ],
+      "Colombia": [
+          { year: 1810, title: "Grito de Independencia", wikiTitle: "Independencia de Colombia"},
+          { year: 1819, title: "Batalla de Boyacá", wikiTitle: "Batalla de Boyacá"},
+          { year: 1886, title: "Constitución de 1886 / Regeneración", wikiTitle: "Constitución de Colombia de 1886"},
+          { year: 1899, title: "Guerra de los Mil Días", wikiTitle: "Guerra de los Mil Días"},
+          { year: 1948, title: "El Bogotazo", wikiTitle: "Bogotazo"},
+          { year: 1991, title: "Constitución de 1991", wikiTitle: "Constitución de Colombia de 1991"},
+          { year: 2016, title: "Acuerdo de Paz con las FARC", wikiTitle: "Acuerdos de paz entre el gobierno colombiano y las FARC-EP"}
+      ],
+      "Venezuela": [
+          { year: 1811, title: "Declaración de Independencia", wikiTitle: "Acta de la Declaración de Independencia de Venezuela"},
+          { year: 1821, title: "Batalla de Carabobo", wikiTitle: "Batalla de Carabobo"},
+          { year: 1958, title: "Caída de Pérez Jiménez / Pacto de Puntofijo", wikiTitle: "Marcos Pérez Jiménez"},
+          { year: 1989, title: "El Caracazo", wikiTitle: "Caracazo"},
+          { year: 1998, title: "Elección de Hugo Chávez", wikiTitle: "Hugo Chávez"},
+          { year: 2002, title: "Golpe de Estado", wikiTitle: "Golpe de Estado en Venezuela de 2002"},
+          { year: 2014, title: "Inicio de Protestas Masivas", wikiTitle: "Protestas en Venezuela de 2014"}
+      ],
+      "Bolivia": [
+        { year: 1825, title: "Declaración de Independencia", wikiTitle: "Acta de Independencia de Bolivia" },
+        { year: 1879, title: "Guerra del Pacífico (Pérdida del Litoral)", wikiTitle: "Guerra del Pacífico" },
+        { year: 1932, title: "Guerra del Chaco", wikiTitle: "Guerra del Chaco" },
+        { year: 1952, title: "Revolución Nacional", wikiTitle: "Revolución boliviana de 1952" },
+        { year: 1967, title: "Guerrilla de Ñancahuazú / Muerte del Che", wikiTitle: "Ernesto Guevara" }, // O "Guerrilla de Ñancahuazú"
+        { year: 1982, title: "Retorno a la Democracia (Siles Zuazo)", wikiTitle: "Hernán Siles Zuazo" },
+        { year: 2005, title: "Elección de Evo Morales", wikiTitle: "Evo Morales" },
+        { year: 2009, title: "Nueva Constitución Política del Estado", wikiTitle: "Constitución Política del Estado de 2009" }
+      ],
+      "Chile": [
+        { year: 1810, title: "Primera Junta de Gobierno", wikiTitle: "Primera Junta Nacional de Gobierno de Chile" },
+        { year: 1818, title: "Declaración de Independencia", wikiTitle: "Acta de Independencia de Chile" },
+        { year: 1879, title: "Guerra del Pacífico", wikiTitle: "Guerra del Pacífico" },
+        { year: 1970, title: "Elección de Salvador Allende", wikiTitle: "Salvador Allende" },
+        { year: 1973, title: "Golpe de Estado / Dictadura", wikiTitle: "Golpe de Estado en Chile de 1973" },
+        { year: 1988, title: "Plebiscito Nacional (Derrota de Pinochet)", wikiTitle: "Plebiscito nacional de Chile de 1988" },
+        { year: 1990, title: "Retorno a la Democracia (Aylwin)", wikiTitle: "Transición a la democracia (Chile)" },
+        { year: 2010, title: "Terremoto y Tsunami", wikiTitle: "Terremoto de Chile de 2010" }
+      ],
+      "Ecuador": [
+        { year: 1822, title: "Batalla de Pichincha / Independencia", wikiTitle: "Batalla de Pichincha" },
+        { year: 1830, title: "Separación de la Gran Colombia", wikiTitle: "Disolución de la Gran Colombia" },
+        { year: 1941, title: "Guerra Peruano-Ecuatoriana", wikiTitle: "Guerra peruano-ecuatoriana" },
+        { year: 1972, title: "Inicio del Boom Petrolero / Gob. Militar", wikiTitle: "Guillermo Rodríguez Lara" }, // O Historia de Ecuador
+        { year: 1979, title: "Retorno a la Democracia (Roldós)", wikiTitle: "Jaime Roldós Aguilera" },
+        { year: 2000, title: "Dolarización de la Economía", wikiTitle: "Dolarización en Ecuador" },
+        { year: 2007, title: "Inicio Gobierno Rafael Correa / Revolución Ciudadana", wikiTitle: "Rafael Correa" }
+      ],
+      "Guayana Francesa": [ // Territorio de Ultramar Francés
+        { year: 1604, title: "Inicio de la Colonización Francesa", wikiTitle: "Guayana Francesa" },
+        { year: 1852, title: "Establecimiento de la Colonia Penal (Isla del Diablo)", wikiTitle: "Isla del Diablo" },
+        { year: 1946, title: "Creación del Departamento de Ultramar", wikiTitle: "Guayana Francesa" },
+        { year: 1968, title: "Inauguración del Centro Espacial Guayanés", wikiTitle: "Centro Espacial Guayanés" },
+        { year: 1982, title: "Leyes de Descentralización", wikiTitle: "Guayana Francesa" }, // Impacto significativo
+        { year: 2017, title: "Movilizaciones Sociales Masivas", wikiTitle: "Movimiento social de 2017 en la Guayana Francesa"} // Página específica encontrada
+      ],
+      "Guyana": [
+        { year: 1831, title: "Formación de la Guayana Británica", wikiTitle: "Guayana Británica" },
+        { year: 1966, title: "Independencia del Reino Unido", wikiTitle: "Guyana" },
+        { year: 1970, title: "Proclamación de la República Cooperativa (Burnham)", wikiTitle: "Forbes Burnham" },
+        { year: 1978, title: "Masacre de Jonestown", wikiTitle: "Masacre de Jonestown" },
+        { year: 1980, title: "Asesinato de Walter Rodney", wikiTitle: "Walter Rodney" }, // Evento político clave
+        { year: 1992, title: "Elecciones democráticas (Jagan / PPP)", wikiTitle: "Cheddi Jagan"},
+        { year: 2015, title: "Descubrimiento de Grandes Yacimientos Petroleros", wikiTitle: "Guyana" } // Cubierto en la página principal
+      ],
+      "Paraguay": [
+        { year: 1811, title: "Independencia de Paraguay", wikiTitle: "Independencia de Paraguay" },
+        { year: 1814, title: "Inicio Dictadura Perpetua (Dr. Francia)", wikiTitle: "José Gaspar Rodríguez de Francia" },
+        { year: 1864, title: "Guerra de la Triple Alianza", wikiTitle: "Guerra de la Triple Alianza" },
+        { year: 1932, title: "Guerra del Chaco", wikiTitle: "Guerra del Chaco" },
+        { year: 1954, title: "Inicio Dictadura de Stroessner", wikiTitle: "Alfredo Stroessner" },
+        { year: 1989, title: "Caída de Stroessner / Transición", wikiTitle: "Golpe de Estado en Paraguay de 1989" },
+        { year: 2008, title: "Elección de Fernando Lugo (Fin hegemonía Colorada)", wikiTitle: "Fernando Lugo" }
+      ],
+       "Perú": [
+        { year: 1821, title: "Proclamación de la Independencia", wikiTitle: "Independencia del Perú" },
+        { year: 1879, title: "Guerra del Pacífico", wikiTitle: "Guerra del Pacífico" },
+        { year: 1968, title: "Gobierno Revolucionario de la Fuerza Armada (Velasco)", wikiTitle: "Gobierno Revolucionario de la Fuerza Armada" },
+        { year: 1980, title: "Inicio del Conflicto Armado Interno / Sendero Luminoso", wikiTitle: "Época del terrorismo en Perú" },
+        { year: 1990, title: "Elección de Fujimori / Shock Económico", wikiTitle: "Alberto Fujimori" },
+        { year: 1992, title: "Autogolpe de Estado", wikiTitle: "Autogolpe de Estado de Perú de 1992"},
+        { year: 2000, title: "Caída de Fujimori / Gobierno de Transición", wikiTitle: "Vladivideos" },
+        { year: 2001, title: "Retorno a la Democracia (Toledo)", wikiTitle: "Alejandro Toledo" }
+      ],
+       "Suriname": [
+        { year: 1667, title: "Establecimiento de la Guayana Neerlandesa", wikiTitle: "Guayana Neerlandesa" },
+        { year: 1975, title: "Independencia de los Países Bajos", wikiTitle: "Surinam" },
+        { year: 1980, title: "Golpe de Estado (Golpe de los Sargentos / Bouterse)", wikiTitle: "Golpe de Estado en Surinam de 1980" }, // Página específica
+        { year: 1982, title: "Asesinatos de Diciembre", wikiTitle: "Asesinatos de Diciembre" },
+        { year: 1986, title: "Inicio de la Guerra Civil de Surinam", wikiTitle: "Guerra civil de Surinam" },
+        { year: 1991, title: "Retorno a la Democracia (Venetiaan)", wikiTitle: "Ronald Venetiaan" },
+        { year: 2019, title: "Condena a Dési Bouterse (Asesinatos de Diciembre)", wikiTitle: "Dési Bouterse" } // O Asesinatos de Diciembre
+      ],
+      "Uruguay": [
+        { year: 1825, title: "Declaratoria de la Independencia (Cruzada Libertadora)", wikiTitle: "Declaratoria de la Independencia (Uruguay)" },
+        { year: 1903, title: "Inicio Presidencias Batlle y Ordóñez (Reformismo)", wikiTitle: "José Batlle y Ordóñez" },
+        { year: 1973, title: "Golpe de Estado / Dictadura Cívico-Militar", wikiTitle: "Dictadura cívico-militar en Uruguay (1973-1985)" },
+        { year: 1980, title: "Plebiscito Constitucional (Derrota de los militares)", wikiTitle: "Plebiscito constitucional de Uruguay de 1980"},
+        { year: 1985, title: "Fin de la Dictadura / Restauración democrática (Sanguinetti)", wikiTitle: "Julio María Sanguinetti" },
+        { year: 2005, title: "Asunción de Tabaré Vázquez (Primer Gob. Frente Amplio)", wikiTitle: "Tabaré Vázquez" },
+        { year: 2013, title: "Legalización del Mercado de Cannabis", wikiTitle: "Regulación de la producción y mercado de cannabis en Uruguay" } // Título más preciso
+      ]
+    };
+
+    // --- Elementos del DOM ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const countrySelect = document.getElementById('countrySelect');
+    const timelineTitle = document.getElementById('timelineTitle');
+
+    // --- Estado de la Aplicación ---
+    let currentEvents = [];
+    const summaryCache = {}; // Caché para los resúmenes de Wikipedia
+    let currentCountryName = "";
+
+    // --- Función de Fetch con Reintentos (sin cambios) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+
+    async function fetchWithRetry(url, retries = MAX_RETRIES) {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            if (response.status >= 500 || response.status === 429) {
+               console.warn(`Intento ${i + 1} fallido: HTTP ${response.status}. Reintentando...`);
+               throw new Error(`HTTP error ${response.status}`);
+            } else {
+               console.error(`Intento ${i + 1} fallido: HTTP ${response.status}. No se reintentará.`);
+               return Promise.reject(`Error ${response.status}: ${response.statusText || 'Error del cliente'}`);
+            }
+          }
+          const data = await response.json();
+          // A veces Wikipedia responde 200 OK pero con un error dentro, ej: página no encontrada
+          if (data.type && data.type.startsWith('https://mediawiki.org/wiki/HyperSwitch/errors/not_found')) {
+              console.error(`Intento ${i + 1}: Wikipedia API reporta 'not_found' para ${url}`);
+              return Promise.reject(`No se encontró la página en Wikipedia para este título.`);
+          }
+          return data; // Éxito
+        } catch (error) {
+          console.warn(`Intento ${i + 1} fallido por catch: ${error.message}`);
+          if (i < retries - 1) {
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+          } else {
+            console.error(`No se pudo cargar ${url} después de ${retries} intentos.`);
+            return Promise.reject(`No se pudo cargar la información después de ${retries} intentos.`);
+          }
+        }
+      }
+      // Por si acaso el bucle termina sin devolver ni rechazar (no debería ocurrir)
+      return Promise.reject(`Fallo inesperado en fetchWithRetry.`);
+    }
+
+
+    // --- Funciones de la Interfaz ---
+
+    function renderEventCardLoading() {
+        eventCard.innerHTML = '<div class="spinner"></div><p>Cargando datos históricos...</p>';
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.5';
+    }
+
+    function renderEventCardError(errorMessage) {
+        eventCard.innerHTML = `<p><strong>Error Trans-dimensional:</strong><br>${errorMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(data) {
+      const imgHtml = data.thumbnail ? `<img src="${data.thumbnail.source}" alt="${data.title}">` : '';
+      const displayTitle = (data.displaytitle && data.displaytitle !== data.title)
+                           ? data.displaytitle.replace(/<[^>]*>/g, '')
+                           : data.title;
+      const description = data.extract || "Fragmento de datos no disponible en esta línea temporal.";
+      const wikiLink = data.content_urls?.desktop?.page;
+
+      eventCard.innerHTML = `
+        <h2>${displayTitle}</h2>
+        ${imgHtml}
+        <p>${description}</p>
+        ${wikiLink ? `<a href="${wikiLink}" target="_blank" rel="noopener noreferrer">Analizar Registro Completo (Wikipedia)</a>` : ''}
+      `;
+      eventCard.className = ''; // Quita clases de carga/error
+      eventCard.style.opacity = '1'; // Asegura visibilidad completa
+    }
+
+    async function updateEvent(index) {
+      if (!currentEvents || index < 0 || index >= currentEvents.length) {
+        console.error("Índice de evento fuera de rango o datos no cargados:", index);
+        renderEventCardError("Coordenada temporal inválida.");
+        yearDisplay.textContent = "ERROR";
+        return;
+      }
+
+      const event = currentEvents[index];
+      yearDisplay.textContent = event.year;
+
+      const cacheKey = `${currentCountryName}-${index}`;
+
+      if (summaryCache[cacheKey]) {
+        console.log(`Cache hit para: ${event.title}`);
+        renderEventCard(summaryCache[cacheKey]);
+      } else {
+        console.log(`Fetching para: ${event.title} (${event.wikiTitle || event.title})`);
+        renderEventCardLoading();
+
+        const titleToFetch = event.wikiTitle || event.title;
+        const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titleToFetch)}`;
+
+        try {
+            // Esperar un poquito para que la animación de carga sea visible
+            await new Promise(resolve => setTimeout(resolve, 150));
+            const data = await fetchWithRetry(url);
+
+            if (data && data.title && data.extract) { // Validación básica
+                 summaryCache[cacheKey] = data;
+                 renderEventCard(data);
+            } else if (data && data.title && !data.extract) {
+                // A veces no hay 'extract' pero sí un título, indicamos eso.
+                summaryCache[cacheKey] = data; // Cacheamos igual
+                renderEventCard({...data, extract: "No hay resumen disponible en la base de datos central (Wikipedia)."});
+            }
+             else {
+                console.error("Respuesta inesperada de la API:", data);
+                renderEventCardError(`Datos corruptos o incompletos para "${event.title}".`);
+            }
+        } catch (err) {
+            console.error("Error final después de reintentos:", err);
+            // Mostrar el error específico si es el de "not_found", o el genérico si no
+            const displayError = err.toString().includes("No se encontró la página")
+                                 ? `Registro no encontrado en la base de datos central para "${event.title}".`
+                                 : err.toString();
+            renderEventCardError(displayError);
+        }
+      }
+    }
+
+    function loadCountry(countryName) {
+        console.log("Accediendo a línea temporal de:", countryName);
+        if (!countriesData[countryName]) {
+            console.error("País no encontrado en los registros:", countryName);
+            eventCard.innerHTML = "<p>Datos de este país no disponibles o aún clasificados.</p>";
+            eventCard.className = 'error';
+            yearDisplay.textContent = '----';
+            slider.disabled = true; // Deshabilitar slider si no hay datos
+            return;
+        }
+
+        currentCountryName = countryName;
+        currentEvents = countriesData[countryName];
+        timelineTitle.textContent = `Nexo Temporal: ${countryName}`; // Actualizar título principal
+
+        // Configurar el slider
+        slider.max = currentEvents.length - 1;
+        slider.value = 0;
+        slider.disabled = currentEvents.length <= 1; // Deshabilitar si solo hay 0 o 1 evento
+
+        // Cargar el primer evento
+        if (currentEvents.length > 0) {
+            updateEvent(0);
+        } else {
+            yearDisplay.textContent = "----";
+            eventCard.innerHTML = "<p>Esta línea temporal está vacía o encriptada.</p>";
+            eventCard.className = '';
+            slider.disabled = true;
+        }
+    }
+
+    function populateCountrySelector() {
+        const countryNames = Object.keys(countriesData).sort(); // Ordenar alfabéticamente
+        countryNames.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            countrySelect.appendChild(option);
+        });
+
+        countrySelect.addEventListener('change', (e) => {
+            loadCountry(e.target.value);
+        });
+    }
+
+    // --- Inicialización ---
+    populateCountrySelector();
+
+    // Cargar el primer país de la lista por defecto
+    const initialCountry = Object.keys(countriesData).sort()[0];
+    if (initialCountry) {
+        countrySelect.value = initialCountry;
+        loadCountry(initialCountry);
+    } else {
+        eventCard.innerHTML = "<p>No hay datos temporales disponibles.</p>";
+        eventCard.className = 'error';
+        slider.disabled = true;
+    }
+
+    // Listener para el slider
+    slider.addEventListener('input', () => updateEvent(parseInt(slider.value, 10)));
+
+  </script>
+</body>
+</html>

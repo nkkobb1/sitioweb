@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecos de la Tierra - Movimiento Ambientalista</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f4f7f6; /* Blanco verdoso muy claro */
+      --container-bg: #ffffff; /* Blanco limpio */
+      --card-bg: #fdfdfd; /* Blanco */
+      --preview-bg: #e8f0e9; /* Verde pálido */
+      --text-color-dark: #3d4c3f; /* Verde oscuro/grisáceo */
+      --text-color-medium: #6a7c6c; /* Verde/gris medio */
+      --text-color-light: #f0f2f5; /* Para fondos oscuros (si hubiera) */
+      --accent-green-dark: #2e6b46; /* Verde bosque */
+      --accent-green-medium: #6fbf73; /* Verde hoja brillante */
+      --accent-blue-sky: #77aaff; /* Azul cielo claro */
+      --accent-brown-earth: #a07d5a; /* Marrón tierra */
+      --accent-orange-warn: #f5a623; /* Naranja/Ámbar suave */
+      --border-color: #d8e0d9; /* Borde verde/gris claro */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Poppins', sans-serif; /* Más redondeada */
+      --shadow-soft: rgba(61, 76, 63, 0.15);
+      --shadow-medium: rgba(61, 76, 63, 0.25);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      /* Sutil textura de papel o acuarela */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='%23d8e0d9' fill-opacity='0.1'%3E%3Crect x='0' y='0' width='100' height='1'/%3E%3Crect x='0' y='50' width='100' height='1'/%3E%3Crect x='0' y='0' width='1' height='100'/%3E%3Crect x='50' y='0' width='1' height='100'/%3E%3C/g%3E%3C/svg%3E");
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 10px; /* Bordes más suaves */
+      border: 1px solid var(--border-color);
+      box-shadow: 0 6px 25px var(--shadow-medium);
+      padding: 30px 35px;
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--accent-green-dark);
+      font-size: 2.5em;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    /* --- Sección del Índice de Eventos --- */
+    #eventIndexContainer {
+      background-color: #f8fafa; /* Ligeramente diferente del fondo */
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      margin-bottom: 25px;
+      padding: 0 15px;
+      transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+      max-height: 45px;
+      overflow: hidden;
+    }
+    #eventIndexContainer.expanded { max-height: 400px; padding: 15px; overflow-y: auto; }
+    #toggleIndexBtn {
+      display: block; width: 100%; background: none; border: none;
+      color: var(--accent-green-dark); /* Verde oscuro */
+      font-family: var(--font-display); /* Fuente display */
+      font-size: 1em; text-align: left; padding: 12px 0;
+      cursor: pointer; font-weight: 600; position: relative;
+    }
+    #toggleIndexBtn::after { /* Icono de hoja o flecha */
+       content: '🌿'; /* Cambiado a hoja */
+       position: absolute; right: 5px; transition: transform 0.3s ease; display: inline-block;
+    }
+    #eventIndexContainer.expanded #toggleIndexBtn::after { transform: rotate(90deg); }
+    #eventIndexList {
+      list-style: none; padding: 0; margin: 10px 0 0 0;
+      columns: 3; column-gap: 20px;
+    }
+     @media (max-width: 900px) { #eventIndexList { columns: 2; } }
+     @media (max-width: 600px) { #eventIndexList { columns: 1; } }
+    #eventIndexList li { margin-bottom: 8px; }
+    #eventIndexList a {
+      color: var(--text-color-medium); text-decoration: none;
+      font-size: 0.9em; transition: color 0.2s ease; display: block;
+      padding: 2px 0;
+    }
+    #eventIndexList a:hover, #eventIndexList a.active {
+      color: var(--accent-green-medium); /* Verde brillante */
+      font-weight: 700;
+    }
+    /* --- Fin Índice --- */
+
+    /* Estructura Flex */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 0; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo "Tarjeta Natural") */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px; /* Más redondeado */
+        padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: 0 3px 8px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+        opacity: 0.95;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1;
+        border-color: var(--accent-green-medium);
+        background-color: #f0f5f1; /* Ligeramente más claro */
+        box-shadow: 0 5px 12px var(--shadow-medium);
+        transform: translateY(-3px);
+    }
+    .event-preview.empty-preview {
+      background-color: transparent;
+      border: 2px dashed var(--border-color);
+      opacity: 0.7; cursor: default; align-items: center;
+      justify-content: center; text-align: center;
+      color: var(--text-color-medium); box-shadow: none;
+    }
+    .event-preview h3 { /* Título del evento */
+        font-family: var(--font-display); font-size: 1.1em;
+        margin: 0 0 10px 0; color: var(--accent-green-dark);
+        border-bottom: 1px solid #cdd8ce; padding-bottom: 6px;
+        font-weight: 600;
+    }
+    .event-preview .preview-year { /* Año */
+        font-family: var(--font-body); font-weight: 700; /* Fuente cuerpo pero negrita */
+        color: var(--accent-brown-earth); margin-bottom: 12px;
+        font-size: 1.05em; text-align: center;
+    }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+
+    /* Slider (Orgánico) */
+    input[type="range"] {
+      flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-green-dark), var(--border-color));
+      border-radius: 3px; outline: none; transition: background 0.3s ease;
+    }
+    input[type="range"]:hover { background: linear-gradient(to right, var(--accent-green-dark), var(--accent-green-medium)); }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 20px; height: 20px;
+      background: var(--accent-blue-sky); /* Azul cielo */
+      border-radius: 50%; /* Círculo */
+      border: 3px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-blue-sky), 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -7px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; background: var(--accent-blue-sky); border-radius: 50%;
+      border: 3px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-blue-sky), 0 1px 4px rgba(0,0,0,0.2); cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.2); box-shadow: 0 0 0 3px var(--accent-blue-sky), 0 2px 6px rgba(0,0,0,0.3); }
+
+    /* Year Display (Tierra/Naturaleza) */
+    #yearDisplay {
+      min-width: 80px; text-align: center; font-weight: 700;
+      font-family: var(--font-body); /* Cuerpo */
+      background: var(--accent-brown-earth); /* Marrón tierra */
+      color: var(--bg-color); /* Texto claro */
+      padding: 8px 10px; border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2); font-size: 1.1em;
+    }
+
+    /* Event Card (Papel Reciclado/Información) */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-dark);
+      padding: 35px 40px; border-radius: 8px; border: 1px solid var(--border-color);
+      min-height: 600px; display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px var(--shadow-soft);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1; overflow: hidden;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      background-color: #f7faf8; /* Fondo ligeramente diferente */
+      justify-content: center; align-items: center; text-align: center;
+    }
+    #eventCard.loading { color: var(--text-color-medium); }
+    #eventCard.error { border-color: var(--accent-orange-warn); }
+    #eventCard.error p { font-weight: 600; font-size: 1.1em; color: #c0392b; } /* Rojo */
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 10px 18px;
+        background-color: var(--accent-blue-sky); color: #fff;
+        border: 1px solid transparent; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 600;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #5a90e2; }
+
+    /* Estilos Tarjeta Principal */
+    #eventCard h2 {
+      margin: 0 0 20px 0; text-align: center;
+      color: var(--accent-green-dark); font-family: var(--font-display); font-weight: 600;
+      font-size: 1.9em; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
+    }
+    #eventCard img {
+      max-width: 50%; height: auto; max-height: 240px;
+      object-fit: contain; border-radius: 6px; margin: 0 auto 25px auto; display: block;
+      border: 1px solid var(--border-color); background-color: #fff; padding: 4px;
+      box-shadow: 0 3px 8px var(--shadow-soft);
+    }
+    #eventCard .content-extract {
+        line-height: 1.75; margin-bottom: 25px; font-size: 1.03em; text-align: justify;
+        max-height: 400px; overflow-y: auto; padding-right: 15px;
+        scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid var(--card-bg); background-clip: content-box; }
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 10px 20px;
+        background: var(--accent-green-medium); color: var(--bg-color); /* Verde con texto claro */
+        text-decoration: none; font-weight: 600; font-family: var(--font-body);
+        border-radius: 5px; text-align: center; transition: all 0.3s ease;
+        border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.15); width: fit-content;
+    }
+    #eventCard a.external-link:hover { background-color: #5abf60; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: translateY(-1px); }
+
+    /* Spinner (Hoja o Círculo Simple) */
+    .spinner {
+      width: 50px; height: 50px; margin: 30px auto;
+      border: 5px solid var(--preview-bg); /* Borde color preview */
+      border-top-color: var(--accent-green-medium); /* Color acento girando */
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+
+    /* Ajustes responsivos */
+     @media (max-width: 1300px) { /* ... */ }
+     @media (max-width: 1100px) { /* ... */ }
+     @media (max-width: 900px) { .main-content-area { flex-direction: column; } /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Ecos de la Tierra</h1>
+
+    <!-- Índice de Eventos -->
+    <div id="eventIndexContainer">
+      <button id="toggleIndexBtn">Índice de Hitos Ambientales</button>
+      <ul id="eventIndexList"></ul>
+    </div>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Legado Natural</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajusta el visor temporal para explorar la historia del movimiento ambientalista.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Futuro Sostenible</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos del Movimiento Ambientalista ---
+    const events = [
+      { year: "c. 1854", title: "Walden de Henry David Thoreau", wikiTitle: "Walden" },
+      { year: "1872", title: "Creación del Parque Nacional Yellowstone (EEUU)", wikiTitle: "Parque nacional de Yellowstone" },
+      { year: "1892", title: "Fundación del Sierra Club (John Muir)", wikiTitle: "Sierra Club" },
+      { year: "1948", title: "Fundación de la UICN (Unión Internacional para la Conservación de la Naturaleza)", wikiTitle: "Unión Internacional para la Conservación de la Naturaleza" },
+      { year: "1949", title: "Publicación de 'A Sand County Almanac' (Aldo Leopold)", wikiTitle: "Aldo Leopold" },
+      { year: "1961", title: "Fundación del WWF (Fondo Mundial para la Naturaleza)", wikiTitle: "WWF" },
+      { year: "1962", title: "Publicación de 'Primavera Silenciosa' (Rachel Carson)", wikiTitle: "Primavera silenciosa" },
+      { year: "1968", title: "Publicación de 'La bomba P' (Paul R. Ehrlich)", wikiTitle: "La bomba demográfica" },
+      { year: "1969", title: "Derrame de petróleo de Santa Bárbara (EEUU)", wikiTitle: "Derrame de petróleo de Santa Bárbara de 1969" },
+      { year: "1970", title: "Primer Día de la Tierra (Earth Day)", wikiTitle: "Día de la Tierra" },
+      { year: "1970", title: "Creación de la EPA (Agencia de Protección Ambiental, EEUU)", wikiTitle: "Agencia de Protección Ambiental de Estados Unidos" },
+      { year: "1971", title: "Fundación de Greenpeace", wikiTitle: "Greenpeace" },
+      { year: "1972", title: "Conferencia de Estocolmo sobre el Medio Humano (ONU)", wikiTitle: "Conferencia de Estocolmo" },
+      { year: "1972", title: "Publicación de 'Los Límites del Crecimiento' (Club de Roma)", wikiTitle: "Los límites del crecimiento" },
+      { year: "1973", title: "Convención CITES sobre comercio de especies amenazadas", wikiTitle: "CITES" },
+      { year: "1979", title: "Accidente nuclear de Three Mile Island (EEUU)", wikiTitle: "Accidente de Three Mile Island" },
+      { year: "1980", title: "Estrategia Mundial para la Conservación (UICN, PNUMA, WWF)", wikiTitle: "Estrategia Mundial para la Conservación" },
+      { year: "1984", title: "Desastre de Bhopal (India)", wikiTitle: "Desastre de Bhopal" },
+      { year: "1985", title: "Descubrimiento del agujero en la capa de ozono antártico", wikiTitle: "Agujero de la capa de ozono" },
+      { year: "1986", title: "Accidente nuclear de Chernóbil (URSS)", wikiTitle: "Accidente de Chernóbil" },
+      { year: "1987", title: "Protocolo de Montreal (Protección capa de ozono)", wikiTitle: "Protocolo de Montreal" },
+      { year: "1987", title: "Informe Brundtland ('Nuestro Futuro Común', desarrollo sostenible)", wikiTitle: "Informe Brundtland" },
+      { year: "1988", title: "Creación del IPCC (Panel Intergubernamental sobre Cambio Climático)", wikiTitle: "Grupo Intergubernamental de Expertos sobre el Cambio Climático" },
+      { year: "1989", title: "Derrame del Exxon Valdez (Alaska, EEUU)", wikiTitle: "Desastre del Exxon Valdez" },
+      { year: "1992", title: "Cumbre de la Tierra de Río de Janeiro", wikiTitle: "Cumbre de la Tierra" },
+      { year: "1997", title: "Protocolo de Kioto (Reducción de gases efecto invernadero)", wikiTitle: "Protocolo de Kioto" },
+      { year: "2002", title: "Cumbre Mundial sobre Desarrollo Sostenible (Johannesburgo)", wikiTitle: "Cumbre de Johannesburgo 2002" },
+      { year: "2006", title: "Estreno de 'Una Verdad Incómoda' (Al Gore)", wikiTitle: "Una verdad incómoda" },
+      { year: "2009", title: "Conferencia sobre Cambio Climático de Copenhague", wikiTitle: "Conferencia sobre el Cambio Climático de la ONU 2009" },
+      { year: "2010", title: "Derrame de petróleo de Deepwater Horizon (Golfo de México)", wikiTitle: "Deepwater Horizon" },
+      { year: "2012", title: "Conferencia Río+20 sobre Desarrollo Sostenible", wikiTitle: "Conferencia de desarrollo sostenible de Naciones Unidas" },
+      { year: "2015", title: "Adopción de los Objetivos de Desarrollo Sostenible (ODS)", wikiTitle: "Objetivos de Desarrollo Sostenible" },
+      { year: "2015", title: "Acuerdo de París sobre cambio climático", wikiTitle: "Acuerdo de París" },
+      { year: "2018", title: "Inicio del movimiento 'Fridays for Future' (Greta Thunberg)", wikiTitle: "Fridays for Future" },
+      { year: "Actualidad", title: "Crisis climática, pérdida de biodiversidad, transición energética", wikiTitle: "Crisis climática" } // Tema amplio
+    ];
+
+
+    // --- Elementos del DOM ---
+    // ... (iguales que antes: slider, yearDisplay, eventCard, prevPreview, nextPreview, timelineContainer, eventIndexContainer, eventIndexList, toggleIndexBtn)
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexContainer = document.getElementById('eventIndexContainer');
+    const eventIndexList = document.getElementById('eventIndexList');
+    const toggleIndexBtn = document.getElementById('toggleIndexBtn');
+
+    // --- Estado y Caché ---
+    const summaryCache = {};
+
+    // --- Función de Fetch Detallada ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código sin cambios) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info",
+            titles: title, format: "json", origin: "*",
+            explaintext: "true", exchars: "2000", exintro: "false",
+            piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+             try {
+                 const response = await fetch(url);
+                 if (!response.ok) {
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                    if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                    else { if (response.status === 404) throw new Error(`Not Found: HTTP 404`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                 }
+                 const data = await response.json();
+                 if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                 const pages = data.query.pages;
+                 const pageId = Object.keys(pages)[0];
+                 if (pageId === "-1" || pages[pageId].missing !== undefined) throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                 const pageData = pages[pageId];
+                 if (!pageData.extract || pageData.extract.trim() === '') throw new Error(`Incomplete Data: No extract found for "${title}"`);
+                 return pageData;
+             } catch (error) {
+                  lastKnownError = error;
+                  console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                  if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) { throw error; }
+                  if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                  else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }
+             }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    // --- Función para Limpiar Texto ---
+    function cleanWikipediaText(text) { /* ... (código sin cambios) ... */
+        if (!text) return "";
+        let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, '');
+        cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ',');
+        return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Adaptar textos temáticos) ---
+
+    function renderEventCardLoading(message = "Consultando archivos naturales...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`; // Spinner actualizado
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.7';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Señal perdida con la biosfera. Intente reconectar más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Registro no encontrado en el herbario digital.'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('sin extracto')) { cleanMessage = 'Información fragmentada recibida.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Solicitud con formato incorrecto al archivo global.';}
+
+        eventCard.innerHTML = `<p><strong>¡Alerta Ecológica!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) { /* ... (código igual, usa cleanWikipediaText) ... */
+        const title = pageData.title || originalEventTitle;
+        const extract = cleanWikipediaText(pageData.extract);
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+        const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract">${contentHtml}</div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Fuente Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar textos)
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para explorar este hito.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Legado Natural' : 'Futuro Sostenible';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar textos)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no hallado, buscando referencias cruzadas...`);
+        renderEventCardLoading("Registro no localizado. Buscando referencias cruzadas...");
+        // ... (resto similar, adaptar textos) ...
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al consultar índice ecológico.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro para "<strong>${failedTitle}</strong>" no fue encontrado.</p>
+                                       <p>Quizás te interese explorar estos temas relacionados:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = cleanWikipediaText(item.snippet);
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un tema para cargar la información)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron referencias para "${searchTerm}".`);
+                renderEventCardError(`Registro para "${failedTitle}" no hallado y no hay referencias cruzadas disponibles.`);
+            }
+        } catch (searchErr) {
+            console.error("Error buscando alternativas:", searchErr);
+            renderEventCardError(`Registro para "${failedTitle}" no hallado. La búsqueda de referencias también falló.`);
+        }
+    }
+
+    // --- Función Principal de Actualización ---
+    async function updateEvent(options) { /* ... (código sin cambios, llama a updateIndexActiveState) ... */
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { return; }
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+        updateIndexActiveState(index);
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') {
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') {
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) {
+                    summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE';
+                    findAndDisplaySuggestions(titleToFetch);
+                } else {
+                    console.error(`Error final al obtener "${titleToFetch}":`, err);
+                    renderEventCardError(err.toString());
+                }
+            }
+        }
+    }
+
+    // --- Funciones para el Índice ---
+    function populateEventIndex() { /* ... (código sin cambios) ... */
+        eventIndexList.innerHTML = '';
+        events.forEach((event, index) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#';
+            // Mostrar año y título en el índice
+            a.textContent = `${event.year}: ${event.title}`;
+            a.dataset.index = index;
+            a.title = event.title; // Tooltip con el título completo
+            li.appendChild(a);
+            eventIndexList.appendChild(li);
+        });
+    }
+    function toggleEventIndex() { /* ... (código sin cambios) ... */
+        eventIndexContainer.classList.toggle('expanded');
+    }
+    function updateIndexActiveState(activeIndex) { /* ... (código sin cambios) ... */
+         eventIndexList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+         const activeLink = eventIndexList.querySelector(`a[data-index="${activeIndex}"]`);
+         if (activeLink) { activeLink.classList.add('active'); }
+    }
+
+    // --- Manejador de Clics ---
+    function handleClick(event) { /* ... (código sin cambios) ... */
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) { updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle }); }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) { updateEvent({ index: targetIndex }); }
+        }
+        else if (event.target.matches('#eventIndexList a')) {
+             event.preventDefault();
+             const targetIndex = parseInt(event.target.dataset.index, 10);
+             if (!isNaN(targetIndex)) { updateEvent({ index: targetIndex }); }
+        }
+    }
+
+    // --- Inicialización ---
+    function initializeTimeline() { /* ... (código sin cambios) ... */
+        if (!events || events.length === 0) {
+             document.querySelector('h1').textContent = "Archivo Natural Vacío";
+             eventCard.innerHTML = "<p>No hay registros disponibles en este archivo ecológico.</p>";
+             slider.disabled = true; prevPreview.style.display = 'none'; nextPreview.style.display = 'none'; toggleIndexBtn.disabled = true; return;
+        }
+        populateEventIndex();
+        slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        toggleIndexBtn.addEventListener('click', toggleEventIndex);
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Ecos de la Tierra inicializado. Sistema de monitoreo activo.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

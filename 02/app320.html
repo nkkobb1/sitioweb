@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Florencia Temporal - Ecos del Renacimiento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f4f0e8; /* Pergamino claro / Mármol suave */
+      --container-bg: #e8e0d0; /* Piedra clara / Lienzo */
+      --card-bg: #fffaf0; /* Blanco floral / Pergamino muy claro */
+      --preview-bg: #f0e8dc; /* Pergamino un poco más oscuro */
+      --text-color-dark: #4d4030; /* Marrón tierra oscuro */
+      --text-color-light: #f8f4ec; /* Blanco pergamino */
+      --accent-gold: #c09553; /* Oro viejo */
+      --accent-burgundy: #800020; /* Borgoña profundo */
+      --accent-green: #556b2f; /* Verde oliva oscuro */
+      --border-color: #d4c8b8; /* Borde pergamino sutil */
+      --font-body: 'Lato', sans-serif; /* Fuente limpia sans-serif para cuerpo */
+      --font-display: 'Playfair Display', serif; /* Fuente elegante serif para títulos */
+      --shadow-soft: rgba(77, 64, 48, 0.15); /* Sombra suave */
+      --shadow-medium: rgba(77, 64, 48, 0.3);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: linear-gradient(rgba(232, 224, 208, 0.5) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(232, 224, 208, 0.5) 1px, transparent 1px);
+      background-size: 20px 20px; /* Patrón sutil de líneas */
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 30px var(--shadow-medium), 0 0 5px var(--shadow-soft);
+      padding: 30px;
+      max-width: 90vw;
+      width: 1450px; /* Un poco más ancho si cabe */
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decoración sutil (opcional, se puede quitar si recarga mucho) */
+    .timeline-container::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 10px;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+        border-radius: 12px 12px 0 0; pointer-events: none;
+    }
+     .timeline-container::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 10px;
+        background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
+        border-radius: 0 0 12px 12px; pointer-events: none;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-burgundy);
+      text-shadow: 1px 1px 2px var(--shadow-soft);
+      font-size: 2.6em;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 20px; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo Refinado) */
+    .event-preview {
+        flex: 1; min-width: 210px; max-width: 290px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        color: var(--text-color-dark);
+        box-shadow: 0 3px 8px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        opacity: 0.95; transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1; box-shadow: 0 6px 15px var(--shadow-medium); transform: translateY(-4px); border-color: var(--accent-gold);
+    }
+    .event-preview.empty-preview {
+        background-color: transparent;
+        border: 2px dashed var(--border-color);
+        opacity: 0.7; cursor: default; align-items: center; justify-content: center;
+        text-align: center; color: var(--text-color-dark); box-shadow: none;
+    }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.2em; margin: 0 0 10px 0; color: var(--accent-burgundy); border-bottom: 1px solid var(--border-color); padding-bottom: 6px; font-weight: 700; }
+    .event-preview .preview-year { font-family: var(--font-body); font-weight: 700; color: var(--accent-green); margin-bottom: 12px; font-size: 1.1em; text-align: center; }
+    .event-preview p { font-size: 0.95em; line-height: 1.6; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container (Estilo Refinado) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.3); border-radius: 8px; border: 1px solid var(--border-color); box-shadow: inset 0 1px 3px var(--shadow-soft); }
+
+    /* Slider (Estilo Refinado) */
+    input[type="range"] { flex: 1; height: 8px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-gold), var(--border-color)); border-radius: 4px; outline: none; border: 1px solid #d0c0b0; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent-burgundy); border-radius: 50%; border: 2px solid var(--card-bg); box-shadow: 0 1px 4px var(--shadow-medium); transition: transform 0.2s ease; margin-top: -6px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--accent-burgundy); border-radius: 50%; border: 2px solid var(--card-bg); box-shadow: 0 1px 4px var(--shadow-medium); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); background: var(--accent-gold); }
+
+    /* Year Display (Estilo Refinado) */
+    #yearDisplay { min-width: 70px; text-align: center; font-weight: 700; font-family: var(--font-body); background: var(--text-color-dark); color: var(--accent-gold); padding: 8px 15px; border-radius: 6px; border: 1px solid #3a3024; box-shadow: inset 0 0 4px rgba(0,0,0,0.2), 1px 1px 2px rgba(0,0,0,0.3); font-size: 1.1em; }
+
+    /* Event Card (Estilo Refinado) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 35px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      min-height: 600px; /* Aún más altura */
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 5px 20px var(--shadow-soft);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: var(--preview-bg); }
+    #eventCard.loading { opacity: 0.85; }
+    #eventCard.error { border: 2px solid var(--accent-burgundy); color: var(--accent-burgundy); } /* Error ahora usa borgoña */
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 9px 18px;
+        background-color: var(--text-color-dark);
+        color: var(--accent-gold);
+        border: 1px solid #3a3024; border-radius: 6px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700; font-size: 0.95em;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: var(--accent-gold); color: var(--text-color-dark); border-color: var(--accent-gold); transform: scale(1.03); }
+
+    /* Estilos Tarjeta Principal (Refinados) */
+    #eventCard h2 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--accent-burgundy); font-family: var(--font-display); font-size: 2em; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+    #eventCard img {
+        max-width: 40%; /* Ajustar según se vea mejor */
+        height: auto; max-height: 240px;
+        object-fit: contain; border-radius: 6px;
+        margin: 0 auto 25px auto; display: block;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 12px var(--shadow-medium);
+        background-color: #fff; /* Fondo blanco por si la imagen tiene transparencia */
+    }
+    #eventCard .content-extract {
+        line-height: 1.8; /* Espaciado generoso */
+        margin-bottom: 25px;
+        font-size: 1.0em; /* Tamaño de fuente legible */
+        text-align: justify;
+        max-height: 400px; /* Más altura para el extracto */
+        overflow-y: auto;
+        padding-right: 15px;
+        padding-left: 15px;
+        border-left: 3px solid var(--accent-gold); /* Línea dorada */
+    }
+     /* Scrollbar sutil (Webkit) */
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid var(--card-bg); }
+
+     /* Link Externo (Refinado) */
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 28px;
+        background: linear-gradient(to bottom, var(--accent-green), #4a5c28);
+        color: var(--text-color-light); text-decoration: none; font-weight: 700;
+        font-family: var(--font-body); border-radius: 6px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid #3a4c1f;
+        box-shadow: 0 2px 5px var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.1);
+        width: fit-content; text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    }
+    #eventCard a.external-link:hover { background: linear-gradient(to bottom, #6a7c3f, #5a6c2f); box-shadow: 0 3px 7px var(--shadow-medium), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-2px); color: #fff; }
+
+    /* Spinner (Refinado) */
+    .spinner { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top: 4px solid var(--accent-gold); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos (mantener estructura general) */
+     @media (max-width: 1200px) { /* ... */ }
+     @media (max-width: 900px) { /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Florencia Temporal - Ecos del Renacimiento</h1>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Ecos del Gótico Tardío</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Mueva el cursor temporal para explorar la era del renacer artístico y científico.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Albores del Barroco</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos del Renacimiento (Años sin '~') ---
+    const events = [
+        { year: "c. 1350", title: "Inicio del Renacimiento Temprano (Italia)", wikiTitle: "Renacimiento italiano" },
+        { year: "c. 1420", title: "Brunelleschi y la Cúpula de Florencia", wikiTitle: "Cúpula de Santa María del Fiore" },
+        { year: "c. 1434", title: "Ascenso de los Médici en Florencia", wikiTitle: "Casa de Médici" },
+        { year: "c. 1450", title: "Invención de la Imprenta (Gutenberg)", wikiTitle: "Imprenta" }, // Aunque alemán, impacto crucial
+        { year: "1452", title: "Nacimiento de Leonardo da Vinci", wikiTitle: "Leonardo da Vinci" },
+        { year: "1475", title: "Nacimiento de Miguel Ángel", wikiTitle: "Miguel Ángel" },
+        { year: "1483", title: "Nacimiento de Rafael Sanzio", wikiTitle: "Rafael Sanzio" },
+        { year: "c. 1486", title: "Pico della Mirandola: 'Discurso sobre la dignidad del hombre'", wikiTitle: "Giovanni Pico della Mirandola"},
+        { year: "c. 1495", title: "Leonardo pinta 'La Última Cena'", wikiTitle: "La Última Cena (Leonardo da Vinci)" },
+        { year: "1498", title: "Savonarola es ejecutado en Florencia", wikiTitle: "Girolamo Savonarola"},
+        { year: "c. 1500", title: "Alto Renacimiento en Roma", wikiTitle: "Alto Renacimiento" },
+        { year: "1501-1504", title: "Miguel Ángel esculpe el 'David'", wikiTitle: "David (Miguel Ángel)" },
+        { year: "1503-1506", title: "Leonardo pinta 'La Gioconda' (Mona Lisa)", wikiTitle: "La Gioconda" },
+        { year: "1508-1512", title: "Miguel Ángel pinta la Capilla Sixtina", wikiTitle: "Bóveda de la Capilla Sixtina" },
+        { year: "1509-1511", title: "Rafael pinta 'La escuela de Atenas'", wikiTitle: "La escuela de Atenas" },
+        { year: "1513", title: "Maquiavelo escribe 'El Príncipe'", wikiTitle: "El príncipe" },
+        { year: "1517", title: "Inicio de la Reforma Protestante (Lutero)", wikiTitle: "Reforma protestante" }, // Evento clave que marca un cambio
+        { year: "1527", title: "Saco de Roma", wikiTitle: "Saco de Roma (1527)" }, // Marca un punto de inflexión
+        { year: "c. 1530", title: "Inicio del Manierismo", wikiTitle: "Manierismo" },
+        { year: "1543", title: "Copérnico publica 'De revolutionibus orbium coelestium'", wikiTitle: "Nicolás Copérnico" },
+        { year: "1543", title: "Vesalio publica 'De humani corporis fabrica'", wikiTitle: "Andrés Vesalio"},
+        { year: "1564", title: "Muerte de Miguel Ángel / Nacimiento de Galileo Galilei", wikiTitle: "Galileo Galilei" },
+        { year: "c. 1570", title: "Palladio y la arquitectura tardorrenacentista", wikiTitle: "Andrea Palladio" },
+        { year: "c. 1600", title: "Transición al Barroco", wikiTitle: "Barroco" }
+    ];
+
+    // --- Elementos del DOM (igual) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+
+    // --- Estado y Caché (igual) ---
+    const summaryCache = {};
+
+    // --- Función Fetch Detallada (action=query - sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que la versión Egipcia) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info",
+            titles: title, format: "json", origin: "*",
+            explaintext: "true", exchars: "2000", // Ligeramente más caracteres
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600", // Imagen un poco más grande
+            inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log("Fetching URL:", url);
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { /* ... manejo de errores 5xx, 429, etc. ... */
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                     if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                     else { throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) { throw new Error("Respuesta inesperada API: falta query.pages"); }
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) {
+                    throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                }
+                const pageData = pages[pageId];
+                if (!pageData.title || !pageData.extract) {
+                     throw new Error(`Respuesta incompleta para "${title}"`);
+                }
+                 console.log("Datos recibidos de API:", pageData);
+                 return pageData;
+            } catch (error) {
+                 lastKnownError = error;
+                 console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                 if (error.message.startsWith('Not Found:')) { throw error; }
+                 if (i < retries - 1) {
+                     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1)));
+                 } else {
+                     console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`);
+                     throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`);
+                 }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado recuperando datos para ${title}.`);
+    }
+
+    // --- Funciones de Renderizado (Adaptadas + Limpieza Citas) ---
+
+    function renderEventCardLoading(message = "Consultando los Archivos de Florencia...") { // Mensaje temático
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.85';
+    }
+
+    // No se usa para errores finales si siempre mostramos sugerencias, pero se mantiene por si acaso
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos Renacimiento
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Interferencia en la conexión con la Biblioteca. Intente de nuevo.'; }
+        else if (cleanMessage.includes('Client error 404') || cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Este manuscrito no fue hallado en la colección.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Hubo un problema con la solicitud a la Biblioteca.';}
+        else if (cleanMessage.includes('Respuesta incompleta')) { cleanMessage = 'El manuscrito recuperado parece estar dañado o incompleto.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error de Lectura!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error'; // Podría usarse para errores de inicialización
+        eventCard.style.opacity = '1';
+    }
+
+    // MODIFICADO: Limpia citas [ ] del extracto
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        // Limpiar citas como [1], [2], etc. y [cita requerida]
+        let extract = pageData.extract || "Contenido del manuscrito no disponible.";
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim();
+        // Reemplazar dobles espacios que puedan quedar tras la limpieza
+        extract = extract.replace(/\s{2,}/g, ' ');
+
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Manuscrito Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar mensajes)
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Pulsa para revivir este momento.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            // Adaptar mensajes de inicio/fin
+            const message = targetElement.id === 'prevEventPreview' ? 'Ecos del Gótico Tardío' : 'Albores del Barroco';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar mensajes)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no hallado o ilegible, buscando alternativas...`);
+        renderEventCardLoading("Manuscrito no hallado/ilegible. Buscando en índices..."); // Mensaje actualizado
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} consultando índices.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El manuscrito "<strong>${failedTitle}</strong>" no pudo ser leído o localizado.</p>
+                                       <p>Quizás estos otros registros sean de interés:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, ''); // Limpiar snippet HTML
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un título para intentar cargarlo)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron alternativas para "${searchTerm}".`);
+                // Mostrar un mensaje de error específico de "no alternativas"
+                 renderEventCardError(`Manuscrito para "${failedTitle}" no localizado y no se hallaron alternativas en los índices.`);
+                 eventCard.className = 'error'; // Asegurar clase error
+            }
+        } catch (searchErr) {
+            console.error("Error buscando alternativas:", searchErr);
+            // Mostrar un mensaje de error específico de "falló búsqueda"
+             renderEventCardError(`Manuscrito para "${failedTitle}" no localizado. La búsqueda de alternativas también falló.`);
+             eventCard.className = 'error'; // Asegurar clase error
+        }
+    }
+
+    // --- MODIFICADO: Función Principal de Actualización (Siempre busca alternativas en CATCH) ---
+    async function updateEvent(options) {
+        const index = options.index;
+
+        // Validación inicial (igual)
+        if (isNaN(index) || index < 0 || index >= events.length) { /* ... error handling ... */ return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            console.log(`Manuscrito para "${titleToFetch}" recuperado de caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}' en caché. Mostrando sugerencias.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Accediendo a la Biblioteca para: ${titleToFetch}`);
+            renderEventCardLoading();
+
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                // *** CAMBIO CLAVE: Siempre intentar mostrar sugerencias en CUALQUIER error de fetch ***
+                console.error(`Error al cargar "${titleToFetch}":`, err.message);
+                // Marcar en caché que hubo un error para este título (sea 404 u otro)
+                if (err.message.startsWith('Not Found:')) {
+                     summaryCache[cacheKey] = 'NOT_FOUND';
+                } else {
+                     summaryCache[cacheKey] = 'LOAD_ERROR'; // Marcar error genérico de carga
+                }
+                // *Siempre* llamar a buscar sugerencias como fallback
+                findAndDisplaySuggestions(titleToFetch);
+            }
+        }
+    }
+
+    // --- Manejador de Clics (lógica igual, mensajes adaptados si es necesario) ---
+    function handleClick(event) { /* ... (código igual que antes, ajustando logs si se quiere) ... */
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Intentando cargar manuscrito sugerido: ${suggestedTitle}`);
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Viajando al momento ${targetIndex} desde la vista previa.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+    }
+
+    // --- Inicialización (adaptar mensajes) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+            document.querySelector('h1').textContent = "Biblioteca Vacía"; // Mensaje temático
+            eventCard.innerHTML = "<p>Los registros de esta época aún no han sido catalogados.</p>";
+            eventCard.className = 'error'; // Usar clase error aquí
+            slider.disabled = true; yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview); renderPreview(null, nextPreview);
+            return;
+        }
+        // Resto de inicialización igual...
+        slider.max = events.length - 1; slider.value = 0;
+        slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 });
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Cronoscopio Renacentista activado. El pasado espera."); // Mensaje temático
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

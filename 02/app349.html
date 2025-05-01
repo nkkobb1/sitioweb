@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro Sísmico Global - Grandes Terremotos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Oswald:wght@400;700&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #4a4a4a; /* Gris oscuro piedra */
+      --container-bg: #2d2d2d; /* Gris muy oscuro */
+      --card-bg: #e8e8e8; /* Gris claro cemento */
+      --preview-bg: #3f3f3f; /* Gris medio oscuro */
+      --text-color-dark: #1c1c1c; /* Texto oscuro sobre claro */
+      --text-color-light: #d8d8d8; /* Texto principal claro */
+      --text-color-medium: #a0a0a0; /* Texto secundario claro */
+      --accent-red: #e74c3c; /* Rojo/Naranja intenso (alerta) */
+      --accent-orange: #f39c12; /* Naranja más suave */
+      --accent-brown: #8e6f55; /* Marrón tierra */
+      --border-color: #5a5a5a; /* Borde gris oscuro */
+      --font-body: 'Lato', sans-serif;
+      --font-display: 'Oswald', sans-serif; /* Fuente condensada/impacto */
+      --font-mono: 'Roboto Mono', monospace;
+      --shadow-dark: rgba(0, 0, 0, 0.5);
+      --shadow-light-inset: rgba(255, 255, 255, 0.05);
+      --shadow-dark-inset: rgba(0, 0, 0, 0.3);
+      /* Textura sutil - ruido */
+      --noise-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: var(--noise-texture);
+      color: var(--text-color-light);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 30px var(--shadow-dark), inset 0 1px 2px var(--shadow-light-inset);
+      padding: 30px 35px;
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+    }
+
+    h1 {
+      font-family: var(--font-display); /* Fuente de impacto */
+      font-weight: 700;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--accent-red); /* Color de alerta */
+      font-size: 2.8em;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    /* Índice de Eventos (Adaptado) */
+    #eventIndexContainer {
+      background-color: rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 25px;
+      padding: 0 15px;
+      transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+      max-height: 45px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px var(--shadow-dark-inset);
+    }
+    #eventIndexContainer.expanded { max-height: 400px; padding: 15px; overflow-y: auto; }
+    #toggleIndexBtn {
+      display: block; width: 100%; background: none; border: none;
+      color: var(--accent-orange); /* Color secundario */
+      font-family: var(--font-body); font-weight: 700;
+      font-size: 0.95em; text-align: left; padding: 12px 0;
+      cursor: pointer; position: relative;
+    }
+    #toggleIndexBtn::after { content: '▼'; position: absolute; right: 5px; transition: transform 0.3s ease; }
+    #eventIndexContainer.expanded #toggleIndexBtn::after { transform: rotate(180deg); }
+    #eventIndexList { list-style: none; padding: 0; margin: 10px 0 0 0; columns: 3; column-gap: 20px; }
+     @media (max-width: 900px) { #eventIndexList { columns: 2; } }
+     @media (max-width: 600px) { #eventIndexList { columns: 1; } }
+    #eventIndexList li { margin-bottom: 8px; }
+    #eventIndexList a {
+      color: var(--text-color-medium); text-decoration: none; font-size: 0.9em;
+      transition: color 0.2s ease; display: block;
+    }
+    #eventIndexList a:hover, #eventIndexList a.active { color: var(--accent-orange); font-weight: 700; }
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 0; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo "Bloque de Roca") */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px; padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.3), 0 2px 4px var(--shadow-dark);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+        opacity: 0.85;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1; border-color: var(--accent-orange);
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.2), 0 3px 6px var(--shadow-dark), 0 0 8px rgba(243, 156, 18, 0.2); /* Glow naranja */
+        transform: translateY(-2px);
+    }
+    .event-preview.empty-preview { /* ... (estilos igual, sólo cambia el texto) ... */
+      background-color: transparent; border: 2px dashed var(--border-color); opacity: 0.6;
+      cursor: default; align-items: center; justify-content: center; text-align: center;
+      color: var(--text-color-medium); box-shadow: none;
+    }
+    .event-preview h3 { /* Título del evento */
+        font-family: var(--font-body); font-weight: 700; font-size: 1.1em;
+        margin: 0 0 10px 0; color: var(--text-color-light);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px;
+    }
+    .event-preview .preview-year { /* Año */
+        font-family: var(--font-display); font-weight: 700; /* Fuente de impacto */
+        color: var(--accent-red); margin-bottom: 12px;
+        font-size: 1.2em; text-align: center;
+    }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+
+    /* Slider (Robusto/Geológico) */
+    input[type="range"] {
+      flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-red), var(--border-color));
+      border-radius: 3px; outline: none; transition: background 0.3s ease;
+      border: 1px solid #222; box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+    }
+    input[type="range"]:hover { background: linear-gradient(to right, var(--accent-red), var(--accent-orange)); }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 20px; height: 20px;
+      background: var(--accent-red); border-radius: 3px; /* Ligeramente cuadrado */
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.5);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -8px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; background: var(--accent-red); border-radius: 3px;
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.5); cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.1); box-shadow: 0 0 0 3px var(--accent-red), 0 3px 6px rgba(0,0,0,0.6); }
+
+    /* Year Display (Display Sismógrafo) */
+    #yearDisplay {
+      min-width: 80px; text-align: center; font-weight: 400;
+      font-family: var(--font-mono); background: var(--bg-color);
+      color: var(--accent-orange); padding: 8px 10px;
+      border-radius: 3px; border: 1px solid var(--border-color);
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.4); font-size: 1.2em;
+    }
+
+    /* Event Card (Informe de Daños / Registro) */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-dark);
+      padding: 30px 35px; border-radius: 4px; border: 1px solid #aaa; /* Borde más claro */
+      min-height: 600px; display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1; overflow: hidden;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      background-color: #dcdcdc; /* Gris claro diferente */
+      justify-content: center; align-items: center; text-align: center;
+    }
+    #eventCard.loading { color: var(--text-color-medium); }
+    #eventCard.error { border-color: var(--accent-red); background-color: #f2d7d5; }
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; color: var(--accent-red); }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 10px 18px;
+        background-color: var(--accent-brown); color: #fff;
+        border: 1px solid transparent; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 600;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #a08061; }
+
+    /* Estilos Tarjeta Principal */
+    #eventCard h2 {
+      margin: 0 0 20px 0; text-align: center;
+      color: #333; font-family: var(--font-display); font-weight: 700;
+      font-size: 2.1em; border-bottom: 2px solid #ccc; padding-bottom: 15px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    #eventCard img {
+      max-width: 60%; height: auto; max-height: 250px; /* Ligeramente más grande */
+      object-fit: cover; /* Puede recortar para llenar */ border-radius: 3px;
+      margin: 0 auto 25px auto; display: block; border: 1px solid #bbb;
+      background-color: #fff; padding: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    #eventCard .content-extract {
+        line-height: 1.7; margin-bottom: 25px; font-size: 1.05em; text-align: justify;
+        max-height: 400px; overflow-y: auto; padding-right: 15px;
+        scrollbar-width: thin; scrollbar-color: #aaa transparent;
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: #aaa; border-radius: 4px; border: 2px solid var(--card-bg); background-clip: content-box; }
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 12px 25px;
+        background: var(--accent-red); color: #fff; text-decoration: none;
+        font-weight: 700; font-family: var(--font-body); border-radius: 4px;
+        text-align: center; transition: all 0.3s ease; border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2); width: fit-content;
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    #eventCard a.external-link:hover { background-color: #c0392b; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transform: translateY(-1px); }
+
+    /* Spinner (Ondas Sísmicas o Fractura) */
+    .spinner {
+      width: 60px; height: 60px; margin: 30px auto; position: relative;
+      border: 5px solid rgba(231, 76, 60, 0.3); /* Rojo transparente */
+      border-radius: 50%;
+      border-top-color: var(--accent-red);
+      animation: spin 1s linear infinite;
+    }
+    /* Opcional: añadir efecto de vibración ligero? */
+    /* @keyframes shake { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-2px); } } */
+    /* .spinner { animation: spin 1s linear infinite, shake 0.2s linear infinite alternate; } */
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+
+    /* Ajustes responsivos (mantener y refinar) */
+     @media (max-width: 1300px) { /* ... */ }
+     @media (max-width: 1100px) { /* ... */ }
+     @media (max-width: 900px) { .main-content-area { flex-direction: column; } /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Registro Sísmico Global</h1>
+
+    <!-- Índice de Eventos Desplegable -->
+    <div id="eventIndexContainer">
+      <button id="toggleIndexBtn">Índice Sísmico</button>
+      <ul id="eventIndexList">
+        <!-- Los títulos se cargarán aquí -->
+      </ul>
+    </div>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Registros Anteriores</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Selecciona un punto en la escala temporal para analizar un evento sísmico.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Eventos Posteriores</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Grandes Terremotos de la Historia ---
+    const events = [
+        // { year: "526", title: "Terremoto de Antioquía", wikiTitle: "Terremoto de Antioquía de 526" }, // Muy antiguo, quizás menos info/imagen
+        { year: "1556", title: "Terremoto de Shaanxi (China)", wikiTitle: "Terremoto de Shaanxi de 1556" }, // El más mortífero registrado
+        { year: "1755", title: "Terremoto y Tsunami de Lisboa", wikiTitle: "Terremoto de Lisboa de 1755" },
+        { year: "1811-1812", title: "Terremotos de Nueva Madrid (EEUU)", wikiTitle: "Terremotos de Nueva Madrid de 1811-1812"},
+        { year: "1886", title: "Terremoto de Charleston (EEUU)", wikiTitle: "Terremoto de Charleston de 1886"},
+        { year: "1906", title: "Terremoto de San Francisco", wikiTitle: "Terremoto de San Francisco de 1906" },
+        { year: "1908", title: "Terremoto de Messina (Italia)", wikiTitle: "Terremoto de Messina de 1908" },
+        { year: "1923", title: "Gran terremoto de Kantō (Japón)", wikiTitle: "Gran terremoto de Kantō" },
+        { year: "1939", title: "Terremoto de Chillán (Chile)", wikiTitle: "Terremoto de Chillán de 1939" },
+        { year: "1960", title: "Gran Terremoto de Valdivia (Chile)", wikiTitle: "Terremoto de Valdivia de 1960" }, // El de mayor magnitud registrado
+        { year: "1964", title: "Terremoto de Viernes Santo (Alaska)", wikiTitle: "Terremoto de Alaska de 1964" },
+        { year: "1970", title: "Terremoto de Áncash (Perú)", wikiTitle: "Terremoto de Áncash de 1970" },
+        { year: "1976", title: "Terremoto de Tangshan (China)", wikiTitle: "Terremoto de Tangshan de 1976" },
+        { year: "1985", title: "Terremoto de Ciudad de México", wikiTitle: "Terremoto de México de 1985" },
+        { year: "1989", title: "Terremoto de Loma Prieta (California)", wikiTitle: "Terremoto de Loma Prieta"},
+        { year: "1995", title: "Gran terremoto de Hanshin-Awaji (Kobe, Japón)", wikiTitle: "Gran terremoto de Hanshin-Awaji" },
+        { year: "1999", title: "Terremoto de İzmit (Turquía)", wikiTitle: "Terremoto de İzmit"},
+        { year: "2001", title: "Terremoto de Guyarat (India)", wikiTitle: "Terremoto de Guyarat de 2001"},
+        { year: "2004", title: "Terremoto y Tsunami del Océano Índico", wikiTitle: "Terremoto del océano Índico de 2004" },
+        { year: "2005", title: "Terremoto de Cachemira (Pakistán)", wikiTitle: "Terremoto de Cachemira de 2005"},
+        { year: "2008", title: "Terremoto de Sichuan (China)", wikiTitle: "Terremoto de Sichuan de 2008"},
+        { year: "2010", title: "Terremoto de Haití", wikiTitle: "Terremoto de Haití de 2010" },
+        { year: "2010", title: "Terremoto de Chile (Maule)", wikiTitle: "Terremoto de Chile de 2010" },
+        { year: "2011", title: "Terremoto y Tsunami de Tōhoku (Japón)", wikiTitle: "Terremoto y tsunami de Japón de 2011" },
+        { year: "2015", title: "Terremoto de Nepal", wikiTitle: "Terremoto de Nepal de abril de 2015"},
+    ];
+
+    // --- Elementos del DOM (sin cambios estructurales, sólo IDs) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexContainer = document.getElementById('eventIndexContainer');
+    const eventIndexList = document.getElementById('eventIndexList');
+    const toggleIndexBtn = document.getElementById('toggleIndexBtn');
+
+    // --- Estado y Caché (sin cambios) ---
+    const summaryCache = {};
+
+    // --- Función de Fetch Detallada (sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que antes) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info",
+            titles: title, format: "json", origin: "*",
+            explaintext: "true", exchars: "2000", exintro: "false",
+            piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log("Consultando registro:", url); // Mensaje adaptado
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+             try {
+                 const response = await fetch(url);
+                 if (!response.ok) { /* ... (manejo error HTTP igual) ... */
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                    if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                    else { if (response.status === 404) throw new Error(`Not Found: HTTP 404`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                 }
+                 const data = await response.json();
+                 if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                 const pages = data.query.pages;
+                 const pageId = Object.keys(pages)[0];
+                 if (pageId === "-1" || pages[pageId].missing !== undefined) throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                 const pageData = pages[pageId];
+                 if (!pageData.extract || pageData.extract.trim() === '') throw new Error(`Incomplete Data: No extract found for "${title}"`);
+                 console.log("Datos sísmicos recibidos:", pageData); // Mensaje adaptado
+                 return pageData;
+             } catch (error) { /* ... (manejo error catch igual) ... */
+                  lastKnownError = error;
+                  console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                  if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) { throw error; }
+                  if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                  else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }
+             }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    // --- Función para Limpiar Texto (sin cambios) ---
+    function cleanWikipediaText(text) { /* ... (código igual que antes) ... */
+        if (!text) return "";
+        let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, '');
+        cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ',');
+        return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Adaptar textos temáticos) ---
+
+    function renderEventCardLoading(message = "Consultando registros sísmicos...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.7';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Fallo en la lectura sismográfica. Intente más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Epicentro no localizado en los archivos históricos.'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('sin extracto')) { cleanMessage = 'Registro histórico dañado o incompleto.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error en la solicitud de datos al centro sísmico.';}
+
+        eventCard.innerHTML = `<p><strong>¡Alerta Sísmica!</strong><br>${cleanMessage}</p>`; // Título adaptado
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) { /* ... (código igual, usa cleanWikipediaText) ... */
+        const title = pageData.title || originalEventTitle;
+        const extract = cleanWikipediaText(pageData.extract);
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+        const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract">${contentHtml}</div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Ver Informe Completo (Wikipedia)</a>` : ''}
+        `; // Texto del enlace adaptado
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar textos)
+    function renderPreview(eventData, targetElement) {
+         if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para ver el registro sísmico.</p>
+            `; // Texto adaptado
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Registros Anteriores' : 'Eventos Posteriores';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar textos)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no localizado, buscando epicentros cercanos...`);
+        renderEventCardLoading("Registro no localizado. Buscando epicentros cercanos..."); // Mensaje adaptado
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al consultar registros alternativos.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro sísmico para "<strong>${failedTitle}</strong>" no fue hallado.</p>
+                                       <p>Posibles eventos relacionados o con nombre similar:</p>
+                                       <ul class="suggestions-list">`; // Texto adaptado
+                suggestions.forEach(item => {
+                    const snippet = cleanWikipediaText(item.snippet);
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un evento para intentar cargar su informe)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron registros alternativos para "${searchTerm}".`);
+                renderEventCardError(`Registro para "${failedTitle}" no hallado y no hay informes alternativos disponibles.`);
+            }
+        } catch (searchErr) {
+            console.error("Error buscando registros alternativos:", searchErr);
+            renderEventCardError(`Registro para "${failedTitle}" no hallado. La búsqueda de alternativas falló.`);
+        }
+    }
+
+    // --- Función Principal de Actualización (sin cambios lógicos) ---
+    async function updateEvent(options) { /* ... (código igual que antes, llama a updateIndexActiveState) ... */
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { console.warn("Índice inválido:", index); return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        updateIndexActiveState(index); // Actualizar índice
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') {
+            console.log(`Registro "${titleToFetch}" recuperado de caché local.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Buscando alternativas sísmicas.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Consultando archivo sísmico para: ${titleToFetch}`);
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) {
+                    console.warn(`Error "${err.message}" para "${titleToFetch}". Buscando informes alternativos.`);
+                    summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE';
+                    findAndDisplaySuggestions(titleToFetch);
+                } else {
+                    console.error(`Error final al obtener "${titleToFetch}":`, err);
+                    renderEventCardError(err.toString());
+                }
+            }
+        }
+    }
+
+    // --- Funciones para el Índice (sin cambios lógicos) ---
+    function populateEventIndex() { /* ... (código igual que antes) ... */
+        eventIndexList.innerHTML = '';
+        events.forEach((event, index) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#'; a.textContent = `${event.year} - ${event.title}`; a.dataset.index = index;
+            li.appendChild(a); eventIndexList.appendChild(li);
+        });
+    }
+    function toggleEventIndex() { eventIndexContainer.classList.toggle('expanded'); }
+    function updateIndexActiveState(activeIndex) { /* ... (código igual que antes) ... */
+        eventIndexList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+        const activeLink = eventIndexList.querySelector(`a[data-index="${activeIndex}"]`);
+        if (activeLink) { activeLink.classList.add('active'); }
+    }
+
+    // --- Manejador de Clics (sin cambios lógicos) ---
+    function handleClick(event) { /* ... (código igual que antes, maneja sugerencias, previews e índice) ... */
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) { updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle }); }
+        }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) { updateEvent({ index: targetIndex }); }
+        }
+        else if (event.target.matches('#eventIndexList a')) {
+             event.preventDefault();
+             const targetIndex = parseInt(event.target.dataset.index, 10);
+             if (!isNaN(targetIndex)) { updateEvent({ index: targetIndex }); }
+        }
+    }
+
+    // --- Inicialización (Adaptar mensajes) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+             document.querySelector('h1').textContent = "Archivo Sísmico Vacío";
+             eventCard.innerHTML = "<p>No hay registros de terremotos disponibles.</p>";
+             document.querySelectorAll('.event-preview, .slider-container, #eventIndexContainer').forEach(el => el.style.display = 'none');
+             return;
+        }
+        populateEventIndex();
+        slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 }); // Carga inicial
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        toggleIndexBtn.addEventListener('click', toggleEventIndex);
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Registro Sísmico Global inicializado. Monitorizando actividad."); // Mensaje adaptado
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Mundo de Leonardo da Vinci - Arte y Genio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Lato:wght@400;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f5f1e8; /* Pergamino muy claro */
+      --container-bg: #fffbf0; /* Papel ligeramente amarillento */
+      --card-bg: #ffffff; /* Blanco limpio para la tarjeta principal */
+      --preview-bg: #fdf8ec; /* Pergamino un poco más oscuro */
+      --text-color-dark: #4d4030; /* Marrón tinta oscuro */
+      --text-color-medium: #7a6a53; /* Marrón tinta medio */
+      --text-color-light: #fdf8ec; /* Para fondos oscuros si los hubiera */
+      --accent-red: #a05a2c; /* Rojo terracota / Sangina */
+      --accent-gold: #b8860b; /* Oro viejo oscuro */
+      --border-color: #dcd0b8; /* Borde pergamino */
+      --font-body: 'Lato', sans-serif;
+      --font-serif: 'Merriweather', serif;
+      --font-script: 'Dancing Script', cursive; /* Para toques decorativos */
+      --shadow-soft: rgba(77, 64, 48, 0.15);
+      --shadow-medium: rgba(77, 64, 48, 0.25);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      /* Textura sutil de papel */
+      background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23dcd0b8' fill-opacity='0.1'%3E%3Cpath d='M0 0h40v40H0zM40 40h40v40H40z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      color: var(--text-color-dark);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 6px 25px var(--shadow-medium);
+      padding: 30px 35px;
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+      /* Borde interior sutil */
+      box-shadow: 0 0 0 5px rgba(255, 251, 240, 0.5), 0 6px 25px var(--shadow-medium);
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--text-color-dark);
+      font-size: 2.6em;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+      letter-spacing: 0.5px;
+    }
+
+    /* --- Sección del Índice --- */
+    #eventIndexContainer {
+      background-color: rgba(253, 248, 236, 0.7); /* Preview BG con transparencia */
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      margin-bottom: 25px;
+      padding: 0 15px;
+      transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+      max-height: 45px; /* Altura colapsada */
+      overflow: hidden;
+    }
+    #eventIndexContainer.expanded {
+      max-height: 400px;
+      padding: 15px;
+      overflow-y: auto;
+      box-shadow: inset 0 1px 4px var(--shadow-soft);
+    }
+    #toggleIndexBtn {
+      display: block; width: 100%; background: none; border: none;
+      color: var(--accent-red); font-family: var(--font-serif);
+      font-size: 1.1em; text-align: left; padding: 12px 0;
+      cursor: pointer; font-weight: 700; position: relative;
+    }
+    #toggleIndexBtn::after { /* Icono */
+       content: '▼'; font-family: var(--font-body); /* Usar fuente normal para icono */
+       position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+       transition: transform 0.3s ease; font-size: 0.8em;
+     }
+    #eventIndexContainer.expanded #toggleIndexBtn::after { transform: translateY(-50%) rotate(180deg); }
+    #eventIndexList {
+      list-style: none; padding: 0; margin: 10px 0 0 0;
+      columns: 3; column-gap: 25px;
+    }
+     @media (max-width: 900px) { #eventIndexList { columns: 2; } }
+     @media (max-width: 600px) { #eventIndexList { columns: 1; } }
+    #eventIndexList li { margin-bottom: 10px; }
+    #eventIndexList a {
+      color: var(--text-color-medium); text-decoration: none;
+      font-size: 0.95em; transition: color 0.2s ease; display: block;
+      line-height: 1.4;
+    }
+    #eventIndexList a:hover, #eventIndexList a.active {
+      color: var(--accent-red); font-weight: 700;
+    }
+
+    /* --- Fin Índice --- */
+
+    /* Estructura Flex */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 0; }
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo "Apunte / Boceto") */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px; padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: 0 3px 8px var(--shadow-soft);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+        opacity: 0.95;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1;
+        border-color: var(--accent-gold);
+        box-shadow: 0 5px 15px var(--shadow-medium);
+        transform: translateY(-4px);
+        background-color: #fefcf6; /* Ligeramente más claro */
+    }
+    .event-preview.empty-preview { /* ... (igual que antes) ... */
+      background-color: transparent; border: 2px dashed var(--border-color);
+      opacity: 0.7; cursor: default; align-items: center;
+      justify-content: center; text-align: center; color: var(--text-color-medium); box-shadow: none;
+    }
+
+    .event-preview h3 { /* Título del evento */
+        font-family: var(--font-serif); font-size: 1.15em;
+        margin: 0 0 10px 0; color: var(--text-color-dark);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px;
+        font-weight: 700;
+    }
+    .event-preview .preview-year { /* Año */
+        font-family: var(--font-script); font-weight: 700; /* Fuente script para el año */
+        color: var(--accent-red); margin-bottom: 12px;
+        font-size: 1.6em; /* Más grande y decorativa */ text-align: center;
+    }
+    .event-preview p { font-size: 0.95em; line-height: 1.6; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+
+    /* Slider (Clásico/Ornamental) */
+    input[type="range"] {
+      flex: 1; height: 4px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-red), var(--border-color));
+      border-radius: 2px; outline: none; transition: background 0.3s ease;
+    }
+    input[type="range"]:hover { background: linear-gradient(to right, var(--accent-red), var(--accent-gold)); }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 20px; height: 20px;
+      background: var(--accent-gold); border-radius: 50%; /* Círculo */
+      border: 3px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -8px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; background: var(--accent-gold); border-radius: 50%;
+      border: 3px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.2); box-shadow: 0 0 0 3px var(--accent-red), 0 3px 6px rgba(0,0,0,0.3); }
+
+    /* Year Display (Anotación) */
+    #yearDisplay {
+      min-width: 80px; text-align: center; font-weight: 700;
+      font-family: var(--font-script); /* Fuente script */
+      background: transparent; color: var(--accent-red);
+      padding: 5px 8px; border: none; /* Sin borde ni fondo */
+      font-size: 2.2em; /* Más grande y decorativo */
+    }
+
+    /* Event Card (Página de Códice) */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-dark);
+      padding: 35px 40px; border-radius: 4px; border: 1px solid var(--border-color);
+      min-height: 600px; display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 5px 20px var(--shadow-soft);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1; overflow: hidden; position: relative;
+      /* Sutiles líneas de fondo como cuaderno */
+      background-image: linear-gradient(var(--border-color) 1px, transparent 1px);
+      background-size: 100% 28px; /* Espaciado */
+      background-position: 0 100px; /* Empezar más abajo */
+       background-repeat: repeat-y;
+    }
+
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      background-color: #fefcf6; /* Fondo preview claro */
+      justify-content: center; align-items: center; text-align: center;
+      background-image: none; /* Quitar líneas en estos estados */
+    }
+    #eventCard.loading { color: var(--text-color-medium); }
+    #eventCard.error { border-color: var(--accent-red); }
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; color: var(--accent-red); }
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 10px 18px;
+        background-color: var(--accent-red); color: var(--bg-color);
+        border: 1px solid transparent; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 700;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #bd7a4c; }
+
+    /* Estilos Tarjeta Principal */
+    #eventCard h2 {
+      margin: 0 0 25px 0; text-align: center; z-index: 1; position: relative;
+      color: var(--text-color-dark); font-family: var(--font-serif); font-weight: 700;
+      font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
+      background-color: var(--card-bg); /* Para tapar líneas de fondo */
+    }
+    #eventCard img {
+      max-width: 50%; height: auto; max-height: 250px; z-index: 1; position: relative;
+      object-fit: contain; border-radius: 3px; margin: 0 auto 30px auto; display: block;
+      border: 1px solid var(--border-color); background-color: #fff; padding: 5px;
+      box-shadow: 0 4px 12px var(--shadow-soft);
+    }
+    #eventCard .content-extract {
+        line-height: 1.75; margin-bottom: 25px; font-size: 1.05em; text-align: justify; z-index: 1; position: relative;
+        max-height: 400px; overflow-y: auto; padding-right: 15px;
+        background-color: rgba(255, 255, 255, 0.8); /* Fondo semi-transparente para tapar líneas */
+        scrollbar-width: thin; scrollbar-color: var(--border-color) transparent;
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 10px 20px; z-index: 1; position: relative;
+        background: var(--accent-gold); color: var(--bg-color);
+        text-decoration: none; font-weight: 700; font-family: var(--font-body);
+        border-radius: 5px; text-align: center; transition: all 0.3s ease;
+        border: 1px solid #a8760a; box-shadow: 0 2px 5px rgba(0,0,0,0.15); width: fit-content;
+    }
+    #eventCard a.external-link:hover { background-color: #c8a43b; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: translateY(-1px); }
+
+    /* Spinner (Simple trazo) */
+    .spinner {
+      width: 50px; height: 50px; margin: 30px auto;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--accent-red);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos */
+     @media (max-width: 1300px) { /* ... */ }
+     @media (max-width: 1100px) { /* ... */ }
+     @media (max-width: 900px) { .main-content-area { flex-direction: column; } /* ... */ }
+     @media (max-width: 600px) { /* ... */ #eventCard .content-extract {font-size: 1em;} #yearDisplay {font-size: 1.8em;} }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>El Mundo de Leonardo da Vinci</h1>
+
+    <!-- Índice de Eventos -->
+    <div id="eventIndexContainer">
+      <button id="toggleIndexBtn">Índice de Obras y Estudios</button>
+      <ul id="eventIndexList"></ul>
+    </div>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Primeros Años</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Selecciona un año para explorar la vida y obra del genio del Renacimiento.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Últimos Años</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Vida y Obra de Leonardo da Vinci ---
+    const events = [
+        { year: "1452", title: "Nacimiento en Vinci", wikiTitle: "Leonardo da Vinci" },
+        { year: "c. 1466", title: "Aprendizaje con Verrocchio (Florencia)", wikiTitle: "Andrea del Verrocchio" }, // Articulo del maestro
+        { year: "c. 1472", title: "La Anunciación (Primera obra importante)", wikiTitle: "La Anunciación (Leonardo)" },
+        { year: "c. 1475", title: "Ginevra de' Benci (Retrato)", wikiTitle: "Ginevra de' Benci" },
+        { year: "c. 1482", title: "Traslado a Milán (Al servicio de Ludovico Sforza)", wikiTitle: "Leonardo da Vinci" }, // Sección Milán
+        { year: "c. 1483-86", title: "Virgen de las Rocas (Primera versión)", wikiTitle: "Virgen de las rocas" },
+        { year: "c. 1489-90", title: "La dama del armiño", wikiTitle: "La dama del armiño" },
+        { year: "c. 1490", title: "Hombre de Vitruvio (Estudio de proporciones)", wikiTitle: "Hombre de Vitruvio" },
+        { year: "c. 1490s", title: "Estudios Anatómicos (Cráneo, músculos)", wikiTitle: "Estudios anatómicos de Leonardo da Vinci" }, // Página específica
+        { year: "c. 1490s", title: "Diseños de Máquinas (Tornillo aéreo, carro de combate)", wikiTitle: "Leonardo da Vinci#Inventor" }, // Sección Inventor
+        { year: "1495-98", title: "La Última Cena (Santa Maria delle Grazie)", wikiTitle: "La última cena (Leonardo)" },
+        { year: "c. 1499", title: "Salida de Milán tras invasión francesa", wikiTitle: "Leonardo da Vinci" },
+        { year: "c. 1500", title: "Regreso a Florencia", wikiTitle: "Leonardo da Vinci" },
+        { year: "c. 1502", title: "Ingeniero militar para César Borgia", wikiTitle: "César Borgia" }, // Artículo de Borgia
+        { year: "c. 1503", title: "Inicio de la Mona Lisa (La Gioconda)", wikiTitle: "Mona Lisa" },
+        { year: "c. 1503-04", title: "Cartón de Santa Ana, la Virgen y el Niño", wikiTitle: "La Virgen, el Niño Jesús y santa Ana (Leonardo)"}, // El cartón
+        { year: "c. 1504-05", title: "La batalla de Anghiari (Mural perdido)", wikiTitle: "La batalla de Anghiari (Leonardo da Vinci)" },
+        { year: "c. 1508", title: "Segundo periodo en Milán", wikiTitle: "Leonardo da Vinci" },
+        { year: "c. 1510", title: "Estudios avanzados de anatomía (Corazón, embrión)", wikiTitle: "Estudios anatómicos de Leonardo da Vinci" },
+        { year: "c. 1513", title: "Traslado a Roma", wikiTitle: "Leonardo da Vinci" },
+        { year: "c. 1515", title: "San Juan Bautista", wikiTitle: "San Juan Bautista (Leonardo)" },
+        { year: "c. 1516", title: "Invitación a Francia por Francisco I", wikiTitle: "Francisco I de Francia" }, // Artículo del rey
+        { year: "1519", title: "Muerte en Amboise (Francia)", wikiTitle: "Leonardo da Vinci" }
+    ];
+
+
+    // --- Elementos del DOM ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexContainer = document.getElementById('eventIndexContainer');
+    const eventIndexList = document.getElementById('eventIndexList');
+    const toggleIndexBtn = document.getElementById('toggleIndexBtn');
+
+    // --- Estado y Caché ---
+    const summaryCache = {};
+
+    // --- Funciones de Fetch y Limpieza (sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({ action: "query", prop: "extracts|pageimages|info", titles: title, format: "json", origin: "*", explaintext: "true", exchars: "2000", exintro: "false", piprop: "thumbnail", pithumbsize: "600", inprop: "url" });
+        const url = `${baseUrl}?${params.toString()}`; console.log("Fetching URL:", url);
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+             try {
+                 const response = await fetch(url);
+                 if (!response.ok) { lastKnownError = { status: response.status, statusText: response.statusText }; if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); } else { if (response.status === 404) throw new Error(`Not Found: HTTP 404`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); } }
+                 const data = await response.json(); if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                 const pages = data.query.pages; const pageId = Object.keys(pages)[0]; if (pageId === "-1" || pages[pageId].missing !== undefined) throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                 const pageData = pages[pageId]; if (!pageData.extract || pageData.extract.trim() === '') throw new Error(`Incomplete Data: No extract found for "${title}"`);
+                 return pageData;
+             } catch (error) { lastKnownError = error; console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`); if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) { throw error; } if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); } else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); } }
+        } throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+    function cleanWikipediaText(text) { /* ... (código igual) ... */
+        if (!text) return ""; let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, ''); cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ','); return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Textos temáticos Da Vinci) ---
+
+    function renderEventCardLoading(message = "Consultando los códices...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading'; eventCard.style.opacity = '0.7';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'El pergamino se ha dañado. Intente acceder más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Este códice no se encuentra en el archivo.'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('sin extracto')) { cleanMessage = 'La información recuperada del códice está incompleta.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error al solicitar el códice al archivo.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error en el Archivo!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error'; eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) { /* ... (código igual, usa cleanWikipediaText) ... */
+        const title = pageData.title || originalEventTitle; const extract = cleanWikipediaText(pageData.extract);
+        const imageUrl = pageData.thumbnail?.source; const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+        const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+        eventCard.innerHTML = `<h2>${title}</h2> ${imgHtml} <div class="content-extract">${contentHtml}</div> ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Ver Códice Original (Wikipedia)</a>` : ''}`;
+        eventCard.className = ''; eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract'); if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    function renderPreview(eventData, targetElement) { /* Adaptar textos */
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `<div class="preview-year">${eventData.year}</div> <h3>${eventData.title}</h3> <p>Haz clic para examinar este hito.</p>`;
+            targetElement.className = 'event-preview'; targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Primeros Años' : 'Últimos Años';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview'; targetElement.dataset.index = -1;
+        }
+    }
+
+    async function findAndDisplaySuggestions(failedTitle) { /* Adaptar textos */
+        console.log(`"${failedTitle}" no encontrado, buscando bocetos alternativos...`);
+        renderEventCardLoading("Códice no localizado. Buscando bocetos alternativos...");
+        const searchTerm = failedTitle; const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+         try {
+            const response = await fetch(searchUrl); if (!response.ok) throw new Error(`Error ${response.status} al consultar el índice.`);
+            const searchData = await response.json();
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El códice para "<strong>${failedTitle}</strong>" no fue hallado.</p><p>Quizás te interesen estos otros estudios:</p><ul class="suggestions-list">`;
+                suggestions.forEach(item => { const snippet = cleanWikipediaText(item.snippet); suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`; });
+                suggestionsHtml += `</ul><p><small>(Selecciona un título para abrir el códice)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml; eventCard.className = 'suggestions'; eventCard.style.opacity = '1';
+            } else { console.log(`No se encontraron bocetos alternativos para "${searchTerm}".`); renderEventCardError(`Códice para "${failedTitle}" no hallado y no hay bocetos alternativos.`); }
+        } catch (searchErr) { console.error("Error buscando alternativas:", searchErr); renderEventCardError(`Códice para "${failedTitle}" no hallado. La búsqueda de alternativas también falló.`); }
+    }
+
+    // --- Función Principal de Actualización (Incluye updateIndexActiveState) ---
+    async function updateEvent(options) { /* ... (lógica igual que antes, actualiza índice) ... */
+        const index = options.index; if (isNaN(index) || index < 0 || index >= events.length) { return; }
+        const currentEvent = events[index]; yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+        updateIndexActiveState(index); // Actualizar índice
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+        renderPreview(events[index - 1], prevPreview); renderPreview(events[index + 1], nextPreview);
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') {
+            console.log(`Códice "${titleToFetch}" cargado desde caché.`); renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Buscando alternativas.`); findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Consultando el archivo para: ${titleToFetch}`); renderEventCardLoading();
+            try { const pageData = await fetchDetailedData(titleToFetch); summaryCache[cacheKey] = pageData; renderEventCard(pageData, currentEvent.title); }
+            catch (err) { if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) { console.warn(`Error "${err.message}" para "${titleToFetch}". Buscando alternativas.`); summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE'; findAndDisplaySuggestions(titleToFetch); } else { console.error(`Error final al obtener "${titleToFetch}":`, err); renderEventCardError(err.toString()); } }
+        }
+    }
+
+    // --- Funciones del Índice (sin cambios lógicos) ---
+    function populateEventIndex() { /* ... (código igual) ... */
+        eventIndexList.innerHTML = ''; events.forEach((event, index) => { const li = document.createElement('li'); const a = document.createElement('a'); a.href = '#'; a.textContent = `${event.year} - ${event.title}`; a.dataset.index = index; li.appendChild(a); eventIndexList.appendChild(li); });
+    }
+    function toggleEventIndex() { /* ... (código igual) ... */ eventIndexContainer.classList.toggle('expanded'); }
+    function updateIndexActiveState(activeIndex) { /* ... (código igual) ... */
+         eventIndexList.querySelectorAll('a').forEach(a => a.classList.remove('active')); const activeLink = eventIndexList.querySelector(`a[data-index="${activeIndex}"]`); if (activeLink) { activeLink.classList.add('active'); }
+    }
+
+    // --- Manejador de Clics (sin cambios lógicos) ---
+    function handleClick(event) { /* ... (código igual, maneja previews, sugerencias, índice) ... */
+        if (event.target.matches('a.suggestion-link')) { event.preventDefault(); const suggestedTitle = event.target.dataset.wikiTitle; if (suggestedTitle) { console.log(`Cargando boceto sugerido: ${suggestedTitle}`); updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle }); } }
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) { const previewElement = event.target.closest('.event-preview'); const targetIndex = parseInt(previewElement.dataset.index, 10); if (targetIndex >= 0 && targetIndex < events.length) { console.log(`Abriendo apunte ${targetIndex} desde preview.`); updateEvent({ index: targetIndex }); } }
+        else if (event.target.matches('#eventIndexList a')) { event.preventDefault(); const targetIndex = parseInt(event.target.dataset.index, 10); if (!isNaN(targetIndex)) { console.log(`Abriendo apunte ${targetIndex} desde el índice.`); updateEvent({ index: targetIndex }); } }
+    }
+
+    // --- Inicialización ---
+    function initializeTimeline() { /* ... (código igual, llama a populateEventIndex) ... */
+        if (!events || events.length === 0) { /* ... */ return; }
+        populateEventIndex();
+        slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 }); // Carga inicial
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        toggleIndexBtn.addEventListener('click', toggleEventIndex);
+        timelineContainer.addEventListener('click', handleClick);
+        console.log("Códices de Leonardo da Vinci cargados y listos para explorar.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

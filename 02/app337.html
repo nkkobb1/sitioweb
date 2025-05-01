@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linterna Mágica Temporal - Una Historia del Cine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #1a1a1a; /* Negro/Gris muy oscuro (sala de cine) */
+      --container-bg: #333333; /* Gris oscuro (metalizado/equipo) */
+      --card-bg: #f5f5f5; /* Blanco hueso (pantalla/papel) */
+      --preview-bg: #444444; /* Gris medio */
+      --index-bg: #282828; /* Fondo para índice, ligeramente más claro que el body */
+      --text-color-dark: #1f1f1f; /* Casi negro */
+      --text-color-light: #e0e0e0; /* Gris claro */
+      --accent-gold: #d4af37; /* Oro clásico */
+      --accent-red: #a02020; /* Rojo telón */
+      --accent-grey: #888888; /* Gris neutro */
+      --border-color: #555555; /* Borde gris oscuro */
+      --font-body: 'Roboto', sans-serif; /* Limpio y moderno */
+      --font-display: 'Oswald', sans-serif; /* Impactante, bueno para títulos */
+      --shadow-dark: rgba(0, 0, 0, 0.6);
+      --shadow-light: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%232a2a2a' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E"); /* Textura sutil */
+      color: var(--text-color-light);
+      margin: 0;
+      padding: 25px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: linear-gradient(145deg, var(--container-bg), #282828);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 35px var(--shadow-dark), inset 0 0 10px rgba(0,0,0,0.4);
+      padding: 30px;
+      max-width: 95vw; /* Ligeramente más ancho */
+      width: 1500px;
+      position: relative;
+      overflow: hidden;
+    }
+     /* Decoración esquina dorada */
+    .timeline-container::before, .timeline-container::after { content: ''; position: absolute; width: 12px; height: 12px; background: var(--accent-gold); opacity: 0.7; }
+    .timeline-container::before { top: 15px; left: 15px; border-radius: 50% 0 0 0; }
+    .timeline-container::after { bottom: 15px; right: 15px; border-radius: 0 0 50% 0; }
+
+    h1 {
+      font-family: var(--font-display);
+      text-align: center;
+      text-transform: uppercase; /* Estilo título cine */
+      letter-spacing: 1px;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: var(--accent-gold);
+      text-shadow: 2px 2px 3px #000;
+      font-size: 2.8em;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    /* Estructura Flex principal (adaptada para 3 columnas definidas) */
+    .main-content-area {
+        display: grid;
+        /* Definir 3 columnas: preview, central, índice */
+        grid-template-columns: minmax(220px, 1fr) 3fr minmax(250px, 1.2fr);
+        gap: 30px;
+        align-items: stretch;
+        margin-top: 20px;
+    }
+    .center-column { display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo Cine) */
+    .event-preview { /* Columna 1 */
+        min-width: 0; /* Permitir que grid maneje el tamaño */
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 20px;
+        color: var(--text-color-light); /* Texto claro sobre fondo oscuro */
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 2px 5px rgba(0,0,0,0.3);
+        display: flex; flex-direction: column;
+        opacity: 0.9; transition: all 0.3s ease; cursor: pointer;
+    }
+    .event-preview:hover:not(.empty-preview) { opacity: 1; box-shadow: inset 0 0 10px rgba(0,0,0,0.6), 0 4px 10px rgba(0,0,0,0.4); transform: translateY(-3px); border-color: var(--accent-gold); }
+    .event-preview.empty-preview { background: transparent; border: 2px dashed var(--border-color); opacity: 0.6; cursor: default; align-items: center; justify-content: center; text-align: center; color: var(--accent-grey); box-shadow: none; }
+
+    .event-preview h3 { font-family: var(--font-display); font-size: 1.1em; margin: 0 0 10px 0; color: var(--accent-gold); border-bottom: 1px solid var(--border-color); padding-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .event-preview .preview-year { font-family: var(--font-body); font-weight: 700; color: var(--accent-red); margin-bottom: 12px; font-size: 1.1em; text-align: center; }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; color: var(--text-color-light); }
+
+    /* --- NUEVO: Contenedor del Índice --- */
+    #eventIndexContainer { /* Columna 3 */
+        background-color: var(--index-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 15px;
+        color: var(--text-color-light);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
+        display: flex;
+        flex-direction: column;
+        min-width: 0; /* Permitir que grid maneje tamaño */
+        max-height: 700px; /* Altura máxima para contenedor de índice + slider + tarjeta */
+    }
+    #eventIndexContainer h3 {
+        font-family: var(--font-display);
+        font-size: 1.2em;
+        color: var(--accent-gold);
+        margin: 0 0 15px 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+        text-transform: uppercase;
+    }
+    #eventIndexList {
+        list-style: none;
+        padding: 0 5px 0 0; /* Espacio derecha para scrollbar */
+        margin: 0;
+        overflow-y: auto; /* Habilitar scroll */
+        flex-grow: 1; /* Ocupar espacio vertical disponible */
+    }
+     /* Scrollbar Estilizado (Webkit) */
+    #eventIndexList::-webkit-scrollbar { width: 8px; }
+    #eventIndexList::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+    #eventIndexList::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; border: 2px solid var(--index-bg); }
+    #eventIndexList::-webkit-scrollbar-thumb:hover { background-color: var(--accent-grey); }
+
+    #eventIndexList li { margin-bottom: 2px; }
+    #eventIndexList a {
+        display: block;
+        padding: 8px 12px;
+        color: var(--text-color-light);
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9em;
+        transition: background-color 0.2s, color 0.2s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border: 1px solid transparent;
+    }
+    #eventIndexList a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--accent-gold);
+    }
+    /* Estilo para el item activo en el índice */
+    #eventIndexList a.current-index-item {
+        background-color: var(--accent-gold);
+        color: var(--bg-color);
+        font-weight: 700;
+        border-color: var(--accent-gold);
+    }
+     #eventIndexList a.current-index-item:hover {
+         color: #000; /* Mantener oscuro al hacer hover en activo */
+     }
+
+
+    /* Slider Container (Estilo Cine) */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; border: 1px solid var(--border-color); box-shadow: inset 0 1px 4px rgba(0,0,0,0.5); }
+
+    /* Slider (Estilo Cine) */
+    input[type="range"] { flex: 1; height: 6px; cursor: pointer; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--accent-gold), var(--accent-grey)); border-radius: 3px; outline: none; border: 1px solid #222; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent-gold); border-radius: 50%; border: 2px solid var(--bg-color); box-shadow: 0 0 5px var(--accent-gold), 0 1px 3px rgba(0,0,0,0.6); transition: transform 0.2s ease; margin-top: -7px; }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--accent-gold); border-radius: 50%; border: 2px solid var(--bg-color); box-shadow: 0 0 5px var(--accent-gold); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.15); background: #fff; }
+
+    /* Year Display (Estilo Cine) */
+    #yearDisplay { min-width: 70px; text-align: center; font-weight: 700; font-family: var(--font-display); background: var(--accent-red); color: var(--text-color-light); padding: 8px 15px; border-radius: 4px; border: 1px solid #601010; box-shadow: inset 0 0 5px rgba(0,0,0,0.4), 1px 1px 2px rgba(0,0,0,0.5); font-size: 1.1em; letter-spacing: 1px;}
+
+    /* Event Card (Estilo Cine) */
+    #eventCard {
+      background-color: var(--card-bg);
+      color: var(--text-color-dark);
+      padding: 30px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      min-height: 550px; /* Ajustar según necesidad con el índice */
+      display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 6px 20px var(--shadow-dark);
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1;
+      overflow-y: auto; /* Scroll interno si el contenido es muy largo */
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions { justify-content: center; align-items: center; text-align: center; background-color: var(--preview-bg); color: var(--text-color-light); }
+    #eventCard.loading { opacity: 0.9; }
+    #eventCard.error { border: 2px solid var(--accent-red); color: var(--accent-red); background: #553333; }
+    #eventCard.error p { font-weight: 700; font-size: 1.1em; color: var(--text-color-light);}
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 15px; }
+    #eventCard.suggestions li { margin-bottom: 10px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 9px 18px;
+        background-color: var(--accent-gold);
+        color: var(--bg-color);
+        border: 1px solid var(--accent-gold); border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-display); font-weight: 700; font-size: 1em; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #fff; color: var(--bg-color); border-color: #fff; transform: scale(1.03); }
+
+    /* Estilos Tarjeta Principal (Cine) */
+    #eventCard h2 { margin-top: 0; margin-bottom: 20px; text-align: center; color: var(--accent-red); font-family: var(--font-display); font-size: 2em; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;}
+    #eventCard img {
+        max-width: 50%; /* Ajustar */
+        height: auto; max-height: 250px;
+        object-fit: contain; border-radius: 4px;
+        margin: 0 auto 25px auto; display: block;
+        border: 3px solid var(--bg-color);
+        box-shadow: 0 5px 15px var(--shadow-dark);
+        background-color: #000; /* Fondo negro para imágenes */
+    }
+    #eventCard .content-extract {
+        line-height: 1.7;
+        margin-bottom: 25px;
+        font-size: 1.0em;
+        text-align: justify;
+        max-height: 400px; /* Limitar altura */
+        overflow-y: auto;
+        padding: 0 15px; /* Padding lateral para scrollbar */
+        /* border-left: 3px solid var(--accent-gold); */ /* Quitar borde lateral */
+    }
+     /* Scrollbar sutil (Webkit) para extracto */
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; border: 2px solid var(--card-bg); }
+
+     /* Link Externo (Cine) */
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 10px 25px;
+        background: linear-gradient(to bottom, var(--accent-gold), #b8860b);
+        color: var(--bg-color); text-decoration: none; font-weight: 700;
+        font-family: var(--font-display); border-radius: 4px; text-align: center;
+        transition: all 0.3s ease; border: 1px solid #a0741b;
+        box-shadow: 0 2px 5px var(--shadow-dark), inset 0 1px 0 rgba(255,255,255,0.2);
+        width: fit-content; text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    #eventCard a.external-link:hover { background: linear-gradient(to bottom, #e4bf57, #c89a2b); box-shadow: 0 3px 7px var(--shadow-dark), inset 0 1px 0 rgba(255,255,255,0.3); transform: translateY(-2px); color: #000; }
+
+    /* Spinner (Cine) */
+    .spinner { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top: 4px solid var(--accent-gold); border-radius: 50%; animation: spin 1.2s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Ajustes responsivos */
+     @media (max-width: 1200px) {
+         .main-content-area { grid-template-columns: minmax(180px, 1fr) 3fr minmax(200px, 1.2fr); gap: 20px; }
+         h1 { font-size: 2.4em; }
+         #eventIndexContainer { max-height: 650px; }
+     }
+     @media (max-width: 900px) {
+         /* Apilar las columnas: preview + (central + indice) */
+         .main-content-area {
+             grid-template-columns: 1fr; /* Una sola columna */
+             gap: 20px;
+         }
+         /* Mantener índice y central juntos si es posible, o apilar también */
+         .center-column { min-width: 0; /* Reset min-width */ }
+         #eventIndexContainer { max-height: 300px; /* Limitar altura índice en móvil */ }
+         /* Podría ser necesario apilar centro e índice también en pantallas muy pequeñas */
+     }
+     @media (max-width: 600px) {
+         body { padding: 15px; }
+         .timeline-container { padding: 20px; }
+         h1 { font-size: 1.8em; }
+         .slider-container { flex-direction: column; gap: 10px; }
+         #eventCard { padding: 20px; min-height: 400px; }
+         #eventCard h2 { font-size: 1.6em; }
+         #eventCard img { max-width: 70%; max-height: 180px; }
+         #eventIndexContainer h3 { font-size: 1.1em; }
+         #eventIndexList a { font-size: 0.85em; padding: 6px 10px; }
+     }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Linterna Mágica Temporal - Una Historia del Cine</h1>
+
+    <div class="main-content-area">
+      <!-- Columna 1: Preview Anterior -->
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Sombras Precursoras</p>
+      </div>
+
+      <!-- Columna 2: Central (Slider + Tarjeta Evento) -->
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajuste el proyector temporal para explorar la evolución del séptimo arte.</p>
+        </div>
+      </div>
+
+      <!-- Columna 3: Índice de Eventos -->
+      <div id="eventIndexContainer">
+          <h3>Índice Cronológico</h3>
+          <ul id="eventIndexList">
+              <!-- El índice se llenará aquí -->
+              <li>Cargando índice...</li>
+          </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Historia del Cine ---
+    const events = [
+        { year: 1895, title: "Primera Proyección Pública (Hermanos Lumière)", wikiTitle: "Hermanos Lumière" },
+        { year: 1902, title: "Viaje a la Luna (Méliès)", wikiTitle: "Viaje a la Luna (película de 1902)" },
+        { year: 1915, title: "El Nacimiento de una Nación (Griffith)", wikiTitle: "El nacimiento de una nación" },
+        { year: 1927, title: "El Cantor de Jazz (Inicio del Sonoro)", wikiTitle: "El cantor de jazz" },
+        { year: "c. 1930", title: "Auge de los Estudios de Hollywood", wikiTitle: "Sistema de estudios" },
+        { year: 1932, title: "Primer Corto en Technicolor de 3 Tiras (Disney)", wikiTitle: "Technicolor" }, // Flowers and Trees
+        { year: 1937, title: "Blancanieves (Primer largo animado Technicolor)", wikiTitle: "Snow White and the Seven Dwarfs (película de 1937)" },
+        { year: 1939, title: "Lo que el Viento se Llevó / Mago de Oz (Color)", wikiTitle: "Lo que el viento se llevó (película)"}, // Podría ser Mago de Oz también
+        { year: 1941, title: "Ciudadano Kane (Orson Welles)", wikiTitle: "Citizen Kane" },
+        { year: "c. 1945", title: "Neorrealismo Italiano", wikiTitle: "Neorrealismo italiano" },
+        { year: "c. 1950", title: "Aparición de la Televisión (Competencia)", wikiTitle: "Historia de la televisión"},
+        { year: "c. 1952", title: "Cinerama y 3D (Intentos Inmersivos)", wikiTitle: "Cinerama" },
+        { year: "c. 1959", title: "Nouvelle Vague Francesa", wikiTitle: "Nouvelle vague" },
+        { year: "c. 1960", title: "Nuevo Hollywood / Cine de Autor", wikiTitle: "Nuevo Hollywood" },
+        { year: 1968, title: "2001: Odisea del Espacio (Efectos Visuales)", wikiTitle: "2001: A Space Odyssey" },
+        { year: 1977, title: "Star Wars (Blockbuster Moderno / Efectos)", wikiTitle: "Star Wars: Episodio IV - Una nueva esperanza" },
+        { year: 1982, title: "Tron (Uso Extensivo de CGI Temprano)", wikiTitle: "Tron" },
+        { year: 1993, title: "Jurassic Park (Revolución CGI)", wikiTitle: "Parque Jurásico (película)" },
+        { year: 1995, title: "Toy Story (Primer Largo Full CGI)", wikiTitle: "Toy Story" },
+        { year: 1997, title: "Netflix Fundada (Inicio DVD por correo)", wikiTitle: "Netflix" },
+        { year: 1999, title: "The Matrix (Efectos Digitales Innovadores)", wikiTitle: "The Matrix" },
+        { year: "c. 2005", title: "YouTube y Video Online", wikiTitle: "YouTube"},
+        { year: 2007, title: "Lanzamiento del Streaming de Netflix", wikiTitle: "Netflix" }, // Hito clave del streaming
+        { year: 2009, title: "Avatar (Avance 3D y CGI)", wikiTitle: "Avatar (película)" },
+        { year: "c. 2010", title: "Auge de Plataformas de Streaming", wikiTitle: "Streaming" },
+        { year: "c. 2019", title: "Guerras del Streaming / Contenido Original", wikiTitle: "Guerra del streaming"},
+        { year: "Actual", title: "IA en la Producción / Realidad Virtual", wikiTitle: "Inteligencia artificial en el cine"} // Tentativo futuro
+    ];
+
+
+    // --- Elementos del DOM ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexList = document.getElementById('eventIndexList'); // Índice
+    // La preview derecha ahora es el índice
+
+    // --- Estado y Caché ---
+    const summaryCache = {};
+
+    // --- Fetch Detallado (action=query - sin cambios lógicos) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que versión Renacimiento) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info",
+            titles: title, format: "json", origin: "*",
+            explaintext: "true", exchars: "2000",
+            exintro: "false", piprop: "thumbnail", pithumbsize: "600",
+            inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        // console.log("Fetching URL:", url); // Descomentar para debug
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) { /* ... manejo errores HTTP ... */
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                     if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                     else { throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                }
+                const data = await response.json();
+                if (!data.query || !data.query.pages) { throw new Error("Respuesta inesperada API"); }
+                const pages = data.query.pages; const pageId = Object.keys(pages)[0];
+                if (pageId === "-1" || pages[pageId].missing !== undefined) { throw new Error(`Not Found: "${title}" no existe.`); }
+                const pageData = pages[pageId];
+                if (!pageData.title || !pageData.extract) { throw new Error(`Respuesta incompleta para "${title}"`); }
+                 // console.log("Datos recibidos de API:", pageData); // Descomentar para debug
+                 return pageData;
+            } catch (error) { /* ... manejo de reintentos y error final ... */
+                 lastKnownError = error; console.warn(`Intento ${i + 1} fallido (${title}): ${error.message}`);
+                 if (error.message.startsWith('Not Found:')) { throw error; }
+                 if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                 else { console.error(`No se pudo obtener datos para ${title} tras ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos.`); }
+            }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado fetch.`);
+    }
+
+
+    // --- Funciones de Renderizado ---
+
+    function renderEventCardLoading(message = "Cargando rollo...") {
+        eventCard.innerHTML = `<div class="spinner"></div><p>${message}</p>`;
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.9';
+    }
+
+    // Ya no se usa directamente si siempre mostramos sugerencias, pero la mantenemos
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Fallo de conexión con la Cinemateca. Intente más tarde.'; }
+        else if (cleanMessage.includes('Client error 404') || cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Esta película no se encontró en el archivo.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Problema con la solicitud a la Cinemateca.';}
+        else if (cleanMessage.includes('Respuesta incompleta')) { cleanMessage = 'El rollo recuperado está dañado o incompleto.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error de Proyección!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) {
+        const title = pageData.title || originalEventTitle;
+        let extract = pageData.extract || "Sinopsis no disponible.";
+        extract = extract.replace(/\[\d+\]|\[cita requerida\]/gi, '').trim().replace(/\s{2,}/g, ' ');
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract"><p>${extract.replace(/\n/g, '<br>')}</p></div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Ver Ficha Completa (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para ver esta escena.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = 'Sombras Precursoras'; // Solo hay preview izquierdo
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // MODIFICADO: Buscar y mostrar sugerencias (mensajes cine)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrada/ilegible, buscando copias alternativas...`);
+        renderEventCardLoading("Película no encontrada/ilegible. Buscando en catálogo...");
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} consultando catálogo.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>La película "<strong>${failedTitle}</strong>" no está disponible o el rollo está dañado.</p>
+                                       <p>Quizás te interese ver:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = item.snippet.replace(/<[^>]*>/g, '');
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Selecciona un título para intentar proyectarlo)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron alternativas para "${searchTerm}".`);
+                 renderEventCardError(`Película "${failedTitle}" no encontrada y sin alternativas en el catálogo.`);
+                 eventCard.className = 'error';
+            }
+        } catch (searchErr) {
+            console.error("Error buscando alternativas:", searchErr);
+             renderEventCardError(`Película "${failedTitle}" no encontrada. La búsqueda de alternativas falló.`);
+             eventCard.className = 'error';
+        }
+    }
+
+    // --- NUEVO: Llenar el Índice de Eventos ---
+    function populateEventIndex() {
+        if (!eventIndexList) return;
+        eventIndexList.innerHTML = ''; // Limpiar si ya existía
+        events.forEach((event, index) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = "#";
+            a.textContent = `${event.year} - ${event.title}`;
+            a.dataset.index = index;
+            a.title = event.title; // Tooltip con el título completo
+            li.appendChild(a);
+            eventIndexList.appendChild(li);
+        });
+    }
+
+    // --- NUEVO: Actualizar Resaltado en Índice ---
+    function updateIndexHighlight(activeIndex) {
+         if (!eventIndexList) return;
+         const links = eventIndexList.querySelectorAll('a');
+         links.forEach((link, index) => {
+             if (index === activeIndex) {
+                 link.classList.add('current-index-item');
+                 // Hacer scroll para que sea visible
+                 link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+             } else {
+                 link.classList.remove('current-index-item');
+             }
+         });
+    }
+
+
+    // --- MODIFICADO: Función Principal de Actualización ---
+    async function updateEvent(options) {
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { /* ... error ... */ return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        // Actualizar previews e índice siempre
+        renderPreview(events[index - 1], prevPreview);
+        // renderPreview(events[index + 1], nextPreview); // Ya no existe nextPreview
+        updateIndexHighlight(index); // Resaltar item actual en el índice
+
+        // Cargar tarjeta principal (lógica de caché y fetch/error/suggestions igual)
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'LOAD_ERROR') {
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'LOAD_ERROR') {
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                console.error(`Error al cargar "${titleToFetch}":`, err.message);
+                summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'LOAD_ERROR';
+                findAndDisplaySuggestions(titleToFetch); // Siempre mostrar sugerencias en error
+            }
+        }
+    }
+
+    // --- MODIFICADO: Manejador de Clics (añadir clics en índice) ---
+    function handleClick(event) {
+        // Click en sugerencia
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        // Click en preview izquierdo
+        else if (event.target.closest('#prevEventPreview:not(.empty-preview)')) {
+             const previewElement = event.target.closest('#prevEventPreview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                updateEvent({ index: targetIndex });
+            }
+        }
+         // --- NUEVO: Click en el índice ---
+         else if (event.target.matches('#eventIndexList a')) {
+             event.preventDefault();
+             const targetIndex = parseInt(event.target.dataset.index, 10);
+             if (!isNaN(targetIndex) && targetIndex >= 0 && targetIndex < events.length) {
+                 console.log(`Navegando a índice ${targetIndex} desde lista.`);
+                 // Asegurarse que el slider se mueva y se cargue el evento
+                 slider.value = targetIndex;
+                 updateEvent({ index: targetIndex });
+             }
+         }
+    }
+
+    // --- MODIFICADO: Inicialización ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) {
+             document.querySelector('h1').textContent = "Archivo Fílmico Vacío";
+            eventCard.innerHTML = "<p>No hay películas catalogadas en esta línea temporal.</p>";
+            eventCard.className = 'error';
+            slider.disabled = true; yearDisplay.textContent = '----';
+            renderPreview(null, prevPreview);
+            if(eventIndexList) eventIndexList.innerHTML = '<li>Índice no disponible</li>'; // Mensaje en índice
+            return;
+        }
+
+        // Llenar el índice primero
+        populateEventIndex();
+
+        slider.max = events.length - 1;
+        slider.value = 0;
+        slider.disabled = events.length <= 1;
+
+        updateEvent({ index: 0 }); // Carga inicial
+
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        timelineContainer.addEventListener('click', handleClick); // Delegación general
+
+        console.log("Proyector Temporal listo. ¡Luces, cámara, acción!");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>

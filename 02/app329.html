@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crónicas de la Red Global - La Historia de Internet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #1a1d21; /* Gris oscuro casi negro */
+      --container-bg: #2a2d34; /* Gris azulado oscuro */
+      --card-bg: #f0f2f5; /* Gris muy claro / Blanco apagado */
+      --preview-bg: #3a3d44; /* Gris medio */
+      --text-color-dark: #1a1d21; /* Para fondos claros */
+      --text-color-light: #e0e2e8; /* Texto principal claro */
+      --text-color-medium: #a0a8b4; /* Texto secundario claro */
+      --accent-blue: #4a90e2; /* Azul enlace brillante */
+      --accent-green: #50e3c2; /* Verde menta / Terminal */
+      --accent-amber: #f5a623; /* Ámbar/Naranja */
+      --border-color: #4a4d54; /* Borde gris oscuro */
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'Roboto Mono', monospace;
+      --shadow-glow: rgba(74, 144, 226, 0.3); /* Sombra/Glow azul */
+      --shadow-dark: rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      /* Patrón sutil de grid */
+      background-image: linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(to right, var(--border-color) 1px, var(--bg-color) 1px);
+      background-size: 20px 20px;
+      color: var(--text-color-light);
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .timeline-container {
+      background: var(--container-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.3), 0 4px 10px var(--shadow-dark);
+      padding: 30px 35px;
+      max-width: 95vw;
+      width: 1500px;
+      position: relative;
+    }
+
+    h1 {
+      font-family: var(--font-body); /* Usar fuente principal pero más peso */
+      font-weight: 700;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px; /* Menos espacio */
+      color: var(--accent-green);
+      font-size: 2.5em;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px var(--accent-green);
+    }
+
+    /* --- Sección del Índice de Eventos --- */
+    #eventIndexContainer {
+      background-color: rgba(0,0,0,0.15);
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      margin-bottom: 25px;
+      padding: 0 15px;
+      transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+      max-height: 45px; /* Altura colapsada (solo botón) */
+      overflow: hidden;
+    }
+    #eventIndexContainer.expanded {
+      max-height: 400px; /* Altura máxima expandida */
+      padding: 15px;
+      overflow-y: auto; /* Scroll si la lista es muy larga */
+    }
+    #toggleIndexBtn {
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--accent-blue);
+      font-family: var(--font-mono);
+      font-size: 0.95em;
+      text-align: left;
+      padding: 12px 0;
+      cursor: pointer;
+      font-weight: 700;
+      position: relative; /* Para el icono */
+    }
+     #toggleIndexBtn::after { /* Icono de flecha */
+       content: '▼';
+       position: absolute;
+       right: 5px;
+       transition: transform 0.3s ease;
+     }
+    #eventIndexContainer.expanded #toggleIndexBtn::after {
+      transform: rotate(180deg);
+    }
+    #eventIndexList {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0 0;
+      columns: 3; /* Mostrar en columnas si es largo */
+      column-gap: 20px;
+    }
+     @media (max-width: 900px) { #eventIndexList { columns: 2; } }
+     @media (max-width: 600px) { #eventIndexList { columns: 1; } }
+
+    #eventIndexList li { margin-bottom: 8px; }
+    #eventIndexList a {
+      color: var(--text-color-medium);
+      text-decoration: none;
+      font-size: 0.9em;
+      transition: color 0.2s ease;
+      display: block; /* Para que ocupe toda la línea */
+    }
+    #eventIndexList a:hover, #eventIndexList a.active {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    /* --- Fin Índice --- */
+
+    /* Estructura Flex (sin cambios) */
+    .main-content-area { display: flex; gap: 30px; align-items: stretch; margin-top: 0; } /* Quitado margen superior */
+    .center-column { flex: 3; display: flex; flex-direction: column; min-width: 450px; }
+
+    /* Vistas Previas (Estilo "Terminal / Panel") */
+    .event-preview {
+        flex: 1; min-width: 220px; max-width: 300px;
+        background-color: var(--preview-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 20px;
+        color: var(--text-color-medium);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 2px 5px var(--shadow-dark);
+        display: flex; flex-direction: column;
+        transition: all 0.3s ease; cursor: pointer;
+        opacity: 0.9;
+    }
+    .event-preview:hover:not(.empty-preview) {
+        opacity: 1;
+        border-color: var(--accent-blue);
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 0 4px 8px var(--shadow-dark), 0 0 10px var(--shadow-glow);
+        transform: translateY(-3px);
+    }
+    .event-preview.empty-preview {
+      background-color: transparent;
+      border: 2px dashed var(--border-color);
+      opacity: 0.6; cursor: default; align-items: center;
+      justify-content: center; text-align: center;
+      color: var(--text-color-medium); box-shadow: none;
+    }
+
+    .event-preview h3 { /* Título del evento */
+        font-family: var(--font-body); font-size: 1.1em;
+        margin: 0 0 10px 0; color: var(--text-color-light);
+        border-bottom: 1px solid var(--border-color); padding-bottom: 6px;
+        font-weight: 600;
+    }
+    .event-preview .preview-year { /* Año */
+        font-family: var(--font-mono); font-weight: 700;
+        color: var(--accent-green); margin-bottom: 12px;
+        font-size: 1.05em; text-align: center;
+    }
+    .event-preview p { font-size: 0.9em; line-height: 1.5; margin: 0; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Slider Container */
+    .slider-container { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+
+    /* Slider (Moderno/Digital) */
+    input[type="range"] {
+      flex: 1; height: 5px; cursor: pointer; appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--accent-blue), var(--border-color));
+      border-radius: 3px; outline: none; transition: background 0.3s ease;
+    }
+    input[type="range"]:hover { background: linear-gradient(to right, var(--accent-blue), var(--accent-green)); }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none; width: 18px; height: 18px;
+      background: var(--accent-green); border-radius: 3px; /* Cuadrado redondeado */
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-green), 0 1px 3px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease; margin-top: -7px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px; height: 14px; background: var(--accent-green); border-radius: 3px;
+      border: 2px solid var(--container-bg);
+      box-shadow: 0 0 0 2px var(--accent-green), 0 1px 3px rgba(0,0,0,0.3); cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb:active, input[type="range"]::-moz-range-thumb:active { transform: scale(1.2); box-shadow: 0 0 0 3px var(--accent-green), 0 2px 5px rgba(0,0,0,0.4); }
+
+    /* Year Display (Digital) */
+    #yearDisplay {
+      min-width: 80px; text-align: center; font-weight: 700;
+      font-family: var(--font-mono); background: var(--bg-color); /* Fondo oscuro */
+      color: var(--accent-green); padding: 8px 10px;
+      border-radius: 4px; border: 1px solid var(--border-color);
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.3); font-size: 1.1em;
+    }
+
+    /* Event Card (Panel Informativo) */
+    #eventCard {
+      background-color: var(--card-bg); color: var(--text-color-dark);
+      padding: 30px 35px; border-radius: 6px; border: 1px solid #ccc; /* Borde claro */
+      min-height: 600px; display: flex; flex-direction: column; justify-content: flex-start;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 1; flex-grow: 1; overflow: hidden;
+    }
+
+    #eventCard.loading, #eventCard.error, #eventCard.suggestions {
+      background-color: #e8eaf0; /* Fondo ligeramente diferente */
+      justify-content: center; align-items: center; text-align: center;
+    }
+    #eventCard.loading { color: var(--text-color-medium); }
+    #eventCard.error { border-color: var(--accent-amber); }
+    #eventCard.error p { font-weight: 600; font-size: 1.1em; color: #c0392b; } /* Rojo error */
+    #eventCard.suggestions ul { list-style: none; padding: 0; margin-top: 20px; }
+    #eventCard.suggestions li { margin-bottom: 12px; }
+    #eventCard.suggestions a.suggestion-link {
+        display: inline-block; padding: 10px 18px;
+        background-color: var(--accent-blue); color: #fff;
+        border: 1px solid transparent; border-radius: 4px;
+        text-decoration: none; transition: all 0.3s; cursor: pointer;
+        font-family: var(--font-body); font-weight: 600;
+    }
+    #eventCard.suggestions a.suggestion-link:hover { background-color: #3a7bc8; }
+
+    /* Estilos Tarjeta Principal */
+    #eventCard h2 {
+      margin: 0 0 20px 0; text-align: center;
+      color: var(--accent-blue); font-family: var(--font-body); font-weight: 700;
+      font-size: 1.9em; border-bottom: 1px solid #ddd; padding-bottom: 15px;
+    }
+    #eventCard img {
+      max-width: 50%; height: auto; max-height: 240px;
+      object-fit: contain; border-radius: 4px; margin: 0 auto 25px auto; display: block;
+      border: 1px solid #ddd; background-color: #fff; padding: 4px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    #eventCard .content-extract {
+        line-height: 1.7; margin-bottom: 25px; font-size: 1.02em; text-align: justify;
+        max-height: 400px; overflow-y: auto; padding-right: 15px;
+        scrollbar-width: thin; scrollbar-color: #ccc transparent; /* Scrollbar claro */
+    }
+    #eventCard .content-extract::-webkit-scrollbar { width: 8px; }
+    #eventCard .content-extract::-webkit-scrollbar-track { background: transparent; }
+    #eventCard .content-extract::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; border: 2px solid var(--card-bg); background-clip: content-box; }
+
+    #eventCard a.external-link {
+        display: block; margin: 25px auto 0 auto; padding: 10px 20px;
+        background: var(--accent-green); color: var(--bg-color); /* Contraste */
+        text-decoration: none; font-weight: 600; font-family: var(--font-body);
+        border-radius: 5px; text-align: center; transition: all 0.3s ease;
+        border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.15); width: fit-content;
+    }
+    #eventCard a.external-link:hover { background-color: #60f3d2; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transform: translateY(-1px); }
+
+    /* Spinner (Digital) */
+    .spinner {
+      width: 50px; height: 50px; margin: 30px auto; position: relative;
+    }
+    .spinner div { /* Barras giratorias */
+      box-sizing: border-box; display: block; position: absolute;
+      width: 44px; height: 44px; margin: 3px;
+      border: 4px solid var(--accent-green); border-radius: 50%;
+      animation: spin-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      border-color: var(--accent-green) transparent transparent transparent;
+    }
+    .spinner div:nth-child(1) { animation-delay: -0.45s; }
+    .spinner div:nth-child(2) { animation-delay: -0.3s; }
+    .spinner div:nth-child(3) { animation-delay: -0.15s; }
+    @keyframes spin-ring { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+    /* Ajustes responsivos (mantener y refinar) */
+     @media (max-width: 1300px) { /* ... */ }
+     @media (max-width: 1100px) { /* ... */ }
+     @media (max-width: 900px) { .main-content-area { flex-direction: column; } /* ... */ }
+     @media (max-width: 600px) { /* ... */ }
+
+  </style>
+</head>
+<body>
+  <div class="timeline-container" id="timelineContainer">
+    <h1>Crónicas de la Red Global</h1>
+
+    <!-- Índice de Eventos Desplegable -->
+    <div id="eventIndexContainer">
+      <button id="toggleIndexBtn">Índice de Eventos</button>
+      <ul id="eventIndexList">
+        <!-- Los títulos se cargarán aquí -->
+      </ul>
+    </div>
+
+    <div class="main-content-area">
+      <div id="prevEventPreview" class="event-preview empty-preview" data-index="-1">
+          <p>Precursores Teóricos</p>
+      </div>
+
+      <div class="center-column">
+        <div class="slider-container">
+          <input type="range" id="timelineSlider" min="0" step="1" value="0">
+          <div id="yearDisplay">----</div>
+        </div>
+        <div id="eventCard">
+          <p>Ajusta el dial temporal para explorar la evolución de Internet.</p>
+        </div>
+      </div>
+
+      <div id="nextEventPreview" class="event-preview empty-preview" data-index="-1">
+         <p>Futuro Conectado</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Hitos de la Historia de Internet ---
+    const events = [
+      { year: "1962", title: "Concepto de Red Galáctica (Licklider)", wikiTitle: "J._C._R._Licklider" },
+      { year: "1965", title: "Primera conexión remota (TX-2 a Q-32)", wikiTitle: "Lawrence Roberts" }, // Roberts es figura clave
+      { year: "1969", title: "Nacimiento de ARPANET (Primeros nodos)", wikiTitle: "ARPANET" },
+      { year: "1971", title: "Primer correo electrónico (Ray Tomlinson)", wikiTitle: "Ray Tomlinson" },
+      { year: "1972", title: "Primera demostración pública de ARPANET", wikiTitle: "ARPANET" }, // Evento clave
+      { year: "1974", title: "Publicación del protocolo TCP/IP (Cerf & Kahn)", wikiTitle: "TCP/IP" },
+      { year: "1978", title: "Primer SPAM enviado", wikiTitle: "Spam" }, // Curiosidad histórica
+      { year: "1981", title: "BITNET (Red académica)", wikiTitle: "BITNET"},
+      { year: "1983", title: "Adopción oficial de TCP/IP en ARPANET", wikiTitle: "Internet" }, // Momento clave
+      { year: "1983", title: "Creación del DNS (Domain Name System)", wikiTitle: "Sistema de nombres de dominio" },
+      { year: "1985", title: "Primer dominio .com registrado (Symbolics.com)", wikiTitle: ".com" },
+      { year: "1989", title: "Propuesta de la World Wide Web (Tim Berners-Lee)", wikiTitle: "Tim Berners-Lee" },
+      { year: "1990", title: "Desmantelamiento de ARPANET", wikiTitle: "ARPANET" },
+      { year: "1991", title: "Primer servidor Web y sitio web (CERN)", wikiTitle: "World Wide Web" },
+      { year: "1993", title: "Lanzamiento del navegador Mosaic", wikiTitle: "NCSA_Mosaic" },
+      { year: "1994", title: "Fundación de Netscape Communications", wikiTitle: "Netscape Communications Corporation" },
+      { year: "1994", title: "Fundación de Yahoo!", wikiTitle: "Yahoo!" },
+      { year: "1995", title: "Lanzamiento de Internet Explorer", wikiTitle: "Internet Explorer" },
+      { year: "1995", title: "Fundación de Amazon y eBay", wikiTitle: "Amazon" }, // Podría ser eBay también
+      { year: "1996", title: "Lanzamiento de Hotmail", wikiTitle: "Outlook.com"}, // Originalmente Hotmail
+      { year: "1997", title: "Nacimiento del término 'Weblog' (Blog)", wikiTitle: "Blog"},
+      { year: "1998", title: "Fundación de Google", wikiTitle: "Google" },
+      { year: "2001", title: "Lanzamiento de Wikipedia", wikiTitle: "Wikipedia" },
+      { year: "2003", title: "Lanzamiento de MySpace y LinkedIn", wikiTitle: "MySpace" }, // O LinkedIn
+      { year: "2004", title: "Lanzamiento de Facebook", wikiTitle: "Facebook" },
+      { year: "2005", title: "Lanzamiento de YouTube", wikiTitle: "YouTube" },
+      { year: "2006", title: "Lanzamiento de Twitter", wikiTitle: "Twitter" },
+      { year: "2007", title: "Lanzamiento del iPhone (populariza web móvil)", wikiTitle: "IPhone_(1.ª_generación)"},
+      { year: "2008", title: "Lanzamiento de Google Chrome", wikiTitle: "Google Chrome"},
+      { year: "2010", title: "Lanzamiento de Instagram", wikiTitle: "Instagram"},
+      { year: "2011", title: "Lanzamiento de Snapchat", wikiTitle: "Snapchat"},
+      { year: "c. 2010s", title: "Auge del Internet de las Cosas (IoT)", wikiTitle: "Internet de las cosas" },
+      { year: "c. 2016", title: "Popularización de TikTok", wikiTitle: "TikTok"},
+      { year: "Actualidad", title: "Web 3.0, IA, Metaverso...", wikiTitle: "Web3"} // Tema amplio
+    ];
+
+
+    // --- Elementos del DOM (Añadidos elementos del índice) ---
+    const slider = document.getElementById('timelineSlider');
+    const yearDisplay = document.getElementById('yearDisplay');
+    const eventCard = document.getElementById('eventCard');
+    const prevPreview = document.getElementById('prevEventPreview');
+    const nextPreview = document.getElementById('nextEventPreview');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const eventIndexContainer = document.getElementById('eventIndexContainer');
+    const eventIndexList = document.getElementById('eventIndexList');
+    const toggleIndexBtn = document.getElementById('toggleIndexBtn');
+
+
+    // --- Estado y Caché (sin cambios) ---
+    const summaryCache = {};
+
+    // --- Función de Fetch Detallada (sin cambios) ---
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY_MS = 1000;
+    async function fetchDetailedData(title, retries = MAX_RETRIES) { /* ... (código igual que antes) ... */
+        const baseUrl = "https://es.wikipedia.org/w/api.php";
+        const params = new URLSearchParams({
+            action: "query", prop: "extracts|pageimages|info",
+            titles: title, format: "json", origin: "*",
+            explaintext: "true", exchars: "2000", exintro: "false",
+            piprop: "thumbnail", pithumbsize: "600", inprop: "url"
+        });
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log("Fetching URL:", url);
+
+        let lastKnownError = null;
+        for (let i = 0; i < retries; i++) {
+             try {
+                 const response = await fetch(url);
+                 if (!response.ok) { /* ... (manejo error HTTP igual) ... */
+                    lastKnownError = { status: response.status, statusText: response.statusText };
+                    if (response.status >= 500 || response.status === 429) { throw new Error(`HTTP error ${response.status}`); }
+                    else { if (response.status === 404) throw new Error(`Not Found: HTTP 404`); throw new Error(`Client error ${response.status}: ${response.statusText || 'Error del cliente'}`); }
+                 }
+                 const data = await response.json();
+                 if (!data.query || !data.query.pages) throw new Error("Respuesta inesperada: falta query.pages");
+                 const pages = data.query.pages;
+                 const pageId = Object.keys(pages)[0];
+                 if (pageId === "-1" || pages[pageId].missing !== undefined) throw new Error(`Not Found: API reportó que "${title}" no existe.`);
+                 const pageData = pages[pageId];
+                 if (!pageData.extract || pageData.extract.trim() === '') throw new Error(`Incomplete Data: No extract found for "${title}"`);
+                 return pageData;
+             } catch (error) { /* ... (manejo error catch igual) ... */
+                  lastKnownError = error;
+                  console.warn(`Intento ${i + 1} fallido por catch (${title}): ${error.message}`);
+                  if (error.message.startsWith('Not Found:') || error.message.startsWith('Incomplete Data:')) { throw error; }
+                  if (i < retries - 1) { await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); }
+                  else { console.error(`No se pudo obtener datos para ${title} después de ${retries} intentos.`); throw lastKnownError || new Error(`Imposible recuperar datos tras ${retries} intentos.`); }
+             }
+        }
+        throw lastKnownError || new Error(`Fallo inesperado en la recuperación de datos para ${title}.`);
+    }
+
+    // --- Función para Limpiar Texto (sin cambios) ---
+    function cleanWikipediaText(text) { /* ... (código igual que antes) ... */
+        if (!text) return "";
+        let cleanedText = text.replace(/\[\d+\]/g, '').replace(/\[cita requerida\]/gi, '');
+        cleanedText = cleanedText.replace(/\s+\./g, '.').replace(/\s+,/g, ',');
+        return cleanedText.trim();
+    }
+
+    // --- Funciones de Renderizado (Adaptar textos temáticos) ---
+
+    function renderEventCardLoading(message = "Accediendo al Archivo de la Red...") {
+        eventCard.innerHTML = `<div class="spinner"><div></div><div></div><div></div><div></div></div><p>${message}</p>`; // Spinner actualizado
+        eventCard.className = 'loading';
+        eventCard.style.opacity = '0.7';
+    }
+
+    function renderEventCardError(errorMessage) {
+        let cleanMessage = errorMessage.toString();
+        // Adaptar mensajes temáticos
+        if (cleanMessage.includes('Imposible recuperar datos') || cleanMessage.includes('HTTP error')) { cleanMessage = 'Conexión perdida con el servidor central. Reintentando más tarde.'; }
+        else if (cleanMessage.includes('Not Found:') || cleanMessage.includes('no existe')) { cleanMessage = 'Registro 404: No encontrado en la base de datos.'; }
+        else if (cleanMessage.includes('Incomplete Data:') || cleanMessage.includes('sin extracto')) { cleanMessage = 'Datos corruptos recibidos del servidor.'; }
+        else if (cleanMessage.includes('Client error')) { cleanMessage = 'Error de sintaxis en la solicitud al servidor.';}
+
+        eventCard.innerHTML = `<p><strong>¡Error de Conexión!</strong><br>${cleanMessage}</p>`;
+        eventCard.className = 'error';
+        eventCard.style.opacity = '1';
+    }
+
+    function renderEventCard(pageData, originalEventTitle) { /* ... (código igual, usa cleanWikipediaText) ... */
+        const title = pageData.title || originalEventTitle;
+        const extract = cleanWikipediaText(pageData.extract);
+        const imageUrl = pageData.thumbnail?.source;
+        const wikiUrl = pageData.fullurl;
+        const imgHtml = imageUrl ? `<img src="${imageUrl}" alt="${title}">` : '';
+        const contentHtml = `<p>${extract.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+
+        eventCard.innerHTML = `
+            <h2>${title}</h2>
+            ${imgHtml}
+            <div class="content-extract">${contentHtml}</div>
+            ${wikiUrl ? `<a href="${wikiUrl}" target="_blank" rel="noopener noreferrer" class="external-link">Consultar Fuente Original (Wikipedia)</a>` : ''}
+        `;
+        eventCard.className = '';
+        eventCard.style.opacity = '1';
+        const extractDiv = eventCard.querySelector('.content-extract');
+        if (extractDiv) extractDiv.scrollTop = 0;
+    }
+
+    // Renderizar Vistas Previas (Adaptar textos)
+    function renderPreview(eventData, targetElement) {
+        if (eventData && targetElement) {
+            targetElement.innerHTML = `
+                <div class="preview-year">${eventData.year}</div>
+                <h3>${eventData.title}</h3>
+                <p>Haz clic para cargar este hito.</p>
+            `;
+            targetElement.className = 'event-preview';
+            targetElement.dataset.index = events.indexOf(eventData);
+        } else if (targetElement) {
+            const message = targetElement.id === 'prevEventPreview' ? 'Precursores Teóricos' : 'Futuro Conectado';
+            targetElement.innerHTML = `<p>${message}</p>`;
+            targetElement.className = 'event-preview empty-preview';
+            targetElement.dataset.index = -1;
+        }
+    }
+
+    // Buscar y Mostrar Sugerencias (Adaptar textos)
+    async function findAndDisplaySuggestions(failedTitle) {
+        console.log(`"${failedTitle}" no encontrado, buscando en cachés DNS alternativas...`);
+        renderEventCardLoading("Registro no encontrado. Buscando rutas alternativas...");
+        // ... (resto similar, adaptar textos) ...
+        const searchTerm = failedTitle;
+        const searchUrl = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&format=json&origin=*`;
+
+         try {
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error(`Error ${response.status} al consultar índice de red.`);
+            const searchData = await response.json();
+
+            if (searchData.query?.search?.length > 0) {
+                const suggestions = searchData.query.search.slice(0, 5);
+                let suggestionsHtml = `<p>El registro para "<strong>${failedTitle}</strong>" no fue localizado (404).</p>
+                                       <p>Posibles redirecciones o temas relacionados:</p>
+                                       <ul class="suggestions-list">`;
+                suggestions.forEach(item => {
+                    const snippet = cleanWikipediaText(item.snippet);
+                    suggestionsHtml += `<li><a href="#" class="suggestion-link" data-wiki-title="${item.title}" title="${snippet}">${item.title}</a></li>`;
+                });
+                suggestionsHtml += `</ul><p><small>(Haz clic en un enlace para intentar cargar)</small></p>`;
+                eventCard.innerHTML = suggestionsHtml;
+                eventCard.className = 'suggestions';
+                eventCard.style.opacity = '1';
+            } else {
+                console.log(`No se encontraron redirecciones para "${searchTerm}".`);
+                renderEventCardError(`Registro para "${failedTitle}" no hallado y no hay rutas alternativas en el DNS.`);
+            }
+        } catch (searchErr) {
+            console.error("Error buscando alternativas:", searchErr);
+            renderEventCardError(`Registro para "${failedTitle}" no hallado. La búsqueda de alternativas también falló.`);
+        }
+    }
+
+    // --- Función Principal de Actualización (Añadir actualización de índice activo) ---
+    async function updateEvent(options) {
+        const index = options.index;
+        if (isNaN(index) || index < 0 || index >= events.length) { /* ... */ return; }
+
+        const currentEvent = events[index];
+        yearDisplay.textContent = currentEvent.year.toString();
+        if (slider.value !== index.toString()) { slider.value = index; }
+
+        // --- Actualizar Estado Activo en el Índice ---
+        updateIndexActiveState(index);
+
+        const titleToFetch = options.wikiTitleOverride || currentEvent.wikiTitle || currentEvent.title;
+        const cacheKey = titleToFetch.toLowerCase();
+
+        renderPreview(events[index - 1], prevPreview);
+        renderPreview(events[index + 1], nextPreview);
+
+        // --- Lógica de carga y caché (sin cambios estructurales) ---
+        if (summaryCache[cacheKey] && summaryCache[cacheKey] !== 'NOT_FOUND' && summaryCache[cacheKey] !== 'INCOMPLETE') {
+            console.log(`Registro "${titleToFetch}" cargado desde caché.`);
+            renderEventCard(summaryCache[cacheKey], currentEvent.title);
+        } else if (summaryCache[cacheKey] === 'NOT_FOUND' || summaryCache[cacheKey] === 'INCOMPLETE') {
+             console.log(`"${titleToFetch}" marcado como '${summaryCache[cacheKey]}'. Buscando alternativas.`);
+             findAndDisplaySuggestions(titleToFetch);
+        } else {
+            console.log(`Accediendo al archivo de red para: ${titleToFetch}`);
+            renderEventCardLoading();
+            try {
+                const pageData = await fetchDetailedData(titleToFetch);
+                summaryCache[cacheKey] = pageData;
+                renderEventCard(pageData, currentEvent.title);
+            } catch (err) {
+                if (err.message.startsWith('Not Found:') || err.message.startsWith('Incomplete Data:')) {
+                    console.warn(`Error "${err.message}" para "${titleToFetch}". Buscando alternativas.`);
+                    summaryCache[cacheKey] = err.message.startsWith('Not Found:') ? 'NOT_FOUND' : 'INCOMPLETE';
+                    findAndDisplaySuggestions(titleToFetch);
+                } else {
+                    console.error(`Error final al obtener "${titleToFetch}":`, err);
+                    renderEventCardError(err.toString());
+                }
+            }
+        }
+    }
+
+    // --- NUEVA: Funciones para el Índice ---
+    function populateEventIndex() {
+        eventIndexList.innerHTML = ''; // Limpiar lista existente
+        events.forEach((event, index) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = `${event.year} - ${event.title}`;
+            a.dataset.index = index;
+            li.appendChild(a);
+            eventIndexList.appendChild(li);
+        });
+    }
+
+    function toggleEventIndex() {
+        eventIndexContainer.classList.toggle('expanded');
+    }
+
+    function updateIndexActiveState(activeIndex) {
+         // Quitar clase activa de todos los links del índice
+         eventIndexList.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+         // Añadir clase activa al link correspondiente
+         const activeLink = eventIndexList.querySelector(`a[data-index="${activeIndex}"]`);
+         if (activeLink) {
+             activeLink.classList.add('active');
+             // Opcional: Hacer scroll para que el elemento activo sea visible
+             // activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+         }
+    }
+
+
+    // --- Manejador de Clics (Modificado para incluir clics en índice) ---
+    function handleClick(event) {
+        // Click en sugerencia
+        if (event.target.matches('a.suggestion-link')) {
+            event.preventDefault();
+            const suggestedTitle = event.target.dataset.wikiTitle;
+            if (suggestedTitle) {
+                console.log(`Cargando sugerencia: ${suggestedTitle}`);
+                updateEvent({ index: parseInt(slider.value, 10), wikiTitleOverride: suggestedTitle });
+            }
+        }
+        // Click en preview
+        else if (event.target.closest('.event-preview:not(.empty-preview)')) {
+            const previewElement = event.target.closest('.event-preview');
+            const targetIndex = parseInt(previewElement.dataset.index, 10);
+            if (targetIndex >= 0 && targetIndex < events.length) {
+                console.log(`Navegando al hito ${targetIndex} desde preview.`);
+                updateEvent({ index: targetIndex });
+            }
+        }
+        // Click en link del índice
+        else if (event.target.matches('#eventIndexList a')) {
+             event.preventDefault();
+             const targetIndex = parseInt(event.target.dataset.index, 10);
+             if (!isNaN(targetIndex)) {
+                 console.log(`Navegando al hito ${targetIndex} desde el índice.`);
+                 updateEvent({ index: targetIndex });
+                 // Opcional: Colapsar el índice después de seleccionar
+                 // if (eventIndexContainer.classList.contains('expanded')) {
+                 //    toggleEventIndex();
+                 // }
+             }
+        }
+    }
+
+    // --- Inicialización (Modificada) ---
+    function initializeTimeline() {
+        if (!events || events.length === 0) { /* ... (manejo error inicial igual) ... */ return; }
+
+        // Poblar el índice
+        populateEventIndex();
+
+        slider.max = events.length - 1; slider.value = 0; slider.disabled = events.length <= 1;
+        updateEvent({ index: 0 }); // Carga inicial
+
+        // Listeners
+        slider.addEventListener('input', () => updateEvent({ index: parseInt(slider.value, 10) }));
+        toggleIndexBtn.addEventListener('click', toggleEventIndex); // Listener para el botón del índice
+        timelineContainer.addEventListener('click', handleClick); // Delegación para previews, sugerencias e índice
+
+        console.log("Crónicas de la Red Global inicializadas. Sistema Online.");
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+  </script>
+</body>
+</html>
