@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Atención Selectiva y Distracción</title>
+    <!-- Fuentes de Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&amp;family=Poppins:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- D3.js para visualizaciones -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Anime.js para animaciones -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Three.js para visualizaciones 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --secondary-light: #f472b6;
+            --accent: #10b981;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #cbd5e1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --neutral: #94a3b8;
+            --targeted: #8b5cf6;
+            --distractor: #f43f5e;
+            --focus: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem 5%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            margin: 1.5rem 0;
+            color: var(--primary-dark);
+        }
+
+        h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-box {
+            background: rgba(99, 102, 241, 0.05);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: var(--light);
+            border: 2px solid var(--gray);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            border-right: none;
+        }
+
+        .tab:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-left: none;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tab:not(.active):hover {
+            background: var(--gray);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .scenarios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .scenario-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+        }
+
+        .scenario-card.active {
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+        }
+
+        .scenario-card h3 {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .scenario-card i {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            margin: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        button i {
+            margin-right: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .slider-container {
+            margin: 1rem 0;
+            width: 100%;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: var(--gray);
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: var(--primary-dark);
+            transform: scale(1.2);
+        }
+
+        .visualization-container {
+            width: 100%;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #attention-visualization {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .attention-stage {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stimulus {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .target {
+            background-color: rgba(139, 92, 246, 0.8);
+            color: white;
+            border: 2px solid rgba(139, 92, 246, 1);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .distractor {
+            background-color: rgba(244, 63, 94, 0.6);
+            color: white;
+            border: 2px solid rgba(244, 63, 94, 0.8);
+        }
+
+        .attention-spotlight {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(6, 182, 212, 0.2) 0%,
+                rgba(6, 182, 212, 0.1) 50%,
+                rgba(6, 182, 212, 0) 70%
+            );
+            pointer-events: none;
+            z-index: 2;
+            transition: transform 0.3s ease-out;
+        }
+
+        .timeline-container {
+            width: 100%;
+            height: 120px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin: 2rem 0;
+            padding: 1rem;
+        }
+
+        .timeline-points {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+        }
+
+        .timeline-point {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .timeline-point.active {
+            background-color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .timeline-point:hover {
+            transform: scale(1.3);
+        }
+
+        .timeline-line {
+            height: 4px;
+            background-color: var(--gray);
+            position: relative;
+            top: -10px;
+            z-index: -1;
+        }
+
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--neutral);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 2rem 0;
+        }
+
+        .stroop-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stroop-word {
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .stroop-word:hover {
+            transform: scale(1.05);
+        }
+
+        .visual-search-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 0.8rem;
+            margin: 2rem auto;
+            max-width: 800px;
+        }
+
+        .search-item {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-item.target {
+            color: var(--targeted);
+        }
+
+        .ai-interaction {
+            margin: 2rem 0;
+        }
+
+        .chat-input {
+            display: flex;
+            margin-top: 1rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--gray);
+            border-radius: 8px 0 0 8px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .chat-input button {
+            border-radius: 0 8px 8px 0;
+            margin: 0;
+        }
+
+        .chat-output {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-top: 1rem;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid var(--gray);
+        }
+
+        .task-instructions {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .emotion-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .emotion-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .emotion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .emotion-emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            padding: 0.8rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 300px;
+            font-size: 0.9rem;
+            z-index: 100;
+        }
+
+        .tooltip h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--primary);
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            h2 {
+                font-size: 1.6rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .visualization-container {
+                height: 400px;
+            }
+            
+            .visual-search-container {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* Animaciones */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        /* Loaders */
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--gray);
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+<style type="text/css">
+.grande { font-size: 60px; }
+</style>
+<script>
+// Escribir aqui el código Javascript
+</script>
+</head>
+<body>
+    <header>
+        <div class="header-bg" id="header-particles"><svg width="555" height="324"><circle cx="256.21455537547274" cy="157.6978441590303" r="6.856373637523695" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="372.37599313620825" cy="25.318007863545542" r="5.460084222776288" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="90.21401666866018" cy="257.21343884111843" r="4.466190226211284" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="103.80780538592035" cy="254.63949512504558" r="6.10452437726226" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="317.95569931348075" cy="241.51838796358982" r="2.993105245411275" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="29.375869632106905" cy="297.189266639422" r="2.6976346798923005" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="488.9857340037759" cy="43.17892909599606" r="2.7045584273230565" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="392.70593097031144" cy="292.9241907091361" r="6.6910021512904425" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="123.4105923380856" cy="6.595684594003391" r="2.702790096064257" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="320.9088566598011" cy="64.13635245426609" r="6.766077001530883" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="103.3249881401161" cy="95.18871768520692" r="3.5871543932944054" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="312.4374899686399" cy="134.78049927779506" r="3.686876817113542" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="382.917235095301" cy="23.035056990954512" r="4.922834883411903" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="256.179311697283" cy="166.63751539085462" r="4.651715545283421" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="287.37559285131795" cy="271.7938740343928" r="6.19402332059846" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="364.14917171857815" cy="278.29658839844956" r="2.448677787968015" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="391.6580585148726" cy="180.8797123870837" r="2.692569671096233" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="245.63610071077701" cy="4.8619860953022656" r="3.608882039242958" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="129.5942985575455" cy="175.84429765504194" r="6.775823512562662" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="380.8529133974422" cy="65.35337057374589" r="2.2684161471851048" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="138.44675253959377" cy="91.17300479854826" r="2.8384544714562043" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="418.59269267497467" cy="276.4429935074571" r="2.4680705351414383" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="391.3625528259496" cy="104.86585194894147" r="2.027756037412103" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="245.14191349770448" cy="199.9438202795212" r="5.346834344854166" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="472.0254479087462" cy="27.91792538905259" r="4.91295132297174" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="62.67867041195143" cy="68.61903642775353" r="4.516927521223662" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="235.01172572493985" cy="209.34686534605484" r="6.541560489425118" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="17.605921767585023" cy="149.7226135831283" r="2.071440035864845" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="554.8779325258037" cy="71.88362455063064" r="2.340386531780254" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="20.675283156497418" cy="200.17840711970007" r="3.950402239484574" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="9.745954008994842" cy="195.10022360317328" r="4.480586100313608" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="235.43306713498012" cy="215.27229791913763" r="2.404316081483262" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="24.5539588543051" cy="27.69197431819502" r="6.283618194534392" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="230.14222829293678" cy="224.99996069343894" r="2.7689815738695662" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="137.21637295451487" cy="252.2481836119548" r="6.291943104625808" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="260.09781705384705" cy="249.29801764246895" r="3.269687385742546" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="398.7373629878721" cy="101.81953173359274" r="5.316929491407655" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="457.40475230952273" cy="258.83731119978154" r="4.732541910075878" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="366.95000573083354" cy="299.7377404936327" r="4.514048678581605" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="181.786071422796" cy="190.582206000243" r="4.2522221141969325" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="219.74333109821552" cy="78.95355425400079" r="6.787167716993064" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="176.11786950896595" cy="217.07322318412469" r="3.2229256445213355" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="281.5234455528169" cy="108.3585336610784" r="5.248757985308367" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="316.5083947699534" cy="68.91609194689573" r="4.050401454762752" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="447.4982453823069" cy="240.63913770425395" r="4.498521841631616" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="242.88803150527082" cy="180.6197826167119" r="3.673785272707538" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="401.70972033977085" cy="248.41054298692623" r="3.243954462497751" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="519.0439320294976" cy="191.62662761271517" r="6.214383914356791" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="189.23071459706273" cy="80.55390632746082" r="5.939388174640157" fill="rgba(255, 255, 255, 0.5)"></circle><circle cx="454.1379259324398" cy="152.84745994220958" r="4.892521759788527" fill="rgba(255, 255, 255, 0.5)"></circle></svg></div>
+        <div class="header-content">
+            <h1>Simulador de Atención Selectiva y Distracción</h1>
+            <p class="subtitle">Explora cómo tu cerebro enfoca la atención en ciertos estímulos mientras ignora otros, y cómo la distracción afecta tu rendimiento cognitivo</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>El Foco de la Atención</h2>
+            <p>La atención selectiva es la capacidad de enfocarse en información relevante mientras se filtran estímulos irrelevantes o distractores. Este proceso cognitivo es esencial para la supervivencia y el rendimiento en tareas cotidianas.</p>
+            
+            <div class="info-box">
+                <p><strong>Elementos clave:</strong> Estímulos objetivo, distractores, capacidad atencional, carga perceptiva, filtrado sensorial y recursos cognitivos limitados.</p>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="visual">Atención Visual</div>
+            <div class="tab" data-tab="cognitive">Carga Cognitiva</div>
+        </div>
+
+        <!-- Contenido de Atención Visual -->
+        <div id="visual-content" class="tab-content active">
+            <div class="card">
+                <h2>Atención Visual Selectiva</h2>
+                <p>La atención visual selectiva nos permite concentrarnos en objetos o características específicas del campo visual mientras ignoramos otros elementos que nos rodean.</p>
+            </div>
+
+            <h3>Escenarios de Atención Visual</h3>
+            <div class="scenarios">
+                <div class="scenario-card active" data-scenario="spotlight" data-type="visual">
+                    <h3><i class="fas fa-lightbulb"></i> Reflector Atencional</h3>
+                    <p>Observa cómo la atención funciona como un reflector que ilumina selectivamente partes del campo visual mientras otros elementos permanecen en la sombra.</p>
+                </div>
+                <div class="scenario-card" data-scenario="search" data-type="visual">
+                    <h3><i class="fas fa-search"></i> Búsqueda Visual</h3>
+                    <p>Experimenta con tareas de búsqueda visual donde debes encontrar objetivos específicos entre distractores, como cuando buscas tus llaves en un escritorio desordenado.</p>
+                </div>
+                <div class="scenario-card" data-scenario="change" data-type="visual">
+                    <h3><i class="fas fa-exchange-alt"></i> Ceguera al Cambio</h3>
+                    <p>Descubre cómo los cambios significativos en una escena pueden pasar desapercibidos cuando la atención está enfocada en otra parte.</p>
+                </div>
+            </div>
+
+            <div class="task-instructions" id="task-instructions">
+                <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                <p>Observa cómo el foco de atención (círculo azul) se mueve entre los diferentes estímulos. Los elementos en púrpura son objetivos importantes, mientras que los elementos en rojo son distractores. Ajusta los niveles de distracción y dificultad para ver cómo afectan al rendimiento.</p>
+            </div>
+
+            <div class="controls">
+                <button id="play-attention"><i class="fas fa-play"></i> Iniciar</button>
+                <button id="pause-attention"><i class="fas fa-pause"></i> Pausar</button>
+                <button id="reset-attention"><i class="fas fa-undo"></i> Reiniciar</button>
+                <button id="step-attention"><i class="fas fa-step-forward"></i> Paso a paso</button>
+            </div>
+
+            <div class="slider-container">
+                <label for="distraction-slider">Nivel de distracción: <span id="distraction-value">3</span></label>
+                <input type="range" min="1" max="10" value="3" class="slider" id="distraction-slider">
+            </div>
+
+            <div class="slider-container">
+                <label for="difficulty-slider">Dificultad de la tarea: <span id="difficulty-value">5</span></label>
+                <input type="range" min="1" max="10" value="5" class="slider" id="difficulty-slider">
+            </div>
+
+            <div class="visualization-container">
+                <div id="attention-visualization">
+                    <div class="attention-stage"><div class="stimulus target" style="width: 45px; height: 45px; left: 100.836px; top: 234.858px;">A</div><div class="stimulus target" style="width: 45px; height: 45px; left: 171.648px; top: 67.7897px;">B</div><div class="stimulus target" style="width: 45px; height: 45px; left: 249.579px; top: 96.4168px;">C</div><div class="stimulus distractor" style="width: 40px; height: 40px; left: 276.825px; top: 205.839px;">1</div><div class="stimulus distractor" style="width: 40px; height: 40px; left: 367.312px; top: 50.5758px;">2</div><div class="stimulus distractor" style="width: 40px; height: 40px; left: 161.063px; top: 6.1618px;">3</div><div class="stimulus distractor" style="width: 40px; height: 40px; left: 121.036px; top: 249.761px;">4</div><div class="stimulus distractor" style="width: 40px; height: 40px; left: 198.248px; top: 313.544px;">5</div><div class="stimulus distractor" style="width: 40px; height: 40px; left: 345.737px; top: 261.485px;">6</div></div>
+                    <div class="attention-spotlight" style="width: 150px; height: 150px; left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value" id="accuracy-stat">0%</div>
+                    <div class="stat-label">Precisión de Atención</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="reaction-stat">0 ms</div>
+                    <div class="stat-label">Tiempo de Reacción</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="focus-stat">0%</div>
+                    <div class="stat-label">Nivel de Enfoque</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="missed-stat">0</div>
+                    <div class="stat-label">Objetivos Perdidos</div>
+                </div>
+            </div>
+
+            <div class="timeline-container">
+                <h3>Proceso de Atención Visual</h3>
+                <div class="timeline-points" id="attention-timeline-points"><div class="timeline-point" data-step="0"></div><div class="timeline-point" data-step="1"></div><div class="timeline-point" data-step="2"></div><div class="timeline-point" data-step="3"></div><div class="timeline-point" data-step="4"></div></div>
+                <div class="timeline-line"></div>
+                <div class="timeline-labels">
+                    <span>Atención Difusa</span>
+                    <span>Detección</span>
+                    <span>Enfoque</span>
+                    <span>Procesamiento</span>
+                    <span>Respuesta</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="attention-chart" width="523" height="300" style="display: block; box-sizing: border-box; height: 300px; width: 523px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Contenido de Carga Cognitiva -->
+        <div id="cognitive-content" class="tab-content">
+            <div class="card">
+                <h2>Carga Cognitiva y Atención</h2>
+                <p>La carga cognitiva afecta nuestra capacidad para procesar información y mantener la atención. Cuando los recursos cognitivos están sobrecargados, nuestra capacidad para ignorar distracciones disminuye.</p>
+            </div>
+
+            <h3>Experimentos de Carga Cognitiva</h3>
+            <div class="scenarios">
+                <div class="scenario-card active" data-scenario="stroop" data-type="cognitive">
+                    <h3><i class="fas fa-font"></i> Efecto Stroop</h3>
+                    <p>Experimenta con el clásico test Stroop, donde debes nombrar el color en que está escrita una palabra, ignorando su significado.</p>
+                </div>
+                <div class="scenario-card" data-scenario="dual" data-type="cognitive">
+                    <h3><i class="fas fa-tasks"></i> Tarea Dual</h3>
+                    <p>Intenta realizar dos tareas simultáneamente y observa cómo se divide la atención y afecta el rendimiento en ambas tareas.</p>
+                </div>
+                <div class="scenario-card" data-scenario="emotional" data-type="cognitive">
+                    <h3><i class="fas fa-smile"></i> Interferencia Emocional</h3>
+                    <p>Descubre cómo los estímulos con carga emocional capturan automáticamente nuestra atención e interfieren con otras tareas cognitivas.</p>
+                </div>
+            </div>
+
+            <div class="task-instructions" id="cognitive-instructions">
+                <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                <p>En el test Stroop, tu tarea es hacer clic en el color en que está escrita la palabra, no en lo que dice la palabra. Intenta responder lo más rápido posible, pero mantén la precisión.</p>
+            </div>
+
+            <div class="controls">
+                <button id="start-cognitive"><i class="fas fa-play"></i> Iniciar Experimento</button>
+                <button id="stop-cognitive"><i class="fas fa-stop"></i> Detener</button>
+                <button id="reset-cognitive"><i class="fas fa-undo"></i> Reiniciar</button>
+            </div>
+
+            <div class="slider-container">
+                <label for="complexity-slider">Complejidad Cognitiva: <span id="complexity-value">5</span></label>
+                <input type="range" min="1" max="10" value="5" class="slider" id="complexity-slider">
+            </div>
+
+            <div class="stroop-container" id="stroop-container"><div class="stroop-word" data-word-color="rojo" data-text-color="amarillo" style="color: rgb(245, 158, 11);">rojo</div><div class="stroop-word" data-word-color="azul" data-text-color="azul" style="color: rgb(59, 130, 246);">azul</div><div class="stroop-word" data-word-color="verde" data-text-color="verde" style="color: rgb(16, 185, 129);">verde</div><div class="stroop-word" data-word-color="amarillo" data-text-color="amarillo" style="color: rgb(245, 158, 11);">amarillo</div><div class="stroop-word" data-word-color="púrpura" data-text-color="rojo" style="color: rgb(239, 68, 68);">púrpura</div></div>
+
+            <div class="visualization-container" id="cognitive-visualization">
+                <!-- Contenido dinámico según el experimento -->
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value" id="stroop-accuracy">0%</div>
+                    <div class="stat-label">Precisión</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stroop-rt">0 ms</div>
+                    <div class="stat-label">Tiempo de Reacción</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="interference">0%</div>
+                    <div class="stat-label">Nivel de Interferencia</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="cognitive-load">0%</div>
+                    <div class="stat-label">Carga Cognitiva</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="cognitive-chart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas>
+            </div>
+        </div>
+
+        <div class="ai-interaction card">
+            <h2>Preguntas sobre Atención y Distracción</h2>
+            <p>¿Tienes dudas sobre cómo funciona la atención selectiva? Pregunta a nuestra IA y recibe explicaciones basadas en la investigación científica.</p>
+            
+            <div class="chat-input">
+                <input type="text" id="ai-question" placeholder="Ej: ¿Cómo puedo mejorar mi capacidad de atención?">
+                <button id="ask-ai"><i class="fas fa-paper-plane"></i> Preguntar</button>
+            </div>
+            
+            <div class="chat-output" id="ai-response">
+                <p>Escribe tu pregunta sobre la atención selectiva y obtén una respuesta...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Simulador de Atención Selectiva y Distracción © 2023</p>
+    </footer>
+
+    <script>
+        // Variables globales
+        const GEMINI_API_KEY = 'AIzaSyA3q0YinDu2UgvdP881dQZg7Ol2g8hfmLM';
+        let currentVisualScenario = 'spotlight';
+        let currentCognitiveScenario = 'stroop';
+        let isAttentionPlaying = false;
+        let isCognitiveRunning = false;
+        let attentionStep = 0;
+        let cognitiveStep = 0;
+        let attentionAnimationInterval;
+        let distractionLevel = 3;
+        let difficultyLevel = 5;
+        let complexityLevel = 5;
+        let attentionChart;
+        let cognitiveChart;
+        let stimuli = [];
+        let targets = [];
+        let distractors = [];
+        let attentionAccuracy = 0;
+        let reactionTime = 0;
+        let focusLevel = 0;
+        let missedTargets = 0;
+        let stroopAccuracy = 0;
+        let stroopRT = 0;
+        let interferenceLevel = 0;
+        let cognitiveLoadLevel = 0;
+        
+        // Referencias a elementos DOM
+        const tooltip = document.createElement('div');
+        tooltip.classList.add('tooltip');
+        document.body.appendChild(tooltip);
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTabs();
+            setupScenarios();
+            setupControls();
+            setupSliders();
+            setupTimelines();
+            initializeCharts();
+            createHeaderParticles();
+            setupAIInteraction();
+            initializeVisualScenario();
+            initializeStroopTest();
+        });
+
+        // Configuración de pestañas
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Desactivar todas las pestañas
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Activar la pestaña seleccionada
+                    tab.classList.add('active');
+                    const tabId = `${tab.dataset.tab}-content`;
+                    document.getElementById(tabId).classList.add('active');
+
+                    // Reiniciar las visualizaciones
+                    resetAttentionVisualization();
+                    resetCognitiveExperiment();
+                });
+            });
+        }
+
+        // Configuración de escenarios
+        function setupScenarios() {
+            const scenarioCards = document.querySelectorAll('.scenario-card');
+            
+            scenarioCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const type = card.dataset.type;
+                    const scenario = card.dataset.scenario;
+                    
+                    // Desactivar todas las tarjetas del tipo actual
+                    document.querySelectorAll(`.scenario-card[data-type="${type}"]`)
+                        .forEach(c => c.classList.remove('active'));
+                    
+                    // Activar la tarjeta seleccionada
+                    card.classList.add('active');
+                    
+                    // Actualizar el escenario actual
+                    if (type === 'visual') {
+                        currentVisualScenario = scenario;
+                        resetAttentionVisualization();
+                        updateTaskInstructions();
+                    } else {
+                        currentCognitiveScenario = scenario;
+                        resetCognitiveExperiment();
+                        updateCognitiveInstructions();
+                    }
+                });
+            });
+        }
+
+        // Actualizar instrucciones según el escenario
+        function updateTaskInstructions() {
+            const instructionsEl = document.getElementById('task-instructions');
+            
+            if (currentVisualScenario === 'spotlight') {
+                instructionsEl.innerHTML = `
+                    <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                    <p>Observa cómo el foco de atención (círculo azul) se mueve entre los diferentes estímulos. Los elementos en púrpura son objetivos importantes, mientras que los elementos en rojo son distractores. Ajusta los niveles de distracción y dificultad para ver cómo afectan al rendimiento.</p>
+                `;
+            } else if (currentVisualScenario === 'search') {
+                instructionsEl.innerHTML = `
+                    <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                    <p>Busca los objetivos específicos (marcados en púrpura) entre los distractores. Haz clic en los objetivos tan pronto como los veas. El nivel de dificultad determina cuán similares son los distractores a los objetivos, y el nivel de distracción controla cuántos distractores aparecen.</p>
+                `;
+            } else if (currentVisualScenario === 'change') {
+                instructionsEl.innerHTML = `
+                    <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                    <p>Observa la escena visual e intenta detectar los cambios que ocurren cuando parpadean las imágenes. Muchos cambios importantes serán difíciles de notar cuando tu atención está dirigida a otra parte. El nivel de dificultad determina la sutileza de los cambios.</p>
+                `;
+            }
+        }
+
+        function updateCognitiveInstructions() {
+            const instructionsEl = document.getElementById('cognitive-instructions');
+            
+            if (currentCognitiveScenario === 'stroop') {
+                instructionsEl.innerHTML = `
+                    <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                    <p>En el test Stroop, tu tarea es hacer clic en el color en que está escrita la palabra, no en lo que dice la palabra. Intenta responder lo más rápido posible, pero mantén la precisión.</p>
+                `;
+            } else if (currentCognitiveScenario === 'dual') {
+                instructionsEl.innerHTML = `
+                    <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                    <p>En esta tarea dual, debes mantener una secuencia de números en la memoria mientras respondes a estímulos visuales. Intenta equilibrar ambas tareas lo mejor posible.</p>
+                `;
+            } else if (currentCognitiveScenario === 'emotional') {
+                instructionsEl.innerHTML = `
+                    <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                    <p>Observa cómo los estímulos emocionales capturan automáticamente tu atención. Intenta ignorar las imágenes emocionales y enfócate en la tarea principal de clasificación.</p>
+                `;
+            }
+        }
+
+        // Configuración de controles
+        function setupControls() {
+            // Controles para visualización de atención
+            document.getElementById('play-attention').addEventListener('click', playAttentionAnimation);
+            document.getElementById('pause-attention').addEventListener('click', pauseAttentionAnimation);
+            document.getElementById('reset-attention').addEventListener('click', resetAttentionVisualization);
+            document.getElementById('step-attention').addEventListener('click', stepAttentionAnimation);
+            
+            // Controles para experimentos cognitivos
+            document.getElementById('start-cognitive').addEventListener('click', startCognitiveExperiment);
+            document.getElementById('stop-cognitive').addEventListener('click', stopCognitiveExperiment);
+            document.getElementById('reset-cognitive').addEventListener('click', resetCognitiveExperiment);
+        }
+
+        // Configuración de sliders
+        function setupSliders() {
+            const distractionSlider = document.getElementById('distraction-slider');
+            const distractionValue = document.getElementById('distraction-value');
+            
+            distractionSlider.addEventListener('input', () => {
+                distractionLevel = parseInt(distractionSlider.value);
+                distractionValue.textContent = distractionLevel;
+                if (currentVisualScenario === 'spotlight') {
+                    updateSpotlightVisualization();
+                } else if (currentVisualScenario === 'search') {
+                    updateSearchVisualization();
+                } else if (currentVisualScenario === 'change') {
+                    updateChangeVisualization();
+                }
+            });
+            
+            const difficultySlider = document.getElementById('difficulty-slider');
+            const difficultyValue = document.getElementById('difficulty-value');
+            
+            difficultySlider.addEventListener('input', () => {
+                difficultyLevel = parseInt(difficultySlider.value);
+                difficultyValue.textContent = difficultyLevel;
+                if (currentVisualScenario === 'spotlight') {
+                    updateSpotlightVisualization();
+                } else if (currentVisualScenario === 'search') {
+                    updateSearchVisualization();
+                } else if (currentVisualScenario === 'change') {
+                    updateChangeVisualization();
+                }
+            });
+            
+            const complexitySlider = document.getElementById('complexity-slider');
+            const complexityValue = document.getElementById('complexity-value');
+            
+            complexitySlider.addEventListener('input', () => {
+                complexityLevel = parseInt(complexitySlider.value);
+                complexityValue.textContent = complexityLevel;
+                if (currentCognitiveScenario === 'stroop') {
+                    updateStroopTest();
+                } else if (currentCognitiveScenario === 'dual') {
+                    updateDualTask();
+                } else if (currentCognitiveScenario === 'emotional') {
+                    updateEmotionalTask();
+                }
+            });
+        }
+
+        // Configuración de líneas de tiempo
+        function setupTimelines() {
+            const timelinePoints = document.getElementById('attention-timeline-points');
+            
+            // Crear 5 puntos para la línea de tiempo
+            for (let i = 0; i < 5; i++) {
+                const point = document.createElement('div');
+                point.classList.add('timeline-point');
+                point.dataset.step = i;
+                
+                point.addEventListener('click', () => {
+                    goToAttentionStep(i);
+                });
+                
+                timelinePoints.appendChild(point);
+            }
+        }
+
+        // Inicialización de gráficos
+        function initializeCharts() {
+            // Gráfico de atención visual
+            const attentionCtx = document.getElementById('attention-chart').getContext('2d');
+            attentionChart = new Chart(attentionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['0%', '20%', '40%', '60%', '80%', '100%'],
+                    datasets: [
+                        {
+                            label: 'Precisión',
+                            data: [0, 0, 0, 0, 0, 0],
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Tiempo de Reacción',
+                            data: [0, 0, 0, 0, 0, 0],
+                            borderColor: 'rgba(236, 72, 153, 1)',
+                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Rendimiento de Atención Visual'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de carga cognitiva
+            const cognitiveCtx = document.getElementById('cognitive-chart').getContext('2d');
+            cognitiveChart = new Chart(cognitiveCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Congruente', 'Neutro', 'Incongruente'],
+                    datasets: [
+                        {
+                            label: 'Tiempo de Reacción (ms)',
+                            data: [0, 0, 0],
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.6)',
+                                'rgba(99, 102, 241, 0.6)',
+                                'rgba(244, 63, 94, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(16, 185, 129, 1)',
+                                'rgba(99, 102, 241, 1)',
+                                'rgba(244, 63, 94, 1)'
+                            ],
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Efecto Stroop: Tiempos de Reacción'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Crear partículas para el fondo del encabezado
+        function createHeaderParticles() {
+            const headerBg = document.getElementById('header-particles');
+            
+            // Crear partículas con D3.js
+            const width = headerBg.offsetWidth;
+            const height = headerBg.offsetHeight;
+            
+            const svg = d3.select('#header-particles')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+            
+            const numParticles = 50;
+            const particles = [];
+            
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 5 + 2,
+                    speedX: (Math.random() - 0.5) * 2,
+                    speedY: (Math.random() - 0.5) * 2
+                });
+            }
+            
+            svg.selectAll('circle')
+                .data(particles)
+                .enter()
+                .append('circle')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', d => d.size)
+                .attr('fill', 'rgba(255, 255, 255, 0.5)');
+            
+            function animateParticles() {
+                svg.selectAll('circle')
+                    .data(particles)
+                    .transition()
+                    .duration(2000)
+                    .attr('cx', d => {
+                        d.x += d.speedX;
+                        if (d.x < 0 || d.x > width) d.speedX *= -1;
+                        return d.x;
+                    })
+                    .attr('cy', d => {
+                        d.y += d.speedY;
+                        if (d.y < 0 || d.y > height) d.speedY *= -1;
+                        return d.y;
+                    })
+                    .on('end', animateParticles);
+            }
+            
+            animateParticles();
+        }
+
+        // Configuración de la interacción con IA
+        function setupAIInteraction() {
+            const askButton = document.getElementById('ask-ai');
+            const questionInput = document.getElementById('ai-question');
+            const responseOutput = document.getElementById('ai-response');
+            
+            askButton.addEventListener('click', async () => {
+                const question = questionInput.value.trim();
+                
+                if (!question) return;
+                
+                // Mostrar estado de carga
+                responseOutput.innerHTML = '<div style="text-align: center;"><span class="loader"></span><p>Procesando tu pregunta...</p></div>';
+                
+                try {
+                    const response = await queryGeminiAI(question);
+                    responseOutput.innerHTML = `<p><strong>Tu pregunta:</strong> ${question}</p><p><strong>Respuesta:</strong> ${response}</p>`;
+                } catch (error) {
+                    responseOutput.innerHTML = `<p>Lo siento, ha ocurrido un error: ${error.message}</p>`;
+                }
+                
+                // Limpiar el campo de entrada
+                questionInput.value = '';
+            });
+            
+            // También permitir enviar con Enter
+            questionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    askButton.click();
+                }
+            });
+        }
+
+        // Consultar a la API de Gemini
+        async function queryGeminiAI(question) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const prompt = `
+                Actúa como un experto en neurociencia cognitiva especializado en atención selectiva y distracción.
+                Responde de manera concisa y educativa a la siguiente pregunta sobre la atención selectiva:
+                "${question}"
+                
+                Tu respuesta debe ser informativa y basada en investigaciones científicas, pero fácil de entender para alguien sin conocimientos especializados.
+                Mantén la respuesta dentro de 3-4 párrafos como máximo.
+            `;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: prompt
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 800
+                    }
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
+            
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        // Inicialización de escenario visual
+        function initializeVisualScenario() {
+            // Limpiar visualización anterior
+            const stage = document.querySelector('.attention-stage');
+            stage.innerHTML = '';
+            
+            if (currentVisualScenario === 'spotlight') {
+                initializeSpotlightScenario();
+            } else if (currentVisualScenario === 'search') {
+                initializeSearchScenario();
+            } else if (currentVisualScenario === 'change') {
+                initializeChangeScenario();
+            }
+        }
+
+        // Inicialización del escenario Reflector Atencional
+        function initializeSpotlightScenario() {
+            const stage = document.querySelector('.attention-stage');
+            const spotlight = document.querySelector('.attention-spotlight');
+            
+            // Configurar el reflector de atención
+            spotlight.style.width = '150px';
+            spotlight.style.height = '150px';
+            spotlight.style.left = '50%';
+            spotlight.style.top = '50%';
+            spotlight.style.transform = 'translate(-50%, -50%)';
+            
+            // Crear estímulos
+            stimuli = [];
+            targets = [];
+            distractors = [];
+            
+            const numTargets = 3;
+            const numDistractors = distractionLevel * 2;
+            
+            const container = {
+                width: stage.offsetWidth,
+                height: stage.offsetHeight
+            };
+            
+            // Crear objetivos
+            for (let i = 0; i < numTargets; i++) {
+                const target = createStimulus('target', container, String.fromCharCode(65 + i)); // A, B, C, ...
+                stage.appendChild(target.element);
+                
+                stimuli.push(target);
+                targets.push(target);
+            }
+            
+            // Crear distractores
+            for (let i = 0; i < numDistractors; i++) {
+                const distractor = createStimulus('distractor', container, String.fromCharCode(49 + i)); // 1, 2, 3, ...
+                stage.appendChild(distractor.element);
+                
+                stimuli.push(distractor);
+                distractors.push(distractor);
+            }
+            
+            // Inicializar estadísticas
+            updateAttentionStats(0, 0, 0, 0);
+        }
+
+        // Crear un estímulo (objetivo o distractor)
+        function createStimulus(type, container, label) {
+            const element = document.createElement('div');
+            element.classList.add('stimulus', type);
+            element.textContent = label;
+            
+            // Tamaño aleatorio basado en la dificultad (inverso)
+            const size = type === 'target' 
+                ? Math.max(30, 60 - difficultyLevel * 3) 
+                : Math.max(20, 50 - difficultyLevel * 2);
+            
+            element.style.width = `${size}px`;
+            element.style.height = `${size}px`;
+            
+            // Posición aleatoria
+            const x = Math.random() * (container.width - size);
+            const y = Math.random() * (container.height - size);
+            
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            
+            // Comportamiento de interacción
+            element.addEventListener('click', () => handleStimulusClick(element));
+            
+            // Mostrar tooltip al hover
+            element.addEventListener('mouseenter', () => {
+                tooltip.style.opacity = '1';
+                tooltip.innerHTML = `
+                    <h4>${type === 'target' ? 'Objetivo' : 'Distractor'}: ${label}</h4>
+                    <p>${type === 'target' ? 'Este es un estímulo relevante para la tarea.' : 'Este es un estímulo irrelevante que debes ignorar.'}</p>
+                `;
+                
+                const rect = element.getBoundingClientRect();
+                tooltip.style.left = `${rect.left}px`;
+                tooltip.style.top = `${rect.bottom + 10}px`;
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                tooltip.style.opacity = '0';
+            });
+            
+            return {
+                element,
+                type,
+                label,
+                x,
+                y,
+                size,
+                isProcessed: false,
+                isDetected: false
+            };
+        }
+
+        // Manejar clic en un estímulo
+        function handleStimulusClick(element) {
+            const stimulus = stimuli.find(s => s.element === element);
+            
+            if (stimulus) {
+                // Actualizar estadísticas basadas en si es objetivo o distractor
+                if (stimulus.type === 'target') {
+                    // Aumentar precisión si se hizo clic en un objetivo
+                    attentionAccuracy = Math.min(100, attentionAccuracy + 10);
+                    focusLevel = Math.min(100, focusLevel + 5);
+                    stimulus.isDetected = true;
+                    
+                    // Efecto visual de confirmación
+                    anime({
+                        targets: element,
+                        scale: [1, 1.2, 1],
+                        opacity: [1, 0.7, 1],
+                        duration: 500,
+                        easing: 'easeInOutQuad'
+                    });
+                } else {
+                    // Disminuir precisión si se hizo clic en un distractor
+                    attentionAccuracy = Math.max(0, attentionAccuracy - 5);
+                    focusLevel = Math.max(0, focusLevel - 10);
+                    
+                    // Efecto visual de error
+                    anime({
+                        targets: element,
+                        translateX: [0, -5, 5, -5, 5, 0],
+                        duration: 500,
+                        easing: 'easeInOutQuad'
+                    });
+                }
+                
+                // Actualizar estadísticas en la interfaz
+                updateAttentionStats(
+                    attentionAccuracy, 
+                    Math.floor(Math.random() * 150) + 200 + (difficultyLevel * 10), // Tiempo de reacción simulado
+                    focusLevel,
+                    missedTargets
+                );
+                
+                // Actualizar gráficos
+                updateAttentionCharts();
+            }
+        }
+
+        // Iniciar la animación de atención
+        function playAttentionAnimation() {
+            if (isAttentionPlaying) return;
+            
+            isAttentionPlaying = true;
+            
+            // Limpiar intervalo anterior si existe
+            if (attentionAnimationInterval) {
+                clearInterval(attentionAnimationInterval);
+            }
+            
+            // Iniciar un nuevo intervalo
+            attentionAnimationInterval = setInterval(() => {
+                stepAttentionAnimation();
+            }, 1500);
+        }
+
+        // Pausa la animación de atención
+        function pauseAttentionAnimation() {
+            isAttentionPlaying = false;
+            
+            if (attentionAnimationInterval) {
+                clearInterval(attentionAnimationInterval);
+                attentionAnimationInterval = null;
+            }
+        }
+
+        // Avanzar un paso en la animación de atención
+        function stepAttentionAnimation() {
+            // Incrementar el paso
+            attentionStep = (attentionStep + 1) % 5;
+            
+            // Actualizar la visualización según el paso actual
+            updateAttentionVisualizationStep(attentionStep);
+            
+            // Actualizar la línea de tiempo
+            updateTimelinePoints(attentionStep);
+            
+            // Simulación de cambios en las métricas
+            simulateAttentionMetrics();
+        }
+
+        // Ir a un paso específico en la línea de tiempo
+        function goToAttentionStep(step) {
+            attentionStep = step;
+            updateAttentionVisualizationStep(step);
+            updateTimelinePoints(step);
+        }
+
+        // Actualizar la visualización según el paso actual
+        function updateAttentionVisualizationStep(step) {
+            const spotlight = document.querySelector('.attention-spotlight');
+            
+            if (currentVisualScenario === 'spotlight') {
+                // En el escenario de reflector, mover el foco de atención
+                if (targets.length > 0 && step < targets.length) {
+                    const target = targets[step % targets.length];
+                    
+                    // Mover el reflector hacia el objetivo
+                    const x = target.x + target.size / 2;
+                    const y = target.y + target.size / 2;
+                    
+                    spotlight.style.left = `${x}px`;
+                    spotlight.style.top = `${y}px`;
+                    
+                    // Efecto visual en el objetivo
+                    anime({
+                        targets: target.element,
+                        scale: 1.1,
+                        duration: 500,
+                        easing: 'easeOutQuad'
+                    });
+                    
+                    // Simular detección del objetivo
+                    if (!target.isDetected) {
+                        target.isDetected = Math.random() > (difficultyLevel / 20); // Más dificultad = menor probabilidad de detección
+                        
+                        // Si se detectó, actualizar estadísticas
+                        if (target.isDetected) {
+                            attentionAccuracy = Math.min(100, attentionAccuracy + 5);
+                            focusLevel = Math.min(100, focusLevel + 3);
+                        } else {
+                            missedTargets++;
+                        }
+                    }
+                }
+                
+                // Restablecer otros estímulos
+                stimuli.forEach(s => {
+                    if (s !== targets[step % targets.length]) {
+                        anime({
+                            targets: s.element,
+                            scale: 1,
+                            duration: 500,
+                            easing: 'easeOutQuad'
+                        });
+                    }
+                });
+            }
+            
+            // Actualizar estadísticas en la interfaz
+            updateAttentionStats(
+                attentionAccuracy,
+                Math.floor(Math.random() * 100) + 200 + (difficultyLevel * 20),
+                focusLevel,
+                missedTargets
+            );
+        }
+
+        // Actualizar los puntos de la línea de tiempo
+        function updateTimelinePoints(activeStep) {
+            const timelinePoints = document.querySelectorAll('.timeline-point');
+            
+            timelinePoints.forEach((point, index) => {
+                if (index === activeStep) {
+                    point.classList.add('active');
+                } else {
+                    point.classList.remove('active');
+                }
+            });
+        }
+
+        // Simulación de cambios en las métricas de atención
+        function simulateAttentionMetrics() {
+            // Factores que afectan las métricas
+            const distractionImpact = distractionLevel * 2;
+            const difficultyImpact = difficultyLevel * 1.5;
+            
+            // Simulación de cambios basados en los niveles de distracción y dificultad
+            const randomVariation = Math.random() * 10 - 5; // -5 a +5
+            
+            // La precisión disminuye con mayor distracción y dificultad
+            attentionAccuracy = Math.max(0, Math.min(100, attentionAccuracy - (distractionImpact / 10) - (difficultyImpact / 15) + randomVariation));
+            
+            // El tiempo de reacción aumenta con mayor distracción y dificultad
+            reactionTime = 200 + (distractionLevel * 10) + (difficultyLevel * 15) + (Math.random() * 50);
+            
+            // El nivel de enfoque disminuye con mayor distracción
+            focusLevel = Math.max(0, Math.min(100, focusLevel - (distractionImpact / 8) + randomVariation));
+            
+            // La probabilidad de objetivos perdidos aumenta con mayor distracción y dificultad
+            if (Math.random() < (distractionLevel + difficultyLevel) / 30) {
+                missedTargets++;
+            }
+            
+            // Actualizar estadísticas en la interfaz
+            updateAttentionStats(
+                Math.round(attentionAccuracy),
+                Math.round(reactionTime),
+                Math.round(focusLevel),
+                missedTargets
+            );
+            
+            // Actualizar gráficos
+            updateAttentionCharts();
+        }
+
+        // Actualizar las estadísticas mostradas
+        function updateAttentionStats(accuracy, reaction, focus, missed) {
+            document.getElementById('accuracy-stat').textContent = `${Math.round(accuracy)}%`;
+            document.getElementById('reaction-stat').textContent = `${Math.round(reaction)} ms`;
+            document.getElementById('focus-stat').textContent = `${Math.round(focus)}%`;
+            document.getElementById('missed-stat').textContent = missed;
+        }
+
+        // Actualizar los gráficos de atención
+        function updateAttentionCharts() {
+            // Simular datos para el gráfico de línea
+            const accuracyData = [];
+            const reactionData = [];
+            
+            for (let i = 0; i < 6; i++) {
+                // Precisión disminuye con mayor carga
+                const accFactor = Math.max(0, 100 - (i * distractionLevel * 5));
+                accuracyData.push(accFactor);
+                
+                // Tiempo de reacción aumenta con mayor carga
+                const rtFactor = Math.min(100, 20 + (i * distractionLevel * 5));
+                reactionData.push(rtFactor);
+            }
+            
+            // Actualizar datos del gráfico
+            attentionChart.data.datasets[0].data = accuracyData;
+            attentionChart.data.datasets[1].data = reactionData;
+            attentionChart.update();
+        }
+
+        // Reiniciar la visualización de atención
+        function resetAttentionVisualization() {
+            // Detener la animación en curso
+            pauseAttentionAnimation();
+            
+            // Reiniciar el paso actual
+            attentionStep = 0;
+            
+            // Reiniciar métricas
+            attentionAccuracy = 0;
+            reactionTime = 0;
+            focusLevel = 0;
+            missedTargets = 0;
+            
+            // Actualizar estadísticas en la interfaz
+            updateAttentionStats(0, 0, 0, 0);
+            
+            // Reiniciar la línea de tiempo
+            updateTimelinePoints(0);
+            
+            // Inicializar el escenario visual actual
+            initializeVisualScenario();
+            
+            // Reiniciar los gráficos
+            initializeCharts();
+        }
+
+        // Inicialización del test Stroop
+        function initializeStroopTest() {
+            if (currentCognitiveScenario !== 'stroop') return;
+            
+            const container = document.getElementById('stroop-container');
+            container.innerHTML = '';
+            
+            // Colores para el test Stroop
+            const colors = [
+                { name: 'rojo', hex: '#ef4444' },
+                { name: 'azul', hex: '#3b82f6' },
+                { name: 'verde', hex: '#10b981' },
+                { name: 'amarillo', hex: '#f59e0b' },
+                { name: 'púrpura', hex: '#8b5cf6' }
+            ];
+            
+            // Crear palabras Stroop
+            for (let i = 0; i < 5; i++) {
+                const wordColor = colors[i];
+                
+                // Elegir un color diferente para el texto (aumenta la dificultad con el nivel de complejidad)
+                let textColorIndex;
+                if (Math.random() < complexityLevel / 10) {
+                    // Mayor probabilidad de incongruencia a mayor complejidad
+                    textColorIndex = (i + 1 + Math.floor(Math.random() * (colors.length - 1))) % colors.length;
+                } else {
+                    textColorIndex = i; // Congruente
+                }
+                
+                const textColor = colors[textColorIndex];
+                
+                const word = document.createElement('div');
+                word.classList.add('stroop-word');
+                word.textContent = wordColor.name;
+                word.style.color = textColor.hex;
+                word.dataset.wordColor = wordColor.name;
+                word.dataset.textColor = textColor.name;
+                
+                // Manejar clics en la palabra
+                word.addEventListener('click', handleStroopClick);
+                
+                container.appendChild(word);
+            }
+            
+            // Reiniciar estadísticas
+            updateStroopStats(0, 0, 0, 0);
+        }
+
+        // Manejar clics en el test Stroop
+        function handleStroopClick(event) {
+            const startTime = performance.now();
+            const wordElement = event.currentTarget;
+            const wordColor = wordElement.dataset.wordColor;
+            const textColor = wordElement.dataset.textColor;
+            
+            // Comprobar si la respuesta es correcta (se hace clic en el color del texto, no en lo que dice la palabra)
+            const isCorrect = textColor === wordColor;
+            
+            // Actualizar estadísticas
+            if (isCorrect) {
+                stroopAccuracy = Math.min(100, stroopAccuracy + 5);
+                
+                // Efecto visual de confirmación
+                anime({
+                    targets: wordElement,
+                    scale: [1, 1.2, 1],
+                    opacity: [1, 0.7, 1],
+                    duration: 500,
+                    easing: 'easeInOutQuad'
+                });
+            } else {
+                stroopAccuracy = Math.max(0, stroopAccuracy - 10);
+                
+                // Efecto visual de error
+                anime({
+                    targets: wordElement,
+                    translateX: [0, -5, 5, -5, 5, 0],
+                    duration: 500,
+                    easing: 'easeInOutQuad'
+                });
+            }
+            
+            // Calcular tiempo de reacción
+            const endTime = performance.now();
+            stroopRT = endTime - startTime;
+            
+            // Calcular nivel de interferencia (mayor si la palabra y el color son diferentes)
+            if (wordColor !== textColor) {
+                interferenceLevel = Math.min(100, interferenceLevel + 5);
+            }
+            
+            // Calcular carga cognitiva (aumenta con complejidad y errores)
+            cognitiveLoadLevel = Math.min(100, cognitiveLoadLevel + (complexityLevel / 2) + (isCorrect ? 0 : 10));
+            
+            // Actualizar estadísticas en la interfaz
+            updateStroopStats(
+                Math.round(stroopAccuracy),
+                Math.round(stroopRT),
+                Math.round(interferenceLevel),
+                Math.round(cognitiveLoadLevel)
+            );
+            
+            // Actualizar gráfico
+            updateStroopChart();
+            
+            // Generar una nueva palabra Stroop
+            regenerateStroopWord(wordElement);
+        }
+
+        // Regenerar una palabra Stroop tras interactuar con ella
+        function regenerateStroopWord(wordElement) {
+            const colors = [
+                { name: 'rojo', hex: '#ef4444' },
+                { name: 'azul', hex: '#3b82f6' },
+                { name: 'verde', hex: '#10b981' },
+                { name: 'amarillo', hex: '#f59e0b' },
+                { name: 'púrpura', hex: '#8b5cf6' }
+            ];
+            
+            // Elegir nuevos colores
+            const wordColorIndex = Math.floor(Math.random() * colors.length);
+            const wordColor = colors[wordColorIndex];
+            
+            // Elegir un color diferente para el texto según la complejidad
+            let textColorIndex;
+            if (Math.random() < complexityLevel / 10) {
+                // Mayor probabilidad de incongruencia a mayor complejidad
+                textColorIndex = (wordColorIndex + 1 + Math.floor(Math.random() * (colors.length - 1))) % colors.length;
+            } else {
+                textColorIndex = wordColorIndex; // Congruente
+            }
+            
+            const textColor = colors[textColorIndex];
+            
+            // Actualizar la palabra
+            wordElement.textContent = wordColor.name;
+            wordElement.style.color = textColor.hex;
+            wordElement.dataset.wordColor = wordColor.name;
+            wordElement.dataset.textColor = textColor.name;
+        }
+
+        // Actualizar las estadísticas del test Stroop
+        function updateStroopStats(accuracy, reaction, interference, load) {
+            document.getElementById('stroop-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('stroop-rt').textContent = `${reaction} ms`;
+            document.getElementById('interference').textContent = `${interference}%`;
+            document.getElementById('cognitive-load').textContent = `${load}%`;
+        }
+
+        // Actualizar el gráfico del test Stroop
+        function updateStroopChart() {
+            // Simular datos para el gráfico de barras
+            const congruentRT = 500 + (complexityLevel * 20) + (Math.random() * 100);
+            const neutralRT = 600 + (complexityLevel * 30) + (Math.random() * 150);
+            const incongruentRT = 700 + (complexityLevel * 50) + (Math.random() * 200);
+            
+            // Actualizar datos del gráfico
+            cognitiveChart.data.datasets[0].data = [congruentRT, neutralRT, incongruentRT];
+            cognitiveChart.update();
+        }
+
+        // Iniciar el experimento cognitivo
+        function startCognitiveExperiment() {
+            if (isCognitiveRunning) return;
+            
+            isCognitiveRunning = true;
+            
+            if (currentCognitiveScenario === 'stroop') {
+                // Comenzar el test Stroop
+                initializeStroopTest();
+            } else if (currentCognitiveScenario === 'dual') {
+                // Comenzar la tarea dual
+                initializeDualTask();
+            } else if (currentCognitiveScenario === 'emotional') {
+                // Comenzar la tarea de interferencia emocional
+                initializeEmotionalTask();
+            }
+        }
+
+        // Detener el experimento cognitivo
+        function stopCognitiveExperiment() {
+            isCognitiveRunning = false;
+        }
+
+        // Reiniciar el experimento cognitivo
+        function resetCognitiveExperiment() {
+            // Detener el experimento en curso
+            stopCognitiveExperiment();
+            
+            // Reiniciar métricas
+            stroopAccuracy = 0;
+            stroopRT = 0;
+            interferenceLevel = 0;
+            cognitiveLoadLevel = 0;
+            
+            // Actualizar estadísticas en la interfaz
+            updateStroopStats(0, 0, 0, 0);
+            
+            // Reiniciar visualizaciones específicas del escenario
+            if (currentCognitiveScenario === 'stroop') {
+                initializeStroopTest();
+            } else if (currentCognitiveScenario === 'dual') {
+                // Reiniciar la tarea dual
+                const container = document.getElementById('cognitive-visualization');
+                container.innerHTML = '<p class="task-placeholder">Haz clic en "Iniciar Experimento" para comenzar la tarea dual.</p>';
+            } else if (currentCognitiveScenario === 'emotional') {
+                // Reiniciar la tarea de interferencia emocional
+                const container = document.getElementById('cognitive-visualization');
+                container.innerHTML = '<p class="task-placeholder">Haz clic en "Iniciar Experimento" para comenzar la tarea de interferencia emocional.</p>';
+            }
+            
+            // Reiniciar los gráficos
+            initializeCharts();
+        }
+
+        // Implementar visualización de búsqueda visual
+        function initializeSearchScenario() {
+            const stage = document.querySelector('.attention-stage');
+            stage.innerHTML = '';
+            
+            // Crear el contenedor de búsqueda visual
+            const searchContainer = document.createElement('div');
+            searchContainer.classList.add('visual-search-container');
+            stage.appendChild(searchContainer);
+            
+            // Definir símbolos para la búsqueda
+            const targetSymbol = 'T';
+            const distractorSymbol = 'L';
+            
+            // Número de elementos basado en el nivel de distracción
+            const totalItems = 30 + (distractionLevel * 5);
+            const numTargets = Math.max(1, 3 - Math.floor(difficultyLevel / 3));
+            const numDistractors = totalItems - numTargets;
+            
+            // Crear estímulos
+            stimuli = [];
+            targets = [];
+            distractors = [];
+            
+            // Crear objetivos
+            for (let i = 0; i < numTargets; i++) {
+                const item = document.createElement('div');
+                item.classList.add('search-item', 'target');
+                item.textContent = targetSymbol;
+                
+                // Agregar a la matriz de estímulos
+                const target = {
+                    element: item,
+                    type: 'target',
+                    label: targetSymbol,
+                    isDetected: false
+                };
+                
+                item.addEventListener('click', () => {
+                    handleSearchItemClick(target);
+                });
+                
+                searchContainer.appendChild(item);
+                stimuli.push(target);
+                targets.push(target);
+            }
+            
+            // Crear distractores
+            for (let i = 0; i < numDistractors; i++) {
+                const item = document.createElement('div');
+                item.classList.add('search-item');
+                
+                // Aumentar la similitud entre distractores y objetivos según el nivel de dificultad
+                if (Math.random() < difficultyLevel / 15) {
+                    // Distractor muy similar al objetivo
+                    item.textContent = targetSymbol;
+                    item.style.transform = `rotate(${Math.floor(Math.random() * 3) * 90}deg)`;
+                } else {
+                    item.textContent = distractorSymbol;
+                    item.style.transform = `rotate(${Math.floor(Math.random() * 4) * 90}deg)`;
+                }
+                
+                // Agregar a la matriz de estímulos
+                const distractor = {
+                    element: item,
+                    type: 'distractor',
+                    label: item.textContent
+                };
+                
+                item.addEventListener('click', () => {
+                    handleSearchItemClick(distractor);
+                });
+                
+                searchContainer.appendChild(item);
+                stimuli.push(distractor);
+                distractors.push(distractor);
+            }
+            
+            // Aleatorizar el orden de los elementos
+            const allItems = Array.from(searchContainer.children);
+            for (let i = allItems.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                searchContainer.appendChild(allItems[j]);
+            }
+            
+            // Inicializar estadísticas
+            updateAttentionStats(0, 0, 0, 0);
+            
+            // Iniciar el tiempo de búsqueda
+            searchStartTime = performance.now();
+        }
+
+        // Manejar clics en elementos de búsqueda visual
+        function handleSearchItemClick(item) {
+            if (item.type === 'target') {
+                if (!item.isDetected) {
+                    item.isDetected = true;
+                    
+                    // Efectos visuales
+                    anime({
+                        targets: item.element,
+                        scale: [1, 1.2, 1],
+                        backgroundColor: [
+                            'rgba(255, 255, 255, 1)',
+                            'rgba(139, 92, 246, 0.2)',
+                            'rgba(255, 255, 255, 1)'
+                        ],
+                        duration: 800,
+                        easing: 'easeOutElastic(1, .6)'
+                    });
+                    
+                    // Actualizar estadísticas
+                    const searchTime = performance.now() - searchStartTime;
+                    reactionTime = searchTime;
+                    attentionAccuracy += 100 / targets.length;
+                    focusLevel = Math.min(100, focusLevel + 10);
+                    
+                    // Comprobar si se han encontrado todos los objetivos
+                    const foundAll = targets.every(t => t.isDetected);
+                    if (foundAll) {
+                        // Mostrar mensaje de éxito
+                        const successMessage = document.createElement('div');
+                        successMessage.style.position = 'absolute';
+                        successMessage.style.top = '50%';
+                        successMessage.style.left = '50%';
+                        successMessage.style.transform = 'translate(-50%, -50%)';
+                        successMessage.style.background = 'rgba(16, 185, 129, 0.9)';
+                        successMessage.style.color = 'white';
+                        successMessage.style.padding = '1rem 2rem';
+                        successMessage.style.borderRadius = '8px';
+                        successMessage.style.fontSize = '1.5rem';
+                        successMessage.textContent = `¡Completado! Tiempo: ${Math.round(searchTime)}ms`;
+                        
+                        document.querySelector('.attention-stage').appendChild(successMessage);
+                        
+                        // Eliminar el mensaje después de 3 segundos
+                        setTimeout(() => {
+                            successMessage.remove();
+                            initializeSearchScenario(); // Reiniciar el escenario
+                        }, 3000);
+                    }
+                }
+            } else {
+                // Penalización por hacer clic en un distractor
+                focusLevel = Math.max(0, focusLevel - 5);
+                missedTargets++;
+                
+                // Efectos visuales
+                anime({
+                    targets: item.element,
+                    translateX: [0, -5, 5, -5, 5, 0],
+                    backgroundColor: [
+                        'rgba(255, 255, 255, 1)',
+                        'rgba(244, 63, 94, 0.2)',
+                        'rgba(255, 255, 255, 1)'
+                    ],
+                    duration: 500,
+                    easing: 'easeInOutQuad'
+                });
+            }
+            
+            // Actualizar estadísticas mostradas
+            updateAttentionStats(
+                Math.round(attentionAccuracy),
+                Math.round(reactionTime),
+                Math.round(focusLevel),
+                missedTargets
+            );
+            
+            // Actualizar gráficos
+            updateAttentionCharts();
+        }
+
+        // Actualizar visualización de búsqueda visual
+        function updateSearchVisualization() {
+            // Reiniciar el escenario con los nuevos niveles
+            initializeSearchScenario();
+        }
+
+        // Implementar visualización de ceguera al cambio
+        function initializeChangeScenario() {
+            const stage = document.querySelector('.attention-stage');
+            stage.innerHTML = '';
+            
+            // Crear las escenas
+            const scene1 = document.createElement('div');
+            scene1.classList.add('change-scene');
+            scene1.style.position = 'absolute';
+            scene1.style.top = '0';
+            scene1.style.left = '0';
+            scene1.style.width = '100%';
+            scene1.style.height = '100%';
+            scene1.style.display = 'flex';
+            scene1.style.flexWrap = 'wrap';
+            scene1.style.justifyContent = 'center';
+            scene1.style.alignItems = 'center';
+            scene1.style.padding = '2rem';
+            scene1.style.opacity = '1';
+            scene1.style.transition = 'opacity 0.1s';
+            
+            const scene2 = scene1.cloneNode(true);
+            
+            stage.appendChild(scene1);
+            stage.appendChild(scene2);
+            
+            // Número de elementos en la escena
+            const numItems = 12 + distractionLevel * 2;
+            
+            // Crear objetos para ambas escenas
+            const items = [];
+            for (let i = 0; i < numItems; i++) {
+                // Crear item para escena 1
+                const item1 = document.createElement('div');
+                item1.style.width = '60px';
+                item1.style.height = '60px';
+                item1.style.margin = '10px';
+                item1.style.borderRadius = '8px';
+                item1.style.display = 'flex';
+                item1.style.justifyContent = 'center';
+                item1.style.alignItems = 'center';
+                item1.style.fontSize = '1.5rem';
+                item1.style.fontWeight = 'bold';
+                item1.style.color = 'white';
+                item1.style.backgroundColor = getRandomColor();
+                item1.textContent = String.fromCharCode(65 + i % 26);
+                
+                // Clonar para escena 2
+                const item2 = item1.cloneNode(true);
+                
+                scene1.appendChild(item1);
+                scene2.appendChild(item2);
+                
+                items.push({
+                    item1,
+                    item2,
+                    hasChange: false
+                });
+            }
+            
+            // Ocultar escena 2 inicialmente
+            scene2.style.opacity = '0';
+            
+            // Crear cambios entre escenas basados en el nivel de dificultad
+            const numChanges = Math.max(1, 3 - Math.floor(difficultyLevel / 4));
+            const changeIndices = [];
+            
+            // Seleccionar elementos aleatorios para cambiar
+            while (changeIndices.length < numChanges) {
+                const index = Math.floor(Math.random() * items.length);
+                if (!changeIndices.includes(index)) {
+                    changeIndices.push(index);
+                }
+            }
+            
+            // Aplicar cambios a los elementos seleccionados
+            changeIndices.forEach(index => {
+                const item = items[index];
+                item.hasChange = true;
+                
+                // Aplicar el cambio según el nivel de dificultad
+                if (difficultyLevel < 4) {
+                    // Cambio obvio: color
+                    item.item2.style.backgroundColor = getRandomColor(item.item1.style.backgroundColor);
+                } else if (difficultyLevel < 7) {
+                    // Cambio moderado: letra
+                    const newChar = String.fromCharCode(65 + (Math.floor(Math.random() * 26)));
+                    item.item2.textContent = newChar;
+                } else {
+                    // Cambio sutil: posición o tamaño
+                    if (Math.random() < 0.5) {
+                        // Cambiar tamaño
+                        const scale = 0.8 + Math.random() * 0.4; // Entre 0.8 y 1.2
+                        item.item2.style.transform = `scale(${scale})`;
+                    } else {
+                        // Cambiar posición (rotación sutil)
+                        const rotation = Math.floor(Math.random() * 20) - 10; // Entre -10 y 10 grados
+                        item.item2.style.transform = `rotate(${rotation}deg)`;
+                    }
+                }
+            });
+            
+            // Variables para el experimento
+            let currentScene = 1;
+            let blinkInterval;
+            let changeDetected = 0;
+            
+            // Función para alternar entre escenas
+            function blinkScenes() {
+                if (currentScene === 1) {
+                    scene1.style.opacity = '0';
+                    scene2.style.opacity = '1';
+                    currentScene = 2;
+                } else {
+                    scene1.style.opacity = '1';
+                    scene2.style.opacity = '0';
+                    currentScene = 1;
+                }
+            }
+            
+            // Agregar eventos de clic a los elementos
+            items.forEach((item, index) => {
+                [item.item1, item.item2].forEach(element => {
+                    element.addEventListener('click', () => {
+                        if (item.hasChange) {
+                            // Acierto
+                            changeDetected++;
+                            element.style.boxShadow = '0 0 10px 5px rgba(16, 185, 129, 0.8)';
+                            
+                            // Actualizar estadísticas
+                            attentionAccuracy = Math.min(100, attentionAccuracy + (100 / numChanges));
+                            focusLevel = Math.min(100, focusLevel + 10);
+                            
+                            // Marcar el cambio como detectado
+                            item.hasChange = false;
+                            
+                            // Comprobar si se han encontrado todos los cambios
+                            if (changeDetected === numChanges) {
+                                // Detener el parpadeo
+                                clearInterval(blinkInterval);
+                                
+                                // Mostrar mensaje de éxito
+                                const successMessage = document.createElement('div');
+                                successMessage.style.position = 'absolute';
+                                successMessage.style.top = '50%';
+                                successMessage.style.left = '50%';
+                                successMessage.style.transform = 'translate(-50%, -50%)';
+                                successMessage.style.background = 'rgba(16, 185, 129, 0.9)';
+                                successMessage.style.color = 'white';
+                                successMessage.style.padding = '1rem 2rem';
+                                successMessage.style.borderRadius = '8px';
+                                successMessage.style.fontSize = '1.5rem';
+                                successMessage.textContent = '¡Has encontrado todos los cambios!';
+                                
+                                stage.appendChild(successMessage);
+                                
+                                // Reiniciar después de 3 segundos
+                                setTimeout(() => {
+                                    successMessage.remove();
+                                    initializeChangeScenario();
+                                }, 3000);
+                            }
+                        } else {
+                            // Error
+                            element.style.boxShadow = '0 0 10px 5px rgba(244, 63, 94, 0.8)';
+                            
+                            // Actualizar estadísticas
+                            focusLevel = Math.max(0, focusLevel - 5);
+                            missedTargets++;
+                            
+                            // Eliminar el resaltado después de un momento
+                            setTimeout(() => {
+                                element.style.boxShadow = '';
+                            }, 500);
+                        }
+                        
+                        // Actualizar estadísticas mostradas
+                        updateAttentionStats(
+                            Math.round(attentionAccuracy),
+                            Math.round(reactionTime),
+                            Math.round(focusLevel),
+                            missedTargets
+                        );
+                        
+                        // Actualizar gráficos
+                        updateAttentionCharts();
+                    });
+                });
+            });
+            
+            // Comenzar el parpadeo de escenas
+            const blinkRate = 800 - (difficultyLevel * 50); // Más rápido con mayor dificultad
+            blinkInterval = setInterval(blinkScenes, blinkRate);
+            
+            // Detener el parpadeo al cambiar de escenario
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    if (blinkInterval) {
+                        clearInterval(blinkInterval);
+                    }
+                });
+            });
+        }
+
+        // Actualizar visualización de ceguera al cambio
+        function updateChangeVisualization() {
+            initializeChangeScenario();
+        }
+
+        // Obtener un color aleatorio
+        function getRandomColor(exclude) {
+            const colors = [
+                '#ef4444', '#f59e0b', '#10b981', '#3b82f6', 
+                '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6',
+                '#f97316', '#84cc16', '#06b6d4'
+            ];
+            
+            if (exclude) {
+                const filteredColors = colors.filter(color => color !== exclude);
+                return filteredColors[Math.floor(Math.random() * filteredColors.length)];
+            }
+            
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Implementar tarea dual
+        function initializeDualTask() {
+            const container = document.getElementById('cognitive-visualization');
+            container.innerHTML = '';
+            
+            // Crear contenedores para las dos tareas
+            const taskContainer = document.createElement('div');
+            taskContainer.style.display = 'flex';
+            taskContainer.style.height = '100%';
+            
+            // Tarea 1: Memorización de secuencia
+            const memoryTask = document.createElement('div');
+            memoryTask.style.flex = '1';
+            memoryTask.style.display = 'flex';
+            memoryTask.style.flexDirection = 'column';
+            memoryTask.style.justifyContent = 'center';
+            memoryTask.style.alignItems = 'center';
+            memoryTask.style.borderRight = '1px solid var(--gray)';
+            memoryTask.style.padding = '1rem';
+            
+            // Tarea 2: Clasificación visual
+            const visualTask = document.createElement('div');
+            visualTask.style.flex = '1';
+            visualTask.style.display = 'flex';
+            visualTask.style.flexDirection = 'column';
+            visualTask.style.justifyContent = 'center';
+            visualTask.style.alignItems = 'center';
+            visualTask.style.padding = '1rem';
+            
+            taskContainer.appendChild(memoryTask);
+            taskContainer.appendChild(visualTask);
+            container.appendChild(taskContainer);
+            
+            // Título de cada tarea
+            const memoryTitle = document.createElement('h3');
+            memoryTitle.textContent = 'Tarea de Memoria';
+            memoryTitle.style.marginBottom = '1rem';
+            memoryTask.appendChild(memoryTitle);
+            
+            const visualTitle = document.createElement('h3');
+            visualTitle.textContent = 'Tarea Visual';
+            visualTitle.style.marginBottom = '1rem';
+            visualTask.appendChild(visualTitle);
+            
+            // Crear el contenido de la tarea de memoria
+            const sequenceContainer = document.createElement('div');
+            sequenceContainer.style.fontSize = '2rem';
+            sequenceContainer.style.fontWeight = 'bold';
+            sequenceContainer.style.marginBottom = '2rem';
+            sequenceContainer.style.minHeight = '3rem';
+            
+            // Crear el área de respuesta de memoria
+            const memoryResponseArea = document.createElement('div');
+            memoryResponseArea.style.marginTop = '1rem';
+            
+            const memoryInput = document.createElement('input');
+            memoryInput.type = 'text';
+            memoryInput.placeholder = 'Escribe la secuencia aquí';
+            memoryInput.style.padding = '0.8rem';
+            memoryInput.style.borderRadius = '8px';
+            memoryInput.style.border = '2px solid var(--gray)';
+            memoryInput.style.width = '100%';
+            memoryInput.style.marginBottom = '1rem';
+            
+            const submitMemoryBtn = document.createElement('button');
+            submitMemoryBtn.textContent = 'Verificar Secuencia';
+            submitMemoryBtn.style.width = '100%';
+            
+            memoryResponseArea.appendChild(memoryInput);
+            memoryResponseArea.appendChild(submitMemoryBtn);
+            
+            memoryTask.appendChild(sequenceContainer);
+            memoryTask.appendChild(memoryResponseArea);
+            
+            // Crear el contenido de la tarea visual
+            const visualStimuli = document.createElement('div');
+            visualStimuli.style.width = '150px';
+            visualStimuli.style.height = '150px';
+            visualStimuli.style.borderRadius = '8px';
+            visualStimuli.style.display = 'flex';
+            visualStimuli.style.justifyContent = 'center';
+            visualStimuli.style.alignItems = 'center';
+            visualStimuli.style.fontSize = '4rem';
+            visualStimuli.style.marginBottom = '2rem';
+            visualStimuli.style.transition = 'all 0.3s';
+            
+            // Botones de respuesta visual
+            const visualResponseArea = document.createElement('div');
+            visualResponseArea.style.display = 'flex';
+            visualResponseArea.style.gap = '1rem';
+            
+            const leftBtn = document.createElement('button');
+            leftBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Izquierda';
+            
+            const rightBtn = document.createElement('button');
+            rightBtn.innerHTML = 'Derecha <i class="fas fa-arrow-right"></i>';
+            
+            visualResponseArea.appendChild(leftBtn);
+            visualResponseArea.appendChild(rightBtn);
+            
+            visualTask.appendChild(visualStimuli);
+            visualTask.appendChild(visualResponseArea);
+            
+            // Variables para el experimento
+            let currentSequence = '';
+            let visualCorrectDirection = '';
+            let memoryScore = 0;
+            let visualScore = 0;
+            let dualTaskActive = false;
+            
+            // Función para generar una nueva secuencia de números
+            function generateSequence() {
+                const length = 3 + Math.floor(complexityLevel / 3); // 3 a 6 dígitos
+                let sequence = '';
+                
+                for (let i = 0; i < length; i++) {
+                    sequence += Math.floor(Math.random() * 10);
+                }
+                
+                return sequence;
+            }
+            
+            // Función para actualizar el estímulo visual
+            function updateVisualStimulus() {
+                // Elegir al azar "←" o "→"
+                visualCorrectDirection = Math.random() < 0.5 ? 'left' : 'right';
+                
+                // Asignar color aleatorio
+                visualStimuli.style.backgroundColor = getRandomColor();
+                
+                // Establecer el símbolo de flecha
+                visualStimuli.textContent = visualCorrectDirection === 'left' ? '←' : '→';
+            }
+            
+            // Función para mostrar la secuencia y luego ocultarla
+            function showSequence() {
+                sequenceContainer.textContent = currentSequence;
+                
+                // Ocultar después de un tiempo basado en la complejidad
+                const displayTime = 3000 - (complexityLevel * 200); // 1 a 3 segundos
+                setTimeout(() => {
+                    sequenceContainer.textContent = '?';
+                    
+                    // Después de ocultar la secuencia, activar la tarea visual
+                    dualTaskActive = true;
+                    updateVisualStimulus();
+                }, displayTime);
+            }
+            
+            // Iniciar el experimento
+            function startDualTask() {
+                // Generar una nueva secuencia
+                currentSequence = generateSequence();
+                
+                // Mostrar la secuencia brevemente
+                showSequence();
+                
+                // Resetear puntajes
+                memoryScore = 0;
+                visualScore = 0;
+                
+                // Actualizar estadísticas
+                updateStroopStats(0, 0, 0, 0);
+            }
+            
+            // Evento de clic para verificar respuesta de memoria
+            submitMemoryBtn.addEventListener('click', () => {
+                const userInput = memoryInput.value.trim();
+                
+                if (userInput === currentSequence) {
+                    // Respuesta correcta
+                    memoryScore++;
+                    stroopAccuracy = Math.min(100, stroopAccuracy + 10);
+                    
+                    sequenceContainer.style.color = 'var(--success)';
+                    sequenceContainer.textContent = '¡Correcto!';
+                } else {
+                    // Respuesta incorrecta
+                    sequenceContainer.style.color = 'var(--error)';
+                    sequenceContainer.textContent = `Incorrecto. Era: ${currentSequence}`;
+                }
+                
+                // Mostrar retroalimentación por un momento
+                setTimeout(() => {
+                    sequenceContainer.style.color = 'var(--dark)';
+                    
+                    // Iniciar nuevo ciclo
+                    memoryInput.value = '';
+                    currentSequence = generateSequence();
+                    dualTaskActive = false;
+                    showSequence();
+                    
+                    // Actualizar estadísticas
+                    stroopRT = Math.round(Math.random() * 200) + 500;
+                    interferenceLevel = Math.min(100, complexityLevel * 10);
+                    cognitiveLoadLevel = Math.min(100, complexityLevel * 10);
+                    
+                    updateStroopStats(
+                        Math.round(stroopAccuracy),
+                        Math.round(stroopRT),
+                        Math.round(interferenceLevel),
+                        Math.round(cognitiveLoadLevel)
+                    );
+                    
+                    // Actualizar gráficos
+                    updateDualTaskChart();
+                }, 1500);
+            });
+            
+            // Evento de clic para respuestas visuales
+            leftBtn.addEventListener('click', () => handleVisualResponse('left'));
+            rightBtn.addEventListener('click', () => handleVisualResponse('right'));
+            
+            function handleVisualResponse(response) {
+                if (!dualTaskActive) return;
+                
+                if (response === visualCorrectDirection) {
+                    // Respuesta correcta
+                    visualScore++;
+                    visualStimuli.style.border = '2px solid var(--success)';
+                } else {
+                    // Respuesta incorrecta
+                    visualStimuli.style.border = '2px solid var(--error)';
+                }
+                
+                // Mostrar retroalimentación por un momento
+                setTimeout(() => {
+                    visualStimuli.style.border = 'none';
+                    
+                    // Mostrar nuevo estímulo
+                    updateVisualStimulus();
+                }, 500);
+            }
+            
+            // Iniciar el experimento
+            startDualTask();
+        }
+
+        // Actualizar tarea dual
+        function updateDualTask() {
+            if (currentCognitiveScenario === 'dual' && isCognitiveRunning) {
+                initializeDualTask();
+            }
+        }
+
+        // Actualizar gráfico de tarea dual
+        function updateDualTaskChart() {
+            // Simular datos para el gráfico de barras
+            const singleTaskRT = 500 + (Math.random() * 100);
+            const dualTaskRT = singleTaskRT * (1 + (complexityLevel / 10));
+            
+            // Actualizar datos del gráfico
+            cognitiveChart.data.labels = ['Tarea Única', 'Tarea Dual'];
+            cognitiveChart.data.datasets[0].data = [singleTaskRT, dualTaskRT];
+            cognitiveChart.options.plugins.title.text = 'Tiempo de Reacción: Tarea Única vs. Dual';
+            cognitiveChart.update();
+        }
+
+        // Implementar tarea de interferencia emocional
+        function initializeEmotionalTask() {
+            const container = document.getElementById('cognitive-visualization');
+            container.innerHTML = '';
+            
+            // Crear contenedor para la tarea
+            const emotionContainer = document.createElement('div');
+            emotionContainer.style.height = '100%';
+            emotionContainer.style.display = 'flex';
+            emotionContainer.style.flexDirection = 'column';
+            emotionContainer.style.justifyContent = 'center';
+            emotionContainer.style.alignItems = 'center';
+            container.appendChild(emotionContainer);
+            
+            // Instrucciones
+            const instructions = document.createElement('div');
+            instructions.style.marginBottom = '2rem';
+            instructions.style.textAlign = 'center';
+            instructions.innerHTML = '<p>Clasifica cada imagen según su color, <strong>ignorando</strong> la expresión emocional.</p>';
+            emotionContainer.appendChild(instructions);
+            
+            // Contenedor para el estímulo emocional
+            const stimulusContainer = document.createElement('div');
+            stimulusContainer.style.width = '200px';
+            stimulusContainer.style.height = '200px';
+            stimulusContainer.style.borderRadius = '8px';
+            stimulusContainer.style.display = 'flex';
+            stimulusContainer.style.justifyContent = 'center';
+            stimulusContainer.style.alignItems = 'center';
+            stimulusContainer.style.fontSize = '8rem';
+            stimulusContainer.style.marginBottom = '2rem';
+            stimulusContainer.style.transition = 'all 0.3s';
+            emotionContainer.appendChild(stimulusContainer);
+            
+            // Botones de respuesta
+            const responseContainer = document.createElement('div');
+            responseContainer.style.display = 'flex';
+            responseContainer.style.gap = '1rem';
+            responseContainer.style.flexWrap = 'wrap';
+            responseContainer.style.justifyContent = 'center';
+            emotionContainer.appendChild(responseContainer);
+            
+            // Colores para clasificar
+            const colors = [
+                { name: 'Rojo', value: '#ef4444' },
+                { name: 'Azul', value: '#3b82f6' },
+                { name: 'Verde', value: '#10b981' },
+                { name: 'Amarillo', value: '#f59e0b' }
+            ];
+            
+            // Crear botones de colores
+            colors.forEach(color => {
+                const button = document.createElement('button');
+                button.textContent = color.name;
+                button.style.backgroundColor = color.value;
+                button.style.color = (color.name === 'Amarillo') ? 'black' : 'white';
+                button.dataset.color = color.name.toLowerCase();
+                
+                button.addEventListener('click', () => handleColorResponse(button.dataset.color));
+                
+                responseContainer.appendChild(button);
+            });
+            
+            // Variables para el experimento
+            let currentColor = '';
+            let currentEmotion = '';
+            let isNegativeEmotion = false;
+            let trialCount = 0;
+            let correctCount = 0;
+            let reactionTimes = [];
+            let startTime;
+            
+            // Emociones
+            const emotions = [
+                { emoji: '😊', type: 'positive', name: 'feliz' },
+                { emoji: '😢', type: 'negative', name: 'triste' },
+                { emoji: '😡', type: 'negative', name: 'enojado' },
+                { emoji: '😨', type: 'negative', name: 'asustado' },
+                { emoji: '😐', type: 'neutral', name: 'neutral' }
+            ];
+            
+            // Función para mostrar un nuevo estímulo emocional
+            function showEmotionalStimulus() {
+                // Seleccionar un color aleatorio
+                const colorIndex = Math.floor(Math.random() * colors.length);
+                const selectedColor = colors[colorIndex];
+                currentColor = selectedColor.name.toLowerCase();
+                
+                // Seleccionar una emoción basada en la complejidad
+                let emotionIndex;
+                if (Math.random() < complexityLevel / 10) {
+                    // Mayor probabilidad de emociones negativas con mayor complejidad
+                    emotionIndex = 1 + Math.floor(Math.random() * 3); // Índices 1-3 (emociones negativas)
+                } else {
+                    emotionIndex = Math.random() < 0.7 ? 0 : 4; // Índice 0 (feliz) o 4 (neutral)
+                }
+                
+                const selectedEmotion = emotions[emotionIndex];
+                currentEmotion = selectedEmotion.name;
+                isNegativeEmotion = selectedEmotion.type === 'negative';
+                
+                // Mostrar el estímulo
+                stimulusContainer.textContent = selectedEmotion.emoji;
+                stimulusContainer.style.color = selectedColor.value;
+                
+                // Iniciar temporizador para medir tiempo de reacción
+                startTime = performance.now();
+            }
+            
+            // Manejar la respuesta de color
+            function handleColorResponse(response) {
+                // Calcular tiempo de reacción
+                const endTime = performance.now();
+                const reactionTime = endTime - startTime;
+                reactionTimes.push(reactionTime);
+                
+                // Verificar si la respuesta es correcta
+                const isCorrect = response === currentColor;
+                trialCount++;
+                
+                if (isCorrect) {
+                    correctCount++;
+                    
+                    // Efecto visual de confirmación
+                    stimulusContainer.style.boxShadow = '0 0 10px 5px rgba(16, 185, 129, 0.5)';
+                } else {
+                    // Efecto visual de error
+                    stimulusContainer.style.boxShadow = '0 0 10px 5px rgba(244, 63, 94, 0.5)';
+                }
+                
+                // Calcular carga cognitiva e interferencia (mayor para emociones negativas)
+                const baseInterference = isCorrect ? 0 : 20;
+                const emotionalInterference = isNegativeEmotion ? 30 : 10;
+                
+                stroopAccuracy = (correctCount / trialCount) * 100;
+                stroopRT = reactionTimes.reduce((sum, time) => sum + time, 0) / reactionTimes.length;
+                interferenceLevel = Math.min(100, baseInterference + emotionalInterference + (complexityLevel * 5));
+                cognitiveLoadLevel = Math.min(100, (complexityLevel * 7) + (isNegativeEmotion ? 20 : 0));
+                
+                // Actualizar estadísticas
+                updateStroopStats(
+                    Math.round(stroopAccuracy),
+                    Math.round(stroopRT),
+                    Math.round(interferenceLevel),
+                    Math.round(cognitiveLoadLevel)
+                );
+                
+                // Actualizar gráfico
+                updateEmotionalChart();
+                
+                // Mostrar retroalimentación por un momento
+                setTimeout(() => {
+                    stimulusContainer.style.boxShadow = 'none';
+                    
+                    // Mostrar nuevo estímulo
+                    showEmotionalStimulus();
+                }, 500);
+            }
+            
+            // Iniciar el experimento
+            showEmotionalStimulus();
+        }
+
+        // Actualizar tarea emocional
+        function updateEmotionalTask() {
+            if (currentCognitiveScenario === 'emotional' && isCognitiveRunning) {
+                initializeEmotionalTask();
+            }
+        }
+
+        // Actualizar gráfico de tarea emocional
+        function updateEmotionalChart() {
+            // Simular datos para el gráfico de barras
+            const neutralRT = 500 + (Math.random() * 100);
+            const positiveRT = neutralRT * (1 + (Math.random() * 0.2));
+            const negativeRT = neutralRT * (1 + (complexityLevel / 10) + (Math.random() * 0.3));
+            
+            // Actualizar datos del gráfico
+            cognitiveChart.data.labels = ['Neutral', 'Positiva', 'Negativa'];
+            cognitiveChart.data.datasets[0].data = [neutralRT, positiveRT, negativeRT];
+            cognitiveChart.options.plugins.title.text = 'Tiempo de Reacción por Tipo de Emoción';
+            cognitiveChart.update();
+        }
+
+        // Actualizar Test Stroop
+        function updateStroopTest() {
+            if (currentCognitiveScenario === 'stroop' && isCognitiveRunning) {
+                initializeStroopTest();
+            }
+        }
+    </script><div class="tooltip"></div>
+
+
+
+</body></html>
