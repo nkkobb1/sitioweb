@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowTrainer - Modo: Emoji Flow</title>
+
+    <!-- Carga de Fuentes desde Google Fonts (Método Recomendado) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Colores base (puedes adaptarlos o recibirlos del padre) */
+            --c-bg: #1a1d2e;
+            --c-surface: #23263a;
+            --c-text: #e0e0e0;
+            --c-primary: #00ffff;
+            --c-secondary: #ff00ff;
+            --c-accent: #39ff14;
+            --font-display: 'Orbitron', sans-serif; /* Fuente cargada vía <link> */
+            --font-body: 'Rajdhani', sans-serif;   /* Fuente cargada vía <link> */
+            --border-radius-medium: 8px;
+        }
+
+        /* No es necesario @font-face para Orbitron o Rajdhani si se usa el <link> de Google Fonts */
+
+        body {
+            font-family: var(--font-body); /* Usar variable CSS */
+            background-color: var(--c-bg);
+            color: var(--c-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden; /* Evita scrollbars innecesarios */
+        }
+
+        .container {
+            background-color: var(--c-surface);
+            padding: 25px;
+            border-radius: var(--border-radius-medium);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: var(--c-primary);
+            font-family: var(--font-display);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-shadow: 0 0 8px var(--c-primary);
+        }
+        h1 i {
+            margin-right: 10px;
+            animation: spinIcon 5s linear infinite;
+        }
+
+        @keyframes spinIcon {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+
+        #emoji-display {
+            font-size: 5rem; /* Tamaño grande para emojis */
+            min-height: 100px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: var(--border-radius-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--c-secondary);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3), 0 0 10px var(--c-secondary);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
+            white-space: normal;
+            word-break: break-all;
+            line-height: 1.2;
+        }
+
+        .emoji-entering {
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-group label {
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], select {
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            background-color: rgba(0,0,0,0.3);
+            color: var(--c-text);
+            border: 1px solid var(--c-primary);
+            border-radius: 5px;
+            width: 70px;
+            font-family: var(--font-body);
+        }
+        select {
+            width: auto;
+            min-width: 100px;
+        }
+
+
+        button {
+            font-family: var(--font-display);
+            background: transparent;
+            color: var(--c-text);
+            border: 2px solid var(--c-accent);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        button:hover:not(:disabled) {
+            background-color: var(--c-accent);
+            color: var(--c-bg);
+            box-shadow: 0 0 10px var(--c-accent);
+        }
+        button:disabled {
+            border-color: #555;
+            color: #777;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        button i {
+            margin-right: 8px;
+        }
+        #timer-display {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            color: var(--c-secondary);
+            margin-top: 15px;
+            min-height: 30px; /* Para evitar saltos de layout */
+        }
+        .progress-bar-container {
+            width: 80%;
+            height: 10px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin: 20px auto 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--c-accent);
+            transition: width 0.5s linear;
+        }
+
+        .footer-info {
+            margin-top: 30px;
+            font-size: 0.8em;
+            color: #888;
+        }
+         .footer-info a {
+            color: var(--c-primary);
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="far fa-grin-stars"></i> Emoji Flow</h1>
+
+        <div id="emoji-display">[ Pulsa Iniciar ]</div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="interval">Intervalo (s):</label>
+                <input type="number" id="interval" value="5" min="1" max="60">
+            </div>
+            <div class="control-group">
+                <label for="duration">Duración (min):</label>
+                <input type="number" id="duration" value="2" min="1" max="30">
+            </div>
+            <div class="control-group">
+                <label for="num-emojis">Emojis por vez:</label>
+                <input type="number" id="num-emojis" value="3" min="1" max="5">
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="start-btn"><i class="fas fa-play"></i> Iniciar</button>
+            <button id="stop-btn" disabled><i class="fas fa-stop"></i> Detener</button>
+            <button id="next-btn" disabled><i class="fas fa-forward"></i> Siguiente</button>
+        </div>
+        <div id="timer-display">00:00</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="session-progress"></div>
+        </div>
+
+        <p class="footer-info">
+            Modo Emoji Flow: Desarrollado para FlowTrainer.
+            <br>Emojis por <a href="https://openmoji.org/" target="_blank" rel="noopener noreferrer">OpenMoji</a> (usados como referencia, tu fuente de emojis puede variar).
+        </p>
+    </div>
+
+    <script>
+        // --- Lista de Emojis (Ampliar considerablemente) ---
+        const emojiPool = [
+            // Caras y Emociones
+            '😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '😘', '🥰', '😗', '😙', '🥲', '🤔', '🫡', '🤨', '😐', '😑', '😶', '🫥', '😶‍🌫️', '🙄', '😏', '😮', '🤐', '😯', '😪', '😫', '🥱', '😴', '😌', '😛', '😜', '😝', '🤤', '😒', '😓', '😔', '😕', '🫤', '🙃', '🫠', '😲', '🤯', '😭', '😥', '😨', '😰', '😱', '🥵', '🥶', '😳', '🤪', '😵', '😵‍💫', '🥴', '😠', '😡', '🤬', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '😇', '🥳', '🥸', '🥹', '🥺', '🤠', '🤡', '🤑', '🤫', '🤭', '🫢', '🫣', '🤥', '👺', '👹', '👿', '😈', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃',
+            // Animales y Naturaleza
+            '🙈', '🙉', '🙊', '🐵', '🐒', '🦍', '🦧', '🐶', '🐕', '🦮', '🐕‍🦺', '🐩', '🐺', '🦊', '🦝', '🐱', '🐈', '🐈‍⬛', '🦁', '🐯', '🐅', '🐆', '🐴', '🐎', '🦄', '🦓', '🦌', '🦬', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦣', '🦏', '🦛', '🐭', '🐁', '🐀', '🐹', '🐰', '🐇', '🐿️', '🦫', '🦔', '🦇', '🐻', '🐻‍❄️', '🐨', '🐼', '🦥', '🦦', '🦨', '🦘', '🦡', '🐾', '🦃', '🐔', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🦅', '🦆', '🦢', '🦉', '🦤', '🪶', '🦩', '🦚', '🦜', '🐸', '🐊', '🐢', '🦎', '🐍', '🐲', '🐉', '🦕', '🦖', '🐳', '🐋', '🐬', '🦭', '🐟', '🐠', '🐡', '🦈', '🐙', '🐚', '🐌', '🦋', '🐛', '🐜', '🐝', '🪲', '🐞', '🦗', '🪳', '🕷️', '🕸️', '🦂', '🦟', '🪰', '🪱', '🦠',
+            '💐', '🌸', '💮', '🪷', '🏵️', '🌹', '🥀', '🌺', '🌻', '🌼', '🌷', '🌱', '🪴', '🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '🍀', '🍁', '🍂', '🍃',
+            // Comida y Bebida
+            '🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🥭', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🫐', '🥝', '🍅', '🫒', '🥥', '🥑', '🍆', '🥔', '🥕', '🌽', '🌶️', '🫑', '🥒', '🥬', '🥦', '🧄', '🧅', '🍄', '🥜', '🫘', '🌰', '🍞', '🥐', '🥖', '🫓', '🥨', '🥯', '🥞', '🧇', '🧀', '🍖', '🍗', '🥩', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🫔', '🥙', '🧆', '🥚', '🍳', '🥘', '🍲', '🫕', '🥣', '🥗', '🍿', '🧈', '🧂', '🥫', '🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🥮', '🍡', '🥟', '🥠', '🥡', '🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🧁', '🥧', '🍫', '🍬', '🍭', '🍮', '🍯', '🍼', '🥛', '☕', '🫖', '🍵', '🍶', '🍾', '🍷', '🍸', '🍹', '🍺', '🍻', '🥂', '🥃', '🫗', '🥤', '🧋', '🧃', '🧉', '🧊', '🥢', '🍽️', '🍴', '🥄',
+            // Objetos y Actividades
+            '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🪃', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂', '🏋️‍♀️', '🏋️', '🏋️‍♂️', '🤼‍♀️', '🤼', '🤼‍♂️', '🤸‍♀️', '🤸', '🤸‍♂️', '🤺', '🤾‍♀️', '🤾', '🤾‍♂️', '🏌️‍♀️', '🏌️', '🏌️‍♂️', '🏇', '🧘‍♀️', '🧘', '🧘‍♂️', '🏄‍♀️', '🏄', '🏄‍♂️', '🏊‍♀️', '🏊', '🏊‍♂️', '🤽‍♀️', '🤽', '🤽‍♂️', '🚣‍♀️', '🚣', '🚣‍♂️', '🧗‍♀️', '🧗', '🧗‍♂️', '🚵‍♀️', '🚵', '🚵‍♂️', '🚴‍♀️', '🚴', '🚴‍♂️',
+            '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪', '🤹‍♀️', '🤹', '🤹‍♂️', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🪘', '🎷', '🎺', '🪗', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎳', '🎮', '🎰', '🧩',
+            '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🛻', '🚚', '🚛', '🚜', '🦯', '🦽', '🦼', '🛴', '🚲', '🛵', '🏍️', '🛺', '🚨', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊', '🚉', '✈️', '🛫', '🛬', '🛩️', '💺', '🛰️', '🚀', '🛸', '🚁', '🛶', '⛵', '🚤', '🛥️', '🛳️', '⛴️', '🚢', '⚓', '🛢️', '⛽', '🚧', '🚦', '🚥', '🗺️', '🗿', '🗽', '🗼', '🏰', '🏯', '🏟️', '🎡', '🎢', '🎠', '⛲', '⛱️', '🏖️', '🏝️', '🏜️', '🌋', '⛰️', '🏔️', '🗻', '🏕️', '⛺', '🏠', '🏡', '🏘️', '🏚️', '🏗️', '🏭', '🏢', '🏬', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏪', '🏟️', '🏳️', '🏴', '🏁', '🚩', '🎌', '😮‍💨', '😵‍💫', '😶‍🌫️',
+            '🌍', '🌎', '🌏', '🌐', '🗺️', '🧭', '🏔️', '⛰️', '🌋', '🗻', '🏕️', '🏖️', '🏜️', '🏝️', '🏞️', '🏟️', '🏛️', '🏗️', '🧱', '🪨', '🪵', '🛖', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽', '⛪', '🕌', '🛕', '🕍', '⛩️', '🕋', '⛲', '⛺', '🌁', '🌃', '🏙️', '🌄', '🌅', '🌆', '🌇', '🌉', '♨️', '🎠', '🎡', '🎢', '💈', '🎪', '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🛻', '🚚', '🚛', '🚜', '🏎️', '🏍️', '🛵', '🦽', '🦼', '🛺', '🚲', '🛴', '🛹', '🛼', '🚏', '🛣️', '🛤️', '🛢️', '⛽', '🚨', '🚥', '🚦', '🛑', '🚧', '⚓', '⛵', '🛶', '🚤', '🛳️', '⛴️', '🚢', '✈️', '🛩️', '🛫', '🛬', '🛰️', '🚀', '🛸', '🚁', '🪂', '💺', '🛰️', '🚂',
+            '⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🪔', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '💎', '⚖️', '🪜', '🧰', '🪛', '🔧', '🔨', '🔩', '⚙️', '🗜️', '⚖️', '🦯', '🔗', '⛓️', '🪝', '🧰', '🧲', '⚗️', '🧪', '🧫', '🧬', '🔬', '🔭', '📡', '💉', '🩸', '💊', '🩹', '🩺', '🚪', '🛗', ' gương', '🪞', '🪟', '🛏️', '🛋️', '🪑', '🚽', '🪠', '🚿', '🛁', '🧼', '🪥', '🪒', '🧴', '🛎️', '🔑', '🗝️', '🪅', '🎈', '🎉', '🎊', '🎁', '🎀', '🪄', '💌', '💣', '🔫', '🔪', '🛡️', '🚬', '⚰️', '🪦', '⚱️', '🗿', '🔮', '🧿', '🪬', '🛍️', '🛒', '📿', '🏺',
+            // Símbolos y más
+            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❤️‍🔥', '❤️‍🩹', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '⚕️', '☢️', '☣️', '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️', '🉐', '㊗️', '㊙️', '🉑', '🉐', '💮', '♨️', '🔞', '📵', '🚭', '', '🚮', '🚯', '🚱', '🚳', '🚴', '🚶', '♿', '🅿️', '🛗', '🚾', '🛂', '🛃', '🛄', '🛅', '🚰', '⚧', '🚻', '🚮', '🪧', '🪪', '💹', '❇️', '✳️', '❎', '✅', '✔️', '☑️', '🔘', '➕', '➖', '➗', '✖️', '♾️', '💯', '🔢', '#️⃣', '*️⃣', '▶️', '⏸️', '⏯️', '⏹️', '⏺️', '⏭️', '⏮️', '⏩', '⏪', '🔀', '🔁', '🔂', '◀️', '🔼', '🔽', '⏫', '⏬', '➡️', '⬅️', '⬆️', '⬇️', '↗️', '↘️', '↙️', '↖️', '↪️', '↩️', '⤴️', '⤵️', '🔝', '🔚', '🔙', '🔛', '🔜', '☑️', '✔️', '✅', '🔸', '🔹', '🔶', '🔷', '🔺', '🔻', '🔲', '🔳', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '⚫', '⚪', '◼️', '◻️', '◾', '◽', '▪️', '▫️', '💠', '⬆️', '⬇️', '⬅️', '➡️', '🔠', '🔡', '🔢', '🔣', '🔤', '💨', '💤', '💫', '💬', '💭', '👁️‍🗨️', '🗯️', '💥', '💦', '💨', '💫', '✨', '🌟', '🌠', '🌌', '🕛', '🕧', '🕐', '🕜', '🕑', '🕝', '🕒', '🕞', '🕓', '🕟', '🕔', '🕠', '🕕', '🕡', '🕖', '🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦'
+        ];
+
+
+        // --- DOM Elements ---
+        const emojiDisplay = document.getElementById('emoji-display');
+        const intervalInput = document.getElementById('interval');
+        const durationInput = document.getElementById('duration');
+        const numEmojisInput = document.getElementById('num-emojis');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const timerDisplay = document.getElementById('timer-display');
+        const sessionProgress = document.getElementById('session-progress');
+
+
+        // --- State Variables ---
+        let sessionActive = false;
+        let currentInterval = 5000;
+        let currentDuration = 2 * 60 * 1000;
+        let currentNumEmojis = 3;
+        let intervalTimerId = null;
+        let sessionTimerId = null;
+        let elapsedTime = 0;
+        let sessionStartTime;
+
+
+        // --- Functions ---
+        function getRandomEmojis(count) {
+            if (emojiPool.length === 0) return ["❓"];
+            const selected = [];
+            // Hacemos una copia para poder hacer splice sin afectar el pool original para la próxima selección.
+            // Si quieres permitir emojis repetidos DENTRO de una misma tanda, esta copia no sería estrictamente necesaria,
+            // y podrías simplemente elegir índices aleatorios de emojiPool.
+            const poolCopy = [...emojiPool];
+            for (let i = 0; i < count; i++) {
+                if (poolCopy.length === 0) break;
+                const randomIndex = Math.floor(Math.random() * poolCopy.length);
+                selected.push(poolCopy.splice(randomIndex, 1)[0]);
+            }
+            return selected;
+        }
+
+        function displayNewEmojis() {
+            // console.log("Emoji Flow: displayNewEmojis() called.");
+            if (!sessionActive) {
+                // console.log("Emoji Flow: displayNewEmojis() - session not active, returning.");
+                return;
+            }
+            const emojisToShow = getRandomEmojis(currentNumEmojis);
+            // console.log("Emoji Flow: Emojis generated:", emojisToShow);
+            emojiDisplay.textContent = emojisToShow.join(' ');
+            emojiDisplay.classList.remove('emoji-entering');
+            void emojiDisplay.offsetWidth;
+            emojiDisplay.classList.add('emoji-entering');
+        }
+
+        function updateTimer() {
+            elapsedTime = Date.now() - sessionStartTime;
+            const remainingTime = currentDuration - elapsedTime;
+
+            if (remainingTime <= 0) {
+                stopSession();
+                timerDisplay.textContent = formatTime(currentDuration);
+                sessionProgress.style.width = '100%';
+                return;
+            }
+
+            timerDisplay.textContent = formatTime(remainingTime);
+            const progressPercentage = (elapsedTime / currentDuration) * 100;
+            sessionProgress.style.width = `${progressPercentage}%`;
+        }
+
+        function formatTime(ms) {
+            const totalSeconds = Math.ceil(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startSession() {
+            // console.log("Emoji Flow: startSession() called.");
+            if (sessionActive) {
+                // console.log("Emoji Flow: Session already active, returning.");
+                return;
+            }
+            sessionActive = true;
+            // console.log("Emoji Flow: sessionActive set to true.");
+
+            currentInterval = parseInt(intervalInput.value, 10) * 1000;
+            if (isNaN(currentInterval) || currentInterval < 1000) currentInterval = 5000;
+
+            currentDuration = parseInt(durationInput.value, 10) * 60 * 1000;
+             if (isNaN(currentDuration) || currentDuration < (1 * 60 * 1000)) currentDuration = 2 * 60 * 1000;
+
+            currentNumEmojis = parseInt(numEmojisInput.value, 10);
+            if (isNaN(currentNumEmojis) || currentNumEmojis < 1) currentNumEmojis = 3;
+            if (currentNumEmojis > 5) currentNumEmojis = 5;
+
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            nextBtn.disabled = false;
+            intervalInput.disabled = true;
+            durationInput.disabled = true;
+            numEmojisInput.disabled = true;
+
+            elapsedTime = 0;
+            sessionStartTime = Date.now();
+            sessionProgress.style.width = '0%';
+
+            displayNewEmojis();
+            // console.log("Emoji Flow: First displayNewEmojis() called.");
+            intervalTimerId = setInterval(displayNewEmojis, currentInterval);
+            sessionTimerId = setInterval(updateTimer, 100); // Update timer more frequently
+            // console.log("Emoji Flow: Timers started.");
+        }
+
+        function stopSession() {
+            // console.log("Emoji Flow: stopSession() called.");
+            if (!sessionActive) {
+                // console.log("Emoji Flow: Session not active, returning from stop.");
+                return;
+            }
+            sessionActive = false;
+
+            clearInterval(intervalTimerId);
+            clearInterval(sessionTimerId);
+            intervalTimerId = null;
+            sessionTimerId = null;
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            nextBtn.disabled = true;
+            intervalInput.disabled = false;
+            durationInput.disabled = false;
+            numEmojisInput.disabled = false;
+
+            emojiDisplay.textContent = "[ Sesión Finalizada ]";
+            if (elapsedTime >= currentDuration) {
+                timerDisplay.textContent = "¡Tiempo!";
+                sessionProgress.style.width = '100%';
+            } else {
+                 timerDisplay.textContent = formatTime(currentDuration - elapsedTime) + " (Detenida)";
+            }
+        }
+
+        function forceNext() {
+            // console.log("Emoji Flow: forceNext() called.");
+            if(!sessionActive) return;
+            displayNewEmojis();
+            clearInterval(intervalTimerId); // Clear existing interval
+            intervalTimerId = setInterval(displayNewEmojis, currentInterval); // Restart it
+        }
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', startSession);
+        stopBtn.addEventListener('click', stopSession);
+        nextBtn.addEventListener('click', forceNext);
+
+
+        // Validar inputs numéricos al cambiar
+        [intervalInput, durationInput, numEmojisInput].forEach(input => {
+            input.addEventListener('change', () => {
+                let val = parseInt(input.value, 10);
+                const min = parseInt(input.min, 10);
+                const max = parseInt(input.max, 10);
+                if (isNaN(val)) {
+                    val = parseInt(input.defaultValue, 10) || min; // Fallback a defaultValue o min
+                }
+                input.value = Math.max(min, Math.min(val, max));
+            });
+        });
+
+
+        console.log("Emoji Flow Mode Initialized (v2 - Fonts corrected)!");
+
+    </script>
+</body>
+</html>
